@@ -1,0 +1,32 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Compile Update="Design\RoundedPanel.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Update="Design\CircularButton.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Update="Design\RoundedButton.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Update="Design\RoundedPictureBox.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Update="Design\RoundedProgressBar.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Update="Design\TableLayoutPanelSettings.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Update="Forms\Emoji.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="Forms\Settings.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="VRCEmojiManagerMain.cs">
+      <SubType>Form</SubType>
+    </Compile>
+  </ItemGroup>
+</Project>

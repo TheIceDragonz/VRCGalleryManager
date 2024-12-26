@@ -1,0 +1,15 @@
+{
+  "version": 2,
+  "dgSpecHash": "+otRHAkt5K4=",
+  "success": true,
+  "projectFilePath": "E:\\- ProgramLabs\\VRCEmojiManager\\VRCEmojiManager.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\giuly\\.nuget\\packages\\jsonsubtypes\\1.9.0\\jsonsubtypes.1.9.0.nupkg.sha512",
+    "C:\\Users\\giuly\\.nuget\\packages\\newtonsoft.json\\13.0.1\\newtonsoft.json.13.0.1.nupkg.sha512",
+    "C:\\Users\\giuly\\.nuget\\packages\\polly\\7.2.3\\polly.7.2.3.nupkg.sha512",
+    "C:\\Users\\giuly\\.nuget\\packages\\restsharp\\108.0.2\\restsharp.108.0.2.nupkg.sha512",
+    "C:\\Users\\giuly\\.nuget\\packages\\system.componentmodel.annotations\\5.0.0\\system.componentmodel.annotations.5.0.0.nupkg.sha512",
+    "C:\\Users\\giuly\\.nuget\\packages\\vrchat.api\\1.18.8\\vrchat.api.1.18.8.nupkg.sha512"
+  ],
+  "logs": []
+}
