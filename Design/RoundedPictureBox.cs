@@ -10,9 +10,9 @@ namespace VRCEmojiManager.Design
     {
         private int borderSize = 0;
         private int borderRadiusTopLeft = 20;
-        private int borderRadiusTopRight = 5;
+        private int borderRadiusTopRight = 20;
         private int borderRadiusBottomLeft = 20;
-        private int borderRadiusBottomRight = 5;
+        private int borderRadiusBottomRight = 20;
         private Color borderColor = Color.PaleVioletRed;
 
         [Category("VRCEmojiManager")]
@@ -145,7 +145,15 @@ namespace VRCEmojiManager.Design
         protected override void OnResize(EventArgs e)
         {
             base.OnResize(e);
+
+            if (Width != Height)
+            {
+                int size = Math.Min(Width, Height);
+                this.Size = new Size(size, size);
+            }
+
             Invalidate();
         }
+
     }
 }

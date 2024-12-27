@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("VRCEmojiManager")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+acf48513965a9c9bf58939bc13ea87f816c87305")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ed998384d781b084ac1c3d0a86b741b6fc6dca88")]
 [assembly: System.Reflection.AssemblyProductAttribute("VRCEmojiManager")]
 [assembly: System.Reflection.AssemblyTitleAttribute("VRCEmojiManager")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

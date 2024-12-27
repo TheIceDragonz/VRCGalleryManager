@@ -60,7 +60,7 @@ namespace VRCEmojiManager
             FormsPanel.BorderSize = 0;
             FormsPanel.Location = new Point(296, 12);
             FormsPanel.Name = "FormsPanel";
-            FormsPanel.Size = new Size(462, 422);
+            FormsPanel.Size = new Size(647, 422);
             FormsPanel.TabIndex = 5;
             // 
             // SwitchPanel
@@ -145,7 +145,7 @@ namespace VRCEmojiManager
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(50, 50, 50);
-            ClientSize = new Size(770, 446);
+            ClientSize = new Size(955, 446);
             Controls.Add(SwitchPanel);
             Controls.Add(FormsPanel);
             Controls.Add(Icon);

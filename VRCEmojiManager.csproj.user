@@ -22,6 +22,12 @@
     <Compile Update="Forms\Emoji.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Update="Forms\Emoji.Designer.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="Forms\Panels\EmojiPanels.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Update="Forms\Settings.cs">
       <SubType>Form</SubType>
     </Compile>

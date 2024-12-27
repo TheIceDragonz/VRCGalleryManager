@@ -1,21 +1,176 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
+﻿using System.Drawing.Imaging;
 using VRCEmojiManager.Core;
 
 namespace VRCEmojiManager.Forms
 {
     public partial class Create : Form
     {
+        private string gifPath;
+        private Bitmap spriteSheet;
+
         public Create(VRCAuth Auth)
         {
             InitializeComponent();
+
+            this.AllowDrop = true;
+            this.DragEnter += new DragEventHandler(pictureSS_DragEnter);
+            this.DragDrop += new DragEventHandler(pictureSS_DragDrop);
+        }
+
+        private void pictureSS_DragDrop(object sender, DragEventArgs e)
+        {
+            string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
+            gifPath = files[0];  // Salva il percorso della GIF
+            previewGif.ImageLocation = gifPath;
+
+            if (gifPath != null)
+            {
+                string tempOutputPath = Path.Combine(Path.GetTempPath(), gifPath + "spritesheet_temp.png");
+                ConvertGifToSpriteSheets(gifPath, tempOutputPath);
+                previewSS.Image = spriteSheet;
+                buttonSave.Enabled = true;
+            }
+        }
+
+        private void pictureSS_DragEnter(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
+                if (Path.GetExtension(files[0]).ToLower() == ".gif")
+                {
+                    e.Effect = DragDropEffects.Copy;
+                }
+                else
+                {
+                    e.Effect = DragDropEffects.None;
+                }
+            }
+        }
+
+        private void ConvertGifToSpriteSheets(string gifPath, string tempOutputPath)
+        {
+            Image gifImage = Image.FromFile(gifPath);
+            FrameDimension dimension = new FrameDimension(gifImage.FrameDimensionsList[0]);
+            int frameCount = gifImage.GetFrameCount(dimension);
+
+            frameCounter.Text = "Frame: " + frameCount.ToString();
+            frameCounter.Visible = true;
+
+            int maxTextureSize = 1024;
+            int squareSize;
+            int cols, rows;
+
+            if (frameCount <= 16)
+            {
+                squareSize = 256; // Dimensione per 4x4 griglia
+                cols = rows = 4;
+            }
+            else
+            {
+                squareSize = 128; // Dimensione per 8x8 griglia
+                cols = rows = 8;
+            }
+
+            int spriteSheetWidth = cols * squareSize;
+            int spriteSheetHeight = rows * squareSize;
+
+            if (spriteSheetWidth > maxTextureSize || spriteSheetHeight > maxTextureSize)
+            {
+                int maxCols = maxTextureSize / squareSize;
+                int maxRows = maxTextureSize / squareSize;
+
+                cols = Math.Min(frameCount, maxCols * maxRows);
+                rows = (int)Math.Ceiling((double)frameCount / cols);
+
+                spriteSheetWidth = Math.Min(cols * squareSize, maxTextureSize);
+                spriteSheetHeight = Math.Min(rows * squareSize, maxTextureSize);
+
+                if (spriteSheetWidth > maxTextureSize || spriteSheetHeight > maxTextureSize)
+                {
+                    MessageBox.Show("Non è possibile adattare tutti i frame nella dimensione massima consentita.", "Errore", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+            }
+
+            spriteSheet = new Bitmap(spriteSheetWidth, spriteSheetHeight);
+
+            using (Graphics g = Graphics.FromImage(spriteSheet))
+            {
+                g.Clear(Color.Transparent);
+
+                for (int i = 0; i < frameCount; i++)
+                {
+                    gifImage.SelectActiveFrame(dimension, i);
+
+                    // Ritaglia il frame in un quadrato
+                    Bitmap squareFrame = CropToSquare(gifImage, squareSize);
+
+                    int col = i % cols;
+                    int row = i / cols;
+
+                    g.DrawImage(squareFrame, col * squareSize, row * squareSize, squareSize, squareSize);
+                }
+            }
+        }
+
+        private Bitmap CropToSquare(Image img, int size)
+        {
+            int maxSize = Math.Max(img.Width, img.Height);
+
+            Bitmap squareImage = new Bitmap(size, size);
+
+            using (Graphics g = Graphics.FromImage(squareImage))
+            {
+                g.Clear(Color.Transparent);
+
+                Rectangle srcRect;
+                if (img.Width > img.Height)
+                {
+                    int offset = (img.Width - img.Height) / 2;
+                    srcRect = new Rectangle(offset, 0, img.Height, img.Height);
+                }
+                else
+                {
+                    int offset = (img.Height - img.Width) / 2;
+                    srcRect = new Rectangle(0, offset, img.Width, img.Width);
+                }
+
+                g.DrawImage(img, new Rectangle(0, 0, size, size), srcRect, GraphicsUnit.Pixel);
+            }
+
+            return squareImage;
+        }
+
+        private void buttonSave_Click(object sender, EventArgs e)
+        {
+            if (spriteSheet != null)
+            {
+                using (SaveFileDialog saveDialog = new SaveFileDialog())
+                {
+                    string FileName = Path.GetFileNameWithoutExtension(gifPath);
+
+                    saveDialog.Title = "Salva la sprite sheet";
+                    saveDialog.Filter = "PNG Image|*.png";
+                    saveDialog.FileName = FileName + ".png";
+
+                    if (saveDialog.ShowDialog() == DialogResult.OK)
+                    {
+                        string outputFilePath = saveDialog.FileName;
+
+                        if (Path.GetExtension(outputFilePath).ToLower() != ".png")
+                        {
+                            outputFilePath = Path.ChangeExtension(outputFilePath, ".png");
+                        }
+
+                        spriteSheet.Save(outputFilePath, ImageFormat.Png);
+                    }
+                }
+            }
+            else
+            {
+                MessageBox.Show("GIF not found", "Errore", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
         }
     }
 }
