@@ -4,7 +4,7 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 
-namespace VRCEmojiManager.Design
+namespace VRCGalleryManager.Design
 {
     public class RoundedPictureBox : PictureBox
     {
@@ -15,7 +15,7 @@ namespace VRCEmojiManager.Design
         private int borderRadiusBottomRight = 20;
         private Color borderColor = Color.PaleVioletRed;
 
-        [Category("VRCEmojiManager")]
+        [Category("VRCGalleryManager")]
         public int BorderSize
         {
             get { return borderSize; }
@@ -26,7 +26,7 @@ namespace VRCEmojiManager.Design
             }
         }
 
-        [Category("VRCEmojiManager")]
+        [Category("VRCGalleryManager")]
         public int BorderRadiusTopLeft
         {
             get { return borderRadiusTopLeft; }
@@ -37,7 +37,7 @@ namespace VRCEmojiManager.Design
             }
         }
 
-        [Category("VRCEmojiManager")]
+        [Category("VRCGalleryManager")]
         public int BorderRadiusTopRight
         {
             get { return borderRadiusTopRight; }
@@ -48,7 +48,7 @@ namespace VRCEmojiManager.Design
             }
         }
 
-        [Category("VRCEmojiManager")]
+        [Category("VRCGalleryManager")]
         public int BorderRadiusBottomLeft
         {
             get { return borderRadiusBottomLeft; }
@@ -59,7 +59,7 @@ namespace VRCEmojiManager.Design
             }
         }
 
-        [Category("VRCEmojiManager")]
+        [Category("VRCGalleryManager")]
         public int BorderRadiusBottomRight
         {
             get { return borderRadiusBottomRight; }
@@ -70,7 +70,7 @@ namespace VRCEmojiManager.Design
             }
         }
 
-        [Category("VRCEmojiManager")]
+        [Category("VRCGalleryManager")]
         public Color BorderColor
         {
             get { return borderColor; }
@@ -81,7 +81,7 @@ namespace VRCEmojiManager.Design
             }
         }
 
-        [Category("VRCEmojiManager")]
+        [Category("VRCGalleryManager")]
         public Color BackgroundColor
         {
             get { return BackColor; }

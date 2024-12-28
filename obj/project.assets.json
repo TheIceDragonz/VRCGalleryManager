@@ -294,11 +294,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "E:\\- ProgramLabs\\VRCEmojiManager\\VRCEmojiManager.csproj",
-      "projectName": "VRCEmojiManager",
-      "projectPath": "E:\\- ProgramLabs\\VRCEmojiManager\\VRCEmojiManager.csproj",
+      "projectUniqueName": "E:\\- ProgramLabs\\VRCGalleryManager\\VRCGalleryManager.csproj",
+      "projectName": "VRCGalleryManager",
+      "projectPath": "E:\\- ProgramLabs\\VRCGalleryManager\\VRCGalleryManager.csproj",
       "packagesPath": "C:\\Users\\giuly\\.nuget\\packages\\",
-      "outputPath": "E:\\- ProgramLabs\\VRCEmojiManager\\obj\\",
+      "outputPath": "E:\\- ProgramLabs\\VRCGalleryManager\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

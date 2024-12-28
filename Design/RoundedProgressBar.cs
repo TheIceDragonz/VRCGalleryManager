@@ -4,7 +4,7 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 
-namespace VRCEmojiManager.Design
+namespace VRCGalleryManager.Design
 {
     public class RoundedProgressBar : Control
     {
@@ -13,7 +13,7 @@ namespace VRCEmojiManager.Design
         private Color progressColor = Color.MediumSlateBlue;
         private Color backgroundColor = Color.White;
 
-        [Category("VRCEmojiManager")]
+        [Category("VRCGalleryManager")]
         public int BorderRadius
         {
             get => borderRadius;
@@ -24,7 +24,7 @@ namespace VRCEmojiManager.Design
             }
         }
 
-        [Category("VRCEmojiManager")]
+        [Category("VRCGalleryManager")]
         public int ProgressValue
         {
             get => progressValue;
@@ -38,7 +38,7 @@ namespace VRCEmojiManager.Design
             }
         }
 
-        [Category("VRCEmojiManager")]
+        [Category("VRCGalleryManager")]
         public Color ProgressColor
         {
             get => progressColor;
@@ -49,7 +49,7 @@ namespace VRCEmojiManager.Design
             }
         }
 
-        [Category("VRCEmojiManager")]
+        [Category("VRCGalleryManager")]
         public Color BackgroundColor
         {
             get => backgroundColor;

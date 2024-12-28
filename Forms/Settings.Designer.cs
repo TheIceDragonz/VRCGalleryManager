@@ -1,6 +1,6 @@
-﻿using VRCEmojiManager.Design;
+﻿using VRCGalleryManager.Design;
 
-namespace VRCEmojiManager.Forms
+namespace VRCGalleryManager.Forms
 {
     partial class Settings
     {
@@ -225,14 +225,14 @@ namespace VRCEmojiManager.Forms
         }
 
         #endregion
-        private VRCEmojiManager.Design.TableLayoutPanelSettings _vrcLogin;
-        private VRCEmojiManager.Design.RoundedPanel panel1;
+        private VRCGalleryManager.Design.TableLayoutPanelSettings _vrcLogin;
+        private VRCGalleryManager.Design.RoundedPanel panel1;
         private System.Windows.Forms.Label label6;
-        private VRCEmojiManager.Design.RoundedPanel panel5;
+        private VRCGalleryManager.Design.RoundedPanel panel5;
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.Label _vrcLoginLabel;
         public System.Windows.Forms.TextBox _password;
         public System.Windows.Forms.TextBox _username;
-        public VRCEmojiManager.Design.RoundedButton _loginButton;
+        public VRCGalleryManager.Design.RoundedButton _loginButton;
     }
 }

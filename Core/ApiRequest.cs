@@ -1,17 +1,15 @@
-﻿using VRCEmojiManager.Forms;
+﻿using VRCGalleryManager.Forms;
 using System.Diagnostics;
 using VRChat.API.Api;
 using VRChat.API.Client;
 using VRChat.API.Model;
 
-namespace VRCEmojiManager.Core
+namespace VRCGalleryManager.Core
 {
     public class ApiRequest
     {
         private VRCAuth Auth;
         private FilesApi filesApi;
-
-        private string tag = "emoji";
 
         public ApiRequest(VRCAuth Auth)
         {
@@ -21,11 +19,11 @@ namespace VRCEmojiManager.Core
 
         public class ApiData
         {
-            public List<string> IdEmoji { get; set; } = new List<string>();
-            public string CountEmoji { get; set; }
+            public List<string> IdImage { get; set; } = new List<string>();
+            public string CountImage { get; set; }
         }
 
-        public async Task<ApiData> GetApiData()
+        public async Task<ApiData> GetApiData(string tag)
         {
 
             ApiData apiData = new ApiData();
@@ -36,9 +34,9 @@ namespace VRCEmojiManager.Core
 
                 foreach (var icon in icons)
                 {
-                    Debug.WriteLine(icon.Id);
+                    apiData.IdImage.Add(icon.Id);
 
-                    apiData.IdEmoji.Add(icon.Id);
+                    Debug.WriteLine(icon.ToJson());
                 }
             }
             catch (ApiException ex)

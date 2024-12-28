@@ -3,7 +3,7 @@ using VRChat.API.Api;
 using VRChat.API.Client;
 using VRChat.API.Model;
 
-namespace VRCEmojiManager.Core
+namespace VRCGalleryManager.Core
 {
     public class VRCAuth
     {
@@ -16,7 +16,7 @@ namespace VRCEmojiManager.Core
         public bool LoggedIn = false;
         public bool CookieLoaded = false;
 
-        public static readonly string tokenFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "VRCEmojiManagerMain", "authToken.txt");
+        public static readonly string tokenFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "VRCGalleryManagerMain", "authToken.txt");
 
         public static Uri uriTarget = new Uri("https://vrchat.com");
 
@@ -24,7 +24,7 @@ namespace VRCEmojiManager.Core
         {
             Config = new Configuration();
             ApiClient = new ApiClient();
-            Config.UserAgent = "VRCEmojiManager/0.0.1 (Testing)";
+            Config.UserAgent = "VRCGalleryManager/0.0.1 (Testing)";
         }
 
         public static VRCAuth Instance()
@@ -37,7 +37,7 @@ namespace VRCEmojiManager.Core
         {
             Config.Username = usernameVRC;
             Config.Password = passworldVRC;
-            Config.UserAgent = "VRCEmojiManager/0.0.1 (Testing)";
+            Config.UserAgent = "VRCGalleryManager/0.0.1 (Testing)";
 
             AuthApi = new AuthenticationApi(ApiClient, ApiClient, Config);
 

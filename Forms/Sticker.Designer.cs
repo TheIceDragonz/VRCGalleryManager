@@ -2,7 +2,7 @@
 
 namespace VRCGalleryManager.Forms
 {
-    partial class Emoji
+    partial class Sticker
     {
         /// <summary>
         /// Required designer variable.
@@ -30,22 +30,20 @@ namespace VRCGalleryManager.Forms
         /// </summary>
         private void InitializeComponent()
         {
-            emojiPanel = new FlowLayoutPanel();
+            stickerPanel = new FlowLayoutPanel();
             _refreshButton = new RoundedButton();
             roundedButton1 = new RoundedButton();
-            roundedButton2 = new RoundedButton();
-            emojiType = new RoundedPanel();
             SuspendLayout();
             // 
-            // emojiPanel
+            // stickerPanel
             // 
-            emojiPanel.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            emojiPanel.AutoScroll = true;
-            emojiPanel.BackColor = Color.FromArgb(64, 64, 64);
-            emojiPanel.Location = new Point(12, 45);
-            emojiPanel.Name = "emojiPanel";
-            emojiPanel.Size = new Size(595, 383);
-            emojiPanel.TabIndex = 2;
+            stickerPanel.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            stickerPanel.AutoScroll = true;
+            stickerPanel.BackColor = Color.FromArgb(64, 64, 64);
+            stickerPanel.Location = new Point(12, 45);
+            stickerPanel.Name = "stickerPanel";
+            stickerPanel.Size = new Size(595, 383);
+            stickerPanel.TabIndex = 2;
             // 
             // _refreshButton
             // 
@@ -80,69 +78,31 @@ namespace VRCGalleryManager.Forms
             roundedButton1.ForeColor = Color.White;
             roundedButton1.Location = new Point(12, 434);
             roundedButton1.Name = "roundedButton1";
-            roundedButton1.Size = new Size(473, 40);
+            roundedButton1.Size = new Size(595, 40);
             roundedButton1.TabIndex = 4;
             roundedButton1.Text = "Upload";
             roundedButton1.TextColor = Color.White;
             roundedButton1.UseVisualStyleBackColor = false;
-            roundedButton1.Click += uploadEmoji_Click;
+            roundedButton1.Click += uploadSticker_Click;
             // 
-            // roundedButton2
-            // 
-            roundedButton2.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            roundedButton2.BackColor = Color.FromArgb(50, 50, 50);
-            roundedButton2.BackgroundColor = Color.FromArgb(50, 50, 50);
-            roundedButton2.BorderColor = Color.PaleVioletRed;
-            roundedButton2.BorderRadius = 20;
-            roundedButton2.BorderSize = 0;
-            roundedButton2.FlatAppearance.BorderSize = 0;
-            roundedButton2.FlatStyle = FlatStyle.Flat;
-            roundedButton2.ForeColor = Color.White;
-            roundedButton2.Location = new Point(491, 434);
-            roundedButton2.Name = "roundedButton2";
-            roundedButton2.Size = new Size(116, 40);
-            roundedButton2.TabIndex = 7;
-            roundedButton2.Text = "none";
-            roundedButton2.TextColor = Color.White;
-            roundedButton2.UseVisualStyleBackColor = false;
-            // 
-            // emojiType
-            // 
-            emojiType.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            emojiType.AutoScroll = true;
-            emojiType.BackColor = Color.FromArgb(50, 50, 50);
-            emojiType.BackgroundColor = Color.FromArgb(50, 50, 50);
-            emojiType.BorderColor = Color.PaleVioletRed;
-            emojiType.BorderRadius = 15;
-            emojiType.BorderSize = 0;
-            emojiType.Location = new Point(491, 197);
-            emojiType.Name = "emojiType";
-            emojiType.Size = new Size(116, 231);
-            emojiType.TabIndex = 8;
-            emojiType.Visible = false;
-            // 
-            // Emoji
+            // Sticker
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(64, 64, 64);
             ClientSize = new Size(619, 486);
-            Controls.Add(emojiType);
-            Controls.Add(roundedButton2);
             Controls.Add(roundedButton1);
             Controls.Add(_refreshButton);
-            Controls.Add(emojiPanel);
+            Controls.Add(stickerPanel);
             FormBorderStyle = FormBorderStyle.None;
-            Name = "Emoji";
-            Text = "Emoji";
+            Name = "Sticker";
+            Text = "Sticker";
             ResumeLayout(false);
         }
 
         #endregion
-        private FlowLayoutPanel emojiPanel;
+        private FlowLayoutPanel stickerPanel;
         private RoundedButton _refreshButton;
         private RoundedButton roundedButton1;
-        private RoundedButton roundedButton2;
-        private RoundedPanel emojiType;
     }
 }

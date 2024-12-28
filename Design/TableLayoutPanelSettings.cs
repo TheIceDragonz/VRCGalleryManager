@@ -4,7 +4,7 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 
-namespace VRCEmojiManager.Design
+namespace VRCGalleryManager.Design
 {
     public class TableLayoutPanelSettings : TableLayoutPanel
     {
@@ -12,7 +12,7 @@ namespace VRCEmojiManager.Design
         private int borderRadius = 15;
         private Color borderColor = Color.PaleVioletRed;
 
-        [Category("VRCEmojiManager")]
+        [Category("VRCGalleryManager")]
         public int BorderSize
         {
             get => borderSize;
@@ -26,7 +26,7 @@ namespace VRCEmojiManager.Design
             }
         }
 
-        [Category("VRCEmojiManager")]
+        [Category("VRCGalleryManager")]
         public int BorderRadius
         {
             get => borderRadius;
@@ -40,7 +40,7 @@ namespace VRCEmojiManager.Design
             }
         }
 
-        [Category("VRCEmojiManager")]
+        [Category("VRCGalleryManager")]
         public Color BorderColor
         {
             get => borderColor;
@@ -54,7 +54,7 @@ namespace VRCEmojiManager.Design
             }
         }
 
-        [Category("VRCEmojiManager")]
+        [Category("VRCGalleryManager")]
         public Color BackgroundColor
         {
             get => BackColor;

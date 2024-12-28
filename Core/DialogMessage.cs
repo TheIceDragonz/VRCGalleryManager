@@ -1,6 +1,6 @@
-using VRCEmojiManager.Design;
+using VRCGalleryManager.Design;
 
-namespace VRCEmojiManager.Core
+namespace VRCGalleryManager.Core
 {
     public static class DialogMessage
     {

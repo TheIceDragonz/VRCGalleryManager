@@ -11,12 +11,12 @@
 using System;
 using System.Reflection;
 
-[assembly: System.Reflection.AssemblyCompanyAttribute("VRCEmojiManager")]
+[assembly: System.Reflection.AssemblyCompanyAttribute("VRCGalleryManager")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
 [assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+884fb3499c4081b21a3d878c12d7636d94e4836e")]
-[assembly: System.Reflection.AssemblyProductAttribute("VRCEmojiManager")]
-[assembly: System.Reflection.AssemblyTitleAttribute("VRCEmojiManager")]
+[assembly: System.Reflection.AssemblyProductAttribute("VRCGalleryManager")]
+[assembly: System.Reflection.AssemblyTitleAttribute("VRCGalleryManager")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
 [assembly: System.Runtime.Versioning.TargetPlatformAttribute("Windows7.0")]
 [assembly: System.Runtime.Versioning.SupportedOSPlatformAttribute("Windows7.0")]

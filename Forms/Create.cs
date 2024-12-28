@@ -1,7 +1,7 @@
 ﻿using System.Drawing.Imaging;
-using VRCEmojiManager.Core;
+using VRCGalleryManager.Core;
 
-namespace VRCEmojiManager.Forms
+namespace VRCGalleryManager.Forms
 {
     public partial class Create : Form
     {

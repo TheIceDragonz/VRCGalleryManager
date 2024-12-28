@@ -3,48 +3,47 @@ using VRCGalleryManager.Core;
 
 namespace VRCGalleryManager.Forms
 {
-    public partial class Emoji : Form
+    public partial class Sticker : Form
     {
         private ApiRequest apiRequest;
 
-        private List<string> emojiId = new List<string>();
-        private string emojiCount;
+        private List<string> stickerId = new List<string>();
+        private string stickerCount;
 
-        private string tagEmoji = "emoji";
         private string tagSticker = "sticker";
 
-        public Emoji(VRCAuth auth)
+        public Sticker(VRCAuth auth)
         {
             InitializeComponent();
 
             apiRequest = new ApiRequest(auth);
 
-            //EmojiList();
+            //StickerList();
         }
 
         private async void _refreshButton_Click(object sender, EventArgs e)
         {
-            EmojiList();
+            StickerList();
         }
 
-        private async void EmojiList()
+        private async void StickerList()
         {
-            emojiPanel.Controls.Clear();
-            emojiId.Clear();
+            stickerPanel.Controls.Clear();
+            stickerId.Clear();
 
-            ApiRequest.ApiData emoji = await apiRequest.GetApiData(tagEmoji);
+            ApiRequest.ApiData sticker = await apiRequest.GetApiData(tagSticker);
 
-            emojiId = emoji.IdImage;
-            emojiCount = emoji.CountImage;
+            stickerId = sticker.IdImage;
+            stickerCount = sticker.CountImage;
 
-            foreach (string id in emojiId)
+            foreach (string id in stickerId)
             {
                 //* Add Panel
-                AddEmojiPanel(id);
+                AddStickerPanel(id);
             }
         }
 
-        private void uploadEmoji_Click(object sender, EventArgs e)
+        private void uploadSticker_Click(object sender, EventArgs e)
         {
             using (OpenFileDialog openFileDialog = new OpenFileDialog())
             {

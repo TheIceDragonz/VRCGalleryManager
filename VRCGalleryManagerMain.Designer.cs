@@ -1,6 +1,6 @@
-﻿using VRCEmojiManager.Design;
+﻿using VRCGalleryManager.Design;
 
-namespace VRCEmojiManager
+namespace VRCGalleryManager
 {
     partial class MainPanel
     {
@@ -33,8 +33,9 @@ namespace VRCEmojiManager
             Icon = new PictureBox();
             FormsPanel = new RoundedPanel();
             SwitchPanel = new RoundedPanel();
-            _switchSettings = new RoundedButton();
             _switchCreate = new RoundedButton();
+            _switchSettings = new RoundedButton();
+            _switchSticker = new RoundedButton();
             _switchEmoji = new RoundedButton();
             ((System.ComponentModel.ISupportInitialize)Icon).BeginInit();
             SwitchPanel.SuspendLayout();
@@ -42,10 +43,11 @@ namespace VRCEmojiManager
             // 
             // Icon
             // 
-            Icon.ImageLocation = "E:\\- ProgramLabs\\VRCEmojiManager\\256x256.ico";
+            Icon.ImageLocation = "E:\\- ProgramLabs\\VRCGalleryManager\\256x256.ico";
             Icon.Location = new Point(12, 12);
+            Icon.Margin = new Padding(10);
             Icon.Name = "Icon";
-            Icon.Size = new Size(278, 66);
+            Icon.Size = new Size(157, 45);
             Icon.SizeMode = PictureBoxSizeMode.Zoom;
             Icon.TabIndex = 4;
             Icon.TabStop = false;
@@ -58,9 +60,9 @@ namespace VRCEmojiManager
             FormsPanel.BorderColor = Color.FromArgb(80, 80, 80);
             FormsPanel.BorderRadius = 25;
             FormsPanel.BorderSize = 0;
-            FormsPanel.Location = new Point(296, 12);
+            FormsPanel.Location = new Point(182, 12);
             FormsPanel.Name = "FormsPanel";
-            FormsPanel.Size = new Size(647, 422);
+            FormsPanel.Size = new Size(656, 422);
             FormsPanel.TabIndex = 5;
             // 
             // SwitchPanel
@@ -71,34 +73,16 @@ namespace VRCEmojiManager
             SwitchPanel.BorderColor = Color.FromArgb(80, 80, 80);
             SwitchPanel.BorderRadius = 25;
             SwitchPanel.BorderSize = 0;
-            SwitchPanel.Controls.Add(_switchSettings);
             SwitchPanel.Controls.Add(_switchCreate);
+            SwitchPanel.Controls.Add(_switchSettings);
+            SwitchPanel.Controls.Add(_switchSticker);
             SwitchPanel.Controls.Add(_switchEmoji);
-            SwitchPanel.Location = new Point(12, 84);
+            SwitchPanel.Location = new Point(12, 70);
+            SwitchPanel.Margin = new Padding(5);
             SwitchPanel.Name = "SwitchPanel";
             SwitchPanel.Padding = new Padding(5);
-            SwitchPanel.Size = new Size(278, 350);
+            SwitchPanel.Size = new Size(157, 364);
             SwitchPanel.TabIndex = 6;
-            // 
-            // _switchSettings
-            // 
-            _switchSettings.BackColor = Color.FromArgb(50, 50, 50);
-            _switchSettings.BackgroundColor = Color.FromArgb(50, 50, 50);
-            _switchSettings.BorderColor = Color.White;
-            _switchSettings.BorderRadius = 20;
-            _switchSettings.BorderSize = 0;
-            _switchSettings.Dock = DockStyle.Bottom;
-            _switchSettings.FlatAppearance.BorderSize = 0;
-            _switchSettings.FlatStyle = FlatStyle.Flat;
-            _switchSettings.ForeColor = Color.White;
-            _switchSettings.Location = new Point(5, 305);
-            _switchSettings.Name = "_switchSettings";
-            _switchSettings.Size = new Size(268, 40);
-            _switchSettings.TabIndex = 2;
-            _switchSettings.Text = "Settings";
-            _switchSettings.TextColor = Color.White;
-            _switchSettings.UseVisualStyleBackColor = false;
-            _switchSettings.Click += _switchSettings_Click;
             // 
             // _switchCreate
             // 
@@ -111,14 +95,54 @@ namespace VRCEmojiManager
             _switchCreate.FlatAppearance.BorderSize = 0;
             _switchCreate.FlatStyle = FlatStyle.Flat;
             _switchCreate.ForeColor = Color.White;
-            _switchCreate.Location = new Point(5, 45);
+            _switchCreate.Location = new Point(5, 85);
             _switchCreate.Name = "_switchCreate";
-            _switchCreate.Size = new Size(268, 40);
-            _switchCreate.TabIndex = 1;
+            _switchCreate.Size = new Size(147, 40);
+            _switchCreate.TabIndex = 2;
             _switchCreate.Text = "Create";
             _switchCreate.TextColor = Color.White;
             _switchCreate.UseVisualStyleBackColor = false;
             _switchCreate.Click += _switchCreate_Click;
+            // 
+            // _switchSettings
+            // 
+            _switchSettings.BackColor = Color.FromArgb(50, 50, 50);
+            _switchSettings.BackgroundColor = Color.FromArgb(50, 50, 50);
+            _switchSettings.BorderColor = Color.White;
+            _switchSettings.BorderRadius = 20;
+            _switchSettings.BorderSize = 0;
+            _switchSettings.Dock = DockStyle.Bottom;
+            _switchSettings.FlatAppearance.BorderSize = 0;
+            _switchSettings.FlatStyle = FlatStyle.Flat;
+            _switchSettings.ForeColor = Color.White;
+            _switchSettings.Location = new Point(5, 319);
+            _switchSettings.Name = "_switchSettings";
+            _switchSettings.Size = new Size(147, 40);
+            _switchSettings.TabIndex = 2;
+            _switchSettings.Text = "Settings";
+            _switchSettings.TextColor = Color.White;
+            _switchSettings.UseVisualStyleBackColor = false;
+            _switchSettings.Click += _switchSettings_Click;
+            // 
+            // _switchSticker
+            // 
+            _switchSticker.BackColor = Color.FromArgb(50, 50, 50);
+            _switchSticker.BackgroundColor = Color.FromArgb(50, 50, 50);
+            _switchSticker.BorderColor = Color.White;
+            _switchSticker.BorderRadius = 20;
+            _switchSticker.BorderSize = 0;
+            _switchSticker.Dock = DockStyle.Top;
+            _switchSticker.FlatAppearance.BorderSize = 0;
+            _switchSticker.FlatStyle = FlatStyle.Flat;
+            _switchSticker.ForeColor = Color.White;
+            _switchSticker.Location = new Point(5, 45);
+            _switchSticker.Name = "_switchSticker";
+            _switchSticker.Size = new Size(147, 40);
+            _switchSticker.TabIndex = 1;
+            _switchSticker.Text = "Sticker";
+            _switchSticker.TextColor = Color.White;
+            _switchSticker.UseVisualStyleBackColor = false;
+            _switchSticker.Click += _switchSticker_Click;
             // 
             // _switchEmoji
             // 
@@ -133,7 +157,7 @@ namespace VRCEmojiManager
             _switchEmoji.ForeColor = Color.White;
             _switchEmoji.Location = new Point(5, 5);
             _switchEmoji.Name = "_switchEmoji";
-            _switchEmoji.Size = new Size(268, 40);
+            _switchEmoji.Size = new Size(147, 40);
             _switchEmoji.TabIndex = 0;
             _switchEmoji.Text = "Emoji";
             _switchEmoji.TextColor = Color.White;
@@ -145,14 +169,14 @@ namespace VRCEmojiManager
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(50, 50, 50);
-            ClientSize = new Size(955, 446);
+            ClientSize = new Size(850, 446);
             Controls.Add(SwitchPanel);
             Controls.Add(FormsPanel);
             Controls.Add(Icon);
             MaximumSize = new Size(1200, 750);
             MinimumSize = new Size(600, 300);
             Name = "MainPanel";
-            Text = "VRCEmojiManager";
+            Text = "VRCGalleryManager";
             ((System.ComponentModel.ISupportInitialize)Icon).EndInit();
             SwitchPanel.ResumeLayout(false);
             ResumeLayout(false);
@@ -164,7 +188,8 @@ namespace VRCEmojiManager
         private RoundedPanel FormsPanel;
         private RoundedPanel SwitchPanel;
         private RoundedButton _switchEmoji;
-        private RoundedButton _switchCreate;
+        private RoundedButton _switchSticker;
         private RoundedButton _switchSettings;
+        private RoundedButton _switchCreate;
     }
 }

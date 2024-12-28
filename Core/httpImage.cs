@@ -1,14 +1,14 @@
 ﻿using System.Net;
-using VRCEmojiManager.Forms;
+using VRCGalleryManager.Forms;
 
-namespace VRCEmojiManager.Core
+namespace VRCGalleryManager.Core
 {
     public static class httpImage
     {
         public static async Task<HttpWebRequest> CreateWebRequestAsync(string url)
         {
             var request = (HttpWebRequest)WebRequest.Create(url);
-            request.UserAgent = "VRCEmojiManager/0.0.1 (Testing)";
+            request.UserAgent = "VRCGalleryManager/0.0.1 (Testing)";
             request.AllowAutoRedirect = true;
             return request;
         }

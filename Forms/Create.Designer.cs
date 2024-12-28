@@ -1,6 +1,6 @@
-﻿using VRCEmojiManager.Design;
+﻿using VRCGalleryManager.Design;
 
-namespace VRCEmojiManager.Forms
+namespace VRCGalleryManager.Forms
 {
     partial class Create
     {
@@ -34,14 +34,15 @@ namespace VRCEmojiManager.Forms
             previewSS = new RoundedPictureBox();
             buttonSave = new RoundedButton();
             frameCounter = new Label();
-            panel1 = new Panel();
+            roundedButton1 = new RoundedButton();
+            titleGifCreator = new Label();
             ((System.ComponentModel.ISupportInitialize)previewGif).BeginInit();
             ((System.ComponentModel.ISupportInitialize)previewSS).BeginInit();
-            panel1.SuspendLayout();
             SuspendLayout();
             // 
             // previewGif
             // 
+            previewGif.Anchor = AnchorStyles.None;
             previewGif.BackColor = Color.FromArgb(50, 50, 50);
             previewGif.BackgroundColor = Color.FromArgb(50, 50, 50);
             previewGif.BorderColor = Color.PaleVioletRed;
@@ -50,9 +51,8 @@ namespace VRCEmojiManager.Forms
             previewGif.BorderRadiusTopLeft = 20;
             previewGif.BorderRadiusTopRight = 20;
             previewGif.BorderSize = 0;
-            previewGif.Dock = DockStyle.Left;
             previewGif.ImageLocation = "";
-            previewGif.Location = new Point(0, 0);
+            previewGif.Location = new Point(66, 84);
             previewGif.Name = "previewGif";
             previewGif.Size = new Size(260, 260);
             previewGif.SizeMode = PictureBoxSizeMode.StretchImage;
@@ -63,6 +63,7 @@ namespace VRCEmojiManager.Forms
             // 
             // previewSS
             // 
+            previewSS.Anchor = AnchorStyles.None;
             previewSS.BackColor = Color.FromArgb(50, 50, 50);
             previewSS.BackgroundColor = Color.FromArgb(50, 50, 50);
             previewSS.BorderColor = Color.PaleVioletRed;
@@ -71,8 +72,7 @@ namespace VRCEmojiManager.Forms
             previewSS.BorderRadiusTopLeft = 20;
             previewSS.BorderRadiusTopRight = 20;
             previewSS.BorderSize = 0;
-            previewSS.Dock = DockStyle.Right;
-            previewSS.Location = new Point(266, 0);
+            previewSS.Location = new Point(332, 84);
             previewSS.Name = "previewSS";
             previewSS.Size = new Size(260, 260);
             previewSS.SizeMode = PictureBoxSizeMode.StretchImage;
@@ -81,20 +81,20 @@ namespace VRCEmojiManager.Forms
             // 
             // buttonSave
             // 
+            buttonSave.Anchor = AnchorStyles.None;
             buttonSave.BackColor = Color.FromArgb(50, 50, 50);
             buttonSave.BackgroundColor = Color.FromArgb(50, 50, 50);
             buttonSave.BorderColor = Color.PaleVioletRed;
             buttonSave.BorderRadius = 15;
             buttonSave.BorderSize = 0;
-            buttonSave.Dock = DockStyle.Bottom;
             buttonSave.FlatAppearance.BorderSize = 0;
             buttonSave.FlatStyle = FlatStyle.Flat;
             buttonSave.ForeColor = Color.White;
-            buttonSave.Location = new Point(0, 266);
+            buttonSave.Location = new Point(66, 391);
             buttonSave.Name = "buttonSave";
             buttonSave.Size = new Size(526, 35);
             buttonSave.TabIndex = 2;
-            buttonSave.Text = "Save";
+            buttonSave.Text = "LocalSave";
             buttonSave.TextColor = Color.White;
             buttonSave.UseVisualStyleBackColor = false;
             buttonSave.Click += buttonSave_Click;
@@ -104,22 +104,42 @@ namespace VRCEmojiManager.Forms
             frameCounter.Anchor = AnchorStyles.None;
             frameCounter.AutoSize = true;
             frameCounter.ForeColor = Color.White;
-            frameCounter.Location = new Point(65, 375);
+            frameCounter.Location = new Point(66, 429);
             frameCounter.Name = "frameCounter";
             frameCounter.Size = new Size(52, 15);
             frameCounter.TabIndex = 3;
             frameCounter.Text = "Frame: 0";
             // 
-            // panel1
+            // roundedButton1
             // 
-            panel1.Anchor = AnchorStyles.None;
-            panel1.Controls.Add(previewGif);
-            panel1.Controls.Add(previewSS);
-            panel1.Controls.Add(buttonSave);
-            panel1.Location = new Point(65, 71);
-            panel1.Name = "panel1";
-            panel1.Size = new Size(526, 301);
-            panel1.TabIndex = 4;
+            roundedButton1.Anchor = AnchorStyles.None;
+            roundedButton1.BackColor = Color.FromArgb(50, 50, 50);
+            roundedButton1.BackgroundColor = Color.FromArgb(50, 50, 50);
+            roundedButton1.BorderColor = Color.PaleVioletRed;
+            roundedButton1.BorderRadius = 15;
+            roundedButton1.BorderSize = 0;
+            roundedButton1.FlatAppearance.BorderSize = 0;
+            roundedButton1.FlatStyle = FlatStyle.Flat;
+            roundedButton1.ForeColor = Color.White;
+            roundedButton1.Location = new Point(66, 350);
+            roundedButton1.Name = "roundedButton1";
+            roundedButton1.Size = new Size(526, 35);
+            roundedButton1.TabIndex = 4;
+            roundedButton1.Text = "UpLoad";
+            roundedButton1.TextColor = Color.White;
+            roundedButton1.UseVisualStyleBackColor = false;
+            // 
+            // titleGifCreator
+            // 
+            titleGifCreator.Anchor = AnchorStyles.None;
+            titleGifCreator.AutoSize = true;
+            titleGifCreator.Font = new Font("Segoe UI", 20.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            titleGifCreator.ForeColor = Color.White;
+            titleGifCreator.Location = new Point(255, 44);
+            titleGifCreator.Name = "titleGifCreator";
+            titleGifCreator.Size = new Size(158, 37);
+            titleGifCreator.TabIndex = 5;
+            titleGifCreator.Text = "Gif Creator";
             // 
             // Create
             // 
@@ -127,14 +147,17 @@ namespace VRCEmojiManager.Forms
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(64, 64, 64);
             ClientSize = new Size(663, 506);
-            Controls.Add(panel1);
+            Controls.Add(titleGifCreator);
+            Controls.Add(roundedButton1);
+            Controls.Add(previewGif);
+            Controls.Add(previewSS);
             Controls.Add(frameCounter);
+            Controls.Add(buttonSave);
             FormBorderStyle = FormBorderStyle.None;
             Name = "Create";
             Text = "Create";
             ((System.ComponentModel.ISupportInitialize)previewGif).EndInit();
             ((System.ComponentModel.ISupportInitialize)previewSS).EndInit();
-            panel1.ResumeLayout(false);
             ResumeLayout(false);
             PerformLayout();
         }
@@ -145,6 +168,7 @@ namespace VRCEmojiManager.Forms
         private RoundedPictureBox previewSS;
         private Design.RoundedButton buttonSave;
         private Label frameCounter;
-        private Panel panel1;
+        private RoundedButton roundedButton1;
+        private Label titleGifCreator;
     }
 }

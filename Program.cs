@@ -1,4 +1,4 @@
-namespace VRCEmojiManager
+namespace VRCGalleryManager
 {
     internal static class Program
     {

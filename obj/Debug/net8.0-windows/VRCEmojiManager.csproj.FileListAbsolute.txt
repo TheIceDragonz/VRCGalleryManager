@@ -1,4 +1,3 @@
-E:\- ProgramLabs\VRCEmojiManager\obj\Debug\net8.0-windows\VRCEmojiManager.csproj.AssemblyReference.cache
 E:\- ProgramLabs\VRCEmojiManager\bin\Debug\net8.0-windows\VRCEmojiManager.exe
 E:\- ProgramLabs\VRCEmojiManager\bin\Debug\net8.0-windows\VRCEmojiManager.deps.json
 E:\- ProgramLabs\VRCEmojiManager\bin\Debug\net8.0-windows\VRCEmojiManager.runtimeconfig.json
@@ -9,7 +8,12 @@ E:\- ProgramLabs\VRCEmojiManager\bin\Debug\net8.0-windows\Newtonsoft.Json.dll
 E:\- ProgramLabs\VRCEmojiManager\bin\Debug\net8.0-windows\Polly.dll
 E:\- ProgramLabs\VRCEmojiManager\bin\Debug\net8.0-windows\RestSharp.dll
 E:\- ProgramLabs\VRCEmojiManager\bin\Debug\net8.0-windows\VRChat.API.dll
+E:\- ProgramLabs\VRCEmojiManager\obj\Debug\net8.0-windows\VRCEmojiManager.csproj.AssemblyReference.cache
+E:\- ProgramLabs\VRCEmojiManager\obj\Debug\net8.0-windows\VRCEmojiManager.Forms.Create.resources
 E:\- ProgramLabs\VRCEmojiManager\obj\Debug\net8.0-windows\VRCEmojiManager.Forms.Emoji.resources
+E:\- ProgramLabs\VRCEmojiManager\obj\Debug\net8.0-windows\VRCEmojiManager.Forms.Settings.resources
+E:\- ProgramLabs\VRCEmojiManager\obj\Debug\net8.0-windows\VRCEmojiManager.Forms.Sticker.resources
+E:\- ProgramLabs\VRCEmojiManager\obj\Debug\net8.0-windows\VRCEmojiManager.MainPanel.resources
 E:\- ProgramLabs\VRCEmojiManager\obj\Debug\net8.0-windows\VRCEmojiManager.csproj.GenerateResource.cache
 E:\- ProgramLabs\VRCEmojiManager\obj\Debug\net8.0-windows\VRCEmojiManager.GeneratedMSBuildEditorConfig.editorconfig
 E:\- ProgramLabs\VRCEmojiManager\obj\Debug\net8.0-windows\VRCEmojiManager.AssemblyInfoInputs.cache
@@ -22,4 +26,3 @@ E:\- ProgramLabs\VRCEmojiManager\obj\Debug\net8.0-windows\refint\VRCEmojiManager
 E:\- ProgramLabs\VRCEmojiManager\obj\Debug\net8.0-windows\VRCEmojiManager.pdb
 E:\- ProgramLabs\VRCEmojiManager\obj\Debug\net8.0-windows\VRCEmojiManager.genruntimeconfig.cache
 E:\- ProgramLabs\VRCEmojiManager\obj\Debug\net8.0-windows\ref\VRCEmojiManager.dll
-E:\- ProgramLabs\VRCEmojiManager\obj\Debug\net8.0-windows\VRCEmojiManager.Forms.Settings.resources

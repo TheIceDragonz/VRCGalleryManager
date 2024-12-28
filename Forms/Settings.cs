@@ -1,8 +1,8 @@
-﻿using VRCEmojiManager.Core;
+﻿using VRCGalleryManager.Core;
 using System.Text.Json;
 using VRChat.API.Model;
 
-namespace VRCEmojiManager.Forms
+namespace VRCGalleryManager.Forms
 {
     public partial class Settings : Form
     {
