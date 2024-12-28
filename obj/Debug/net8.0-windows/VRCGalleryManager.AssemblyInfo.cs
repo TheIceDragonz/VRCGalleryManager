@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("VRCGalleryManager")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+884fb3499c4081b21a3d878c12d7636d94e4836e")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+db0952f1ee2542cc5ef94130f7c8c87d7ed25105")]
 [assembly: System.Reflection.AssemblyProductAttribute("VRCGalleryManager")]
 [assembly: System.Reflection.AssemblyTitleAttribute("VRCGalleryManager")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

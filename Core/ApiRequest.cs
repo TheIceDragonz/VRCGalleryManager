@@ -38,6 +38,8 @@ namespace VRCGalleryManager.Core
 
                     Debug.WriteLine(icon.ToJson());
                 }
+
+                apiData.CountImage = icons.Count.ToString();
             }
             catch (ApiException ex)
             {

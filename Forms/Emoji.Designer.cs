@@ -35,6 +35,10 @@ namespace VRCGalleryManager.Forms
             roundedButton1 = new RoundedButton();
             roundedButton2 = new RoundedButton();
             emojiType = new RoundedPanel();
+            limitPanelEmoji = new RoundedPanel();
+            limitLabel = new Label();
+            limitStickerLabel = new Label();
+            limitPanelEmoji.SuspendLayout();
             SuspendLayout();
             // 
             // emojiPanel
@@ -121,12 +125,54 @@ namespace VRCGalleryManager.Forms
             emojiType.TabIndex = 8;
             emojiType.Visible = false;
             // 
+            // limitPanelEmoji
+            // 
+            limitPanelEmoji.BackColor = Color.FromArgb(64, 64, 64);
+            limitPanelEmoji.BackgroundColor = Color.FromArgb(64, 64, 64);
+            limitPanelEmoji.BorderColor = Color.Red;
+            limitPanelEmoji.BorderRadius = 10;
+            limitPanelEmoji.BorderSize = 2;
+            limitPanelEmoji.Controls.Add(limitLabel);
+            limitPanelEmoji.Location = new Point(12, 10);
+            limitPanelEmoji.Name = "limitPanelEmoji";
+            limitPanelEmoji.Size = new Size(284, 29);
+            limitPanelEmoji.TabIndex = 9;
+            limitPanelEmoji.Visible = false;
+            // 
+            // limitLabel
+            // 
+            limitLabel.BackColor = Color.Transparent;
+            limitLabel.Dock = DockStyle.Fill;
+            limitLabel.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            limitLabel.ForeColor = Color.Red;
+            limitLabel.Location = new Point(0, 0);
+            limitLabel.Name = "limitLabel";
+            limitLabel.Size = new Size(284, 29);
+            limitLabel.TabIndex = 0;
+            limitLabel.Text = "You have reached your emoji limit!";
+            limitLabel.TextAlign = ContentAlignment.MiddleCenter;
+            // 
+            // limitStickerLabel
+            // 
+            limitStickerLabel.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            limitStickerLabel.AutoSize = true;
+            limitStickerLabel.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            limitStickerLabel.ForeColor = Color.White;
+            limitStickerLabel.Location = new Point(426, 18);
+            limitStickerLabel.Name = "limitStickerLabel";
+            limitStickerLabel.Size = new Size(59, 15);
+            limitStickerLabel.TabIndex = 7;
+            limitStickerLabel.Text = "0/9 Emoji";
+            limitStickerLabel.TextAlign = ContentAlignment.MiddleRight;
+            // 
             // Emoji
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(64, 64, 64);
             ClientSize = new Size(619, 486);
+            Controls.Add(limitStickerLabel);
+            Controls.Add(limitPanelEmoji);
             Controls.Add(emojiType);
             Controls.Add(roundedButton2);
             Controls.Add(roundedButton1);
@@ -135,7 +181,9 @@ namespace VRCGalleryManager.Forms
             FormBorderStyle = FormBorderStyle.None;
             Name = "Emoji";
             Text = "Emoji";
+            limitPanelEmoji.ResumeLayout(false);
             ResumeLayout(false);
+            PerformLayout();
         }
 
         #endregion
@@ -144,5 +192,8 @@ namespace VRCGalleryManager.Forms
         private RoundedButton roundedButton1;
         private RoundedButton roundedButton2;
         private RoundedPanel emojiType;
+        private RoundedPanel limitPanelEmoji;
+        private Label limitLabel;
+        private Label limitStickerLabel;
     }
 }

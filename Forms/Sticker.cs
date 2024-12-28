@@ -41,6 +41,17 @@ namespace VRCGalleryManager.Forms
                 //* Add Panel
                 AddStickerPanel(id);
             }
+
+            limitStickerLabel.Text = $"{stickerCount}/9 emoji";
+
+            if (stickerCount.Contains("9"))
+            {
+                limitPanelSticker.Visible = true;
+            }
+            else
+            {
+                limitPanelSticker.Visible = false;
+            }
         }
 
         private void uploadSticker_Click(object sender, EventArgs e)

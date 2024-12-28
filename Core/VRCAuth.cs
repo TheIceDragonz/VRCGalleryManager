@@ -16,7 +16,7 @@ namespace VRCGalleryManager.Core
         public bool LoggedIn = false;
         public bool CookieLoaded = false;
 
-        public static readonly string tokenFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "VRCGalleryManagerMain", "authToken.txt");
+        public static readonly string tokenFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "VRCGalleryManager", "authToken.txt");
 
         public static Uri uriTarget = new Uri("https://vrchat.com");
 

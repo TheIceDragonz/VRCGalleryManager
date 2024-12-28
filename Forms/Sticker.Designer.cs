@@ -33,6 +33,10 @@ namespace VRCGalleryManager.Forms
             stickerPanel = new FlowLayoutPanel();
             _refreshButton = new RoundedButton();
             roundedButton1 = new RoundedButton();
+            limitPanelSticker = new RoundedPanel();
+            limitLabel = new Label();
+            limitStickerLabel = new Label();
+            limitPanelSticker.SuspendLayout();
             SuspendLayout();
             // 
             // stickerPanel
@@ -85,24 +89,71 @@ namespace VRCGalleryManager.Forms
             roundedButton1.UseVisualStyleBackColor = false;
             roundedButton1.Click += uploadSticker_Click;
             // 
+            // limitPanelSticker
+            // 
+            limitPanelSticker.BackColor = Color.FromArgb(64, 64, 64);
+            limitPanelSticker.BackgroundColor = Color.FromArgb(64, 64, 64);
+            limitPanelSticker.BorderColor = Color.Red;
+            limitPanelSticker.BorderRadius = 10;
+            limitPanelSticker.BorderSize = 2;
+            limitPanelSticker.Controls.Add(limitLabel);
+            limitPanelSticker.Location = new Point(12, 10);
+            limitPanelSticker.Name = "limitPanelSticker";
+            limitPanelSticker.Size = new Size(284, 29);
+            limitPanelSticker.TabIndex = 5;
+            limitPanelSticker.Visible = false;
+            // 
+            // limitLabel
+            // 
+            limitLabel.BackColor = Color.Transparent;
+            limitLabel.Dock = DockStyle.Fill;
+            limitLabel.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            limitLabel.ForeColor = Color.Red;
+            limitLabel.Location = new Point(0, 0);
+            limitLabel.Name = "limitLabel";
+            limitLabel.Size = new Size(284, 29);
+            limitLabel.TabIndex = 0;
+            limitLabel.Text = "You have reached your sticker limit!";
+            limitLabel.TextAlign = ContentAlignment.MiddleCenter;
+            // 
+            // limitStickerLabel
+            // 
+            limitStickerLabel.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            limitStickerLabel.AutoSize = true;
+            limitStickerLabel.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            limitStickerLabel.ForeColor = Color.White;
+            limitStickerLabel.Location = new Point(416, 18);
+            limitStickerLabel.Name = "limitStickerLabel";
+            limitStickerLabel.Size = new Size(69, 15);
+            limitStickerLabel.TabIndex = 6;
+            limitStickerLabel.Text = "0/9 Sticker";
+            limitStickerLabel.TextAlign = ContentAlignment.MiddleRight;
+            // 
             // Sticker
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(64, 64, 64);
             ClientSize = new Size(619, 486);
+            Controls.Add(limitStickerLabel);
+            Controls.Add(limitPanelSticker);
             Controls.Add(roundedButton1);
             Controls.Add(_refreshButton);
             Controls.Add(stickerPanel);
             FormBorderStyle = FormBorderStyle.None;
             Name = "Sticker";
             Text = "Sticker";
+            limitPanelSticker.ResumeLayout(false);
             ResumeLayout(false);
+            PerformLayout();
         }
 
         #endregion
         private FlowLayoutPanel stickerPanel;
         private RoundedButton _refreshButton;
         private RoundedButton roundedButton1;
+        private RoundedPanel limitPanelSticker;
+        private Label limitLabel;
+        private Label limitStickerLabel;
     }
 }
