@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using VRCGalleryManager.Core;
 
 namespace VRCGalleryManager.Forms
@@ -11,7 +12,12 @@ namespace VRCGalleryManager.Forms
         private string emojiCount;
 
         private string tagEmoji = "emoji";
-        private string tagSticker = "sticker";
+
+        private string tags = new string("");
+        private string animationStyle = new string("");
+        private string frames = new string("");
+        private string framesOverTime = new string("");
+        private string maskTag = new string("");
 
         public Emoji(VRCAuth auth)
         {
@@ -35,15 +41,22 @@ namespace VRCGalleryManager.Forms
             ApiRequest.ApiData emoji = await apiRequest.GetApiData(tagEmoji);
 
             emojiId = emoji.IdImage;
-            emojiCount = emoji.CountImage;
+            emojiCount = emoji.CountImages;
+            tags = emoji.Tags;
+            if (tags.Contains("animated"))
+            {
+                animationStyle = emoji.AnimationStyle;
+                frames = emoji.Frames;
+                framesOverTime = emoji.FramesOverTime;
+            }
+            maskTag = emoji.MaskTag;
 
             foreach (string id in emojiId)
             {
-                //* Add Panel
-                AddEmojiPanel(id);
+                AddEmojiPanel(id, animationStyle, tags, frames, framesOverTime);
             }
 
-            limitStickerLabel.Text = $"{emojiCount}/9 Emoji";
+           limitStickerLabel.Text = $"{emojiCount}/9 Emoji";
 
             if (emojiCount.Contains("9"))
             {

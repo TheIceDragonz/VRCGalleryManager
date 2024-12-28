@@ -7,7 +7,6 @@ E:\- ProgramLabs\VRCGalleryManager\bin\Debug\net8.0-windows\JsonSubTypes.dll
 E:\- ProgramLabs\VRCGalleryManager\bin\Debug\net8.0-windows\Newtonsoft.Json.dll
 E:\- ProgramLabs\VRCGalleryManager\bin\Debug\net8.0-windows\Polly.dll
 E:\- ProgramLabs\VRCGalleryManager\bin\Debug\net8.0-windows\RestSharp.dll
-E:\- ProgramLabs\VRCGalleryManager\bin\Debug\net8.0-windows\VRChat.API.dll
 E:\- ProgramLabs\VRCGalleryManager\obj\Debug\net8.0-windows\VRCGalleryManager.csproj.AssemblyReference.cache
 E:\- ProgramLabs\VRCGalleryManager\obj\Debug\net8.0-windows\VRCGalleryManager.Forms.Create.resources
 E:\- ProgramLabs\VRCGalleryManager\obj\Debug\net8.0-windows\VRCGalleryManager.Forms.Emoji.resources

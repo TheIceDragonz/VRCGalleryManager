@@ -1,61 +1,63 @@
 ﻿using System;
 using System.Drawing;
-using System.Drawing.Imaging;
 using System.IO;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace VRCGalleryManager.Core
 {
-    public class SpriteSheetViewer
+    public static class SpriteSheetViewer
     {
-        private System.Windows.Forms.Timer animationTimer;
-        private Bitmap spriteSheet;
-        private int frameWidth;
-        private int frameHeight;
-        private int currentFrame;
-        private int totalFrames;
-        private int cols;
-        private Action<Bitmap> renderFrame;
-
-        public SpriteSheetViewer(string spriteSheetPath, int frameWidth, int frameHeight, int frameDelay, Action<Bitmap> renderFrame)
+        public static async Task SpriteSheet(string spriteSheetPath, string fps, string? delay, PictureBox pictureBox)
         {
             if (string.IsNullOrEmpty(spriteSheetPath) || !File.Exists(spriteSheetPath) || Path.GetExtension(spriteSheetPath).ToLower() != ".png")
             {
                 throw new ArgumentException("Percorso non valido o file non supportato.");
             }
 
-            spriteSheet = new Bitmap(spriteSheetPath);
-            this.frameWidth = frameWidth;
-            this.frameHeight = frameHeight;
-            cols = spriteSheet.Width / frameWidth;
-            totalFrames = (spriteSheet.Width / frameWidth) * (spriteSheet.Height / frameHeight);
-            currentFrame = 0;
-            this.renderFrame = renderFrame;
+            int fpsInt = int.Parse(fps);
+            int? delayInt = int.Parse(delay);
 
-            animationTimer = new System.Windows.Forms.Timer
+            Bitmap spriteSheet = new Bitmap(spriteSheetPath);
+
+            // Calcolo delle colonne e righe basato sugli FPS
+            int cols = fpsInt <= 16 ? 4 : 8; // 4x4 per <=16 FPS, 8x8 per >16 FPS
+            int rows = spriteSheet.Height / (spriteSheet.Width / cols);
+
+            int frameWidth = spriteSheet.Width / cols;
+            int frameHeight = spriteSheet.Height / rows;
+
+            int totalFrames = cols * rows;
+            int frameDelay = delayInt ?? (1000 / fpsInt);
+
+            await Task.Run(async () =>
             {
-                Interval = frameDelay
-            };
-            animationTimer.Tick += OnAnimationTick;
-            animationTimer.Start();
-        }
+                int currentFrame = 0;
+                while (true)
+                {
+                    int row = currentFrame / cols;
+                    int col = currentFrame % cols;
 
-        private void OnAnimationTick(object sender, EventArgs e)
-        {
-            int row = currentFrame / cols;
-            int col = currentFrame % cols;
+                    Rectangle frameRect = new Rectangle(col * frameWidth, row * frameHeight, frameWidth, frameHeight);
+                    Bitmap frame = new Bitmap(frameWidth, frameHeight);
 
-            Rectangle frameRect = new Rectangle(col * frameWidth, row * frameHeight, frameWidth, frameHeight);
-            Bitmap frame = new Bitmap(frameWidth, frameHeight);
+                    using (Graphics g = Graphics.FromImage(frame))
+                    {
+                        g.DrawImage(spriteSheet, new Rectangle(0, 0, frameWidth, frameHeight), frameRect, GraphicsUnit.Pixel);
+                    }
 
-            using (Graphics g = Graphics.FromImage(frame))
-            {
-                g.DrawImage(spriteSheet, new Rectangle(0, 0, frameWidth, frameHeight), frameRect, GraphicsUnit.Pixel);
-            }
+                    // Aggiorna la PictureBox
+                    pictureBox.Invoke(new Action(() =>
+                    {
+                        pictureBox.Image?.Dispose(); // Pulisce l'immagine precedente
+                        pictureBox.Image = frame;
+                    }));
 
-            renderFrame?.Invoke(frame);
+                    currentFrame = (currentFrame + 1) % totalFrames;
 
-            currentFrame = (currentFrame + 1) % totalFrames;
+                    await Task.Delay(frameDelay);
+                }
+            });
         }
     }
 }

@@ -65,26 +65,6 @@
             "related": ".xml"
           }
         }
-      },
-      "VRChat.API/1.18.8": {
-        "type": "package",
-        "dependencies": {
-          "JsonSubTypes": "1.9.0",
-          "Newtonsoft.Json": "13.0.1",
-          "Polly": "7.2.3",
-          "RestSharp": "108.0.2",
-          "System.ComponentModel.Annotations": "5.0.0"
-        },
-        "compile": {
-          "lib/netstandard2.0/VRChat.API.dll": {
-            "related": ".xml"
-          }
-        },
-        "runtime": {
-          "lib/netstandard2.0/VRChat.API.dll": {
-            "related": ".xml"
-          }
-        }
       }
     }
   },
@@ -266,25 +246,15 @@
         "useSharedDesignerContext.txt",
         "version.txt"
       ]
-    },
-    "VRChat.API/1.18.8": {
-      "sha512": "MxX0gC6xbmKRu45WStyIeRXdtkzt/FUdP7aM09QxyFT8WYmL6Um108xnDMAA7V2CUbidCyE2inik7Eh8fbTTyA==",
-      "type": "package",
-      "path": "vrchat.api/1.18.8",
-      "files": [
-        ".nupkg.metadata",
-        ".signature.p7s",
-        "README.md",
-        "lib/netstandard2.0/VRChat.API.dll",
-        "lib/netstandard2.0/VRChat.API.xml",
-        "vrchat.api.1.18.8.nupkg.sha512",
-        "vrchat.api.nuspec"
-      ]
     }
   },
   "projectFileDependencyGroups": {
     "net8.0-windows7.0": [
-      "VRChat.API >= 1.18.8"
+      "JsonSubTypes >= 1.9.0",
+      "Newtonsoft.Json >= 13.0.1",
+      "Polly >= 7.2.3",
+      "RestSharp >= 108.0.2",
+      "System.ComponentModel.Annotations >= 5.0.0"
     ]
   },
   "packageFolders": {
@@ -337,9 +307,25 @@
       "net8.0-windows7.0": {
         "targetAlias": "net8.0-windows",
         "dependencies": {
-          "VRChat.API": {
+          "JsonSubTypes": {
             "target": "Package",
-            "version": "[1.18.8, )"
+            "version": "[1.9.0, )"
+          },
+          "Newtonsoft.Json": {
+            "target": "Package",
+            "version": "[13.0.1, )"
+          },
+          "Polly": {
+            "target": "Package",
+            "version": "[7.2.3, )"
+          },
+          "RestSharp": {
+            "target": "Package",
+            "version": "[108.0.2, )"
+          },
+          "System.ComponentModel.Annotations": {
+            "target": "Package",
+            "version": "[5.0.0, )"
           }
         },
         "imports": [
@@ -364,5 +350,17 @@
         "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.401/PortableRuntimeIdentifierGraph.json"
       }
     }
-  }
+  },
+  "logs": [
+    {
+      "code": "NU1902",
+      "level": "Warning",
+      "warningLevel": 1,
+      "message": "Il pacchetto 'RestSharp' 108.0.2 presenta una vulnerabilità nota di gravità moderata, https://github.com/advisories/GHSA-4rr6-2v9v-wcpc",
+      "libraryId": "RestSharp",
+      "targetGraphs": [
+        "net8.0-windows7.0"
+      ]
+    }
+  ]
 }

@@ -20,12 +20,17 @@ namespace VRCGalleryManager.Core
         public class ApiData
         {
             public List<string> IdImage { get; set; } = new List<string>();
-            public string CountImage { get; set; }
+            public string CountImages { get; set; } = new string("");
+            public string Tags { get; set; } = new string("");
+            public string AnimationStyle { get; set; } = new string("");
+            public string Frames { get; set; } = new string("");
+            public string FramesOverTime { get; set; } = new string("");
+            public string LoopStyle { get; set; } = new string("");
+            public string MaskTag { get; set; } = new string("");
         }
 
         public async Task<ApiData> GetApiData(string tag)
         {
-
             ApiData apiData = new ApiData();
 
             try
@@ -36,10 +41,17 @@ namespace VRCGalleryManager.Core
                 {
                     apiData.IdImage.Add(icon.Id);
 
-                    Debug.WriteLine(icon.ToJson());
+                    apiData.CountImages = icons.Count.ToString();
+                    apiData.Tags = icon.Tags.Count > 0 ? string.Join(",", icon.Tags) : "";
+                    apiData.AnimationStyle = icon.AnimationStyle;
+                    if (apiData.Tags.Contains("animated"))
+                    {
+                        apiData.Frames = icon.Frames.ToString();
+                        apiData.FramesOverTime = icon.FramesOverTime.ToString();
+                        apiData.LoopStyle = icon.LoopStyle;
+                    }
+                    apiData.MaskTag = icon.MaskTag;
                 }
-
-                apiData.CountImage = icons.Count.ToString();
             }
             catch (ApiException ex)
             {

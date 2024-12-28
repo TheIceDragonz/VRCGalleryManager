@@ -34,7 +34,7 @@ namespace VRCGalleryManager.Forms
             ApiRequest.ApiData sticker = await apiRequest.GetApiData(tagSticker);
 
             stickerId = sticker.IdImage;
-            stickerCount = sticker.CountImage;
+            stickerCount = sticker.CountImages;
 
             foreach (string id in stickerId)
             {
