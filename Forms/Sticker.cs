@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using VRCGalleryManager.Core;
+using VRChat.API.Model;
 
 namespace VRCGalleryManager.Forms
 {
@@ -11,6 +12,8 @@ namespace VRCGalleryManager.Forms
         private string stickerCount;
 
         private string tagSticker = "sticker";
+
+        private MIMEType mimeType;
 
         public Sticker(VRCAuth auth)
         {
@@ -42,23 +45,16 @@ namespace VRCGalleryManager.Forms
                 AddStickerPanel(id);
             }
 
-            limitStickerLabel.Text = $"{stickerCount}/9 emoji";
-
-            if (stickerCount.Contains("9"))
-            {
-                limitPanelSticker.Visible = true;
-            }
-            else
-            {
-                limitPanelSticker.Visible = false;
-            }
+            limitStickerLabel.Text = $"{stickerCount}/9 Sticker";
+            if (stickerCount.Contains("9")) limitPanelSticker.Visible = true;
+            else limitPanelSticker.Visible = false;
         }
 
-        private void uploadSticker_Click(object sender, EventArgs e)
+        private async void uploadSticker_Click(object sender, EventArgs e)
         {
             using (OpenFileDialog openFileDialog = new OpenFileDialog())
             {
-                openFileDialog.Filter = "Image Files|*.png;*.jpg;*.jpeg;*.webp;*.svg;*.xml;*.tiff;*.bmp";
+                openFileDialog.Filter = "Image Files|*.png;*.jpg;*.jpeg;*.webp";
 
                 openFileDialog.Multiselect = false;
 
@@ -66,10 +62,24 @@ namespace VRCGalleryManager.Forms
                 {
                     string selectedFilePath = openFileDialog.FileName;
 
-                    MessageBox.Show($"File selezionato: {selectedFilePath}");
+                    string name = Path.GetFileNameWithoutExtension(selectedFilePath);
+                    string extension = Path.GetExtension(selectedFilePath);
+                    List<string> tags = new List<string> { "sticker" };
 
+                    if(extension == ".png") { mimeType = MIMEType.ImagePng; }
+                    else if(extension == ".jpg") { mimeType = MIMEType.ImageJpg; }
+                    else if (extension == ".jpeg") { mimeType = MIMEType.ImageJpeg; }
+                    else if (extension == ".webp") { mimeType = MIMEType.ImageWebp; }
 
+                    ApiRequest.ApiData sticker = await apiRequest.UploadApiData(name, mimeType, extension, tags);
 
+                    AddStickerPanel(sticker.IdImageUploaded);
+
+                    stickerCount = sticker.CountImages;
+
+                    limitStickerLabel.Text = $"{stickerCount}/9 Sticker";
+                    if (stickerCount.Contains("9")) limitPanelSticker.Visible = true;
+                    else limitPanelSticker.Visible = false;
                 }
             }
         }

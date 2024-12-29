@@ -95,13 +95,13 @@ namespace VRChat.API.Model
         ///  
         /// </summary>
         /// <value> </value>
-        [DataMember(Name = "tags", EmitDefaultValue = false)]
+        [DataMember(Name = "tags", EmitDefaultValue = true)]
         public List<string> Tags { get; set; }
 
         /// <summary>
         /// Gets or Sets AnimationStyle
         /// </summary>
-        [DataMember(Name = "animationStyle", EmitDefaultValue = false)]
+        [DataMember(Name = "animationStyle", EmitDefaultValue = true)]
         public string AnimationStyle { get; set; }
 
         /// <summary>
@@ -125,7 +125,7 @@ namespace VRChat.API.Model
         /// <summary>
         /// Gets or Sets MaskTag
         /// </summary>
-        [DataMember(Name = "maskTag", EmitDefaultValue = false)]
+        [DataMember(Name = "maskTag", EmitDefaultValue = true)]
         public string MaskTag { get; set; }
 
         /// <summary>

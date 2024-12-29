@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Xml.Linq;
 using VRCGalleryManager.Core;
 using VRCGalleryManager.Design;
 
@@ -9,7 +10,7 @@ namespace VRCGalleryManager.Forms
         private string linkSticker = "https://api.vrchat.cloud/api/1/file/";
         private string endlinkSticker = "/1/file";
 
-        private async void AddStickerPanel(string emojiId)
+        private async void AddStickerPanel(string stickerId)
         {
             //* IMAGE PANEL
             RoundedPictureBox pictureBox = new RoundedPictureBox
@@ -24,7 +25,7 @@ namespace VRCGalleryManager.Forms
                 BorderColor = Color.FromArgb(255, 255, 255),
                 BorderSize = 3
             };
-            string image = linkSticker + emojiId + endlinkSticker;
+            string image = linkSticker + stickerId + endlinkSticker;
             string finalaviImage = await httpImage.GetFinalUrlAsync(image);
 
             if (!finalaviImage.Contains("imageNotFound"))
@@ -62,13 +63,17 @@ namespace VRCGalleryManager.Forms
                 Location = new Point(115, 115),
                 Anchor = AnchorStyles.Bottom | AnchorStyles.Right
             };
-            btn_delete.Click += (sender, e) =>
+            btn_delete.Click += async (sender, e) =>
             {
-                DialogResult result = DialogMessage.ShowDeleteFileDialog(emojiId);
+                DialogResult result = DialogMessage.ShowDeleteFileDialog(stickerId);
 
                 if (result == DialogResult.Yes)
                 {
-                    Debug.WriteLine("Delete: " + emojiId);
+                    Debug.WriteLine("Delete: " + stickerId);
+
+                    await apiRequest.DeleteApiData(stickerId);
+
+                    stickerPanel.Controls.Remove(pictureBox);
                 }
             };
             pictureBox.Controls.Add(btn_delete);

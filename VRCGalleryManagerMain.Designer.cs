@@ -62,7 +62,7 @@ namespace VRCGalleryManager
             FormsPanel.BorderSize = 0;
             FormsPanel.Location = new Point(182, 12);
             FormsPanel.Name = "FormsPanel";
-            FormsPanel.Size = new Size(656, 422);
+            FormsPanel.Size = new Size(828, 558);
             FormsPanel.TabIndex = 5;
             // 
             // SwitchPanel
@@ -81,7 +81,7 @@ namespace VRCGalleryManager
             SwitchPanel.Margin = new Padding(5);
             SwitchPanel.Name = "SwitchPanel";
             SwitchPanel.Padding = new Padding(5);
-            SwitchPanel.Size = new Size(157, 364);
+            SwitchPanel.Size = new Size(157, 500);
             SwitchPanel.TabIndex = 6;
             // 
             // _switchCreate
@@ -115,7 +115,7 @@ namespace VRCGalleryManager
             _switchSettings.FlatAppearance.BorderSize = 0;
             _switchSettings.FlatStyle = FlatStyle.Flat;
             _switchSettings.ForeColor = Color.White;
-            _switchSettings.Location = new Point(5, 319);
+            _switchSettings.Location = new Point(5, 455);
             _switchSettings.Name = "_switchSettings";
             _switchSettings.Size = new Size(147, 40);
             _switchSettings.TabIndex = 2;
@@ -169,7 +169,7 @@ namespace VRCGalleryManager
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(50, 50, 50);
-            ClientSize = new Size(850, 446);
+            ClientSize = new Size(1022, 582);
             Controls.Add(SwitchPanel);
             Controls.Add(FormsPanel);
             Controls.Add(Icon);
