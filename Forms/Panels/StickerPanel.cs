@@ -16,14 +16,15 @@ namespace VRCGalleryManager.Forms
             RoundedPictureBox pictureBox = new RoundedPictureBox
             {
                 Dock = DockStyle.Top,
-                BackColor = Color.FromArgb(50, 50, 50),
+                BackColor = Color.FromArgb(24, 27, 31),
                 SizeMode = PictureBoxSizeMode.StretchImage,
                 BorderRadiusBottomLeft = 10,
                 BorderRadiusBottomRight = 10,
                 BorderRadiusTopLeft = 10,
                 BorderRadiusTopRight = 10,
-                BorderColor = Color.FromArgb(255, 255, 255),
-                BorderSize = 3
+                BorderColor = Color.FromArgb(24, 27, 31),
+                BorderSize = 5,
+                Padding = new Padding(7)
             };
             string image = linkSticker + stickerId + endlinkSticker;
             string finalaviImage = await httpImage.GetFinalUrlAsync(image);

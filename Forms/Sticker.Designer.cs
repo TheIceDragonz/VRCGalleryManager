@@ -43,7 +43,7 @@ namespace VRCGalleryManager.Forms
             // 
             stickerPanel.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             stickerPanel.AutoScroll = true;
-            stickerPanel.BackColor = Color.FromArgb(64, 64, 64);
+            stickerPanel.BackColor = Color.FromArgb(5, 5, 5);
             stickerPanel.Location = new Point(12, 45);
             stickerPanel.Name = "stickerPanel";
             stickerPanel.Size = new Size(595, 383);
@@ -52,47 +52,49 @@ namespace VRCGalleryManager.Forms
             // _refreshButton
             // 
             _refreshButton.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            _refreshButton.BackColor = Color.FromArgb(50, 50, 50);
-            _refreshButton.BackgroundColor = Color.FromArgb(50, 50, 50);
-            _refreshButton.BorderColor = Color.PaleVioletRed;
-            _refreshButton.BorderRadius = 15;
-            _refreshButton.BorderSize = 0;
+            _refreshButton.BackColor = Color.FromArgb(7, 36, 43);
+            _refreshButton.BackgroundColor = Color.FromArgb(7, 36, 43);
+            _refreshButton.BorderColor = Color.FromArgb(5, 55, 66);
+            _refreshButton.BorderRadius = 10;
+            _refreshButton.BorderSize = 2;
             _refreshButton.FlatAppearance.BorderSize = 0;
             _refreshButton.FlatStyle = FlatStyle.Flat;
-            _refreshButton.ForeColor = Color.White;
+            _refreshButton.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
+            _refreshButton.ForeColor = Color.FromArgb(106, 227, 249);
             _refreshButton.Location = new Point(491, 12);
             _refreshButton.Name = "_refreshButton";
             _refreshButton.Size = new Size(116, 27);
             _refreshButton.TabIndex = 3;
             _refreshButton.Text = "Refresh";
-            _refreshButton.TextColor = Color.White;
+            _refreshButton.TextColor = Color.FromArgb(106, 227, 249);
             _refreshButton.UseVisualStyleBackColor = false;
             _refreshButton.Click += _refreshButton_Click;
             // 
             // roundedButton1
             // 
             roundedButton1.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            roundedButton1.BackColor = Color.FromArgb(50, 50, 50);
-            roundedButton1.BackgroundColor = Color.FromArgb(50, 50, 50);
-            roundedButton1.BorderColor = Color.PaleVioletRed;
-            roundedButton1.BorderRadius = 20;
-            roundedButton1.BorderSize = 0;
+            roundedButton1.BackColor = Color.FromArgb(7, 36, 43);
+            roundedButton1.BackgroundColor = Color.FromArgb(7, 36, 43);
+            roundedButton1.BorderColor = Color.FromArgb(5, 55, 66);
+            roundedButton1.BorderRadius = 10;
+            roundedButton1.BorderSize = 2;
             roundedButton1.FlatAppearance.BorderSize = 0;
             roundedButton1.FlatStyle = FlatStyle.Flat;
-            roundedButton1.ForeColor = Color.White;
+            roundedButton1.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
+            roundedButton1.ForeColor = Color.FromArgb(106, 227, 249);
             roundedButton1.Location = new Point(12, 434);
             roundedButton1.Name = "roundedButton1";
             roundedButton1.Size = new Size(595, 40);
             roundedButton1.TabIndex = 4;
             roundedButton1.Text = "Upload";
-            roundedButton1.TextColor = Color.White;
+            roundedButton1.TextColor = Color.FromArgb(106, 227, 249);
             roundedButton1.UseVisualStyleBackColor = false;
             roundedButton1.Click += uploadSticker_Click;
             // 
             // limitPanelSticker
             // 
-            limitPanelSticker.BackColor = Color.FromArgb(64, 64, 64);
-            limitPanelSticker.BackgroundColor = Color.FromArgb(64, 64, 64);
+            limitPanelSticker.BackColor = Color.FromArgb(7, 36, 43);
+            limitPanelSticker.BackgroundColor = Color.FromArgb(7, 36, 43);
             limitPanelSticker.BorderColor = Color.Red;
             limitPanelSticker.BorderRadius = 10;
             limitPanelSticker.BorderSize = 2;
@@ -133,7 +135,7 @@ namespace VRCGalleryManager.Forms
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            BackColor = Color.FromArgb(64, 64, 64);
+            BackColor = Color.FromArgb(5, 5, 5);
             ClientSize = new Size(619, 486);
             Controls.Add(limitStickerLabel);
             Controls.Add(limitPanelSticker);

@@ -43,13 +43,13 @@ namespace VRCGalleryManager.Forms
             // previewGif
             // 
             previewGif.Anchor = AnchorStyles.None;
-            previewGif.BackColor = Color.FromArgb(50, 50, 50);
-            previewGif.BackgroundColor = Color.FromArgb(50, 50, 50);
+            previewGif.BackColor = Color.FromArgb(7, 36, 43);
+            previewGif.BackgroundColor = Color.FromArgb(7, 36, 43);
             previewGif.BorderColor = Color.PaleVioletRed;
-            previewGif.BorderRadiusBottomLeft = 20;
-            previewGif.BorderRadiusBottomRight = 20;
-            previewGif.BorderRadiusTopLeft = 20;
-            previewGif.BorderRadiusTopRight = 20;
+            previewGif.BorderRadiusBottomLeft = 10;
+            previewGif.BorderRadiusBottomRight = 10;
+            previewGif.BorderRadiusTopLeft = 10;
+            previewGif.BorderRadiusTopRight = 10;
             previewGif.BorderSize = 0;
             previewGif.ImageLocation = "";
             previewGif.Location = new Point(66, 84);
@@ -64,13 +64,13 @@ namespace VRCGalleryManager.Forms
             // previewSS
             // 
             previewSS.Anchor = AnchorStyles.None;
-            previewSS.BackColor = Color.FromArgb(50, 50, 50);
-            previewSS.BackgroundColor = Color.FromArgb(50, 50, 50);
+            previewSS.BackColor = Color.FromArgb(7, 36, 43);
+            previewSS.BackgroundColor = Color.FromArgb(7, 36, 43);
             previewSS.BorderColor = Color.PaleVioletRed;
-            previewSS.BorderRadiusBottomLeft = 20;
-            previewSS.BorderRadiusBottomRight = 20;
-            previewSS.BorderRadiusTopLeft = 20;
-            previewSS.BorderRadiusTopRight = 20;
+            previewSS.BorderRadiusBottomLeft = 10;
+            previewSS.BorderRadiusBottomRight = 10;
+            previewSS.BorderRadiusTopLeft = 10;
+            previewSS.BorderRadiusTopRight = 10;
             previewSS.BorderSize = 0;
             previewSS.Location = new Point(332, 84);
             previewSS.Name = "previewSS";
@@ -82,20 +82,21 @@ namespace VRCGalleryManager.Forms
             // buttonSave
             // 
             buttonSave.Anchor = AnchorStyles.None;
-            buttonSave.BackColor = Color.FromArgb(50, 50, 50);
-            buttonSave.BackgroundColor = Color.FromArgb(50, 50, 50);
-            buttonSave.BorderColor = Color.PaleVioletRed;
-            buttonSave.BorderRadius = 15;
-            buttonSave.BorderSize = 0;
+            buttonSave.BackColor = Color.FromArgb(7, 36, 43);
+            buttonSave.BackgroundColor = Color.FromArgb(7, 36, 43);
+            buttonSave.BorderColor = Color.FromArgb(5, 55, 66);
+            buttonSave.BorderRadius = 10;
+            buttonSave.BorderSize = 2;
             buttonSave.FlatAppearance.BorderSize = 0;
             buttonSave.FlatStyle = FlatStyle.Flat;
-            buttonSave.ForeColor = Color.White;
+            buttonSave.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
+            buttonSave.ForeColor = Color.FromArgb(106, 227, 249);
             buttonSave.Location = new Point(66, 391);
             buttonSave.Name = "buttonSave";
             buttonSave.Size = new Size(526, 35);
             buttonSave.TabIndex = 2;
             buttonSave.Text = "LocalSave";
-            buttonSave.TextColor = Color.White;
+            buttonSave.TextColor = Color.FromArgb(106, 227, 249);
             buttonSave.UseVisualStyleBackColor = false;
             buttonSave.Click += buttonSave_Click;
             // 
@@ -113,20 +114,21 @@ namespace VRCGalleryManager.Forms
             // roundedButton1
             // 
             roundedButton1.Anchor = AnchorStyles.None;
-            roundedButton1.BackColor = Color.FromArgb(50, 50, 50);
-            roundedButton1.BackgroundColor = Color.FromArgb(50, 50, 50);
-            roundedButton1.BorderColor = Color.PaleVioletRed;
-            roundedButton1.BorderRadius = 15;
-            roundedButton1.BorderSize = 0;
+            roundedButton1.BackColor = Color.FromArgb(7, 36, 43);
+            roundedButton1.BackgroundColor = Color.FromArgb(7, 36, 43);
+            roundedButton1.BorderColor = Color.FromArgb(5, 55, 66);
+            roundedButton1.BorderRadius = 10;
+            roundedButton1.BorderSize = 2;
             roundedButton1.FlatAppearance.BorderSize = 0;
             roundedButton1.FlatStyle = FlatStyle.Flat;
-            roundedButton1.ForeColor = Color.White;
+            roundedButton1.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
+            roundedButton1.ForeColor = Color.FromArgb(106, 227, 249);
             roundedButton1.Location = new Point(66, 350);
             roundedButton1.Name = "roundedButton1";
             roundedButton1.Size = new Size(526, 35);
             roundedButton1.TabIndex = 4;
             roundedButton1.Text = "UpLoad";
-            roundedButton1.TextColor = Color.White;
+            roundedButton1.TextColor = Color.FromArgb(106, 227, 249);
             roundedButton1.UseVisualStyleBackColor = false;
             // 
             // titleGifCreator
@@ -145,7 +147,7 @@ namespace VRCGalleryManager.Forms
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            BackColor = Color.FromArgb(64, 64, 64);
+            BackColor = Color.FromArgb(5, 5, 5);
             ClientSize = new Size(663, 506);
             Controls.Add(titleGifCreator);
             Controls.Add(roundedButton1);

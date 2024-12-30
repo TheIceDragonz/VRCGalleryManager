@@ -36,10 +36,10 @@ namespace VRCGalleryManager
 
             _forms[index].Show();
 
-            _switchEmoji.BorderSize = index == 0 ? 2 : 0;
-            _switchSticker.BorderSize = index == 1 ? 2 : 0;
-            _switchCreate.BorderSize = index == 2 ? 2 : 0;
-            _switchSettings.BorderSize = index == 3 ? 2 : 0;
+            _switchEmoji.BorderColor = index == 0 ? Color.FromArgb(255, 255, 255) : Color.FromArgb(5, 55, 66);
+            _switchSticker.BorderColor = index == 1 ? Color.FromArgb(255, 255, 255) : Color.FromArgb(5, 55, 66); ;
+            _switchCreate.BorderColor = index == 2 ? Color.FromArgb(255, 255, 255) : Color.FromArgb(5, 55, 66); ;
+            _switchSettings.BorderColor = index == 3 ? Color.FromArgb(255, 255, 255) : Color.FromArgb(5, 55, 66); ;
         }
 
         private void _switchEmoji_Click(object sender, EventArgs e) => ShowForm(0);

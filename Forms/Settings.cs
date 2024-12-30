@@ -56,7 +56,7 @@ namespace VRCGalleryManager.Forms
                     _password.Enabled = false;
 
                     _loginButton.Text = "Logout";
-                    _loginButton.BackColor = Color.FromArgb(128, 64, 64);
+                    _loginButton.TextColor = Color.FromArgb(255, 128, 128);
 
                     CurrentUser currentUsers = Auth.AuthApi.GetCurrentUser();
 
