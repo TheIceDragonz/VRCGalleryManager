@@ -8,12 +8,18 @@
  */
 
 
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Net.Mime;
+using System.Text;
+using VRCGalleryManager.Core.DTO;
 using VRChat.API.Client;
 using VRChat.API.Model;
 using File = VRChat.API.Model.File;
@@ -836,6 +842,164 @@ namespace VRChat.API.Api
             }
 
             return localVarResponse;
+        }
+
+        public async Task<VRChat.API.Client.ApiResponse<File>> UploadImageAsync(ImageUploadPayload payload)
+        {
+            var requestUrl = "https://api.vrchat.cloud/api/1/file/image";
+            string tokenFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "VRCGalleryManager", "authToken.txt");
+            string cookieString = System.IO.File.ReadAllText(tokenFilePath);
+
+            using (var client = new HttpClient())
+            {
+                client.DefaultRequestHeaders.Add("Cookie", cookieString);
+                client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("Mozilla", "5.0"));
+
+                var content = new MultipartFormDataContent();
+
+                if(payload.Tag != null)
+                {
+                    content.Add(new StringContent(payload.Tag.ToString()!.ToLower()), "tag");
+                }
+
+                if(payload.MaskType != null)
+                {
+                    content.Add(new StringContent(payload.MaskType), "maskType");
+                }
+
+                if(payload.MaskTag != null)
+                {
+                    content.Add(new StringContent(payload.MaskTag), "maskTag");
+                }
+
+                if(payload.AnimationStyle != null)
+                {
+                    content.Add(new StringContent(payload.AnimationStyle), "animationStyle");
+                }
+
+                if(payload.Frames != null)
+                {
+                    content.Add(new StringContent(payload.Frames.ToString()), "frames");
+                }
+
+                if(payload.FramesOverTime != null)
+                {
+                    content.Add(new StringContent(payload.FramesOverTime.ToString()), "framesOverTime");
+                }
+
+
+                using (var fileStream = System.IO.File.OpenRead(payload.FilePath))
+                {
+
+                    string fileName = Path.GetFileName(payload.FilePath);
+
+                    string contentType;
+                    switch (Path.GetExtension(payload.FilePath).ToLower())
+                    {
+                        case ".png":
+                            contentType = "image/png";
+                            break;
+                        case ".jpg":
+                        case ".jpeg":
+                            contentType = "image/jpeg";
+                            break;
+                        case ".gif":
+                            contentType = "image/gif";
+                            break;
+                        default:
+                            contentType = "application/octet-stream";
+                            break;
+                    }
+
+                    content.Add(new StreamContent(fileStream, (int)fileStream.Length), "file", fileName);
+                    content.Last().Headers.ContentType = new MediaTypeHeaderValue(contentType);
+
+                    var response = await client.PostAsync(requestUrl, content);
+                    var responseString = await response.Content.ReadAsStringAsync();
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        throw new HttpRequestException($"Error uploading image: {response.ReasonPhrase}");
+                    }
+
+                    try
+                    {
+                        ApiResponse<File> apiResponse = new ApiResponse<File>(response.StatusCode, null, JsonConvert.DeserializeObject<File>(responseString));
+                        return apiResponse;
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new Exception($"Error parsing image");
+                    }
+                }
+            }
+        }
+
+        public async Task<VRChat.API.Client.ApiResponse<File>> UploadImageAsync(string filePath, string maskType, string tag, int operationIndex = 0, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
+        {
+            var requestUrl = "https://api.vrchat.cloud/api/1/file/image";
+
+            string tokenFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "VRCGalleryManager", "authToken.txt");
+            string cookieString = System.IO.File.ReadAllText(tokenFilePath);
+
+            // Open the image file in read-only mode
+            using (var fileStream = System.IO.File.OpenRead(filePath))
+            {
+                // Create the MultipartFormDataContent
+                var content = new MultipartFormDataContent();
+
+                // Add string content for tag and maskType
+                content.Add(new StringContent(tag), "tag");
+                content.Add(new StringContent(maskType), "maskType");
+
+                // Get the file name
+                string fileName = Path.GetFileName(filePath);
+
+                // Add the image content using StreamContent (recommended)
+                content.Add(new StreamContent(fileStream, (int) fileStream.Length), "file", fileName);
+
+                string contentType;
+                switch (Path.GetExtension(filePath).ToLower())
+                {
+                    case ".png":
+                        contentType = "image/png";
+                        break;
+                    case ".jpg":
+                    case ".jpeg":
+                        contentType = "image/jpeg";
+                        break;
+                    case ".gif":
+                        contentType = "image/gif";
+                        break;
+                    default:
+                        contentType = "application/octet-stream";
+                        break;
+                }
+
+                ((StreamContent)content.Last()).Headers.ContentType = new MediaTypeHeaderValue(contentType);
+
+
+                using (var client = new HttpClient())
+                {
+                    client.DefaultRequestHeaders.Add("Cookie", cookieString);
+                    client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("Mozilla", "5.0"));
+                    var response = await client.PostAsync(requestUrl, content);
+                    var responseString = await response.Content.ReadAsStringAsync();
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        throw new HttpRequestException($"Error uploading image: {response.ReasonPhrase}");
+                    }
+
+                    try
+                    {
+                        ApiResponse<File> apiResponse = new ApiResponse<File>(response.StatusCode, null, JsonConvert.DeserializeObject<File>(responseString));
+                        return apiResponse;
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new Exception($"Error parsing image");
+                    }
+                }
+            }
         }
 
         /// <summary>

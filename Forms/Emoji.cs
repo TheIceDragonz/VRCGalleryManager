@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using VRCGalleryManager.Core;
+using VRCGalleryManager.Core.DTO;
 
 namespace VRCGalleryManager.Forms
 {
@@ -11,7 +12,8 @@ namespace VRCGalleryManager.Forms
         private List<string> emojiId = new List<string>();
         private string emojiCount;
 
-        private string tagEmoji = "emoji";
+        private static string EMOKI_MASK_TAG = "square";
+
 
         private string tags = new string("");
         private string animationStyle = new string("");
@@ -38,7 +40,7 @@ namespace VRCGalleryManager.Forms
             emojiPanel.Controls.Clear();
             emojiId.Clear();
 
-            ApiRequest.ApiData emoji = await apiRequest.GetApiData(tagEmoji);
+            ApiRequest.ApiData emoji = await apiRequest.GetApiData(TagType.Emoji.ToString().ToLower());
 
             emojiId = emoji.IdImage;
             emojiCount = emoji.CountImages;
@@ -68,7 +70,7 @@ namespace VRCGalleryManager.Forms
             }
         }
 
-        private void uploadEmoji_Click(object sender, EventArgs e)
+        private async void uploadEmoji_ClickAsync(object sender, EventArgs e)
         {
             using (OpenFileDialog openFileDialog = new OpenFileDialog())
             {
@@ -80,10 +82,16 @@ namespace VRCGalleryManager.Forms
                 {
                     string selectedFilePath = openFileDialog.FileName;
 
-                    MessageBox.Show($"File selezionato: {selectedFilePath}");
-
-
-
+                    try
+                    {
+                        //TODO aggiungere selezione parametri
+                        ApiRequest.ApiData sticker = await apiRequest.UploadImage(selectedFilePath, EMOKI_MASK_TAG, TagType.Emoji, "aura", 10, 10);
+                        EmojiList();
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(ex.Message, "Error during file upload", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
                 }
             }
         }

@@ -91,7 +91,7 @@ namespace VRCGalleryManager.Forms
             roundedButton1.Text = "Upload";
             roundedButton1.TextColor = Color.FromArgb(106, 227, 249);
             roundedButton1.UseVisualStyleBackColor = false;
-            roundedButton1.Click += uploadEmoji_Click;
+            roundedButton1.Click += uploadEmoji_ClickAsync;
             // 
             // roundedButton2
             // 

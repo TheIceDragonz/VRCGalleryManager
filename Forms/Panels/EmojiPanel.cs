@@ -27,7 +27,7 @@ namespace VRCGalleryManager.Forms
             };
             string image = linkEmoji + emojiId + endlinkEmoji;
 
-            string finalaviImage = await httpImage.GetFinalUrlAsync(image);
+            string finalaviImage = await HttpImage.GetFinalUrlAsync(image);
 
             if (!finalaviImage.Contains("imageNotFound"))
             {

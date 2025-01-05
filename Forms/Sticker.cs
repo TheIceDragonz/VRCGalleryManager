@@ -1,6 +1,8 @@
 ﻿using System.Diagnostics;
 using VRCGalleryManager.Core;
+using VRCGalleryManager.Core.DTO;
 using VRChat.API.Model;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace VRCGalleryManager.Forms
 {
@@ -11,9 +13,8 @@ namespace VRCGalleryManager.Forms
         private List<string> stickerId = new List<string>();
         private string stickerCount;
 
-        private string tagSticker = "sticker";
-
-        private MIMEType mimeType;
+        private static string STICKER_TAG = "sticker";
+        private static string STICKER_MASK_TYPE = "square";
 
         public Sticker(VRCAuth auth)
         {
@@ -34,7 +35,7 @@ namespace VRCGalleryManager.Forms
             stickerPanel.Controls.Clear();
             stickerId.Clear();
 
-            ApiRequest.ApiData sticker = await apiRequest.GetApiData(tagSticker);
+            ApiRequest.ApiData sticker = await apiRequest.GetApiData(STICKER_TAG);
 
             stickerId = sticker.IdImage;
             stickerCount = sticker.CountImages;
@@ -61,25 +62,28 @@ namespace VRCGalleryManager.Forms
                 if (openFileDialog.ShowDialog() == DialogResult.OK)
                 {
                     string selectedFilePath = openFileDialog.FileName;
+                   
+                    try
+                    {
+                        ApiRequest.ApiData sticker = await apiRequest.UploadImage(selectedFilePath, STICKER_MASK_TYPE, TagType.Sticker);
 
-                    string name = Path.GetFileNameWithoutExtension(selectedFilePath);
-                    string extension = Path.GetExtension(selectedFilePath);
-                    List<string> tags = new List<string> { "sticker" };
+                        AddStickerPanel(sticker.IdImageUploaded);
 
-                    if(extension == ".png") { mimeType = MIMEType.ImagePng; }
-                    else if(extension == ".jpg") { mimeType = MIMEType.ImageJpg; }
-                    else if (extension == ".jpeg") { mimeType = MIMEType.ImageJpeg; }
-                    else if (extension == ".webp") { mimeType = MIMEType.ImageWebp; }
+                        stickerCount = sticker.CountImages;
 
-                    ApiRequest.ApiData sticker = await apiRequest.UploadApiData(name, mimeType, extension, tags);
-
-                    AddStickerPanel(sticker.IdImageUploaded);
-
-                    stickerCount = sticker.CountImages;
-
-                    limitStickerLabel.Text = $"{stickerCount}/9 Sticker";
-                    if (stickerCount.Contains("9")) limitPanelSticker.Visible = true;
-                    else limitPanelSticker.Visible = false;
+                        limitStickerLabel.Text = $"{stickerCount}/9 Sticker";
+                        if (stickerCount.Contains("9"))
+                        {
+                            limitPanelSticker.Visible = true;
+                        }
+                        else
+                        {
+                            limitPanelSticker.Visible = false;
+                        }
+                    } catch (Exception ex)
+                    {
+                        MessageBox.Show(ex.Message, "Error during file upload", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
                 }
             }
         }

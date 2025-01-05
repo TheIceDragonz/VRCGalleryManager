@@ -27,7 +27,7 @@ namespace VRCGalleryManager.Forms
                 Padding = new Padding(7)
             };
             string image = linkSticker + stickerId + endlinkSticker;
-            string finalaviImage = await httpImage.GetFinalUrlAsync(image);
+            string finalaviImage = await HttpImage.GetFinalUrlAsync(image);
 
             if (!finalaviImage.Contains("imageNotFound"))
             {

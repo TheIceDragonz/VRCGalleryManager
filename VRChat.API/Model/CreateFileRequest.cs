@@ -33,11 +33,6 @@ namespace VRChat.API.Model
     {
 
         /// <summary>
-        /// Gets or Sets MimeType
-        /// </summary>
-        [DataMember(Name = "mimeType", IsRequired = true, EmitDefaultValue = true)]
-        public MIMEType MimeType { get; set; }
-        /// <summary>
         /// Initializes a new instance of the <see cref="CreateFileRequest" /> class.
         /// </summary>
         [JsonConstructorAttribute]
@@ -78,6 +73,13 @@ namespace VRChat.API.Model
             this.LoopStyle = loopStyle;
             this.MaskTag = maskTag;
         }
+
+        /// <summary>
+        /// Gets or Sets MimeType
+        /// </summary>
+        [JsonConverter(typeof(StringEnumConverter))]
+        [DataMember(Name = "mimeType", IsRequired = true, EmitDefaultValue = true)]
+        public MIMEType MimeType { get; set; }
 
         /// <summary>
         /// Gets or Sets Name
@@ -137,9 +139,14 @@ namespace VRChat.API.Model
             StringBuilder sb = new StringBuilder();
             sb.Append("class CreateFileRequest {\n");
             sb.Append("  Name: ").Append(Name).Append("\n");
-            sb.Append("  MimeType: ").Append(MimeType).Append("\n");
+            sb.Append("  MimeType: ").Append(MimeType.ToString()).Append("\n");
+
             sb.Append("  Extension: ").Append(Extension).Append("\n");
-            sb.Append("  Tags: ").Append(Tags).Append("\n");
+            
+            //sb.Append("  Tags: ").Append(Tags).Append("\n");
+            //Tags from list to string
+            sb.Append("  Tags: ").Append(string.Join(",", Tags)).Append("\n");
+            
             sb.Append("  AnimationStyle: ").Append(AnimationStyle).Append("\n");
             sb.Append("  Frames: ").Append(Frames).Append("\n");
             sb.Append("  FramesOverTime: ").Append(FramesOverTime).Append("\n");
