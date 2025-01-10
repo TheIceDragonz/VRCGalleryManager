@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using System.Xml.Linq;
 using VRCGalleryManager.Core;
 using VRCGalleryManager.Design;
 

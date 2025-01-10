@@ -33,8 +33,8 @@ namespace VRCGalleryManager.Forms
             emojiPanel = new FlowLayoutPanel();
             _refreshButton = new RoundedButton();
             roundedButton1 = new RoundedButton();
-            roundedButton2 = new RoundedButton();
-            emojiType = new RoundedPanel();
+            emojiOpenTypePanel = new RoundedButton();
+            emojiTypePanel = new RoundedPanel();
             limitPanelEmoji = new RoundedPanel();
             limitLabel = new Label();
             limitStickerLabel = new Label();
@@ -48,7 +48,7 @@ namespace VRCGalleryManager.Forms
             emojiPanel.BackColor = Color.FromArgb(5, 5, 5);
             emojiPanel.Location = new Point(12, 45);
             emojiPanel.Name = "emojiPanel";
-            emojiPanel.Size = new Size(595, 383);
+            emojiPanel.Size = new Size(772, 484);
             emojiPanel.TabIndex = 2;
             // 
             // _refreshButton
@@ -63,7 +63,7 @@ namespace VRCGalleryManager.Forms
             _refreshButton.FlatStyle = FlatStyle.Flat;
             _refreshButton.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
             _refreshButton.ForeColor = Color.FromArgb(106, 227, 249);
-            _refreshButton.Location = new Point(491, 12);
+            _refreshButton.Location = new Point(668, 12);
             _refreshButton.Name = "_refreshButton";
             _refreshButton.Size = new Size(116, 27);
             _refreshButton.TabIndex = 3;
@@ -84,49 +84,51 @@ namespace VRCGalleryManager.Forms
             roundedButton1.FlatStyle = FlatStyle.Flat;
             roundedButton1.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
             roundedButton1.ForeColor = Color.FromArgb(106, 227, 249);
-            roundedButton1.Location = new Point(12, 434);
+            roundedButton1.Location = new Point(12, 535);
             roundedButton1.Name = "roundedButton1";
-            roundedButton1.Size = new Size(473, 40);
+            roundedButton1.Size = new Size(650, 40);
             roundedButton1.TabIndex = 4;
             roundedButton1.Text = "Upload";
             roundedButton1.TextColor = Color.FromArgb(106, 227, 249);
             roundedButton1.UseVisualStyleBackColor = false;
-            roundedButton1.Click += uploadEmoji_ClickAsync;
+            roundedButton1.Click += uploadEmoji_Click;
             // 
-            // roundedButton2
+            // emojiOpenTypePanel
             // 
-            roundedButton2.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            roundedButton2.BackColor = Color.FromArgb(7, 36, 43);
-            roundedButton2.BackgroundColor = Color.FromArgb(7, 36, 43);
-            roundedButton2.BorderColor = Color.FromArgb(5, 55, 66);
-            roundedButton2.BorderRadius = 10;
-            roundedButton2.BorderSize = 2;
-            roundedButton2.FlatAppearance.BorderSize = 0;
-            roundedButton2.FlatStyle = FlatStyle.Flat;
-            roundedButton2.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
-            roundedButton2.ForeColor = Color.FromArgb(106, 227, 249);
-            roundedButton2.Location = new Point(491, 434);
-            roundedButton2.Name = "roundedButton2";
-            roundedButton2.Size = new Size(116, 40);
-            roundedButton2.TabIndex = 7;
-            roundedButton2.Text = "none";
-            roundedButton2.TextColor = Color.FromArgb(106, 227, 249);
-            roundedButton2.UseVisualStyleBackColor = false;
+            emojiOpenTypePanel.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            emojiOpenTypePanel.BackColor = Color.FromArgb(7, 36, 43);
+            emojiOpenTypePanel.BackgroundColor = Color.FromArgb(7, 36, 43);
+            emojiOpenTypePanel.BorderColor = Color.FromArgb(5, 55, 66);
+            emojiOpenTypePanel.BorderRadius = 10;
+            emojiOpenTypePanel.BorderSize = 2;
+            emojiOpenTypePanel.FlatAppearance.BorderSize = 0;
+            emojiOpenTypePanel.FlatStyle = FlatStyle.Flat;
+            emojiOpenTypePanel.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
+            emojiOpenTypePanel.ForeColor = Color.FromArgb(106, 227, 249);
+            emojiOpenTypePanel.Location = new Point(668, 535);
+            emojiOpenTypePanel.Name = "emojiOpenTypePanel";
+            emojiOpenTypePanel.Size = new Size(116, 40);
+            emojiOpenTypePanel.TabIndex = 7;
+            emojiOpenTypePanel.Text = "Type";
+            emojiOpenTypePanel.TextColor = Color.FromArgb(106, 227, 249);
+            emojiOpenTypePanel.UseVisualStyleBackColor = false;
+            emojiOpenTypePanel.Click += emojiOpenTypePanel_Click;
             // 
-            // emojiType
+            // emojiTypePanel
             // 
-            emojiType.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            emojiType.AutoScroll = true;
-            emojiType.BackColor = Color.FromArgb(7, 36, 43);
-            emojiType.BackgroundColor = Color.FromArgb(7, 36, 43);
-            emojiType.BorderColor = Color.PaleVioletRed;
-            emojiType.BorderRadius = 10;
-            emojiType.BorderSize = 0;
-            emojiType.Location = new Point(491, 197);
-            emojiType.Name = "emojiType";
-            emojiType.Size = new Size(116, 231);
-            emojiType.TabIndex = 8;
-            emojiType.Visible = false;
+            emojiTypePanel.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Right;
+            emojiTypePanel.AutoScroll = true;
+            emojiTypePanel.BackColor = Color.FromArgb(7, 36, 43);
+            emojiTypePanel.BackgroundColor = Color.FromArgb(7, 36, 43);
+            emojiTypePanel.BorderColor = Color.PaleVioletRed;
+            emojiTypePanel.BorderRadius = 9;
+            emojiTypePanel.BorderSize = 0;
+            emojiTypePanel.Location = new Point(526, 45);
+            emojiTypePanel.Name = "emojiTypePanel";
+            emojiTypePanel.Padding = new Padding(5);
+            emojiTypePanel.Size = new Size(258, 484);
+            emojiTypePanel.TabIndex = 8;
+            emojiTypePanel.Visible = false;
             // 
             // limitPanelEmoji
             // 
@@ -161,7 +163,7 @@ namespace VRCGalleryManager.Forms
             limitStickerLabel.AutoSize = true;
             limitStickerLabel.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
             limitStickerLabel.ForeColor = Color.White;
-            limitStickerLabel.Location = new Point(426, 18);
+            limitStickerLabel.Location = new Point(603, 18);
             limitStickerLabel.Name = "limitStickerLabel";
             limitStickerLabel.Size = new Size(59, 15);
             limitStickerLabel.TabIndex = 7;
@@ -173,11 +175,11 @@ namespace VRCGalleryManager.Forms
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(5, 5, 5);
-            ClientSize = new Size(619, 486);
+            ClientSize = new Size(796, 587);
             Controls.Add(limitStickerLabel);
             Controls.Add(limitPanelEmoji);
-            Controls.Add(emojiType);
-            Controls.Add(roundedButton2);
+            Controls.Add(emojiTypePanel);
+            Controls.Add(emojiOpenTypePanel);
             Controls.Add(roundedButton1);
             Controls.Add(_refreshButton);
             Controls.Add(emojiPanel);
@@ -193,8 +195,8 @@ namespace VRCGalleryManager.Forms
         private FlowLayoutPanel emojiPanel;
         private RoundedButton _refreshButton;
         private RoundedButton roundedButton1;
-        private RoundedButton roundedButton2;
-        private RoundedPanel emojiType;
+        private RoundedButton emojiOpenTypePanel;
+        private RoundedPanel emojiTypePanel;
         private RoundedPanel limitPanelEmoji;
         private Label limitLabel;
         private Label limitStickerLabel;

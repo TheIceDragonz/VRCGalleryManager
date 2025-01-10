@@ -12,8 +12,8 @@ namespace VRCGalleryManager.Forms
         private List<string> emojiId = new List<string>();
         private string emojiCount;
 
-        private static string EMOKI_MASK_TAG = "square";
-
+        private static string EMOJI_MASK_TAG = "square";
+        private static string EMOJI_ANIMATION_STYLE = "";
 
         private string tags = new string("");
         private string animationStyle = new string("");
@@ -28,6 +28,8 @@ namespace VRCGalleryManager.Forms
             apiRequest = new ApiRequest(auth);
 
             //EmojiList();
+
+            LoadEmojiType();
         }
 
         private async void _refreshButton_Click(object sender, EventArgs e)
@@ -55,46 +57,55 @@ namespace VRCGalleryManager.Forms
 
             foreach (string id in emojiId)
             {
-                AddEmojiPanel(id, animationStyle, tags, frames, framesOverTime);
+                AddEmojiPanel(id, tags, frames, framesOverTime);
             }
 
-           limitStickerLabel.Text = $"{emojiCount}/9 Emoji";
-
-            if (emojiCount.Contains("9"))
-            {
-                limitPanelEmoji.Visible = true;
-            }
-            else
-            {
-                limitPanelEmoji.Visible = false;
-            }
+            limitStickerLabel.Text = $"{emojiCount}/9 Emoji";
+            if (emojiCount.Contains("9")) limitPanelEmoji.Visible = true;
+            else limitPanelEmoji.Visible = false;
         }
 
-        private async void uploadEmoji_ClickAsync(object sender, EventArgs e)
+        private async void uploadEmoji_Click(object sender, EventArgs e)
         {
-            using (OpenFileDialog openFileDialog = new OpenFileDialog())
+            if (!emojiOpenTypePanel.Text.Contains("Type"))
             {
-                openFileDialog.Filter = "Image Files|*.png;*.jpg;*.jpeg;*.webp;*.svg;*.xml;*.tiff;*.bmp";
-
-                openFileDialog.Multiselect = false;
-
-                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                using (OpenFileDialog openFileDialog = new OpenFileDialog())
                 {
-                    string selectedFilePath = openFileDialog.FileName;
+                    openFileDialog.Filter = "Image Files|*.png;*.jpg;*.jpeg;*.webp";
+                    openFileDialog.Multiselect = false;
 
-                    try
+                    if (openFileDialog.ShowDialog() == DialogResult.OK)
                     {
-                        //TODO aggiungere selezione parametri
-                        ApiRequest.ApiData sticker = await apiRequest.UploadImage(selectedFilePath, EMOKI_MASK_TAG, TagType.Emoji, "aura", 10, 10);
-                        EmojiList();
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show(ex.Message, "Error during file upload", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        string selectedFilePath = openFileDialog.FileName;
+
+                        try
+                        {
+                            EMOJI_ANIMATION_STYLE = emojiOpenTypePanel.Text.ToLower();
+
+                            ApiRequest.ApiData emoji = await apiRequest.UploadImage(selectedFilePath, EMOJI_MASK_TAG, TagType.Emoji, EMOJI_ANIMATION_STYLE);
+
+                            AddEmojiPanel(emoji.IdImageUploaded, emoji.Tags, emoji.Frames, emoji.FramesOverTime);
+
+                            limitStickerLabel.Text = $"{emojiCount}/9 Emoji";
+                            if (emojiCount.Contains("9")) limitPanelEmoji.Visible = true;
+                            else limitPanelEmoji.Visible = false;
+                        }
+                        catch (Exception ex)
+                        {
+                            MessageBox.Show(ex.Message, "Error during file upload", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
                     }
                 }
             }
+            else
+            {
+                DialogMessage.ShowMissingTypeDialog();
+            }
         }
 
+        private void emojiOpenTypePanel_Click(object sender, EventArgs e)
+        {
+            emojiTypePanel.Visible = !emojiTypePanel.Visible;
+        }
     }
 }

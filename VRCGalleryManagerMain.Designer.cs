@@ -30,27 +30,29 @@ namespace VRCGalleryManager
         /// </summary>
         private void InitializeComponent()
         {
-            Icon = new PictureBox();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainPanel));
+            bannerIcon = new PictureBox();
             FormsPanel = new RoundedPanel();
             SwitchPanel = new RoundedPanel();
             _switchCreate = new RoundedButton();
             _switchSettings = new RoundedButton();
             _switchSticker = new RoundedButton();
             _switchEmoji = new RoundedButton();
-            ((System.ComponentModel.ISupportInitialize)Icon).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)bannerIcon).BeginInit();
             SwitchPanel.SuspendLayout();
             SuspendLayout();
             // 
-            // Icon
+            // bannerIcon
             // 
-            Icon.ImageLocation = "E:\\- ProgramLabs\\VRCGalleryManager\\256x256.ico";
-            Icon.Location = new Point(12, 12);
-            Icon.Margin = new Padding(10);
-            Icon.Name = "Icon";
-            Icon.Size = new Size(157, 45);
-            Icon.SizeMode = PictureBoxSizeMode.Zoom;
-            Icon.TabIndex = 4;
-            Icon.TabStop = false;
+            bannerIcon.Image = Properties.Resources.Icon;
+            bannerIcon.ImageLocation = "";
+            bannerIcon.Location = new Point(12, 12);
+            bannerIcon.Margin = new Padding(10);
+            bannerIcon.Name = "bannerIcon";
+            bannerIcon.Size = new Size(157, 45);
+            bannerIcon.SizeMode = PictureBoxSizeMode.Zoom;
+            bannerIcon.TabIndex = 4;
+            bannerIcon.TabStop = false;
             // 
             // FormsPanel
             // 
@@ -176,18 +178,19 @@ namespace VRCGalleryManager
             ClientSize = new Size(1022, 582);
             Controls.Add(SwitchPanel);
             Controls.Add(FormsPanel);
-            Controls.Add(Icon);
+            Controls.Add(bannerIcon);
+            Icon = (Icon)resources.GetObject("$this.Icon");
             MinimumSize = new Size(600, 300);
             Name = "MainPanel";
             Text = "VRCGalleryManager";
-            ((System.ComponentModel.ISupportInitialize)Icon).EndInit();
+            ((System.ComponentModel.ISupportInitialize)bannerIcon).EndInit();
             SwitchPanel.ResumeLayout(false);
             ResumeLayout(false);
         }
 
         #endregion
 
-        private PictureBox Icon;
+        private PictureBox bannerIcon;
         private RoundedPanel FormsPanel;
         private RoundedPanel SwitchPanel;
         private RoundedButton _switchEmoji;

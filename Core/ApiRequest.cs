@@ -113,7 +113,7 @@ namespace VRCGalleryManager.Core
             return apiData;
         }
 
-        public async Task<ApiData> UploadImage(string path, string maskTag, TagType tag, string animationStyle, int frames, int framesOverTime)
+        public async Task<ApiData> UploadImage(string path, string maskTag, TagType tag, string animationStyle/*, int frames, int framesOverTime*/)
         {
             ApiData apiData = new ApiData();
             
@@ -122,8 +122,8 @@ namespace VRCGalleryManager.Core
             imageUploadPayload.MaskTag = maskTag;
             imageUploadPayload.Tag = tag;
             imageUploadPayload.AnimationStyle = animationStyle;
-            imageUploadPayload.Frames = frames;
-            imageUploadPayload.FramesOverTime = framesOverTime;
+            //imageUploadPayload.Frames = frames;
+            //imageUploadPayload.FramesOverTime = framesOverTime;
 
             var response = await filesApi.UploadImageAsync(imageUploadPayload);
 
@@ -131,8 +131,9 @@ namespace VRCGalleryManager.Core
             apiData.AnimationStyle = response.Data.AnimationStyle;
             apiData.LoopStyle = response.Data.LoopStyle;
             apiData.MaskTag = response.Data.MaskTag;
-            apiData.Frames = response.Data.Frames?.ToString();
-            apiData.FramesOverTime = response.Data.FramesOverTime?.ToString();
+            //apiData.Frames = response.Data.Frames?.ToString();
+            //apiData.FramesOverTime = response.Data.FramesOverTime?.ToString();
+
             return apiData;
         }
 

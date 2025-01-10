@@ -56,7 +56,6 @@ namespace VRCGalleryManager.Forms
             using (OpenFileDialog openFileDialog = new OpenFileDialog())
             {
                 openFileDialog.Filter = "Image Files|*.png;*.jpg;*.jpeg;*.webp";
-
                 openFileDialog.Multiselect = false;
 
                 if (openFileDialog.ShowDialog() == DialogResult.OK)
@@ -72,15 +71,10 @@ namespace VRCGalleryManager.Forms
                         stickerCount = sticker.CountImages;
 
                         limitStickerLabel.Text = $"{stickerCount}/9 Sticker";
-                        if (stickerCount.Contains("9"))
-                        {
-                            limitPanelSticker.Visible = true;
-                        }
-                        else
-                        {
-                            limitPanelSticker.Visible = false;
-                        }
-                    } catch (Exception ex)
+                        if (stickerCount.Contains("9")) limitPanelSticker.Visible = true;
+                        else limitPanelSticker.Visible = false;
+                    }
+                    catch (Exception ex)
                     {
                         MessageBox.Show(ex.Message, "Error during file upload", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }

@@ -1,4 +1,5 @@
 using VRCGalleryManager.Design;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.ListView;
 
 namespace VRCGalleryManager.Core
 {
@@ -38,8 +39,17 @@ namespace VRCGalleryManager.Core
             return MessageBox.Show(
                 "Are you sure to delete this image?\n\n" +
                 "ID: " + dataID,
-               "Confirm Delete !!",
+                "Confirm Delete !!",
                 MessageBoxButtons.YesNo
+            );
+        }
+
+        public static DialogResult ShowMissingTypeDialog()
+        {
+            return MessageBox.Show(
+                "Please select it before uploading.",
+                "Missing Type",
+                MessageBoxButtons.OK
             );
         }
     }

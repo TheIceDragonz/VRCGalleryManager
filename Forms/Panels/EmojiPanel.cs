@@ -9,7 +9,7 @@ namespace VRCGalleryManager.Forms
         private string linkEmoji = "https://api.vrchat.cloud/api/1/file/";
         private string endlinkEmoji = "/1/file";
 
-        private async void AddEmojiPanel(string emojiId, string tags, string animationStyle, string frames, string framesOverTime)
+        private async void AddEmojiPanel(string emojiId, string tags, string frames, string framesOverTime)
         {
             //* IMAGE PANEL
             RoundedPictureBox pictureBox = new RoundedPictureBox
@@ -26,7 +26,6 @@ namespace VRCGalleryManager.Forms
                 Padding = new Padding(7)
             };
             string image = linkEmoji + emojiId + endlinkEmoji;
-
             string finalaviImage = await HttpImage.GetFinalUrlAsync(image);
 
             if (!finalaviImage.Contains("imageNotFound"))
@@ -44,7 +43,8 @@ namespace VRCGalleryManager.Forms
                 };
                 if (tags.Contains("animated"))
                 {
-                    _ = Task.Run(() => SpriteSheetViewer.SpriteSheet(finalaviImage, frames, framesOverTime, pictureBox: pictureBox));
+                    //_ = Task.Run(() => SpriteSheetViewer.SpriteSheet(finalaviImage, frames, framesOverTime, pictureBox: pictureBox));
+                    await Task.Run(() => pictureBox.Load(finalaviImage));
                 }
                 else
                 {
@@ -72,13 +72,17 @@ namespace VRCGalleryManager.Forms
                 Location = new Point(115, 115),
                 Anchor = AnchorStyles.Bottom | AnchorStyles.Right
             };
-            btn_delete.Click += (sender, e) =>
+            btn_delete.Click += async (sender, e) =>
             {
                 DialogResult result = DialogMessage.ShowDeleteFileDialog(emojiId);
 
                 if (result == DialogResult.Yes)
                 {
                     Debug.WriteLine("Delete: " + emojiId);
+
+                    await apiRequest.DeleteApiData(emojiId);
+
+                    emojiPanel.Controls.Remove(pictureBox);
                 }
             };
             pictureBox.Controls.Add(btn_delete);
