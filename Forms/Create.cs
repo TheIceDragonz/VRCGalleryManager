@@ -1,15 +1,23 @@
 ﻿using System.Drawing.Imaging;
+using System.Security.Policy;
 using VRCGalleryManager.Core;
+using VRCGalleryManager.Core.DTO;
 
 namespace VRCGalleryManager.Forms
 {
     public partial class Create : Form
     {
+        private ApiRequest apiRequest;
+
         private string gifPath;
         private Bitmap spriteSheet;
 
-        public Create(VRCAuth Auth)
+        private int imageframes = 0;
+
+        public Create(VRCAuth auth)
         {
+            apiRequest = new ApiRequest(auth);
+
             InitializeComponent();
 
             this.AllowDrop = true;
@@ -56,6 +64,8 @@ namespace VRCGalleryManager.Forms
 
             frameCounter.Text = "Frame: " + frameCount.ToString();
             frameCounter.Visible = true;
+
+            imageframes = frameCount;
 
             int maxTextureSize = 1024;
             int squareSize;
@@ -144,6 +154,10 @@ namespace VRCGalleryManager.Forms
 
         private void buttonSave_Click(object sender, EventArgs e)
         {
+            SaveImage();
+        }
+        private void SaveImage()
+        {
             if (spriteSheet != null)
             {
                 using (SaveFileDialog saveDialog = new SaveFileDialog())
@@ -171,6 +185,85 @@ namespace VRCGalleryManager.Forms
             {
                 MessageBox.Show("GIF not found", "Errore", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
+        }
+        private string SaveTemp()
+        {
+            if (spriteSheet != null)
+            {
+                string outputFilePath = "VRCGalleryManager-spritesheet_temp.png";
+
+                if (Path.GetExtension(outputFilePath).ToLower() != ".png")
+                {
+                    outputFilePath = Path.ChangeExtension(outputFilePath, ".png");
+                }
+
+                spriteSheet.Save(Path.GetTempPath() + outputFilePath, ImageFormat.Png);
+
+                return Path.GetTempPath() + outputFilePath;
+            }
+            else
+            {
+                MessageBox.Show("GIF not found", "Errore", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+            return null;
+        }
+
+        private async void creatorUpload_Click(object sender, EventArgs e)
+        {
+            if (spriteSheet != null)
+            {
+                try
+                {
+                    string image = SaveTemp();
+
+                    ApiRequest.ApiData emoji = await apiRequest.UploadImage(image, "square", TagType.EmojiAnimated, "shake", imageframes, 12);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message, "Error during file upload", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+            else
+            {
+                MessageBox.Show("Sprite sheet not found", "Errore", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+        }
+
+        private async Task<string> DownloadImageFromUrl(string url)
+        {
+            string tempFilePath = Path.Combine(Path.GetTempPath(), "VRCGalleryManager-downloaded_image.gif" + url.Length);
+
+            using (HttpClient client = new HttpClient())
+            {
+                byte[] imageBytes = await client.GetByteArrayAsync(url);
+                await File.WriteAllBytesAsync(tempFilePath, imageBytes);
+            }
+
+            return tempFilePath;
+        }
+
+        private async void urlToSpriteSheet(object sender, EventArgs e)
+        {
+            string url = urlToSpriteSheetText.Text;
+
+            if (!string.IsNullOrWhiteSpace(url))
+            {
+                if (urlToSpriteSheetText.Text.Contains("gif"))
+                {
+                    string downloadedFilePath = await DownloadImageFromUrl(url);
+                    gifPath = downloadedFilePath;
+                    previewGif.ImageLocation = gifPath;
+
+                    string tempOutputPath = Path.Combine(Path.GetTempPath(), "VRCGalleryManager-spritesheet_temp.png" + url.Length);
+                    ConvertGifToSpriteSheets(gifPath, tempOutputPath);
+                    previewSS.Image = spriteSheet;
+                }
+                else
+                {
+                    MessageBox.Show("URL non valido", "Errore", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+            }
+            urlToSpriteSheetText.Text = "";
         }
     }
 }

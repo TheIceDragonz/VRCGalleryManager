@@ -36,6 +36,7 @@ namespace VRCGalleryManager.Forms
             frameCounter = new Label();
             roundedButton1 = new RoundedButton();
             titleGifCreator = new Label();
+            urlToSpriteSheetText = new TextBox();
             ((System.ComponentModel.ISupportInitialize)previewGif).BeginInit();
             ((System.ComponentModel.ISupportInitialize)previewSS).BeginInit();
             SuspendLayout();
@@ -130,6 +131,7 @@ namespace VRCGalleryManager.Forms
             roundedButton1.Text = "UpLoad";
             roundedButton1.TextColor = Color.FromArgb(106, 227, 249);
             roundedButton1.UseVisualStyleBackColor = false;
+            roundedButton1.Click += creatorUpload_Click;
             // 
             // titleGifCreator
             // 
@@ -143,12 +145,23 @@ namespace VRCGalleryManager.Forms
             titleGifCreator.TabIndex = 5;
             titleGifCreator.Text = "Gif Creator";
             // 
+            // urlToSpriteSheetText
+            // 
+            urlToSpriteSheetText.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            urlToSpriteSheetText.BackColor = Color.FromArgb(7, 36, 43);
+            urlToSpriteSheetText.Location = new Point(66, 18);
+            urlToSpriteSheetText.Name = "urlToSpriteSheetText";
+            urlToSpriteSheetText.Size = new Size(526, 23);
+            urlToSpriteSheetText.TabIndex = 6;
+            urlToSpriteSheetText.TextChanged += urlToSpriteSheet;
+            // 
             // Create
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(5, 5, 5);
             ClientSize = new Size(663, 506);
+            Controls.Add(urlToSpriteSheetText);
             Controls.Add(titleGifCreator);
             Controls.Add(roundedButton1);
             Controls.Add(previewGif);
@@ -172,5 +185,6 @@ namespace VRCGalleryManager.Forms
         private Label frameCounter;
         private RoundedButton roundedButton1;
         private Label titleGifCreator;
+        private TextBox urlToSpriteSheetText;
     }
 }
