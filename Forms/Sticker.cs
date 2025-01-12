@@ -11,7 +11,7 @@ namespace VRCGalleryManager.Forms
         private ApiRequest apiRequest;
 
         private List<string> stickerId = new List<string>();
-        private string stickerCount;
+        private int stickerCount;
 
         private static string STICKER_TAG = "sticker";
         private static string STICKER_MASK_TYPE = "square";
@@ -38,7 +38,7 @@ namespace VRCGalleryManager.Forms
             ApiRequest.ApiData sticker = await apiRequest.GetApiData(STICKER_TAG);
 
             stickerId = sticker.IdImage;
-            stickerCount = sticker.CountImages;
+            stickerCount = int.Parse(sticker.CountImages);
 
             foreach (string id in stickerId)
             {
@@ -47,7 +47,7 @@ namespace VRCGalleryManager.Forms
             }
 
             limitStickerLabel.Text = $"{stickerCount}/9 Sticker";
-            if (stickerCount.Contains("9")) limitPanelSticker.Visible = true;
+            if (stickerCount == 9) limitPanelSticker.Visible = true;
             else limitPanelSticker.Visible = false;
         }
 
@@ -68,10 +68,9 @@ namespace VRCGalleryManager.Forms
 
                         AddStickerPanel(sticker.IdImageUploaded);
 
-                        stickerCount = sticker.CountImages;
-
+                        stickerCount = stickerCount + 1;
                         limitStickerLabel.Text = $"{stickerCount}/9 Sticker";
-                        if (stickerCount.Contains("9")) limitPanelSticker.Visible = true;
+                        if (stickerCount == 9) limitPanelSticker.Visible = true;
                         else limitPanelSticker.Visible = false;
                     }
                     catch (Exception ex)

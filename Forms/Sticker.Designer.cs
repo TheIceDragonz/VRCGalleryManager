@@ -46,7 +46,7 @@ namespace VRCGalleryManager.Forms
             stickerPanel.BackColor = Color.FromArgb(5, 5, 5);
             stickerPanel.Location = new Point(12, 45);
             stickerPanel.Name = "stickerPanel";
-            stickerPanel.Size = new Size(595, 383);
+            stickerPanel.Size = new Size(778, 446);
             stickerPanel.TabIndex = 2;
             // 
             // _refreshButton
@@ -61,7 +61,7 @@ namespace VRCGalleryManager.Forms
             _refreshButton.FlatStyle = FlatStyle.Flat;
             _refreshButton.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
             _refreshButton.ForeColor = Color.FromArgb(106, 227, 249);
-            _refreshButton.Location = new Point(491, 12);
+            _refreshButton.Location = new Point(674, 12);
             _refreshButton.Name = "_refreshButton";
             _refreshButton.Size = new Size(116, 27);
             _refreshButton.TabIndex = 3;
@@ -82,9 +82,9 @@ namespace VRCGalleryManager.Forms
             roundedButton1.FlatStyle = FlatStyle.Flat;
             roundedButton1.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
             roundedButton1.ForeColor = Color.FromArgb(106, 227, 249);
-            roundedButton1.Location = new Point(12, 434);
+            roundedButton1.Location = new Point(12, 497);
             roundedButton1.Name = "roundedButton1";
-            roundedButton1.Size = new Size(595, 40);
+            roundedButton1.Size = new Size(778, 40);
             roundedButton1.TabIndex = 4;
             roundedButton1.Text = "Upload";
             roundedButton1.TextColor = Color.FromArgb(106, 227, 249);
@@ -95,7 +95,7 @@ namespace VRCGalleryManager.Forms
             // 
             limitPanelSticker.BackColor = Color.FromArgb(7, 36, 43);
             limitPanelSticker.BackgroundColor = Color.FromArgb(7, 36, 43);
-            limitPanelSticker.BorderColor = Color.Red;
+            limitPanelSticker.BorderColor = Color.FromArgb(255, 128, 128);
             limitPanelSticker.BorderRadius = 10;
             limitPanelSticker.BorderSize = 2;
             limitPanelSticker.Controls.Add(limitLabel);
@@ -110,7 +110,7 @@ namespace VRCGalleryManager.Forms
             limitLabel.BackColor = Color.Transparent;
             limitLabel.Dock = DockStyle.Fill;
             limitLabel.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            limitLabel.ForeColor = Color.Red;
+            limitLabel.ForeColor = Color.FromArgb(255, 128, 128);
             limitLabel.Location = new Point(0, 0);
             limitLabel.Name = "limitLabel";
             limitLabel.Size = new Size(284, 29);
@@ -124,7 +124,7 @@ namespace VRCGalleryManager.Forms
             limitStickerLabel.AutoSize = true;
             limitStickerLabel.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
             limitStickerLabel.ForeColor = Color.White;
-            limitStickerLabel.Location = new Point(416, 18);
+            limitStickerLabel.Location = new Point(599, 18);
             limitStickerLabel.Name = "limitStickerLabel";
             limitStickerLabel.Size = new Size(69, 15);
             limitStickerLabel.TabIndex = 6;
@@ -136,7 +136,7 @@ namespace VRCGalleryManager.Forms
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(5, 5, 5);
-            ClientSize = new Size(619, 486);
+            ClientSize = new Size(802, 549);
             Controls.Add(limitStickerLabel);
             Controls.Add(limitPanelSticker);
             Controls.Add(roundedButton1);

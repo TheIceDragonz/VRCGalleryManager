@@ -74,6 +74,11 @@ namespace VRCGalleryManager.Forms
                     await apiRequest.DeleteApiData(stickerId);
 
                     stickerPanel.Controls.Remove(pictureBox);
+
+                    stickerCount = stickerCount - 1;
+                    limitStickerLabel.Text = $"{stickerCount}/9 Sticker";
+                    if (stickerCount == 9) limitPanelSticker.Visible = true;
+                    else limitPanelSticker.Visible = false;
                 }
             };
             pictureBox.Controls.Add(btn_delete);

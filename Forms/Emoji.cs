@@ -10,7 +10,7 @@ namespace VRCGalleryManager.Forms
         private ApiRequest apiRequest;
 
         private List<string> emojiId = new List<string>();
-        private string emojiCount;
+        private int emojiCount;
 
         private static string EMOJI_MASK_TAG = "square";
         private static string EMOJI_ANIMATION_STYLE = "";
@@ -45,7 +45,7 @@ namespace VRCGalleryManager.Forms
             ApiRequest.ApiData emoji = await apiRequest.GetApiData(TagType.Emoji.ToString().ToLower());
 
             emojiId = emoji.IdImage;
-            emojiCount = emoji.CountImages;
+            emojiCount = int.Parse(emoji.CountImages);
             tags = emoji.Tags;
             if (tags.Contains("animated"))
             {
@@ -61,7 +61,7 @@ namespace VRCGalleryManager.Forms
             }
 
             limitStickerLabel.Text = $"{emojiCount}/9 Emoji";
-            if (emojiCount.Contains("9")) limitPanelEmoji.Visible = true;
+            if (emojiCount == 9) limitPanelEmoji.Visible = true;
             else limitPanelEmoji.Visible = false;
         }
 
@@ -86,8 +86,9 @@ namespace VRCGalleryManager.Forms
 
                             AddEmojiPanel(emoji.IdImageUploaded, emoji.Tags, emoji.Frames, emoji.FramesOverTime);
 
+                            emojiCount = emojiCount + 1;
                             limitStickerLabel.Text = $"{emojiCount}/9 Emoji";
-                            if (emojiCount.Contains("9")) limitPanelEmoji.Visible = true;
+                            if (emojiCount == 9) limitPanelEmoji.Visible = true;
                             else limitPanelEmoji.Visible = false;
                         }
                         catch (Exception ex)

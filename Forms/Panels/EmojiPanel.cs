@@ -83,6 +83,11 @@ namespace VRCGalleryManager.Forms
                     await apiRequest.DeleteApiData(emojiId);
 
                     emojiPanel.Controls.Remove(pictureBox);
+
+                    emojiCount = emojiCount - 1;
+                    limitStickerLabel.Text = $"{emojiCount}/9 Emoji";
+                    if (emojiCount == 9) limitPanelEmoji.Visible = true;
+                    else limitPanelEmoji.Visible = false;
                 }
             };
             pictureBox.Controls.Add(btn_delete);
