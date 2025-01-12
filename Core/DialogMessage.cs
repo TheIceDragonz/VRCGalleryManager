@@ -49,7 +49,35 @@ namespace VRCGalleryManager.Core
             return MessageBox.Show(
                 "Please select it before uploading.",
                 "Missing Type",
-                MessageBoxButtons.OK
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Warning
+            );
+        }
+        public static DialogResult ShowMissingGif()
+        {
+            return MessageBox.Show(
+                "GIF not found",
+                "Error",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Warning
+            );
+        }
+        public static DialogResult ShowMissingSpriteSheet()
+        {
+            return MessageBox.Show(
+                "Sprite sheet not found",
+                "Error",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Warning
+            );
+        }
+        public static DialogResult ShowValidURL()
+        {
+            return MessageBox.Show(
+                "Please enter a valid URL",
+                "Error",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Warning
             );
         }
     }

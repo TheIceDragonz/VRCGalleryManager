@@ -62,9 +62,6 @@ namespace VRCGalleryManager.Forms
             FrameDimension dimension = new FrameDimension(gifImage.FrameDimensionsList[0]);
             int frameCount = gifImage.GetFrameCount(dimension);
 
-            frameCounter.Text = "Frame: " + frameCount.ToString();
-            frameCounter.Visible = true;
-
             imageframes = frameCount;
 
             int maxTextureSize = 1024;
@@ -152,11 +149,7 @@ namespace VRCGalleryManager.Forms
             return squareImage;
         }
 
-        private void buttonSave_Click(object sender, EventArgs e)
-        {
-            SaveImage();
-        }
-        private void SaveImage()
+        private void buttonLocalSave_Click(object sender, EventArgs e)
         {
             if (spriteSheet != null)
             {
@@ -183,7 +176,7 @@ namespace VRCGalleryManager.Forms
             }
             else
             {
-                MessageBox.Show("GIF not found", "Errore", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                DialogMessage.ShowMissingGif();
             }
         }
         private string SaveTemp()
@@ -203,7 +196,7 @@ namespace VRCGalleryManager.Forms
             }
             else
             {
-                MessageBox.Show("GIF not found", "Errore", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                DialogMessage.ShowMissingGif();
             }
             return null;
         }
@@ -225,7 +218,7 @@ namespace VRCGalleryManager.Forms
             }
             else
             {
-                MessageBox.Show("Sprite sheet not found", "Errore", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                DialogMessage.ShowMissingSpriteSheet();
             }
         }
 
@@ -260,7 +253,7 @@ namespace VRCGalleryManager.Forms
                 }
                 else
                 {
-                    MessageBox.Show("URL non valido", "Errore", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    DialogMessage.ShowValidURL();
                 }
             }
             urlToSpriteSheetText.Text = "";
