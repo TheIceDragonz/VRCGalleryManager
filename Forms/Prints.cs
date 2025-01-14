@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Diagnostics;
 using VRCGalleryManager.Core;
 using VRCGalleryManager.Core.DTO;
@@ -9,7 +10,7 @@ namespace VRCGalleryManager.Forms
     {
         private ApiRequest apiRequest;
 
-        private List<string> printsId = new List<string>();
+        private List<string> emojiJson = new List<string>();
         private int printsCount;
 
         public Prints(VRCAuth auth)
@@ -29,16 +30,19 @@ namespace VRCGalleryManager.Forms
         private async void PrintsList()
         {
             printsPanel.Controls.Clear();
-            printsId.Clear();
+            emojiJson.Clear();
 
             ApiRequest.ApiData prints = await apiRequest.GetApiData(TagType.Print.ToString().ToLower());
 
-            printsId = prints.IdImage;
+            emojiJson = prints.JsonImage;
+            printsCount = prints.JsonImage.Count;
 
-            printsCount = int.Parse(prints.CountImages);
-
-            foreach (string id in printsId)
+            foreach (string json in emojiJson)
             {
+                JObject jsonObject = JObject.Parse(json);
+
+                string id = jsonObject["id"]?.ToString();
+
                 AddPrintsPanel(id);
             }
 

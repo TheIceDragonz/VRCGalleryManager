@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using Newtonsoft.Json.Linq;
+using System.Diagnostics;
 using VRCGalleryManager.Core;
 using VRCGalleryManager.Core.DTO;
 using VRChat.API.Model;
@@ -10,7 +11,7 @@ namespace VRCGalleryManager.Forms
     {
         private ApiRequest apiRequest;
 
-        private List<string> stickerId = new List<string>();
+        private List<string> stickerJson = new List<string>();
         private int stickerCount;
 
         private static string STICKER_TAG = "sticker";
@@ -33,16 +34,19 @@ namespace VRCGalleryManager.Forms
         private async void StickerList()
         {
             stickerPanel.Controls.Clear();
-            stickerId.Clear();
+            stickerJson.Clear();
 
             ApiRequest.ApiData sticker = await apiRequest.GetApiData(STICKER_TAG);
 
-            stickerId = sticker.IdImage;
-            stickerCount = int.Parse(sticker.CountImages);
+            stickerJson = sticker.JsonImage;
+            stickerCount = sticker.JsonImage.Count;
 
-            foreach (string id in stickerId)
+            foreach (string json in stickerJson)
             {
-                //* Add Panel
+                JObject jsonObject = JObject.Parse(json);
+
+                string id = jsonObject["id"]?.ToString();
+
                 AddStickerPanel(id);
             }
 

@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Windows.Forms;
 using VRCGalleryManager.Core;
 using VRCGalleryManager.Design;
 
@@ -43,8 +44,9 @@ namespace VRCGalleryManager.Forms
                 };
                 if (tags.Contains("animated"))
                 {
-                    //_ = Task.Run(() => SpriteSheetViewer.SpriteSheet(finalaviImage, frames, framesOverTime, pictureBox: pictureBox));
-                    await Task.Run(() => pictureBox.Load(finalaviImage));
+                    SpriteSheetViewer viewer = new SpriteSheetViewer(pictureBox);
+                    await viewer.LoadSpriteSheetAsync(finalaviImage, int.Parse(frames), int.Parse(framesOverTime));
+                    viewer.StartAnimation();
                 }
                 else
                 {

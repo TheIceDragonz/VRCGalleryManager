@@ -6,6 +6,7 @@ using VRChat.API.Model;
 using File = VRChat.API.Model.File;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 using VRCGalleryManager.Core.DTO;
+using System.Text.Json.Nodes;
 
 namespace VRCGalleryManager.Core
 {
@@ -22,7 +23,8 @@ namespace VRCGalleryManager.Core
 
         public class ApiData
         {
-            public List<string> IdImage { get; set; } = new List<string>();
+            public List<string> JsonImage { get; set; } = new List<string>();
+
             public string CountImages { get; set; } = new string("");
             public string Tags { get; set; } = new string("");
             public string AnimationStyle { get; set; } = new string("");
@@ -30,7 +32,6 @@ namespace VRCGalleryManager.Core
             public string FramesOverTime { get; set; } = new string("");
             public string LoopStyle { get; set; } = new string("");
             public string MaskTag { get; set; } = new string("");
-
             public string IdImageUploaded { get; set; } = new string("");
         }
 
@@ -44,18 +45,7 @@ namespace VRCGalleryManager.Core
 
                 foreach (var image in images)
                 {
-                    apiData.IdImage.Add(image.Id);
-
-                    apiData.CountImages = images.Count.ToString();
-                    apiData.Tags = image.Tags.Count > 0 ? string.Join(",", image.Tags) : "";
-                    apiData.AnimationStyle = image.AnimationStyle;
-                    if (apiData.Tags.Contains("animated"))
-                    {
-                        apiData.Frames = image.Frames.ToString();
-                        apiData.FramesOverTime = image.FramesOverTime.ToString();
-                        apiData.LoopStyle = image.LoopStyle;
-                    }
-                    apiData.MaskTag = image.MaskTag;
+                    apiData.JsonImage.Add(image.ToJson());
                 }
             }
             catch (ApiException ex)
@@ -105,11 +95,6 @@ namespace VRCGalleryManager.Core
 
             var response = await filesApi.UploadImageAsync(imageUploadPayload);
 
-            apiData.IdImageUploaded = response.Data.Id;
-            apiData.AnimationStyle = response.Data.AnimationStyle;
-            apiData.LoopStyle = response.Data.LoopStyle;
-            apiData.MaskTag = response.Data.MaskTag;
-
             return apiData;
         }
 
@@ -124,11 +109,6 @@ namespace VRCGalleryManager.Core
             imageUploadPayload.AnimationStyle = animationStyle;
 
             var response = await filesApi.UploadImageAsync(imageUploadPayload);
-
-            apiData.IdImageUploaded = response.Data.Id;
-            apiData.AnimationStyle = response.Data.AnimationStyle;
-            apiData.LoopStyle = response.Data.LoopStyle;
-            apiData.MaskTag = response.Data.MaskTag;
 
             return apiData;
         }
@@ -145,13 +125,6 @@ namespace VRCGalleryManager.Core
             imageUploadPayload.FramesOverTime = framesOverTime;
 
             var response = await filesApi.UploadImageAsync(imageUploadPayload);
-
-            apiData.IdImageUploaded = response.Data.Id;
-            apiData.AnimationStyle = response.Data.AnimationStyle;
-            apiData.LoopStyle = response.Data.LoopStyle;
-            apiData.MaskTag = response.Data.MaskTag;
-            apiData.Frames = response.Data.Frames?.ToString();
-            apiData.FramesOverTime = response.Data.FramesOverTime?.ToString();
 
             return apiData;
         }

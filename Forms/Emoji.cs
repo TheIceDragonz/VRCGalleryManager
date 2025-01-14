@@ -1,5 +1,8 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Diagnostics;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using VRCGalleryManager.Core;
 using VRCGalleryManager.Core.DTO;
 
@@ -9,7 +12,7 @@ namespace VRCGalleryManager.Forms
     {
         private ApiRequest apiRequest;
 
-        private List<string> emojiId = new List<string>();
+        private List<string> emojiJson = new List<string>();
         private int emojiCount;
 
         private static string EMOJI_MASK_TAG = "square";
@@ -40,23 +43,23 @@ namespace VRCGalleryManager.Forms
         private async void EmojiList()
         {
             emojiPanel.Controls.Clear();
-            emojiId.Clear();
+            emojiJson.Clear();
 
             ApiRequest.ApiData emoji = await apiRequest.GetApiData(TagType.Emoji.ToString().ToLower());
 
-            emojiId = emoji.IdImage;
-            emojiCount = int.Parse(emoji.CountImages);
-            tags = emoji.Tags;
-            if (tags.Contains("animated"))
-            {
-                animationStyle = emoji.AnimationStyle;
-                frames = emoji.Frames;
-                framesOverTime = emoji.FramesOverTime;
-            }
-            maskTag = emoji.MaskTag;
+            emojiJson = emoji.JsonImage;
+            emojiCount = emoji.JsonImage.Count;
 
-            foreach (string id in emojiId)
+            foreach (string json in emojiJson)
             {
+                JObject jsonObject = JObject.Parse(json);
+
+                string id = jsonObject["id"]?.ToString();
+                string name = jsonObject["name"]?.ToString();
+                string frames = jsonObject["frames"]?.ToString();
+                string framesOverTime = jsonObject["framesOverTime"]?.ToString();
+                string tags = jsonObject["tags"]?.ToString();
+
                 AddEmojiPanel(id, tags, frames, framesOverTime);
             }
 
