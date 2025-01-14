@@ -209,7 +209,7 @@ namespace VRCGalleryManager.Forms
                 {
                     string image = SaveTemp();
 
-                    ApiRequest.ApiData emoji = await apiRequest.UploadImage(image, "square", TagType.EmojiAnimated, "shake", imageframes, 12);
+                    ApiRequest.ApiData emoji = await apiRequest.UploadImage(image, "square", TagType.EmojiAnimated, "shake", imageframes, trackBarFPS.Value);
                 }
                 catch (Exception ex)
                 {
@@ -257,6 +257,11 @@ namespace VRCGalleryManager.Forms
                 }
             }
             urlToSpriteSheetText.Text = "";
+        }
+
+        private void trackBarFPS_ValueChanged(object sender, EventArgs e)
+        {
+            labelFPS.Text = "FPS :" + trackBarFPS.Value.ToString();
         }
     }
 }

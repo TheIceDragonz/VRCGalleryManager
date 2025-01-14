@@ -249,7 +249,7 @@ namespace VRCGalleryManager
             Controls.Add(FormsPanel);
             Controls.Add(bannerIcon);
             Icon = (Icon)resources.GetObject("$this.Icon");
-            MinimumSize = new Size(750, 500);
+            MinimumSize = new Size(750, 600);
             Name = "MainPanel";
             Text = "VRCGalleryManager";
             ((System.ComponentModel.ISupportInitialize)bannerIcon).EndInit();

@@ -48,7 +48,7 @@ namespace VRCGalleryManager.Forms
             emojiPanel.BackColor = Color.FromArgb(5, 5, 5);
             emojiPanel.Location = new Point(12, 45);
             emojiPanel.Name = "emojiPanel";
-            emojiPanel.Size = new Size(772, 484);
+            emojiPanel.Size = new Size(761, 484);
             emojiPanel.TabIndex = 2;
             // 
             // _refreshButton
@@ -63,7 +63,7 @@ namespace VRCGalleryManager.Forms
             _refreshButton.FlatStyle = FlatStyle.Flat;
             _refreshButton.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
             _refreshButton.ForeColor = Color.FromArgb(106, 227, 249);
-            _refreshButton.Location = new Point(668, 12);
+            _refreshButton.Location = new Point(657, 12);
             _refreshButton.Name = "_refreshButton";
             _refreshButton.Size = new Size(116, 27);
             _refreshButton.TabIndex = 3;
@@ -86,7 +86,7 @@ namespace VRCGalleryManager.Forms
             roundedButton1.ForeColor = Color.FromArgb(106, 227, 249);
             roundedButton1.Location = new Point(12, 535);
             roundedButton1.Name = "roundedButton1";
-            roundedButton1.Size = new Size(650, 40);
+            roundedButton1.Size = new Size(639, 40);
             roundedButton1.TabIndex = 4;
             roundedButton1.Text = "Upload";
             roundedButton1.TextColor = Color.FromArgb(106, 227, 249);
@@ -105,7 +105,7 @@ namespace VRCGalleryManager.Forms
             emojiOpenTypePanel.FlatStyle = FlatStyle.Flat;
             emojiOpenTypePanel.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
             emojiOpenTypePanel.ForeColor = Color.FromArgb(106, 227, 249);
-            emojiOpenTypePanel.Location = new Point(668, 535);
+            emojiOpenTypePanel.Location = new Point(657, 535);
             emojiOpenTypePanel.Name = "emojiOpenTypePanel";
             emojiOpenTypePanel.Size = new Size(116, 40);
             emojiOpenTypePanel.TabIndex = 7;
@@ -123,7 +123,7 @@ namespace VRCGalleryManager.Forms
             emojiTypePanel.BorderColor = Color.PaleVioletRed;
             emojiTypePanel.BorderRadius = 9;
             emojiTypePanel.BorderSize = 0;
-            emojiTypePanel.Location = new Point(526, 45);
+            emojiTypePanel.Location = new Point(515, 45);
             emojiTypePanel.Name = "emojiTypePanel";
             emojiTypePanel.Padding = new Padding(5);
             emojiTypePanel.Size = new Size(258, 484);
@@ -163,7 +163,7 @@ namespace VRCGalleryManager.Forms
             limitStickerLabel.AutoSize = true;
             limitStickerLabel.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
             limitStickerLabel.ForeColor = Color.White;
-            limitStickerLabel.Location = new Point(603, 18);
+            limitStickerLabel.Location = new Point(592, 18);
             limitStickerLabel.Name = "limitStickerLabel";
             limitStickerLabel.Size = new Size(59, 15);
             limitStickerLabel.TabIndex = 7;
@@ -175,7 +175,7 @@ namespace VRCGalleryManager.Forms
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(5, 5, 5);
-            ClientSize = new Size(796, 587);
+            ClientSize = new Size(785, 587);
             Controls.Add(limitStickerLabel);
             Controls.Add(limitPanelEmoji);
             Controls.Add(emojiTypePanel);
