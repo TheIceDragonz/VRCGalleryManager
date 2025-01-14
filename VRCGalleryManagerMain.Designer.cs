@@ -34,7 +34,10 @@ namespace VRCGalleryManager
             bannerIcon = new PictureBox();
             FormsPanel = new RoundedPanel();
             SwitchPanel = new RoundedPanel();
+            _switchPhotos = new RoundedButton();
+            _switchIcons = new RoundedButton();
             _switchCreate = new RoundedButton();
+            _switchPrints = new RoundedButton();
             _switchSettings = new RoundedButton();
             _switchSticker = new RoundedButton();
             _switchEmoji = new RoundedButton();
@@ -75,7 +78,10 @@ namespace VRCGalleryManager
             SwitchPanel.BorderColor = Color.FromArgb(80, 80, 80);
             SwitchPanel.BorderRadius = 15;
             SwitchPanel.BorderSize = 0;
+            SwitchPanel.Controls.Add(_switchPhotos);
+            SwitchPanel.Controls.Add(_switchIcons);
             SwitchPanel.Controls.Add(_switchCreate);
+            SwitchPanel.Controls.Add(_switchPrints);
             SwitchPanel.Controls.Add(_switchSettings);
             SwitchPanel.Controls.Add(_switchSticker);
             SwitchPanel.Controls.Add(_switchEmoji);
@@ -85,6 +91,48 @@ namespace VRCGalleryManager
             SwitchPanel.Padding = new Padding(5);
             SwitchPanel.Size = new Size(157, 500);
             SwitchPanel.TabIndex = 6;
+            // 
+            // _switchPhotos
+            // 
+            _switchPhotos.BackColor = Color.FromArgb(7, 36, 43);
+            _switchPhotos.BackgroundColor = Color.FromArgb(7, 36, 43);
+            _switchPhotos.BorderColor = Color.FromArgb(5, 55, 66);
+            _switchPhotos.BorderRadius = 10;
+            _switchPhotos.BorderSize = 2;
+            _switchPhotos.Dock = DockStyle.Top;
+            _switchPhotos.Enabled = false;
+            _switchPhotos.FlatAppearance.BorderSize = 0;
+            _switchPhotos.FlatStyle = FlatStyle.Flat;
+            _switchPhotos.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
+            _switchPhotos.ForeColor = Color.FromArgb(106, 227, 249);
+            _switchPhotos.Location = new Point(5, 205);
+            _switchPhotos.Name = "_switchPhotos";
+            _switchPhotos.Size = new Size(147, 40);
+            _switchPhotos.TabIndex = 5;
+            _switchPhotos.Text = "Photos";
+            _switchPhotos.TextColor = Color.FromArgb(106, 227, 249);
+            _switchPhotos.UseVisualStyleBackColor = false;
+            // 
+            // _switchIcons
+            // 
+            _switchIcons.BackColor = Color.FromArgb(7, 36, 43);
+            _switchIcons.BackgroundColor = Color.FromArgb(7, 36, 43);
+            _switchIcons.BorderColor = Color.FromArgb(5, 55, 66);
+            _switchIcons.BorderRadius = 10;
+            _switchIcons.BorderSize = 2;
+            _switchIcons.Dock = DockStyle.Top;
+            _switchIcons.Enabled = false;
+            _switchIcons.FlatAppearance.BorderSize = 0;
+            _switchIcons.FlatStyle = FlatStyle.Flat;
+            _switchIcons.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
+            _switchIcons.ForeColor = Color.FromArgb(106, 227, 249);
+            _switchIcons.Location = new Point(5, 165);
+            _switchIcons.Name = "_switchIcons";
+            _switchIcons.Size = new Size(147, 40);
+            _switchIcons.TabIndex = 4;
+            _switchIcons.Text = "Icons";
+            _switchIcons.TextColor = Color.FromArgb(106, 227, 249);
+            _switchIcons.UseVisualStyleBackColor = false;
             // 
             // _switchCreate
             // 
@@ -98,14 +146,35 @@ namespace VRCGalleryManager
             _switchCreate.FlatStyle = FlatStyle.Flat;
             _switchCreate.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
             _switchCreate.ForeColor = Color.FromArgb(106, 227, 249);
-            _switchCreate.Location = new Point(5, 85);
+            _switchCreate.Location = new Point(5, 125);
             _switchCreate.Name = "_switchCreate";
             _switchCreate.Size = new Size(147, 40);
-            _switchCreate.TabIndex = 2;
+            _switchCreate.TabIndex = 3;
             _switchCreate.Text = "Create";
             _switchCreate.TextColor = Color.FromArgb(106, 227, 249);
             _switchCreate.UseVisualStyleBackColor = false;
             _switchCreate.Click += _switchCreate_Click;
+            // 
+            // _switchPrints
+            // 
+            _switchPrints.BackColor = Color.FromArgb(7, 36, 43);
+            _switchPrints.BackgroundColor = Color.FromArgb(7, 36, 43);
+            _switchPrints.BorderColor = Color.FromArgb(5, 55, 66);
+            _switchPrints.BorderRadius = 10;
+            _switchPrints.BorderSize = 2;
+            _switchPrints.Dock = DockStyle.Top;
+            _switchPrints.FlatAppearance.BorderSize = 0;
+            _switchPrints.FlatStyle = FlatStyle.Flat;
+            _switchPrints.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
+            _switchPrints.ForeColor = Color.FromArgb(106, 227, 249);
+            _switchPrints.Location = new Point(5, 85);
+            _switchPrints.Name = "_switchPrints";
+            _switchPrints.Size = new Size(147, 40);
+            _switchPrints.TabIndex = 2;
+            _switchPrints.Text = "Prints";
+            _switchPrints.TextColor = Color.FromArgb(106, 227, 249);
+            _switchPrints.UseVisualStyleBackColor = false;
+            _switchPrints.Click += _switchPrints_Click;
             // 
             // _switchSettings
             // 
@@ -196,6 +265,9 @@ namespace VRCGalleryManager
         private RoundedButton _switchEmoji;
         private RoundedButton _switchSticker;
         private RoundedButton _switchSettings;
+        private RoundedButton _switchPrints;
         private RoundedButton _switchCreate;
+        private RoundedButton _switchPhotos;
+        private RoundedButton _switchIcons;
     }
 }

@@ -10,7 +10,10 @@ namespace VRCGalleryManager.Core.DTO
     {
         Emoji,
         Sticker,
-        EmojiAnimated
+        EmojiAnimated,
+        Gallery,
+        Icon,
+        Print,
     }
 
     public class ImageUploadPayload

@@ -18,7 +18,7 @@ namespace VRCGalleryManager
 
             Auth.LoadCookies();
 
-            _forms = new Form[] { new Emoji(Auth), new Sticker(Auth), new Create(Auth), new Settings(Auth) };
+            _forms = new Form[] { new Emoji(Auth), new Sticker(Auth), new Prints(Auth), new Create(Auth), new Settings(Auth) };
             foreach (var form in _forms)
             {
                 form.TopLevel = false;
@@ -27,7 +27,7 @@ namespace VRCGalleryManager
                 form.Hide();
             }
 
-            ShowForm(3);
+            ShowForm(4);
         }
 
         private void ShowForm(int index)
@@ -37,16 +37,17 @@ namespace VRCGalleryManager
             _forms[index].Show();
 
             _switchEmoji.BorderColor = index == 0 ? Color.FromArgb(255, 255, 255) : Color.FromArgb(5, 55, 66);
-            _switchSticker.BorderColor = index == 1 ? Color.FromArgb(255, 255, 255) : Color.FromArgb(5, 55, 66); ;
-            _switchCreate.BorderColor = index == 2 ? Color.FromArgb(255, 255, 255) : Color.FromArgb(5, 55, 66); ;
-            _switchSettings.BorderColor = index == 3 ? Color.FromArgb(255, 255, 255) : Color.FromArgb(5, 55, 66); ;
+            _switchSticker.BorderColor = index == 1 ? Color.FromArgb(255, 255, 255) : Color.FromArgb(5, 55, 66);
+            _switchPrints.BorderColor = index == 2 ? Color.FromArgb(255, 255, 255) : Color.FromArgb(5, 55, 66);
+            _switchCreate.BorderColor = index == 3 ? Color.FromArgb(255, 255, 255) : Color.FromArgb(5, 55, 66);
+            _switchSettings.BorderColor = index == 4 ? Color.FromArgb(255, 255, 255) : Color.FromArgb(5, 55, 66);
         }
 
         private void _switchEmoji_Click(object sender, EventArgs e) => ShowForm(0);
         private void _switchSticker_Click(object sender, EventArgs e) => ShowForm(1);
-        private void _switchCreate_Click(object sender, EventArgs e) => ShowForm(2);
-        private void _switchSettings_Click(object sender, EventArgs e) => ShowForm(3);
-
+        private void _switchPrints_Click(object sender, EventArgs e) => ShowForm(2);
+        private void _switchCreate_Click(object sender, EventArgs e) => ShowForm(3);
         
+        private void _switchSettings_Click(object sender, EventArgs e) => ShowForm(4);
     }
 }

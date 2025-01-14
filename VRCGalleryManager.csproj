@@ -26,6 +26,15 @@
     <Compile Update="Forms\Create.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Update="Forms\Panels\PrintsPanel.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="Forms\Prints.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="Forms\Prints.Designer.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Update="Forms\Panels\StickerPanel.cs" />
     <Compile Update="Forms\Sticker.cs">
       <SubType>Form</SubType>
