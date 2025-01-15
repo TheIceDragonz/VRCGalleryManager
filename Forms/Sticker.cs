@@ -64,11 +64,11 @@ namespace VRCGalleryManager.Forms
 
                 if (openFileDialog.ShowDialog() == DialogResult.OK)
                 {
-                    string selectedFilePath = openFileDialog.FileName;
-                   
+                    string resizedImage = ImageResizer.ResizeImage1024x1024(openFileDialog.FileName);
+
                     try
                     {
-                        ApiRequest.ApiData sticker = await apiRequest.UploadImage(selectedFilePath, STICKER_MASK_TYPE, TagType.Sticker);
+                        ApiRequest.ApiData sticker = await apiRequest.UploadImage(resizedImage, STICKER_MASK_TYPE, TagType.Sticker);
 
                         AddStickerPanel(sticker.IdImageUploaded);
 

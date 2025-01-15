@@ -79,13 +79,13 @@ namespace VRCGalleryManager.Forms
 
                     if (openFileDialog.ShowDialog() == DialogResult.OK)
                     {
-                        string selectedFilePath = openFileDialog.FileName;
+                        string resizedImage = ImageResizer.ResizeImage1024x1024(openFileDialog.FileName);
 
                         try
                         {
                             EMOJI_ANIMATION_STYLE = emojiOpenTypePanel.Text.ToLower();
 
-                            ApiRequest.ApiData emoji = await apiRequest.UploadImage(selectedFilePath, EMOJI_MASK_TAG, TagType.Emoji, EMOJI_ANIMATION_STYLE);
+                            ApiRequest.ApiData emoji = await apiRequest.UploadImage(resizedImage, EMOJI_MASK_TAG, TagType.Emoji, EMOJI_ANIMATION_STYLE);
 
                             AddEmojiPanel(emoji.IdImageUploaded, emoji.Tags, emoji.Frames, emoji.FramesOverTime);
 
