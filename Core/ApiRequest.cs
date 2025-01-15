@@ -1,12 +1,8 @@
-﻿using VRCGalleryManager.Forms;
-using System.Diagnostics;
+﻿using System.Diagnostics;
+using VRCGalleryManager.Core.DTO;
 using VRChat.API.Api;
 using VRChat.API.Client;
 using VRChat.API.Model;
-using File = VRChat.API.Model.File;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
-using VRCGalleryManager.Core.DTO;
-using System.Text.Json.Nodes;
 
 namespace VRCGalleryManager.Core
 {
@@ -38,7 +34,7 @@ namespace VRCGalleryManager.Core
         public async Task<ApiData> GetApiData(string tag)
         {
             ApiData apiData = new ApiData();
-             
+
             try
             {
                 var images = filesApi.GetFiles(tag);
@@ -103,7 +99,7 @@ namespace VRCGalleryManager.Core
         public async Task<ApiData> UploadImage(string path, string maskTag, TagType tag, string animationStyle)
         {
             ApiData apiData = new ApiData();
-            
+
             ImageUploadPayload imageUploadPayload = new ImageUploadPayload(path);
 
             imageUploadPayload.MaskTag = maskTag;

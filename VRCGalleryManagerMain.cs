@@ -5,7 +5,6 @@ namespace VRCGalleryManager
 {
     public partial class MainPanel : Form
     {
-
         private readonly Form[] _forms;
 
         private VRCAuth Auth;
@@ -27,7 +26,19 @@ namespace VRCGalleryManager
                 form.Hide();
             }
 
+            if (Auth.CookieLoaded)
+            {
+                ProfileImage();
+            }
+
             ShowForm(4);
+        }
+
+        private async void ProfileImage()
+        {
+            Settings images = new Settings(Auth);
+            profileIcon.LoadAsync(await HttpImage.GetFinalUrlAsync(images.UserIconImage));
+            profileBanner.LoadAsync(await HttpImage.GetFinalUrlAsync(images.UserBannerImage));
         }
 
         private void ShowForm(int index)
@@ -47,7 +58,7 @@ namespace VRCGalleryManager
         private void _switchSticker_Click(object sender, EventArgs e) => ShowForm(1);
         private void _switchPrints_Click(object sender, EventArgs e) => ShowForm(2);
         private void _switchCreate_Click(object sender, EventArgs e) => ShowForm(3);
-        
+
         private void _switchSettings_Click(object sender, EventArgs e) => ShowForm(4);
     }
 }

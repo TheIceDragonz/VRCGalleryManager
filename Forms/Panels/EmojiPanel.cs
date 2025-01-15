@@ -7,9 +7,6 @@ namespace VRCGalleryManager.Forms
 {
     public partial class Emoji
     {
-        private string linkEmoji = "https://api.vrchat.cloud/api/1/file/";
-        private string endlinkEmoji = "/1/file";
-
         private async void AddEmojiPanel(string emojiId, string tags, string frames, string framesOverTime)
         {
             //* IMAGE PANEL
@@ -26,7 +23,7 @@ namespace VRCGalleryManager.Forms
                 BorderSize = 5,
                 Padding = new Padding(7)
             };
-            string image = linkEmoji + emojiId + endlinkEmoji;
+            string image = $"https://api.vrchat.cloud/api/1/file/{emojiId}/1/file";
             string finalaviImage = await HttpImage.GetFinalUrlAsync(image);
 
             if (!finalaviImage.Contains("imageNotFound"))
@@ -50,7 +47,7 @@ namespace VRCGalleryManager.Forms
                 }
                 else
                 {
-                    await Task.Run(() => pictureBox.Load(finalaviImage));
+                    pictureBox.LoadAsync(finalaviImage);
                 }
 
                 btn_open.Click += (sender, e) => Process.Start("explorer.exe", image);
@@ -59,7 +56,6 @@ namespace VRCGalleryManager.Forms
             }
             else
             {
-                //pictureBox.Image = Resources.NotFound;
                 pictureBox.Cursor = Cursors.Default;
             }
 

@@ -73,6 +73,16 @@ namespace VRCGalleryManager.Properties {
         /// <summary>
         ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap NotFound {
+            get {
+                object obj = ResourceManager.GetObject("NotFound", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap Preview_B2_Aura {
             get {
                 object obj = ResourceManager.GetObject("Preview_B2-Aura", resourceCulture);

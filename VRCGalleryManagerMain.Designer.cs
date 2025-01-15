@@ -41,8 +41,12 @@ namespace VRCGalleryManager
             _switchSettings = new RoundedButton();
             _switchSticker = new RoundedButton();
             _switchEmoji = new RoundedButton();
+            profileBanner = new RoundedPictureBox();
+            profileIcon = new RoundedPictureBox();
             ((System.ComponentModel.ISupportInitialize)bannerIcon).BeginInit();
             SwitchPanel.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)profileBanner).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)profileIcon).BeginInit();
             SuspendLayout();
             // 
             // bannerIcon
@@ -85,11 +89,11 @@ namespace VRCGalleryManager
             SwitchPanel.Controls.Add(_switchSettings);
             SwitchPanel.Controls.Add(_switchSticker);
             SwitchPanel.Controls.Add(_switchEmoji);
-            SwitchPanel.Location = new Point(12, 70);
+            SwitchPanel.Location = new Point(12, 170);
             SwitchPanel.Margin = new Padding(5);
             SwitchPanel.Name = "SwitchPanel";
             SwitchPanel.Padding = new Padding(5);
-            SwitchPanel.Size = new Size(157, 500);
+            SwitchPanel.Size = new Size(157, 400);
             SwitchPanel.TabIndex = 6;
             // 
             // _switchPhotos
@@ -188,7 +192,7 @@ namespace VRCGalleryManager
             _switchSettings.FlatStyle = FlatStyle.Flat;
             _switchSettings.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
             _switchSettings.ForeColor = Color.FromArgb(106, 227, 249);
-            _switchSettings.Location = new Point(5, 455);
+            _switchSettings.Location = new Point(5, 355);
             _switchSettings.Name = "_switchSettings";
             _switchSettings.Size = new Size(147, 40);
             _switchSettings.TabIndex = 2;
@@ -239,12 +243,51 @@ namespace VRCGalleryManager
             _switchEmoji.UseVisualStyleBackColor = false;
             _switchEmoji.Click += _switchEmoji_Click;
             // 
+            // profileBanner
+            // 
+            profileBanner.BackColor = Color.FromArgb(7, 36, 43);
+            profileBanner.BackgroundColor = Color.FromArgb(7, 36, 43);
+            profileBanner.BorderColor = Color.FromArgb(5, 55, 66);
+            profileBanner.BorderRadiusBottomLeft = 20;
+            profileBanner.BorderRadiusBottomRight = 20;
+            profileBanner.BorderRadiusTopLeft = 20;
+            profileBanner.BorderRadiusTopRight = 20;
+            profileBanner.BorderSize = 0;
+            profileBanner.ImageLocation = "";
+            profileBanner.Location = new Point(12, 63);
+            profileBanner.Name = "profileBanner";
+            profileBanner.Size = new Size(157, 89);
+            profileBanner.SizeMode = PictureBoxSizeMode.StretchImage;
+            profileBanner.TabIndex = 7;
+            profileBanner.TabStop = false;
+            // 
+            // profileIcon
+            // 
+            profileIcon.BackColor = Color.FromArgb(7, 36, 43);
+            profileIcon.BackgroundColor = Color.FromArgb(7, 36, 43);
+            profileIcon.BorderColor = Color.FromArgb(5, 55, 66);
+            profileIcon.BorderRadiusBottomLeft = 25;
+            profileIcon.BorderRadiusBottomRight = 25;
+            profileIcon.BorderRadiusTopLeft = 25;
+            profileIcon.BorderRadiusTopRight = 25;
+            profileIcon.BorderSize = 0;
+            profileIcon.ImageLocation = "";
+            profileIcon.Location = new Point(21, 105);
+            profileIcon.Margin = new Padding(5);
+            profileIcon.Name = "profileIcon";
+            profileIcon.Size = new Size(55, 55);
+            profileIcon.SizeMode = PictureBoxSizeMode.StretchImage;
+            profileIcon.TabIndex = 8;
+            profileIcon.TabStop = false;
+            // 
             // MainPanel
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(15, 17, 19);
             ClientSize = new Size(1022, 582);
+            Controls.Add(profileIcon);
+            Controls.Add(profileBanner);
             Controls.Add(SwitchPanel);
             Controls.Add(FormsPanel);
             Controls.Add(bannerIcon);
@@ -254,6 +297,8 @@ namespace VRCGalleryManager
             Text = "VRCGalleryManager";
             ((System.ComponentModel.ISupportInitialize)bannerIcon).EndInit();
             SwitchPanel.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)profileBanner).EndInit();
+            ((System.ComponentModel.ISupportInitialize)profileIcon).EndInit();
             ResumeLayout(false);
         }
 
@@ -269,5 +314,7 @@ namespace VRCGalleryManager
         private RoundedButton _switchCreate;
         private RoundedButton _switchPhotos;
         private RoundedButton _switchIcons;
+        private RoundedPictureBox profileBanner;
+        private RoundedPictureBox profileIcon;
     }
 }

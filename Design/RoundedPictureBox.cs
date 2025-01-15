@@ -141,19 +141,5 @@ namespace VRCGalleryManager.Design
         {
             Invalidate();
         }
-
-        protected override void OnResize(EventArgs e)
-        {
-            base.OnResize(e);
-
-            if (Width != Height)
-            {
-                int size = Math.Min(Width, Height);
-                this.Size = new Size(size, size);
-            }
-
-            Invalidate();
-        }
-
     }
 }

@@ -118,77 +118,20 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
-  <data name="Preview_B2-Rotate" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\animationStyle\Preview_B2-Rotate.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
   <data name="Preview_B2-Pizza" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\animationStyle\Preview_B2-Pizza.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="Preview_B2-Lasers" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\animationStyle\Preview_B2-Lasers.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="Preview_B2-Fire" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\animationStyle\Preview_B2-Fire.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="Preview_B2-Winter_Mistletoe" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\animationStyle\Preview_B2-Winter_Mistletoe.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="Preview_B2-Aura" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\animationStyle\Preview_B2-Aura.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="Preview_B2-Crying" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\animationStyle\Preview_B2-Crying.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="Preview_B2-Bees" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\animationStyle\Preview_B2-Bees.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="Preview_B2-Fall_Bats" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\animationStyle\Preview_B2-Fall_Bats.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="Preview_B2-Dislike" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\animationStyle\Preview_B2-Dislike.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="Preview_B2-Winter_Snowball" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\animationStyle\Preview_B2-Winter_Snowball.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="Preview_B2-Magnet" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\animationStyle\Preview_B2-Magnet.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="Preview_B2-Winter_Confetti" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\animationStyle\Preview_B2-Winter_Confetti.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="Preview_B2-ZZZ" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\animationStyle\Preview_B2-ZZZ.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="Preview_B2-Bounce" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\animationStyle\Preview_B2-Bounce.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="Preview_B2-Noise" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\animationStyle\Preview_B2-Noise.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Preview_B2-Money" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\animationStyle\Preview_B2-Money.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="Preview_B2-Bees" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\animationStyle\Preview_B2-Bees.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Preview_B2-Shake" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\animationStyle\Preview_B2-Shake.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="Preview_B2-Magnet" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\animationStyle\Preview_B2-Magnet.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Preview_B2-SummerSplash" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\animationStyle\Preview_B2-SummerSplash.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="Preview_B2-Idea" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\animationStyle\Preview_B2-Idea.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="Preview_B2-Rain" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\animationStyle\Preview_B2-Rain.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="Preview_B2-Orbit" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\animationStyle\Preview_B2-Orbit.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="Preview_B2-Cloud" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\animationStyle\Preview_B2-Cloud.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="Preview_B2-Like" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\animationStyle\Preview_B2-Like.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="Preview_B2-Aura" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\animationStyle\Preview_B2-Aura.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="Preview_B2-Spin" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\animationStyle\Preview_B2-Spin.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -196,7 +139,67 @@
   <data name="Preview_B2-Stop" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\animationStyle\Preview_B2-Stop.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="Preview_B2-Rotate" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\animationStyle\Preview_B2-Rotate.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Preview_B2-Winter_Mistletoe" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\animationStyle\Preview_B2-Winter_Mistletoe.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="Icon" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Icon.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Preview_B2-Dislike" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\animationStyle\Preview_B2-Dislike.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Preview_B2-Fall_Bats" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\animationStyle\Preview_B2-Fall_Bats.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Preview_B2-ZZZ" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\animationStyle\Preview_B2-ZZZ.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Preview_B2-Money" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\animationStyle\Preview_B2-Money.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Preview_B2-Bounce" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\animationStyle\Preview_B2-Bounce.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Preview_B2-Idea" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\animationStyle\Preview_B2-Idea.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Preview_B2-SummerSplash" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\animationStyle\Preview_B2-SummerSplash.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Preview_B2-Fire" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\animationStyle\Preview_B2-Fire.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Preview_B2-Lasers" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\animationStyle\Preview_B2-Lasers.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Preview_B2-Crying" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\animationStyle\Preview_B2-Crying.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Preview_B2-Like" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\animationStyle\Preview_B2-Like.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Preview_B2-Orbit" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\animationStyle\Preview_B2-Orbit.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Preview_B2-Shake" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\animationStyle\Preview_B2-Shake.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Preview_B2-Winter_Snowball" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\animationStyle\Preview_B2-Winter_Snowball.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Preview_B2-Rain" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\animationStyle\Preview_B2-Rain.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Preview_B2-Winter_Confetti" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\animationStyle\Preview_B2-Winter_Confetti.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Preview_B2-Cloud" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\animationStyle\Preview_B2-Cloud.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="NotFound" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\NotFound.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
 </root>

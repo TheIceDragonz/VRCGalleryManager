@@ -41,7 +41,7 @@ namespace VRCGalleryManager.Forms
                     Location = new Point(90, 115),
                     Anchor = AnchorStyles.Bottom | AnchorStyles.Right
                 };
-                await Task.Run(() => pictureBox.Load(finalaviImage));
+                pictureBox.LoadAsync(finalaviImage);
 
                 btn_open.Click += (sender, e) => Process.Start("explorer.exe", image);
                 btn_open.Cursor = Cursors.Hand;

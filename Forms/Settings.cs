@@ -1,6 +1,7 @@
 ﻿using VRCGalleryManager.Core;
 using System.Text.Json;
 using VRChat.API.Model;
+using System.Reflection;
 
 namespace VRCGalleryManager.Forms
 {
@@ -9,6 +10,9 @@ namespace VRCGalleryManager.Forms
         private VRCAuth Auth;
         public static int MaxDataPages = 10;
         private string[] _allFiles = new string[0];
+
+        public string UserIconImage = "";
+        public string UserBannerImage = "";
 
         public Settings(VRCAuth Auth)
         {
@@ -58,10 +62,13 @@ namespace VRCGalleryManager.Forms
                     _loginButton.Text = "Logout";
                     _loginButton.TextColor = Color.FromArgb(255, 128, 128);
 
-                    CurrentUser currentUsers = Auth.AuthApi.GetCurrentUser();
+                    CurrentUser currentUser = Auth.AuthApi.GetCurrentUser();
 
-                    _username.Text = currentUsers.DisplayName;
+                    _username.Text = currentUser.DisplayName;
                     _password.Text = "password";
+
+                    UserIconImage = currentUser.UserIcon;
+                    UserBannerImage = currentUser.ProfilePicOverride;
                 }
                 catch (Exception ex)
                 {

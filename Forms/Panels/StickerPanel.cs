@@ -6,9 +6,6 @@ namespace VRCGalleryManager.Forms
 {
     public partial class Sticker
     {
-        private string linkSticker = "https://api.vrchat.cloud/api/1/file/";
-        private string endlinkSticker = "/1/file";
-
         private async void AddStickerPanel(string stickerId)
         {
             //* IMAGE PANEL
@@ -25,7 +22,7 @@ namespace VRCGalleryManager.Forms
                 BorderSize = 5,
                 Padding = new Padding(7)
             };
-            string image = linkSticker + stickerId + endlinkSticker;
+            string image = $"https://api.vrchat.cloud/api/1/file/{stickerId}/1/file";
             string finalaviImage = await HttpImage.GetFinalUrlAsync(image);
 
             if (!finalaviImage.Contains("imageNotFound"))
@@ -41,7 +38,7 @@ namespace VRCGalleryManager.Forms
                     Location = new Point(90, 115),
                     Anchor = AnchorStyles.Bottom | AnchorStyles.Right
                 };
-                await Task.Run(() => pictureBox.Load(finalaviImage));
+                pictureBox.LoadAsync(finalaviImage);
                 btn_open.Click += (sender, e) => Process.Start("explorer.exe", image);
                 btn_open.Cursor = Cursors.Hand;
                 pictureBox.Controls.Add(btn_open);
