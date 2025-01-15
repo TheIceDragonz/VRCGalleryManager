@@ -25,6 +25,13 @@ namespace VRCGalleryManager.Forms
 
         private void LoginButton(object sender, EventArgs e)
         {
+            if (!(Auth.LoggedIn || Auth.CookieLoaded))
+            {
+                Auth.VRCAuthentication(_username.Text, _password.Text);
+                checkToken();
+                return;
+            }
+
             if (Auth.LoggedIn || Auth.CookieLoaded)
             {
                 Auth.AuthApi.Logout();
@@ -37,16 +44,11 @@ namespace VRCGalleryManager.Forms
                 _password.Text = "";
 
                 _loginButton.Text = "Login";
-                _loginButton.BackColor = Color.DimGray;
+                _loginButton.TextColor = Color.FromArgb(106, 227, 249);
+                _loginButton.BackColor = Color.FromArgb(7, 36, 43);
 
                 Auth.LoggedIn = false;
                 Auth.CookieLoaded = false;
-            }
-
-            if (!(Auth.LoggedIn || Auth.CookieLoaded))
-            {
-                Auth.VRCAuthentication(_username.Text, _password.Text);
-                checkToken();
             }
         }
 
@@ -69,6 +71,8 @@ namespace VRCGalleryManager.Forms
 
                     UserIconImage = currentUser.UserIcon;
                     UserBannerImage = currentUser.ProfilePicOverride;
+
+                    if (string.IsNullOrEmpty(UserBannerImage)) UserBannerImage = currentUser.CurrentAvatarThumbnailImageUrl;
                 }
                 catch (Exception ex)
                 {

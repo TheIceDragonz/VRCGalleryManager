@@ -26,7 +26,7 @@ namespace VRCGalleryManager
                 form.Hide();
             }
 
-            if (Auth.CookieLoaded)
+            if (Auth.LoggedIn || Auth.CookieLoaded)
             {
                 ProfileImage();
             }

@@ -6,9 +6,6 @@ namespace VRCGalleryManager.Forms
 {
     public partial class Prints
     {
-        private string linkPrints = "https://api.vrchat.cloud/api/1/file/";
-        private string endlinkPrints = "/1/file";
-
         private async void AddPrintsPanel(string printsId)
         {
             //* IMAGE PANEL
@@ -25,7 +22,7 @@ namespace VRCGalleryManager.Forms
                 BorderSize = 5,
                 Padding = new Padding(7)
             };
-            string image = linkPrints + printsId + endlinkPrints;
+            string image = $"https://api.vrchat.cloud/api/1/file/{printsId}/1/file";
             string finalaviImage = await HttpImage.GetFinalUrlAsync(image);
 
             if (!finalaviImage.Contains("imageNotFound"))
