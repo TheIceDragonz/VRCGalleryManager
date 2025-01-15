@@ -62,7 +62,8 @@ namespace VRCGalleryManager.Forms
             FrameDimension dimension = new FrameDimension(gifImage.FrameDimensionsList[0]);
             int frameCount = gifImage.GetFrameCount(dimension);
 
-            imageframes = frameCount;
+            if (frameCount < 64) imageframes = frameCount;
+            else imageframes = 64;
 
             int maxTextureSize = 1024;
             int squareSize;
