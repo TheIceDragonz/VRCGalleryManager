@@ -95,6 +95,8 @@ namespace VRCGalleryManager.Core
 
             var response = await filesApi.UploadImageAsync(imageUploadPayload);
 
+            apiData.IdImageUploaded = response.Data.Id;
+
             return apiData;
         }
 
@@ -109,6 +111,8 @@ namespace VRCGalleryManager.Core
             imageUploadPayload.AnimationStyle = animationStyle;
 
             var response = await filesApi.UploadImageAsync(imageUploadPayload);
+
+            apiData.IdImageUploaded = response.Data.Id;
 
             return apiData;
         }
@@ -125,6 +129,8 @@ namespace VRCGalleryManager.Core
             imageUploadPayload.FramesOverTime = framesOverTime;
 
             var response = await filesApi.UploadImageAsync(imageUploadPayload);
+
+            apiData.IdImageUploaded = response.Data.Id;
 
             return apiData;
         }
