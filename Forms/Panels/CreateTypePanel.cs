@@ -4,7 +4,7 @@ using static VRCGalleryManager.Core.EmojiType;
 
 namespace VRCGalleryManager.Forms
 {
-    public partial class Emoji
+    public partial class Create
     {
         private async void LoadEmojiType()
         {
@@ -65,15 +65,15 @@ namespace VRCGalleryManager.Forms
 
             EventHandler eventClick = (sender, e) =>
             {
-                emojiOpenTypePanel.Text = typeWithImage.Type;
-                emojiTypePanel.Visible = false;
+                createOpenTypePanel.Text = typeWithImage.Type;
+                createTypePanel.Visible = false;
             };
 
             panel.Click += eventClick;
             pictureBox.Click += eventClick;
             labelName.Click += eventClick;
 
-            emojiTypePanel.Controls.Add(panel);
+            createTypePanel.Controls.Add(panel);
         }
     }
 }

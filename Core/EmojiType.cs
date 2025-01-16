@@ -5,6 +5,18 @@ namespace VRCGalleryManager.Core
 {
     internal class EmojiType
     {
+        public class TypeWithImage
+        {
+            public string Type { get; set; }
+            public Image Image { get; set; }
+
+            public TypeWithImage(string type, Image image)
+            {
+                Type = type;
+                Image = image;
+            }
+        }
+
         public List<TypeWithImage> TypesWithImages { get; } = new List<TypeWithImage>
         {
             new TypeWithImage("Aura", Resources.Preview_B2_Aura),

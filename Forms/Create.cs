@@ -1,5 +1,4 @@
 ﻿using System.Drawing.Imaging;
-using System.Security.Policy;
 using VRCGalleryManager.Core;
 using VRCGalleryManager.Core.DTO;
 
@@ -7,6 +6,9 @@ namespace VRCGalleryManager.Forms
 {
     public partial class Create : Form
     {
+        private static string EMOJI_MASK_TAG = "square";
+        private static string EMOJI_ANIMATION_STYLE = "";
+
         private ApiRequest apiRequest;
 
         private string gifPath;
@@ -23,6 +25,8 @@ namespace VRCGalleryManager.Forms
             this.AllowDrop = true;
             this.DragEnter += new DragEventHandler(pictureSS_DragEnter);
             this.DragDrop += new DragEventHandler(pictureSS_DragDrop);
+
+            LoadEmojiType();
         }
 
         private void pictureSS_DragDrop(object sender, DragEventArgs e)
@@ -206,15 +210,24 @@ namespace VRCGalleryManager.Forms
         {
             if (spriteSheet != null)
             {
-                try
+                if (!createOpenTypePanel.Text.Contains("Type"))
                 {
-                    string image = SaveTemp();
+                    try
+                    {
+                        string image = SaveTemp();
 
-                    ApiRequest.ApiData emoji = await apiRequest.UploadImage(image, "square", TagType.EmojiAnimated, "shake", imageframes, trackBarFPS.Value);
+                        EMOJI_ANIMATION_STYLE = createOpenTypePanel.Text.ToLower();
+
+                        ApiRequest.ApiData emoji = await apiRequest.UploadImage(image, EMOJI_MASK_TAG, TagType.EmojiAnimated, EMOJI_ANIMATION_STYLE, imageframes, trackBarFPS.Value);
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(ex.Message, "Error during file upload", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
                 }
-                catch (Exception ex)
+                else
                 {
-                    MessageBox.Show(ex.Message, "Error during file upload", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    DialogMessage.ShowMissingTypeDialog();
                 }
             }
             else
@@ -263,6 +276,11 @@ namespace VRCGalleryManager.Forms
         private void trackBarFPS_ValueChanged(object sender, EventArgs e)
         {
             labelFPS.Text = "FPS :" + trackBarFPS.Value.ToString();
+        }
+
+        private void createOpenTypePanel_Click(object sender, EventArgs e)
+        {
+            createTypePanel.Visible = !createTypePanel.Visible;
         }
     }
 }

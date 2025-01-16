@@ -39,6 +39,8 @@ namespace VRCGalleryManager.Forms
             label1 = new Label();
             trackBarFPS = new TrackBar();
             labelFPS = new Label();
+            createTypePanel = new RoundedPanel();
+            createOpenTypePanel = new RoundedButton();
             ((System.ComponentModel.ISupportInitialize)previewGif).BeginInit();
             ((System.ComponentModel.ISupportInitialize)previewSS).BeginInit();
             ((System.ComponentModel.ISupportInitialize)trackBarFPS).BeginInit();
@@ -56,7 +58,7 @@ namespace VRCGalleryManager.Forms
             previewGif.BorderRadiusTopRight = 10;
             previewGif.BorderSize = 0;
             previewGif.ImageLocation = "";
-            previewGif.Location = new Point(58, 52);
+            previewGif.Location = new Point(104, 63);
             previewGif.Name = "previewGif";
             previewGif.Size = new Size(260, 260);
             previewGif.SizeMode = PictureBoxSizeMode.StretchImage;
@@ -76,7 +78,7 @@ namespace VRCGalleryManager.Forms
             previewSS.BorderRadiusTopLeft = 10;
             previewSS.BorderRadiusTopRight = 10;
             previewSS.BorderSize = 0;
-            previewSS.Location = new Point(324, 52);
+            previewSS.Location = new Point(370, 63);
             previewSS.Name = "previewSS";
             previewSS.Size = new Size(260, 260);
             previewSS.SizeMode = PictureBoxSizeMode.StretchImage;
@@ -95,7 +97,7 @@ namespace VRCGalleryManager.Forms
             buttonSave.FlatStyle = FlatStyle.Flat;
             buttonSave.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
             buttonSave.ForeColor = Color.FromArgb(106, 227, 249);
-            buttonSave.Location = new Point(514, 487);
+            buttonSave.Location = new Point(485, 509);
             buttonSave.Name = "buttonSave";
             buttonSave.Size = new Size(116, 40);
             buttonSave.TabIndex = 2;
@@ -116,9 +118,9 @@ namespace VRCGalleryManager.Forms
             roundedButton1.FlatStyle = FlatStyle.Flat;
             roundedButton1.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
             roundedButton1.ForeColor = Color.FromArgb(106, 227, 249);
-            roundedButton1.Location = new Point(12, 487);
+            roundedButton1.Location = new Point(12, 509);
             roundedButton1.Name = "roundedButton1";
-            roundedButton1.Size = new Size(496, 40);
+            roundedButton1.Size = new Size(467, 40);
             roundedButton1.TabIndex = 4;
             roundedButton1.Text = "Upload";
             roundedButton1.TextColor = Color.FromArgb(106, 227, 249);
@@ -132,7 +134,7 @@ namespace VRCGalleryManager.Forms
             titleGifCreator.ForeColor = Color.White;
             titleGifCreator.Location = new Point(0, 0);
             titleGifCreator.Name = "titleGifCreator";
-            titleGifCreator.Size = new Size(642, 37);
+            titleGifCreator.Size = new Size(735, 37);
             titleGifCreator.TabIndex = 5;
             titleGifCreator.Text = "Gif Creator";
             titleGifCreator.TextAlign = ContentAlignment.TopCenter;
@@ -143,7 +145,7 @@ namespace VRCGalleryManager.Forms
             urlToSpriteSheetText.BackColor = Color.FromArgb(7, 36, 43);
             urlToSpriteSheetText.BorderStyle = BorderStyle.None;
             urlToSpriteSheetText.ForeColor = Color.White;
-            urlToSpriteSheetText.Location = new Point(58, 353);
+            urlToSpriteSheetText.Location = new Point(104, 364);
             urlToSpriteSheetText.Name = "urlToSpriteSheetText";
             urlToSpriteSheetText.Size = new Size(526, 16);
             urlToSpriteSheetText.TabIndex = 6;
@@ -155,7 +157,7 @@ namespace VRCGalleryManager.Forms
             label1.AutoSize = true;
             label1.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
             label1.ForeColor = Color.White;
-            label1.Location = new Point(58, 335);
+            label1.Location = new Point(104, 346);
             label1.Name = "label1";
             label1.Size = new Size(124, 15);
             label1.TabIndex = 7;
@@ -165,7 +167,7 @@ namespace VRCGalleryManager.Forms
             // 
             trackBarFPS.Anchor = AnchorStyles.None;
             trackBarFPS.BackColor = Color.FromArgb(7, 36, 43);
-            trackBarFPS.Location = new Point(58, 409);
+            trackBarFPS.Location = new Point(104, 420);
             trackBarFPS.Maximum = 64;
             trackBarFPS.Minimum = 1;
             trackBarFPS.Name = "trackBarFPS";
@@ -180,18 +182,57 @@ namespace VRCGalleryManager.Forms
             labelFPS.AutoSize = true;
             labelFPS.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
             labelFPS.ForeColor = Color.White;
-            labelFPS.Location = new Point(58, 391);
+            labelFPS.Location = new Point(104, 402);
             labelFPS.Name = "labelFPS";
             labelFPS.Size = new Size(28, 15);
             labelFPS.TabIndex = 10;
             labelFPS.Text = "FPS";
+            // 
+            // createTypePanel
+            // 
+            createTypePanel.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Right;
+            createTypePanel.AutoScroll = true;
+            createTypePanel.BackColor = Color.FromArgb(7, 36, 43);
+            createTypePanel.BackgroundColor = Color.FromArgb(7, 36, 43);
+            createTypePanel.BorderColor = Color.PaleVioletRed;
+            createTypePanel.BorderRadius = 9;
+            createTypePanel.BorderSize = 0;
+            createTypePanel.Location = new Point(465, 12);
+            createTypePanel.Name = "createTypePanel";
+            createTypePanel.Padding = new Padding(5);
+            createTypePanel.Size = new Size(258, 491);
+            createTypePanel.TabIndex = 12;
+            createTypePanel.Visible = false;
+            // 
+            // createOpenTypePanel
+            // 
+            createOpenTypePanel.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            createOpenTypePanel.BackColor = Color.FromArgb(7, 36, 43);
+            createOpenTypePanel.BackgroundColor = Color.FromArgb(7, 36, 43);
+            createOpenTypePanel.BorderColor = Color.FromArgb(5, 55, 66);
+            createOpenTypePanel.BorderRadius = 10;
+            createOpenTypePanel.BorderSize = 2;
+            createOpenTypePanel.FlatAppearance.BorderSize = 0;
+            createOpenTypePanel.FlatStyle = FlatStyle.Flat;
+            createOpenTypePanel.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
+            createOpenTypePanel.ForeColor = Color.FromArgb(106, 227, 249);
+            createOpenTypePanel.Location = new Point(607, 509);
+            createOpenTypePanel.Name = "createOpenTypePanel";
+            createOpenTypePanel.Size = new Size(116, 40);
+            createOpenTypePanel.TabIndex = 11;
+            createOpenTypePanel.Text = "Type";
+            createOpenTypePanel.TextColor = Color.FromArgb(106, 227, 249);
+            createOpenTypePanel.UseVisualStyleBackColor = false;
+            createOpenTypePanel.Click += createOpenTypePanel_Click;
             // 
             // Create
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(5, 5, 5);
-            ClientSize = new Size(642, 539);
+            ClientSize = new Size(735, 561);
+            Controls.Add(createTypePanel);
+            Controls.Add(createOpenTypePanel);
             Controls.Add(labelFPS);
             Controls.Add(trackBarFPS);
             Controls.Add(label1);
@@ -222,5 +263,7 @@ namespace VRCGalleryManager.Forms
         private Label label1;
         private TrackBar trackBarFPS;
         private Label labelFPS;
+        private RoundedPanel createTypePanel;
+        private RoundedButton createOpenTypePanel;
     }
 }
