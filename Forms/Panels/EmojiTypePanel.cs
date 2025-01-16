@@ -45,6 +45,7 @@ namespace VRCGalleryManager.Forms
 
             RoundedPictureBox pictureBox = new RoundedPictureBox
             {
+                Width = 90,
                 Dock = DockStyle.Left,
                 BackColor = Color.FromArgb(24, 27, 31),
                 SizeMode = PictureBoxSizeMode.StretchImage,
