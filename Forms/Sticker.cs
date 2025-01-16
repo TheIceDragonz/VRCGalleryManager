@@ -1,9 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
-using System.Diagnostics;
 using VRCGalleryManager.Core;
 using VRCGalleryManager.Core.DTO;
-using VRChat.API.Model;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace VRCGalleryManager.Forms
 {
@@ -76,10 +73,12 @@ namespace VRCGalleryManager.Forms
                         limitStickerLabel.Text = $"{stickerCount}/9 Sticker";
                         if (stickerCount == 9) limitPanelSticker.Visible = true;
                         else limitPanelSticker.Visible = false;
+
+                        NotificationManager.ShowNotification("Sticker uploaded successfully", "Sticker uploaded", NotificationType.Success);
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show(ex.Message, "Error during file upload", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        NotificationManager.ShowNotification(ex.Message, "Error during file upload", NotificationType.Error);
                     }
                 }
             }

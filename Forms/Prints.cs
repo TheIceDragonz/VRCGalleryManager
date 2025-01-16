@@ -72,10 +72,12 @@ namespace VRCGalleryManager.Forms
                         limitPrintsLabel.Text = $"{printsCount}/64 Emoji";
                         if (printsCount == 9) limitPanelPrints.Visible = true;
                         else limitPanelPrints.Visible = false;
+
+                        NotificationManager.ShowNotification("File uploaded successfully", "File upload", NotificationType.Success);
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show(ex.Message, "Error during file upload", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        NotificationManager.ShowNotification(ex.Message, "Error during file upload", NotificationType.Error);
                     }
                 }
             }

@@ -44,40 +44,39 @@ namespace VRCGalleryManager.Core
             );
         }
 
-        public static DialogResult ShowMissingTypeDialog()
+        public static void ShowMissingTypeDialog(Form parentForm)
         {
-            return MessageBox.Show(
+            NotificationManager.ShowNotification(
                 "Please select it before uploading.",
                 "Missing Type",
-                MessageBoxButtons.OK,
-                MessageBoxIcon.Warning
+                NotificationType.Error
             );
         }
-        public static DialogResult ShowMissingGif()
+
+        public static void ShowMissingGif(Form parentForm)
         {
-            return MessageBox.Show(
+            NotificationManager.ShowNotification(
                 "GIF not found",
                 "Error",
-                MessageBoxButtons.OK,
-                MessageBoxIcon.Warning
+                NotificationType.Error
             );
         }
-        public static DialogResult ShowMissingSpriteSheet()
+
+        public static void ShowMissingSpriteSheet(Form parentForm)
         {
-            return MessageBox.Show(
+            NotificationManager.ShowNotification(
                 "Sprite sheet not found",
                 "Error",
-                MessageBoxButtons.OK,
-                MessageBoxIcon.Warning
+                NotificationType.Error
             );
         }
-        public static DialogResult ShowValidURL()
+
+        public static void ShowValidURL(Form parentForm)
         {
-            return MessageBox.Show(
+            NotificationManager.ShowNotification(
                 "Please enter a valid URL",
                 "Error",
-                MessageBoxButtons.OK,
-                MessageBoxIcon.Warning
+                NotificationType.Error
             );
         }
     }

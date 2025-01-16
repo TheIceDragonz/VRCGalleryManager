@@ -93,17 +93,19 @@ namespace VRCGalleryManager.Forms
                             limitStickerLabel.Text = $"{emojiCount}/9 Emoji";
                             if (emojiCount == 9) limitPanelEmoji.Visible = true;
                             else limitPanelEmoji.Visible = false;
+
+                            NotificationManager.ShowNotification("Emoji uploaded successfully", "Emoji uploaded", NotificationType.Success);
                         }
                         catch (Exception ex)
                         {
-                            MessageBox.Show(ex.Message, "Error during file upload", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            NotificationManager.ShowNotification(ex.Message, "Error during file upload", NotificationType.Error);
                         }
                     }
                 }
             }
             else
             {
-                DialogMessage.ShowMissingTypeDialog();
+                DialogMessage.ShowMissingTypeDialog(this);
             }
         }
 

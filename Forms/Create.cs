@@ -6,8 +6,8 @@ namespace VRCGalleryManager.Forms
 {
     public partial class Create : Form
     {
-        private static string EMOJI_MASK_TAG = "square";
-        private static string EMOJI_ANIMATION_STYLE = "";
+        private static string MASK_TAG = "square";
+        private static string ANIMATION_STYLE = "";
 
         private ApiRequest apiRequest;
 
@@ -100,7 +100,7 @@ namespace VRCGalleryManager.Forms
 
                 if (spriteSheetWidth > maxTextureSize || spriteSheetHeight > maxTextureSize)
                 {
-                    MessageBox.Show("Non è possibile adattare tutti i frame nella dimensione massima consentita.", "Errore", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    NotificationManager.ShowNotification("It is not possible to fit all the frames within the maximum allowed size.", "Errore", NotificationType.Error);
                     return;
                 }
             }
@@ -181,7 +181,7 @@ namespace VRCGalleryManager.Forms
             }
             else
             {
-                DialogMessage.ShowMissingGif();
+                DialogMessage.ShowMissingGif(this);
             }
         }
         private string SaveTemp()
@@ -201,39 +201,9 @@ namespace VRCGalleryManager.Forms
             }
             else
             {
-                DialogMessage.ShowMissingGif();
+                DialogMessage.ShowMissingGif(this);
             }
             return null;
-        }
-
-        private async void creatorUpload_Click(object sender, EventArgs e)
-        {
-            if (spriteSheet != null)
-            {
-                if (!createOpenTypePanel.Text.Contains("Type"))
-                {
-                    try
-                    {
-                        string image = SaveTemp();
-
-                        EMOJI_ANIMATION_STYLE = createOpenTypePanel.Text.ToLower();
-
-                        ApiRequest.ApiData emoji = await apiRequest.UploadImage(image, EMOJI_MASK_TAG, TagType.EmojiAnimated, EMOJI_ANIMATION_STYLE, imageframes, trackBarFPS.Value);
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show(ex.Message, "Error during file upload", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
-                }
-                else
-                {
-                    DialogMessage.ShowMissingTypeDialog();
-                }
-            }
-            else
-            {
-                DialogMessage.ShowMissingSpriteSheet();
-            }
         }
 
         private async Task<string> DownloadImageFromUrl(string url)
@@ -267,10 +237,42 @@ namespace VRCGalleryManager.Forms
                 }
                 else
                 {
-                    DialogMessage.ShowValidURL();
+                    DialogMessage.ShowValidURL(this);
                 }
             }
             urlToSpriteSheetText.Text = "";
+        }
+
+        private async void creatorUpload_Click(object sender, EventArgs e)
+        {
+            if (spriteSheet != null)
+            {
+                if (!createOpenTypePanel.Text.Contains("Type"))
+                {
+                    try
+                    {
+                        string image = SaveTemp();
+
+                        ANIMATION_STYLE = createOpenTypePanel.Text.ToLower();
+
+                        ApiRequest.ApiData emoji = await apiRequest.UploadImage(image, MASK_TAG, TagType.EmojiAnimated, ANIMATION_STYLE, imageframes, trackBarFPS.Value);
+
+                        NotificationManager.ShowNotification("File uploaded successfully", "File upload", NotificationType.Success);
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(ex.Message, "Error during file upload", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+                else
+                {
+                    DialogMessage.ShowMissingTypeDialog(this);
+                }
+            }
+            else
+            {
+                DialogMessage.ShowMissingSpriteSheet(this);
+            }
         }
 
         private void trackBarFPS_ValueChanged(object sender, EventArgs e)
