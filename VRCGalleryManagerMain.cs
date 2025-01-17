@@ -1,16 +1,27 @@
 using VRCGalleryManager.Core;
 using VRCGalleryManager.Forms;
+using VRCGalleryManager.Helpers;
 
 namespace VRCGalleryManager
 {
     public partial class MainPanel : Form
     {
+        private static Mutex mutex;
+
         private readonly Form[] _forms;
 
         private VRCAuth Auth;
 
         public MainPanel()
         {
+            // Check if another instance is already running
+            const string appName = "VRCGalleryManager";
+            if (InstanceChecker.IsAlreadyRunning(appName))
+            {
+                Environment.Exit(0);
+                return;
+            }
+
             InitializeComponent();
 
             Auth = VRCAuth.Instance();
@@ -58,7 +69,6 @@ namespace VRCGalleryManager
         private void _switchSticker_Click(object sender, EventArgs e) => ShowForm(1);
         private void _switchPrints_Click(object sender, EventArgs e) => ShowForm(2);
         private void _switchCreate_Click(object sender, EventArgs e) => ShowForm(3);
-
         private void _switchSettings_Click(object sender, EventArgs e) => ShowForm(4);
     }
 }
