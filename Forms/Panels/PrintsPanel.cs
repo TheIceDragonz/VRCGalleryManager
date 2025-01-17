@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Windows.Forms;
 using VRCGalleryManager.Core;
 using VRCGalleryManager.Design;
 
@@ -11,6 +12,7 @@ namespace VRCGalleryManager.Forms
             //* IMAGE PANEL
             RoundedPictureBox pictureBox = new RoundedPictureBox
             {
+                Size = new Size(190, 150),
                 Dock = DockStyle.Top,
                 BackColor = Color.FromArgb(24, 27, 31),
                 SizeMode = PictureBoxSizeMode.StretchImage,
@@ -35,7 +37,7 @@ namespace VRCGalleryManager.Forms
                     Dock = DockStyle.Right,
                     Width = 25,
                     Height = 25,
-                    Location = new Point(90, 115),
+                    Location = new Point(pictureBox.Size.Width -35, pictureBox.Size.Height -35),
                     Anchor = AnchorStyles.Bottom | AnchorStyles.Right
                 };
                 pictureBox.LoadAsync(finalaviImage);
@@ -58,7 +60,7 @@ namespace VRCGalleryManager.Forms
                 Dock = DockStyle.Right,
                 Width = 25,
                 Height = 25,
-                Location = new Point(115, 115),
+                Location = new Point(pictureBox.Size.Width - 60, pictureBox.Size.Height - 35),
                 Anchor = AnchorStyles.Bottom | AnchorStyles.Right
             };
             btn_delete.Click += async (sender, e) =>
