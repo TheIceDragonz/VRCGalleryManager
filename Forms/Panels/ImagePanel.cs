@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using VRCGalleryManager.Core;
 using VRCGalleryManager.Design;
+using Svg;
 
 namespace VRCGalleryManager.Forms
 {

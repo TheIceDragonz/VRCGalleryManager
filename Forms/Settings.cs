@@ -13,6 +13,7 @@ namespace VRCGalleryManager.Forms
 
         public string UserIconImage = "";
         public string UserBannerImage = "";
+        public List<string> Badges = new List<string>();
 
         public Settings(VRCAuth Auth)
         {
@@ -68,7 +69,8 @@ namespace VRCGalleryManager.Forms
 
                     _username.Text = currentUser.DisplayName;
                     _password.Text = "password";
-
+                    
+                    foreach (var badge in currentUser.Badges) Badges.Add(badge.ToJson());
                     UserIconImage = currentUser.UserIcon;
                     UserBannerImage = currentUser.ProfilePicOverrideThumbnail;
 

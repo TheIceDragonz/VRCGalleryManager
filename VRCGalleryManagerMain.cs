@@ -1,3 +1,5 @@
+using Newtonsoft.Json.Linq;
+using System;
 using VRCGalleryManager.Core;
 using VRCGalleryManager.Core.Helpers;
 using VRCGalleryManager.Design;
@@ -50,6 +52,17 @@ namespace VRCGalleryManager
             Settings images = new Settings(Auth);
             profileIcon.LoadAsync(await HttpImage.GetFinalUrlAsync(images.UserIconImage));
             profileBanner.LoadAsync(await HttpImage.GetFinalUrlAsync(images.UserBannerImage));
+
+            var badgeBoxes = new[] { badgeBox3, badgeBox2, badgeBox1 };
+            foreach (var (badge, box) in images.Badges.Zip(badgeBoxes, (badge, box) => (badge, box)))
+            {
+                JObject jsonObject = JObject.Parse(badge);
+                string imageBadge = jsonObject["badgeImageUrl"]?.ToString();
+
+                box.Visible = !string.IsNullOrEmpty(imageBadge);
+                if (box.Visible)
+                    box.LoadAsync(imageBadge);
+            }
         }
 
         private void ShowForm(int index)

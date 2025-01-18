@@ -43,10 +43,16 @@ namespace VRCGalleryManager
             _switchIcons = new RoundedButton();
             profileBanner = new RoundedPictureBox();
             profileIcon = new RoundedPictureBox();
+            badgeBox1 = new RoundedPictureBox();
+            badgeBox2 = new RoundedPictureBox();
+            badgeBox3 = new RoundedPictureBox();
             ((System.ComponentModel.ISupportInitialize)bannerIcon).BeginInit();
             SwitchPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)profileBanner).BeginInit();
             ((System.ComponentModel.ISupportInitialize)profileIcon).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)badgeBox1).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)badgeBox2).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)badgeBox3).BeginInit();
             SuspendLayout();
             // 
             // bannerIcon
@@ -297,10 +303,10 @@ namespace VRCGalleryManager
             profileBanner.BackColor = Color.FromArgb(7, 36, 43);
             profileBanner.BackgroundColor = Color.FromArgb(7, 36, 43);
             profileBanner.BorderColor = Color.FromArgb(5, 55, 66);
-            profileBanner.BorderRadiusBottomLeft = 20;
-            profileBanner.BorderRadiusBottomRight = 20;
-            profileBanner.BorderRadiusTopLeft = 20;
-            profileBanner.BorderRadiusTopRight = 20;
+            profileBanner.BorderRadiusBottomLeft = 15;
+            profileBanner.BorderRadiusBottomRight = 15;
+            profileBanner.BorderRadiusTopLeft = 15;
+            profileBanner.BorderRadiusTopRight = 15;
             profileBanner.BorderSize = 0;
             profileBanner.ImageLocation = "";
             profileBanner.Location = new Point(12, 63);
@@ -321,13 +327,69 @@ namespace VRCGalleryManager
             profileIcon.BorderRadiusTopRight = 25;
             profileIcon.BorderSize = 0;
             profileIcon.ImageLocation = "";
-            profileIcon.Location = new Point(21, 105);
-            profileIcon.Margin = new Padding(5);
+            profileIcon.Location = new Point(12, 105);
             profileIcon.Name = "profileIcon";
             profileIcon.Size = new Size(55, 55);
             profileIcon.SizeMode = PictureBoxSizeMode.StretchImage;
             profileIcon.TabIndex = 8;
             profileIcon.TabStop = false;
+            // 
+            // badgeBox1
+            // 
+            badgeBox1.BackColor = Color.Transparent;
+            badgeBox1.BackgroundColor = Color.Transparent;
+            badgeBox1.BorderColor = Color.PaleVioletRed;
+            badgeBox1.BorderRadiusBottomLeft = 75;
+            badgeBox1.BorderRadiusBottomRight = 75;
+            badgeBox1.BorderRadiusTopLeft = 75;
+            badgeBox1.BorderRadiusTopRight = 75;
+            badgeBox1.BorderSize = 0;
+            badgeBox1.Location = new Point(73, 132);
+            badgeBox1.Name = "badgeBox1";
+            badgeBox1.Padding = new Padding(2);
+            badgeBox1.Size = new Size(30, 30);
+            badgeBox1.SizeMode = PictureBoxSizeMode.StretchImage;
+            badgeBox1.TabIndex = 0;
+            badgeBox1.TabStop = false;
+            badgeBox1.Visible = false;
+            // 
+            // badgeBox2
+            // 
+            badgeBox2.BackColor = Color.FromArgb(15, 17, 19);
+            badgeBox2.BackgroundColor = Color.FromArgb(15, 17, 19);
+            badgeBox2.BorderColor = Color.PaleVioletRed;
+            badgeBox2.BorderRadiusBottomLeft = 75;
+            badgeBox2.BorderRadiusBottomRight = 75;
+            badgeBox2.BorderRadiusTopLeft = 75;
+            badgeBox2.BorderRadiusTopRight = 75;
+            badgeBox2.BorderSize = 0;
+            badgeBox2.Location = new Point(109, 132);
+            badgeBox2.Name = "badgeBox2";
+            badgeBox2.Padding = new Padding(2);
+            badgeBox2.Size = new Size(30, 30);
+            badgeBox2.SizeMode = PictureBoxSizeMode.StretchImage;
+            badgeBox2.TabIndex = 10;
+            badgeBox2.TabStop = false;
+            badgeBox2.Visible = false;
+            // 
+            // badgeBox3
+            // 
+            badgeBox3.BackColor = Color.FromArgb(15, 17, 19);
+            badgeBox3.BackgroundColor = Color.FromArgb(15, 17, 19);
+            badgeBox3.BorderColor = Color.PaleVioletRed;
+            badgeBox3.BorderRadiusBottomLeft = 75;
+            badgeBox3.BorderRadiusBottomRight = 75;
+            badgeBox3.BorderRadiusTopLeft = 75;
+            badgeBox3.BorderRadiusTopRight = 75;
+            badgeBox3.BorderSize = 0;
+            badgeBox3.Location = new Point(145, 132);
+            badgeBox3.Name = "badgeBox3";
+            badgeBox3.Padding = new Padding(2);
+            badgeBox3.Size = new Size(30, 30);
+            badgeBox3.SizeMode = PictureBoxSizeMode.StretchImage;
+            badgeBox3.TabIndex = 11;
+            badgeBox3.TabStop = false;
+            badgeBox3.Visible = false;
             // 
             // MainPanel
             // 
@@ -335,6 +397,9 @@ namespace VRCGalleryManager
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(15, 17, 19);
             ClientSize = new Size(1022, 582);
+            Controls.Add(badgeBox3);
+            Controls.Add(badgeBox2);
+            Controls.Add(badgeBox1);
             Controls.Add(profileIcon);
             Controls.Add(profileBanner);
             Controls.Add(SwitchPanel);
@@ -348,6 +413,9 @@ namespace VRCGalleryManager
             SwitchPanel.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)profileBanner).EndInit();
             ((System.ComponentModel.ISupportInitialize)profileIcon).EndInit();
+            ((System.ComponentModel.ISupportInitialize)badgeBox1).EndInit();
+            ((System.ComponentModel.ISupportInitialize)badgeBox2).EndInit();
+            ((System.ComponentModel.ISupportInitialize)badgeBox3).EndInit();
             ResumeLayout(false);
         }
 
@@ -365,5 +433,9 @@ namespace VRCGalleryManager
         private RoundedButton _switchIcons;
         private RoundedPictureBox profileBanner;
         private RoundedPictureBox profileIcon;
+        private RoundedPanel badgePanel;
+        private RoundedPictureBox badgeBox1;
+        private RoundedPictureBox badgeBox2;
+        private RoundedPictureBox badgeBox3;
     }
 }
