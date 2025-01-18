@@ -70,7 +70,7 @@ namespace VRCGalleryManager.Forms
                     _password.Text = "password";
 
                     UserIconImage = currentUser.UserIcon;
-                    UserBannerImage = currentUser.ProfilePicOverride;
+                    UserBannerImage = currentUser.ProfilePicOverrideThumbnail;
 
                     if (string.IsNullOrEmpty(UserBannerImage)) UserBannerImage = currentUser.CurrentAvatarThumbnailImageUrl;
                 }

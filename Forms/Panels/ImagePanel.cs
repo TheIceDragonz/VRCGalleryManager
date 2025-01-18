@@ -22,7 +22,10 @@ namespace VRCGalleryManager.Forms
                 BorderSize = 5,
                 Padding = new Padding(5)
             };
-            string image = $"https://api.vrchat.cloud/api/1/file/{imageId}/1/file";
+            string image = tags.Contains("animated")
+                ? $"https://api.vrchat.cloud/api/1/file/{imageId}/1/file"
+                : $"https://api.vrchat.cloud/api/1/image/{imageId}/1/256";
+
             string finalaviImage = await HttpImage.GetFinalUrlAsync(image);
 
             if (!finalaviImage.Contains("imageNotFound"))
@@ -49,7 +52,7 @@ namespace VRCGalleryManager.Forms
                     pictureBox.LoadAsync(finalaviImage);
                 }
 
-                btn_open.Click += (sender, e) => Process.Start("explorer.exe", image);
+                btn_open.Click += (sender, e) => Process.Start("explorer.exe", $"https://api.vrchat.cloud/api/1/file/{imageId}/1/file");
                 btn_open.Cursor = Cursors.Hand;
                 pictureBox.Controls.Add(btn_open);
             }
@@ -117,7 +120,7 @@ namespace VRCGalleryManager.Forms
                 BorderSize = 5,
                 Padding = new Padding(5)
             };
-            string image = $"https://api.vrchat.cloud/api/1/file/{imageId}/1/file";
+            string image = $"https://api.vrchat.cloud/api/1/image/{imageId}/1/256";
             string finalaviImage = await HttpImage.GetFinalUrlAsync(image);
 
             if (!finalaviImage.Contains("imageNotFound"))
@@ -135,7 +138,7 @@ namespace VRCGalleryManager.Forms
                 };
                 pictureBox.LoadAsync(finalaviImage);
 
-                btn_open.Click += (sender, e) => Process.Start("explorer.exe", image);
+                btn_open.Click += (sender, e) => Process.Start("explorer.exe", $"https://api.vrchat.cloud/api/1/file/{imageId}/1/file");
                 btn_open.Cursor = Cursors.Hand;
                 pictureBox.Controls.Add(btn_open);
             }

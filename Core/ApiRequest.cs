@@ -37,7 +37,7 @@ namespace VRCGalleryManager.Core
 
             try
             {
-                var images = filesApi.GetFiles(tag);
+                var images = filesApi.GetFiles(tag, null, 64);
 
                 foreach (var image in images)
                 {
