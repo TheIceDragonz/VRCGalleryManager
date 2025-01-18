@@ -88,7 +88,8 @@ namespace VRCGalleryManager.Forms
 
                             ApiRequest.ApiData emoji = await apiRequest.UploadImage(resizedImage, EMOJI_MASK_TAG, TagType.Emoji, EMOJI_ANIMATION_STYLE);
 
-                            AddEmojiPanel(emoji.IdImageUploaded, emoji.Tags, emoji.Frames, emoji.FramesOverTime);
+                            var imagePanel = new ImagePanel();
+                            imagePanel.AddImagePanel(emojiPanel, apiRequest, emoji.IdImageUploaded, emoji.Tags, emoji.Frames, emoji.FramesOverTime);
 
                             emojiCount = emojiCount + 1;
                             limitStickerLabel.Text = $"{emojiCount}/9 Emoji";

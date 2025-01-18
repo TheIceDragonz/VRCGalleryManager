@@ -33,9 +33,6 @@
     <Compile Update="Forms\Gallery.Designer.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Update="Forms\Panels\PrintsPanel.cs">
-      <SubType>Form</SubType>
-    </Compile>
     <Compile Update="Forms\Prints.cs">
       <SubType>Form</SubType>
     </Compile>

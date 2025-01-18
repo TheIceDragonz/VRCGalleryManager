@@ -68,7 +68,8 @@ namespace VRCGalleryManager.Forms
                     {
                         ApiRequest.ApiData sticker = await apiRequest.UploadImage(resizedImage, STICKER_MASK_TYPE, TagType.Sticker);
 
-                        AddStickerPanel(sticker.IdImageUploaded);
+                        var imagePanel = new ImagePanel();
+                        imagePanel.AddImagePanel(stickerPanel, apiRequest, sticker.IdImageUploaded);
 
                         stickerCount = stickerCount + 1;
                         limitStickerLabel.Text = $"{stickerCount}/9 Sticker";
