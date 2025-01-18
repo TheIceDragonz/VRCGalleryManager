@@ -1,7 +1,7 @@
 using VRCGalleryManager.Core;
+using VRCGalleryManager.Core.Helpers;
 using VRCGalleryManager.Design;
 using VRCGalleryManager.Forms;
-using VRCGalleryManager.Helpers;
 
 namespace VRCGalleryManager
 {
