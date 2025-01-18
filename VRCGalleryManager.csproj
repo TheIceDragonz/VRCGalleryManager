@@ -27,6 +27,12 @@
     <Compile Update="Forms\Create.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Update="Forms\Gallery.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="Forms\Gallery.Designer.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Update="Forms\Panels\PrintsPanel.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -36,11 +42,17 @@
     <Compile Update="Forms\Prints.Designer.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Update="Forms\Panels\StickerPanel.cs" />
-    <Compile Update="Forms\Sticker.cs">
+    <Compile Update="Forms\Panels\iconsPanel.cs" />
+    <Compile Update="Forms\Icons.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Update="Forms\Sticker.Designer.cs">
+    <Compile Update="Forms\Icons.Designer.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="Forms\icons.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="Forms\icons.Designer.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Update="Properties\Resources.Designer.cs">

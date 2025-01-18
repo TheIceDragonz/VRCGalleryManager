@@ -8,12 +8,12 @@ namespace VRCGalleryManager.Core.DTO
 {
     public enum TagType
     {
-        Emoji,
-        Sticker,
-        EmojiAnimated,
-        Gallery,
         Icon,
-        Print,
+        Gallery,
+        Emoji,
+        EmojiAnimated,
+        Sticker,
+        Print
     }
 
     public class ImageUploadPayload

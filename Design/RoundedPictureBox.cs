@@ -32,7 +32,7 @@ namespace VRCGalleryManager.Design
             get { return borderRadiusTopLeft; }
             set
             {
-                borderRadiusTopLeft = value;
+                borderRadiusTopLeft = Math.Max(0, Math.Min(value, Math.Min(Width, Height) / 2));
                 Invalidate();
             }
         }
@@ -43,7 +43,7 @@ namespace VRCGalleryManager.Design
             get { return borderRadiusTopRight; }
             set
             {
-                borderRadiusTopRight = value;
+                borderRadiusTopRight = Math.Max(0, Math.Min(value, Math.Min(Width, Height) / 2));
                 Invalidate();
             }
         }
@@ -54,7 +54,7 @@ namespace VRCGalleryManager.Design
             get { return borderRadiusBottomLeft; }
             set
             {
-                borderRadiusBottomLeft = value;
+                borderRadiusBottomLeft = Math.Max(0, Math.Min(value, Math.Min(Width, Height) / 2));
                 Invalidate();
             }
         }
@@ -65,7 +65,7 @@ namespace VRCGalleryManager.Design
             get { return borderRadiusBottomRight; }
             set
             {
-                borderRadiusBottomRight = value;
+                borderRadiusBottomRight = Math.Max(0, Math.Min(value, Math.Min(Width, Height) / 2));
                 Invalidate();
             }
         }
@@ -93,10 +93,15 @@ namespace VRCGalleryManager.Design
             base.OnPaint(pevent);
 
             Rectangle rectSurface = ClientRectangle;
-            Rectangle rectBorder = Rectangle.Inflate(rectSurface, -borderSize, -borderSize);
+            Rectangle rectBorder = Rectangle.Inflate(rectSurface, -borderSize + 2, -borderSize + 2);
+
+            if (rectBorder.Width <= 0 || rectBorder.Height <= 0)
+                return;
+
             int smoothSize = 2;
             if (borderSize > 0)
-                smoothSize = borderSize;
+                smoothSize = Math.Max(2, borderSize);
+
 
             using (GraphicsPath pathSurface = GetFigurePath(rectSurface))
             using (GraphicsPath pathBorder = GetFigurePath(rectBorder))
@@ -122,11 +127,16 @@ namespace VRCGalleryManager.Design
         private GraphicsPath GetFigurePath(Rectangle rect)
         {
             GraphicsPath path = new GraphicsPath();
+            int topLeft = Math.Min(borderRadiusTopLeft, Math.Min(rect.Width, rect.Height) / 2);
+            int topRight = Math.Min(borderRadiusTopRight, Math.Min(rect.Width, rect.Height) / 2);
+            int bottomLeft = Math.Min(borderRadiusBottomLeft, Math.Min(rect.Width, rect.Height) / 2);
+            int bottomRight = Math.Min(borderRadiusBottomRight, Math.Min(rect.Width, rect.Height) / 2);
+
             path.StartFigure();
-            path.AddArc(rect.X, rect.Y, borderRadiusTopLeft * 2, borderRadiusTopLeft * 2, 180, 90);
-            path.AddArc(rect.Right - (borderRadiusTopRight * 2), rect.Y, borderRadiusTopRight * 2, borderRadiusTopRight * 2, 270, 90);
-            path.AddArc(rect.Right - (borderRadiusBottomRight * 2), rect.Bottom - (borderRadiusBottomRight * 2), borderRadiusBottomRight * 2, borderRadiusBottomRight * 2, 0, 90);
-            path.AddArc(rect.X, rect.Bottom - (borderRadiusBottomLeft * 2), borderRadiusBottomLeft * 2, borderRadiusBottomLeft * 2, 90, 90);
+            path.AddArc(rect.X, rect.Y, topLeft * 2, topLeft * 2, 180, 90);
+            path.AddArc(rect.Right - (topRight * 2), rect.Y, topRight * 2, topRight * 2, 270, 90);
+            path.AddArc(rect.Right - (bottomRight * 2), rect.Bottom - (bottomRight * 2), bottomRight * 2, bottomRight * 2, 0, 90);
+            path.AddArc(rect.X, rect.Bottom - (bottomLeft * 2), bottomLeft * 2, bottomLeft * 2, 90, 90);
             path.CloseFigure();
             return path;
         }

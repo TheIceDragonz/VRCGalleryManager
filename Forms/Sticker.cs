@@ -44,7 +44,8 @@ namespace VRCGalleryManager.Forms
 
                 string id = jsonObject["id"]?.ToString();
 
-                AddStickerPanel(id);
+                var imagePanel = new ImagePanel();
+                imagePanel.AddImagePanel(stickerPanel, apiRequest, id);
             }
 
             limitStickerLabel.Text = $"{stickerCount}/9 Sticker";

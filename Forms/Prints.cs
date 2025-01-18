@@ -10,7 +10,7 @@ namespace VRCGalleryManager.Forms
     {
         private ApiRequest apiRequest;
 
-        private List<string> emojiJson = new List<string>();
+        private List<string> printsJson = new List<string>();
         private int printsCount;
 
         public Prints(VRCAuth auth)
@@ -30,20 +30,21 @@ namespace VRCGalleryManager.Forms
         private async void PrintsList()
         {
             printsPanel.Controls.Clear();
-            emojiJson.Clear();
+            printsJson.Clear();
 
             ApiRequest.ApiData prints = await apiRequest.GetApiData(TagType.Print.ToString().ToLower());
 
-            emojiJson = prints.JsonImage;
+            printsJson = prints.JsonImage;
             printsCount = prints.JsonImage.Count;
 
-            foreach (string json in emojiJson)
+            foreach (string json in printsJson)
             {
                 JObject jsonObject = JObject.Parse(json);
 
                 string id = jsonObject["id"]?.ToString();
 
-                AddPrintsPanel(id);
+                var imagePanel = new ImagePanel();
+                imagePanel.AddImagePanel(printsPanel, apiRequest, id);
             }
 
             limitPrintsLabel.Text = $"{printsCount}/64 Prints";

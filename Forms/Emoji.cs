@@ -60,7 +60,8 @@ namespace VRCGalleryManager.Forms
                 string framesOverTime = jsonObject["framesOverTime"]?.ToString();
                 string tags = jsonObject["tags"]?.ToString();
 
-                AddEmojiPanel(id, tags, frames, framesOverTime);
+                var imagePanel = new ImagePanel();
+                imagePanel.AddImagePanel(emojiPanel, apiRequest, id, tags, frames, framesOverTime);
             }
 
             limitStickerLabel.Text = $"{emojiCount}/9 Emoji";
