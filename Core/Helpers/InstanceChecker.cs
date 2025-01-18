@@ -3,16 +3,16 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 
-namespace VRCGalleryManager.Helpers
+namespace VRCGalleryManager.Core.Helpers
 {
     public static class InstanceChecker
     {
         // Importazioni delle API di Windows
         [DllImport("user32.dll")]
-        private static extern bool SetForegroundWindow(IntPtr hWnd);
+        private static extern bool SetForegroundWindow(nint hWnd);
 
         [DllImport("user32.dll")]
-        private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+        private static extern bool ShowWindow(nint hWnd, int nCmdShow);
 
         private const int SW_SHOWNORMAL = 1;
 
@@ -24,8 +24,8 @@ namespace VRCGalleryManager.Helpers
 
             if (existingProcess != null)
             {
-                IntPtr hWnd = existingProcess.MainWindowHandle;
-                if (hWnd != IntPtr.Zero)
+                nint hWnd = existingProcess.MainWindowHandle;
+                if (hWnd != nint.Zero)
                 {
                     ShowWindow(hWnd, SW_SHOWNORMAL);
                     SetForegroundWindow(hWnd);
