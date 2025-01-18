@@ -28,13 +28,7 @@
     <Compile Update="Forms\Panels\CreateTypePanel.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Update="Forms\Panels\EmojiPanel.cs">
-      <SubType>Form</SubType>
-    </Compile>
     <Compile Update="Forms\Panels\EmojiTypePanel.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Update="Forms\Panels\StickerPanel.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Update="Forms\Settings.cs">
