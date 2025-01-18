@@ -1,4 +1,5 @@
 using VRCGalleryManager.Core;
+using VRCGalleryManager.Design;
 using VRCGalleryManager.Forms;
 using VRCGalleryManager.Helpers;
 
@@ -11,7 +12,6 @@ namespace VRCGalleryManager
         private readonly Form[] _forms;
 
         private VRCAuth Auth;
-
         public MainPanel()
         {
             // Check if another instance is already running

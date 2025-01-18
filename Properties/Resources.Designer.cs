@@ -61,12 +61,122 @@ namespace VRCGalleryManager.Properties {
         }
         
         /// <summary>
+        ///   Cerca una risorsa localizzata di tipo System.Byte[].
+        /// </summary>
+        internal static byte[] camera_add_svgrepo_com {
+            get {
+                object obj = ResourceManager.GetObject("camera_add_svgrepo_com", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Cerca una risorsa localizzata di tipo System.Byte[].
+        /// </summary>
+        internal static byte[] camera_svgrepo_com {
+            get {
+                object obj = ResourceManager.GetObject("camera_svgrepo_com", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Cerca una risorsa localizzata di tipo System.Byte[].
+        /// </summary>
+        internal static byte[] collections_svgrepo_com {
+            get {
+                object obj = ResourceManager.GetObject("collections_svgrepo_com", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Cerca una risorsa localizzata di tipo System.Byte[].
+        /// </summary>
+        internal static byte[] copy_move_svgrepo_com {
+            get {
+                object obj = ResourceManager.GetObject("copy_move_svgrepo_com", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Cerca una risorsa localizzata di tipo System.Byte[].
+        /// </summary>
+        internal static byte[] emoji_add_svgrepo_com {
+            get {
+                object obj = ResourceManager.GetObject("emoji_add_svgrepo_com", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Cerca una risorsa localizzata di tipo System.Byte[].
+        /// </summary>
+        internal static byte[] emoji_svgrepo_com {
+            get {
+                object obj = ResourceManager.GetObject("emoji_svgrepo_com", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Cerca una risorsa localizzata di tipo System.Byte[].
+        /// </summary>
+        internal static byte[] gif_svgrepo_com {
+            get {
+                object obj = ResourceManager.GetObject("gif_svgrepo_com", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Cerca una risorsa localizzata di tipo System.Byte[].
+        /// </summary>
+        internal static byte[] grid_svgrepo_com {
+            get {
+                object obj = ResourceManager.GetObject("grid_svgrepo_com", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
         ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
         /// </summary>
         internal static System.Drawing.Bitmap Icon {
             get {
                 object obj = ResourceManager.GetObject("Icon", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Cerca una risorsa localizzata di tipo System.Byte[].
+        /// </summary>
+        internal static byte[] image_edit_svgrepo_com {
+            get {
+                object obj = ResourceManager.GetObject("image_edit_svgrepo_com", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Cerca una risorsa localizzata di tipo System.Byte[].
+        /// </summary>
+        internal static byte[] image_svgrepo_com {
+            get {
+                object obj = ResourceManager.GetObject("image_svgrepo_com", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Cerca una risorsa localizzata di tipo System.Byte[].
+        /// </summary>
+        internal static byte[] link_svgrepo_com {
+            get {
+                object obj = ResourceManager.GetObject("link_svgrepo_com", resourceCulture);
+                return ((byte[])(obj));
             }
         }
         
@@ -337,6 +447,46 @@ namespace VRCGalleryManager.Properties {
             get {
                 object obj = ResourceManager.GetObject("Preview_B2-ZZZ", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Cerca una risorsa localizzata di tipo System.Byte[].
+        /// </summary>
+        internal static byte[] scan_svgrepo_com {
+            get {
+                object obj = ResourceManager.GetObject("scan_svgrepo_com", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Cerca una risorsa localizzata di tipo System.Byte[].
+        /// </summary>
+        internal static byte[] settings_svgrepo_com {
+            get {
+                object obj = ResourceManager.GetObject("settings_svgrepo_com", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Cerca una risorsa localizzata di tipo System.Byte[].
+        /// </summary>
+        internal static byte[] sticker_add_svgrepo_com {
+            get {
+                object obj = ResourceManager.GetObject("sticker_add_svgrepo_com", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Cerca una risorsa localizzata di tipo System.Byte[].
+        /// </summary>
+        internal static byte[] sticker_svgrepo_com {
+            get {
+                object obj = ResourceManager.GetObject("sticker_svgrepo_com", resourceCulture);
+                return ((byte[])(obj));
             }
         }
     }
