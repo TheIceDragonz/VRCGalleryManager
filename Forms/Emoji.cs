@@ -5,6 +5,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using VRCGalleryManager.Core;
 using VRCGalleryManager.Core.DTO;
+using VRCGalleryManager.Forms.Panels;
 
 namespace VRCGalleryManager.Forms
 {
@@ -32,7 +33,7 @@ namespace VRCGalleryManager.Forms
 
             //EmojiList();
 
-            LoadEmojiType();
+            TypePanel.LoadEmojiType(emojiTypePanel);
         }
 
         private async void _refreshButton_Click(object sender, EventArgs e)

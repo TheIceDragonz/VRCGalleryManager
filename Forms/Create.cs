@@ -1,6 +1,7 @@
 ﻿using System.Drawing.Imaging;
 using VRCGalleryManager.Core;
 using VRCGalleryManager.Core.DTO;
+using VRCGalleryManager.Forms.Panels;
 
 namespace VRCGalleryManager.Forms
 {
@@ -26,7 +27,7 @@ namespace VRCGalleryManager.Forms
             this.DragEnter += new DragEventHandler(pictureSS_DragEnter);
             this.DragDrop += new DragEventHandler(pictureSS_DragDrop);
 
-            LoadEmojiType();
+            TypePanel.LoadEmojiType(createTypePanel);
 
             labelFPS.Text = "FPS: " + trackBarFPS.Value.ToString();
         }
