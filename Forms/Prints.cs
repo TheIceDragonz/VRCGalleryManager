@@ -3,6 +3,7 @@ using System;
 using System.Diagnostics;
 using VRCGalleryManager.Core;
 using VRCGalleryManager.Core.DTO;
+using VRCGalleryManager.Forms.Panels;
 
 namespace VRCGalleryManager.Forms
 {
@@ -43,8 +44,7 @@ namespace VRCGalleryManager.Forms
 
                 string id = jsonObject["id"]?.ToString();
 
-                var imagePanel = new ImagePanel();
-                imagePanel.AddImagePanel(printsPanel, apiRequest, id);
+                ImagePanel.AddImagePanel(printsPanel, apiRequest, id);
             }
 
             limitPrintsLabel.Text = $"{printsCount}/64 Prints";

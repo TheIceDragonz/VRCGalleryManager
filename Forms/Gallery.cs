@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json.Linq;
 using VRCGalleryManager.Core;
 using VRCGalleryManager.Core.DTO;
+using VRCGalleryManager.Forms.Panels;
 
 namespace VRCGalleryManager.Forms
 {
@@ -44,8 +45,7 @@ namespace VRCGalleryManager.Forms
 
                 string id = jsonObject["id"]?.ToString();
 
-                var imagePanel = new ImagePanel();
-                imagePanel.AddImagePanel(galleryPanel, apiRequest, id);
+                ImagePanel.AddImagePanel(galleryPanel, apiRequest, id);
             }
 
             limitGalleryLabel.Text = $"{galleryCount}/64 Photos";
@@ -68,8 +68,7 @@ namespace VRCGalleryManager.Forms
                     {
                         ApiRequest.ApiData gallery = await apiRequest.UploadImage(resizedImage, GALLERY_MASK_TYPE, TagType.Gallery);
 
-                        var imagePanel = new ImagePanel();
-                        imagePanel.AddImagePanel(galleryPanel, apiRequest, gallery.IdImageUploaded);
+                        ImagePanel.AddImagePanel(galleryPanel, apiRequest, gallery.IdImageUploaded);
 
                         galleryCount = galleryCount + 1;
                         limitGalleryLabel.Text = $"{galleryCount}/64 Photos";

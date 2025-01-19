@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json.Linq;
 using VRCGalleryManager.Core;
 using VRCGalleryManager.Core.DTO;
+using VRCGalleryManager.Forms.Panels;
 
 namespace VRCGalleryManager.Forms
 {
@@ -44,8 +45,7 @@ namespace VRCGalleryManager.Forms
 
                 string id = jsonObject["id"]?.ToString();
 
-                var imagePanel = new ImagePanel();
-                imagePanel.AddImagePanel(iconsPanel, apiRequest, id);
+                ImagePanel.AddImagePanel(iconsPanel, apiRequest, id);
             }
 
             limitIconsLabel.Text = $"{iconsCount}/64 Icons";
@@ -68,8 +68,7 @@ namespace VRCGalleryManager.Forms
                     {
                         ApiRequest.ApiData icons = await apiRequest.UploadImage(resizedImage, ICONS_MASK_TYPE, TagType.Icon);
 
-                        var imagePanel = new ImagePanel();
-                        imagePanel.AddImagePanel(iconsPanel, apiRequest, icons.IdImageUploaded);
+                        ImagePanel.AddImagePanel(iconsPanel, apiRequest, icons.IdImageUploaded);
 
                         iconsCount = iconsCount + 1;
                         limitIconsLabel.Text = $"{iconsCount}/64 Icons";

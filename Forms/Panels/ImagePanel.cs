@@ -1,14 +1,13 @@
 ﻿using System.Diagnostics;
 using VRCGalleryManager.Core;
 using VRCGalleryManager.Design;
-using VRCGalleryManager.Properties;
 using VRCGalleryManager.Forms.UIComponents;
 
-namespace VRCGalleryManager.Forms
+namespace VRCGalleryManager.Forms.Panels
 {
     public class ImagePanel
     {
-        public async void AddImagePanel(FlowLayoutPanel mainPanel, ApiRequest apiRequest, string imageId, string tags, string frames, string framesOverTime)
+        static public async void AddImagePanel(FlowLayoutPanel mainPanel, ApiRequest apiRequest, string imageId, string tags, string frames, string framesOverTime)
         {
             //* IMAGE Animated PANEL
             RoundedPictureBox pictureBox = new RoundedPictureBox
@@ -75,7 +74,7 @@ namespace VRCGalleryManager.Forms
 
             mainPanel.Controls.Add(pictureBox);
         }
-        public async void AddImagePanel(FlowLayoutPanel mainPanel, ApiRequest apiRequest, string imageId)
+        static public async void AddImagePanel(FlowLayoutPanel mainPanel, ApiRequest apiRequest, string imageId)
         {
             Size size = new Size(150, 150);
             if (mainPanel.Name.Contains("prints")) size = new Size(190, 150);

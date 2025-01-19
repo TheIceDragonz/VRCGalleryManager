@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json.Linq;
 using VRCGalleryManager.Core;
 using VRCGalleryManager.Core.DTO;
+using VRCGalleryManager.Forms.Panels;
 
 namespace VRCGalleryManager.Forms
 {
@@ -44,8 +45,7 @@ namespace VRCGalleryManager.Forms
 
                 string id = jsonObject["id"]?.ToString();
 
-                var imagePanel = new ImagePanel();
-                imagePanel.AddImagePanel(stickerPanel, apiRequest, id);
+                ImagePanel.AddImagePanel(stickerPanel, apiRequest, id);
             }
 
             limitStickerLabel.Text = $"{stickerCount}/9 Sticker";
@@ -68,8 +68,7 @@ namespace VRCGalleryManager.Forms
                     {
                         ApiRequest.ApiData sticker = await apiRequest.UploadImage(resizedImage, STICKER_MASK_TYPE, TagType.Sticker);
 
-                        var imagePanel = new ImagePanel();
-                        imagePanel.AddImagePanel(stickerPanel, apiRequest, sticker.IdImageUploaded);
+                        ImagePanel.AddImagePanel(stickerPanel, apiRequest, sticker.IdImageUploaded);
 
                         stickerCount = stickerCount + 1;
                         limitStickerLabel.Text = $"{stickerCount}/9 Sticker";
