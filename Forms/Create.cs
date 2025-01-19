@@ -236,12 +236,6 @@ namespace VRCGalleryManager.Forms
             return tempFilePath;
         }
 
-
-        private async void urlToSpriteSheet(object sender, EventArgs e)
-        {
-            
-        }
-
         private async void creatorUpload_Click(object sender, EventArgs e)
         {
             if (spriteSheet != null)
@@ -311,13 +305,18 @@ namespace VRCGalleryManager.Forms
                             previewSS.Image = spriteSheet;
 
                             pasteButton.Enabled = true;
+
+                            NotificationManager.ShowNotification("Text pasted and saved successfully!", "Paste Text", NotificationType.Success);
                         }
                         else
                         {
                             DialogMessage.ShowValidURL(this);
                         }
                     }
-                    NotificationManager.ShowNotification("Text pasted and saved successfully!", "Paste Text", NotificationType.Success);
+                    else
+                    {
+                        NotificationManager.ShowNotification("Please enter a valid URL.", "Invalid Input", NotificationType.Error);
+                    }
                 }
                 else
                 {

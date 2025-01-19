@@ -36,8 +36,6 @@ namespace VRCGalleryManager.Forms
             buttonSave = new RoundedButton();
             roundedButton1 = new RoundedButton();
             titleGifCreator = new Label();
-            urlToSpriteSheetText = new TextBox();
-            label1 = new Label();
             trackBarFPS = new TrackBar();
             labelFPS = new Label();
             createTypePanel = new RoundedPanel();
@@ -60,7 +58,7 @@ namespace VRCGalleryManager.Forms
             previewGif.BorderRadiusTopRight = 10;
             previewGif.BorderSize = 0;
             previewGif.ImageLocation = "";
-            previewGif.Location = new Point(104, 63);
+            previewGif.Location = new Point(103, 86);
             previewGif.Name = "previewGif";
             previewGif.Size = new Size(260, 260);
             previewGif.SizeMode = PictureBoxSizeMode.StretchImage;
@@ -80,7 +78,7 @@ namespace VRCGalleryManager.Forms
             previewSS.BorderRadiusTopLeft = 10;
             previewSS.BorderRadiusTopRight = 10;
             previewSS.BorderSize = 0;
-            previewSS.Location = new Point(370, 63);
+            previewSS.Location = new Point(369, 86);
             previewSS.Name = "previewSS";
             previewSS.Size = new Size(260, 260);
             previewSS.SizeMode = PictureBoxSizeMode.StretchImage;
@@ -155,35 +153,11 @@ namespace VRCGalleryManager.Forms
             titleGifCreator.Text = "Gif Creator";
             titleGifCreator.TextAlign = ContentAlignment.TopCenter;
             // 
-            // urlToSpriteSheetText
-            // 
-            urlToSpriteSheetText.Anchor = AnchorStyles.None;
-            urlToSpriteSheetText.BackColor = Color.FromArgb(7, 36, 43);
-            urlToSpriteSheetText.BorderStyle = BorderStyle.None;
-            urlToSpriteSheetText.ForeColor = Color.White;
-            urlToSpriteSheetText.Location = new Point(104, 364);
-            urlToSpriteSheetText.Name = "urlToSpriteSheetText";
-            urlToSpriteSheetText.Size = new Size(526, 16);
-            urlToSpriteSheetText.TabIndex = 6;
-            urlToSpriteSheetText.TextChanged += urlToSpriteSheet;
-            // 
-            // label1
-            // 
-            label1.Anchor = AnchorStyles.None;
-            label1.AutoSize = true;
-            label1.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            label1.ForeColor = Color.White;
-            label1.Location = new Point(104, 346);
-            label1.Name = "label1";
-            label1.Size = new Size(124, 15);
-            label1.TabIndex = 7;
-            label1.Text = "Import Link (\".gif\")";
-            // 
             // trackBarFPS
             // 
             trackBarFPS.Anchor = AnchorStyles.None;
             trackBarFPS.BackColor = Color.FromArgb(7, 36, 43);
-            trackBarFPS.Location = new Point(104, 420);
+            trackBarFPS.Location = new Point(103, 379);
             trackBarFPS.Maximum = 64;
             trackBarFPS.Minimum = 1;
             trackBarFPS.Name = "trackBarFPS";
@@ -198,7 +172,7 @@ namespace VRCGalleryManager.Forms
             labelFPS.AutoSize = true;
             labelFPS.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
             labelFPS.ForeColor = Color.White;
-            labelFPS.Location = new Point(104, 402);
+            labelFPS.Location = new Point(103, 361);
             labelFPS.Name = "labelFPS";
             labelFPS.Size = new Size(28, 15);
             labelFPS.TabIndex = 10;
@@ -286,8 +260,6 @@ namespace VRCGalleryManager.Forms
             Controls.Add(createOpenTypePanel);
             Controls.Add(labelFPS);
             Controls.Add(trackBarFPS);
-            Controls.Add(label1);
-            Controls.Add(urlToSpriteSheetText);
             Controls.Add(titleGifCreator);
             Controls.Add(roundedButton1);
             Controls.Add(previewGif);
@@ -310,8 +282,6 @@ namespace VRCGalleryManager.Forms
         private Design.RoundedButton buttonSave;
         private RoundedButton roundedButton1;
         private Label titleGifCreator;
-        private TextBox urlToSpriteSheetText;
-        private Label label1;
         private TrackBar trackBarFPS;
         private Label labelFPS;
         private RoundedPanel createTypePanel;

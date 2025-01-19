@@ -77,7 +77,7 @@ namespace VRCGalleryManager
             FormsPanel.BorderSize = 0;
             FormsPanel.Location = new Point(182, 12);
             FormsPanel.Name = "FormsPanel";
-            FormsPanel.Size = new Size(828, 558);
+            FormsPanel.Size = new Size(828, 487);
             FormsPanel.TabIndex = 5;
             // 
             // SwitchPanel
@@ -99,7 +99,7 @@ namespace VRCGalleryManager
             SwitchPanel.Margin = new Padding(5);
             SwitchPanel.Name = "SwitchPanel";
             SwitchPanel.Padding = new Padding(5);
-            SwitchPanel.Size = new Size(157, 400);
+            SwitchPanel.Size = new Size(157, 329);
             SwitchPanel.TabIndex = 6;
             // 
             // _switchCreate
@@ -114,7 +114,7 @@ namespace VRCGalleryManager
             _switchCreate.FlatStyle = FlatStyle.Flat;
             _switchCreate.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
             _switchCreate.ForeColor = Color.FromArgb(106, 227, 249);
-            _switchCreate.Location = new Point(5, 315);
+            _switchCreate.Location = new Point(5, 244);
             _switchCreate.Name = "_switchCreate";
             _switchCreate.Size = new Size(147, 40);
             _switchCreate.SvgAlignment = ContentAlignment.MiddleLeft;
@@ -170,7 +170,7 @@ namespace VRCGalleryManager
             _switchSettings.FlatStyle = FlatStyle.Flat;
             _switchSettings.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
             _switchSettings.ForeColor = Color.FromArgb(106, 227, 249);
-            _switchSettings.Location = new Point(5, 355);
+            _switchSettings.Location = new Point(5, 284);
             _switchSettings.Name = "_switchSettings";
             _switchSettings.Size = new Size(147, 40);
             _switchSettings.SvgAlignment = ContentAlignment.MiddleLeft;
@@ -396,7 +396,7 @@ namespace VRCGalleryManager
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(15, 17, 19);
-            ClientSize = new Size(1022, 582);
+            ClientSize = new Size(1022, 511);
             Controls.Add(badgeBox3);
             Controls.Add(badgeBox2);
             Controls.Add(badgeBox1);
@@ -406,7 +406,7 @@ namespace VRCGalleryManager
             Controls.Add(FormsPanel);
             Controls.Add(bannerIcon);
             Icon = (Icon)resources.GetObject("$this.Icon");
-            MinimumSize = new Size(750, 600);
+            MinimumSize = new Size(750, 550);
             Name = "MainPanel";
             Text = "VRCGalleryManager";
             ((System.ComponentModel.ISupportInitialize)bannerIcon).EndInit();
