@@ -239,29 +239,7 @@ namespace VRCGalleryManager.Forms
 
         private async void urlToSpriteSheet(object sender, EventArgs e)
         {
-            string url = urlToSpriteSheetText.Text;
-
-            if (!string.IsNullOrWhiteSpace(url))
-            {
-                if (urlToSpriteSheetText.Text.Contains("gif"))
-                {
-                    string downloadedFilePath = await DownloadImageFromUrl(url);
-                    gifPath = downloadedFilePath;
-                    previewGif.ImageLocation = gifPath;
-
-                    string directoryPath = Path.Combine(Path.GetTempPath(), "VRCGalleryManager");
-                    Directory.CreateDirectory(directoryPath);
-
-                    string tempOutputPath = Path.Combine(directoryPath, $"spritesheet_temp_{Guid.NewGuid()}.png");
-                    ConvertGifToSpriteSheets(gifPath, tempOutputPath);
-                    previewSS.Image = spriteSheet;
-                }
-                else
-                {
-                    DialogMessage.ShowValidURL(this);
-                }
-            }
-            urlToSpriteSheetText.Text = "";
+            
         }
 
         private async void creatorUpload_Click(object sender, EventArgs e)
@@ -306,9 +284,51 @@ namespace VRCGalleryManager.Forms
             createTypePanel.Visible = !createTypePanel.Visible;
         }
 
-        private void pasteButton_Click(object sender, EventArgs e)
+        private async void pasteButton_Click(object sender, EventArgs e)
         {
+            IDataObject data = Clipboard.GetDataObject();
+            if (data != null)
+            {
+                if (data.GetDataPresent(DataFormats.Text))
+                {
+                    string url = (string)data.GetData(DataFormats.Text);
 
+                    if (!string.IsNullOrWhiteSpace(url))
+                    {
+                        if (url.Contains(".gif"))
+                        {
+                            pasteButton.Enabled = false;
+
+                            string downloadedFilePath = await DownloadImageFromUrl(url);
+                            gifPath = downloadedFilePath;
+                            previewGif.ImageLocation = gifPath;
+
+                            string directoryPath = Path.Combine(Path.GetTempPath(), "VRCGalleryManager");
+                            Directory.CreateDirectory(directoryPath);
+
+                            string tempOutputPath = Path.Combine(directoryPath, $"spritesheet_temp_{Guid.NewGuid()}.png");
+                            ConvertGifToSpriteSheets(gifPath, tempOutputPath);
+                            previewSS.Image = spriteSheet;
+
+                            pasteButton.Enabled = true;
+                        }
+                        else
+                        {
+                            DialogMessage.ShowValidURL(this);
+                        }
+                    }
+                    NotificationManager.ShowNotification("Text pasted and saved successfully!", "Paste Text", NotificationType.Success);
+                }
+                else
+                {
+                    NotificationManager.ShowNotification("No text found in the clipboard!", "Error", NotificationType.Error);
+                }
+            }
+            else
+            {
+                NotificationManager.ShowNotification("Clipboard is empty!", "Error", NotificationType.Error);
+            }
         }
+
     }
 }

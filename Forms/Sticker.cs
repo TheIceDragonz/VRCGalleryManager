@@ -112,7 +112,11 @@ namespace VRCGalleryManager.Forms
                     string[] files = (string[])data.GetData(DataFormats.FileDrop);
                     if (files.Length > 0)
                     {
+                        pasteButton.Enabled = false;
+
                         UploadImage(files[0]);
+
+                        pasteButton.Enabled = true;
                     }
                 }
                 else

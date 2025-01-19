@@ -143,7 +143,11 @@ namespace VRCGalleryManager.Forms
                     {
                         if (!emojiOpenTypePanel.Text.Contains("Type"))
                         {
+                            pasteButton.Enabled = false;
+
                             UploadImage(files[0]);
+
+                            pasteButton.Enabled = true;
                         }
                         else
                         {
