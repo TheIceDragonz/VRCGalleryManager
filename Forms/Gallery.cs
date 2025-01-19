@@ -62,7 +62,7 @@ namespace VRCGalleryManager.Forms
 
                 if (openFileDialog.ShowDialog() == DialogResult.OK)
                 {
-                    string resizedImage = ImageResizer.ResizeImage1024x1024(openFileDialog.FileName);
+                    string resizedImage = ImageResizer.ResizeImage16x9(openFileDialog.FileName);
 
                     try
                     {
