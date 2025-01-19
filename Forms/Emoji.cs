@@ -3,6 +3,7 @@ using System;
 using System.Diagnostics;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Windows.Forms;
 using VRCGalleryManager.Core;
 using VRCGalleryManager.Core.DTO;
 using VRCGalleryManager.Forms.Panels;
@@ -80,27 +81,7 @@ namespace VRCGalleryManager.Forms
 
                     if (openFileDialog.ShowDialog() == DialogResult.OK)
                     {
-                        string resizedImage = ImageResizer.ResizeImage1024x1024(openFileDialog.FileName);
-
-                        try
-                        {
-                            EMOJI_ANIMATION_STYLE = emojiOpenTypePanel.Text.ToLower();
-
-                            ApiRequest.ApiData emoji = await apiRequest.UploadImage(resizedImage, EMOJI_MASK_TAG, TagType.Emoji, EMOJI_ANIMATION_STYLE);
-
-                            ImagePanel.AddImagePanel(emojiPanel, apiRequest, emoji.IdImageUploaded, emoji.Tags, emoji.Frames, emoji.FramesOverTime);
-
-                            emojiCount = emojiCount + 1;
-                            limitStickerLabel.Text = $"{emojiCount}/9 Emoji";
-                            if (emojiCount == 9) limitPanelEmoji.Visible = true;
-                            else limitPanelEmoji.Visible = false;
-
-                            NotificationManager.ShowNotification("Emoji uploaded successfully", "Emoji uploaded", NotificationType.Success);
-                        }
-                        catch (Exception ex)
-                        {
-                            NotificationManager.ShowNotification(ex.Message, "Error during file upload", NotificationType.Error);
-                        }
+                        UploadImage(openFileDialog.FileName);
                     }
                 }
             }
@@ -109,10 +90,79 @@ namespace VRCGalleryManager.Forms
                 DialogMessage.ShowMissingTypeDialog(this);
             }
         }
+        private async void UploadImage(string path)
+        {
+            string resizedImage = ImageResizer.ResizeImage1024x1024(path);
+
+            try
+            {
+                EMOJI_ANIMATION_STYLE = emojiOpenTypePanel.Text.ToLower();
+
+                ApiRequest.ApiData emoji = await apiRequest.UploadImage(resizedImage, EMOJI_MASK_TAG, TagType.Emoji, EMOJI_ANIMATION_STYLE);
+
+                ImagePanel.AddImagePanel(emojiPanel, apiRequest, emoji.IdImageUploaded, emoji.Tags, emoji.Frames, emoji.FramesOverTime);
+
+                emojiCount = emojiCount + 1;
+                limitStickerLabel.Text = $"{emojiCount}/9 Emoji";
+                if (emojiCount == 9) limitPanelEmoji.Visible = true;
+                else limitPanelEmoji.Visible = false;
+
+                NotificationManager.ShowNotification("Emoji uploaded successfully", "Emoji uploaded", NotificationType.Success);
+            }
+            catch (Exception ex)
+            {
+                NotificationManager.ShowNotification(ex.Message, "Error during file upload", NotificationType.Error);
+            }
+        }
 
         private void emojiOpenTypePanel_Click(object sender, EventArgs e)
         {
             emojiTypePanel.Visible = !emojiTypePanel.Visible;
+        }
+
+        private void Emoji_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Control && e.KeyCode == Keys.V)
+            {
+                IDataObject data = Clipboard.GetDataObject();
+                if (data != null)
+                {
+                    if (data.GetDataPresent(DataFormats.Bitmap))
+                    {
+                        var image = (Image)data.GetData(DataFormats.Bitmap);
+
+                        string directoryPath = Path.Combine(Path.GetTempPath(), "VRCGalleryManager");
+                        Directory.CreateDirectory(directoryPath);
+                        string tempPath = Path.Combine(directoryPath, $"Pasted-Image_{Guid.NewGuid()}.png");
+                        image.Save(tempPath, System.Drawing.Imaging.ImageFormat.Png);
+                        UploadImage(tempPath);
+                        NotificationManager.ShowNotification("Image pasted and saved successfully!", "Paste Image", NotificationType.Success);
+                    }
+                    else if (data.GetDataPresent(DataFormats.FileDrop))
+                    {
+                        string[] files = (string[])data.GetData(DataFormats.FileDrop);
+                        if (files.Length > 0)
+                        {
+                            if (!emojiOpenTypePanel.Text.Contains("Type"))
+                            {
+                                UploadImage(files[0]);
+                            }
+                            else
+                            {
+                                DialogMessage.ShowMissingTypeDialog(this);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        NotificationManager.ShowNotification("No image or file found in the clipboard!", "Error", NotificationType.Error);
+                    }
+                }
+                else
+                {
+                    NotificationManager.ShowNotification("Clipboard is empty!", "Error", NotificationType.Error);
+                }
+            }
         }
     }
 }

@@ -157,8 +157,10 @@ namespace VRCGalleryManager.Forms
             Controls.Add(_refreshButton);
             Controls.Add(stickerPanel);
             FormBorderStyle = FormBorderStyle.None;
+            KeyPreview = true;
             Name = "Sticker";
             Text = "Sticker";
+            KeyDown += Sticker_KeyDown;
             limitPanelSticker.ResumeLayout(false);
             ResumeLayout(false);
             PerformLayout();

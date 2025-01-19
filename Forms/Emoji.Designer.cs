@@ -205,8 +205,10 @@ namespace VRCGalleryManager.Forms
             Controls.Add(_refreshButton);
             Controls.Add(emojiPanel);
             FormBorderStyle = FormBorderStyle.None;
+            KeyPreview = true;
             Name = "Emoji";
             Text = "Emoji";
+            KeyDown += Emoji_KeyDown;
             limitPanelEmoji.ResumeLayout(false);
             ResumeLayout(false);
             PerformLayout();
