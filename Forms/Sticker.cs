@@ -51,7 +51,7 @@ namespace VRCGalleryManager.Forms
             }
 
             limitStickerLabel.Text = $"{stickerCount}/9 Sticker";
-            if (stickerCount == 9) limitPanelSticker.Visible = true;
+            if (stickerCount >= 9) limitPanelSticker.Visible = true;
             else limitPanelSticker.Visible = false;
         }
 

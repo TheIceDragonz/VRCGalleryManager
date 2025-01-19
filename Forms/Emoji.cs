@@ -104,7 +104,7 @@ namespace VRCGalleryManager.Forms
 
                 emojiCount = emojiCount + 1;
                 limitStickerLabel.Text = $"{emojiCount}/9 Emoji";
-                if (emojiCount == 9) limitPanelEmoji.Visible = true;
+                if (emojiCount >= 9) limitPanelEmoji.Visible = true;
                 else limitPanelEmoji.Visible = false;
 
                 NotificationManager.ShowNotification("Emoji uploaded successfully", "Emoji uploaded", NotificationType.Success);
