@@ -63,9 +63,9 @@ namespace VRCGalleryManager.Forms
             _refreshButton.FlatStyle = FlatStyle.Flat;
             _refreshButton.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
             _refreshButton.ForeColor = Color.FromArgb(106, 227, 249);
-            _refreshButton.Location = new Point(657, 12);
+            _refreshButton.Location = new Point(657, 10);
             _refreshButton.Name = "_refreshButton";
-            _refreshButton.Size = new Size(116, 27);
+            _refreshButton.Size = new Size(116, 29);
             _refreshButton.SvgAlignment = ContentAlignment.MiddleCenter;
             _refreshButton.SvgColor = Color.Black;
             _refreshButton.SvgContent = null;
@@ -184,7 +184,7 @@ namespace VRCGalleryManager.Forms
             limitStickerLabel.AutoSize = true;
             limitStickerLabel.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
             limitStickerLabel.ForeColor = Color.White;
-            limitStickerLabel.Location = new Point(592, 18);
+            limitStickerLabel.Location = new Point(592, 17);
             limitStickerLabel.Name = "limitStickerLabel";
             limitStickerLabel.Size = new Size(59, 15);
             limitStickerLabel.TabIndex = 7;
