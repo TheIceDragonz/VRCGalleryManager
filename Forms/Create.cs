@@ -34,18 +34,26 @@ namespace VRCGalleryManager.Forms
 
         private void pictureSS_DragDrop(object sender, DragEventArgs e)
         {
-            string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
-            gifPath = files[0];  // Salva il percorso della GIF
+            string[] files = e.Data.GetData(DataFormats.FileDrop) as string[];
+            if (files == null || files.Length == 0)
+                return;
+
+            gifPath = files[0];
             previewGif.ImageLocation = gifPath;
 
-            if (gifPath != null)
+            if (!string.IsNullOrEmpty(gifPath))
             {
-                string tempOutputPath = Path.Combine(Path.GetTempPath(), gifPath + "spritesheet_temp.png");
+                string directoryPath = Path.Combine(Path.GetTempPath(), "VRCGalleryManager");
+                Directory.CreateDirectory(directoryPath);
+                string tempOutputPath = Path.Combine(directoryPath, $"spritesheet_{Path.GetFileName(gifPath)}_{Guid.NewGuid()}.png");
+
                 ConvertGifToSpriteSheets(gifPath, tempOutputPath);
+
                 previewSS.Image = spriteSheet;
                 buttonSave.Enabled = true;
             }
         }
+
 
         private void pictureSS_DragEnter(object sender, DragEventArgs e)
         {
@@ -191,16 +199,19 @@ namespace VRCGalleryManager.Forms
         {
             if (spriteSheet != null)
             {
-                string outputFilePath = "VRCGalleryManager-spritesheet_temp.png";
+                string directoryPath = Path.Combine(Path.GetTempPath(), "VRCGalleryManager");
+                Directory.CreateDirectory(directoryPath);
+
+                string outputFilePath = Path.Combine(directoryPath, $"spritesheet_{Guid.NewGuid()}.png");
 
                 if (Path.GetExtension(outputFilePath).ToLower() != ".png")
                 {
                     outputFilePath = Path.ChangeExtension(outputFilePath, ".png");
                 }
 
-                spriteSheet.Save(Path.GetTempPath() + outputFilePath, ImageFormat.Png);
+                spriteSheet.Save(outputFilePath, ImageFormat.Png);
 
-                return Path.GetTempPath() + outputFilePath;
+                return outputFilePath;
             }
             else
             {
@@ -211,7 +222,10 @@ namespace VRCGalleryManager.Forms
 
         private async Task<string> DownloadImageFromUrl(string url)
         {
-            string tempFilePath = Path.Combine(Path.GetTempPath(), "VRCGalleryManager-downloaded_image.gif" + url.Length);
+            string directoryPath = Path.Combine(Path.GetTempPath(), "VRCGalleryManager");
+            Directory.CreateDirectory(directoryPath);
+
+            string tempFilePath = Path.Combine(directoryPath, $"downloaded_image_{Guid.NewGuid()}.gif");
 
             using (HttpClient client = new HttpClient())
             {
@@ -221,6 +235,7 @@ namespace VRCGalleryManager.Forms
 
             return tempFilePath;
         }
+
 
         private async void urlToSpriteSheet(object sender, EventArgs e)
         {
@@ -234,7 +249,10 @@ namespace VRCGalleryManager.Forms
                     gifPath = downloadedFilePath;
                     previewGif.ImageLocation = gifPath;
 
-                    string tempOutputPath = Path.Combine(Path.GetTempPath(), "VRCGalleryManager-spritesheet_temp.png" + url.Length);
+                    string directoryPath = Path.Combine(Path.GetTempPath(), "VRCGalleryManager");
+                    Directory.CreateDirectory(directoryPath);
+
+                    string tempOutputPath = Path.Combine(directoryPath, $"spritesheet_temp_{Guid.NewGuid()}.png");
                     ConvertGifToSpriteSheets(gifPath, tempOutputPath);
                     previewSS.Image = spriteSheet;
                 }

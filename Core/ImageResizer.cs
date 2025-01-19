@@ -43,7 +43,9 @@ namespace VRCGalleryManager.Core
                         graphics.DrawImage(inputImage, offsetX, offsetY, newWidth, newHeight);
                     }
 
-                    string tempPath = Path.Combine(Path.GetTempPath(), $"resized_{Guid.NewGuid()}.png");
+                    string directoryPath = Path.Combine(Path.GetTempPath(), "VRCGalleryManager");
+                    Directory.CreateDirectory(directoryPath);
+                    string tempPath = Path.Combine(directoryPath, $"resized_{Guid.NewGuid()}.png");
                     resizedBitmap.Save(tempPath, ImageFormat.Png);
 
                     return tempPath;
@@ -85,7 +87,9 @@ namespace VRCGalleryManager.Core
                         graphics.DrawImage(inputImage, offsetX, offsetY, scaledWidth, scaledHeight);
                     }
 
-                    string tempPath = Path.Combine(Path.GetTempPath(), $"resized_{Guid.NewGuid()}.png");
+                    string directoryPath = Path.Combine(Path.GetTempPath(), "VRCGalleryManager");
+                    Directory.CreateDirectory(directoryPath);
+                    string tempPath = Path.Combine(directoryPath, $"resized_{Guid.NewGuid()}.png");
                     resizedBitmap.Save(tempPath, ImageFormat.Png);
 
                     return tempPath;
