@@ -33,7 +33,7 @@ namespace VRCGalleryManager.Forms
 
             //EmojiList();
 
-            TypePanel.LoadEmojiType(emojiTypePanel);
+            TypePanel.LoadEmojiType(emojiOpenTypePanel, emojiTypePanel);
         }
 
         private async void _refreshButton_Click(object sender, EventArgs e)

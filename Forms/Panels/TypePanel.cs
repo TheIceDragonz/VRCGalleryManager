@@ -6,17 +6,17 @@ namespace VRCGalleryManager.Forms.Panels
 {
     public class TypePanel
     {
-        static public async void LoadEmojiType(Panel mainPanel)
+        static public async void LoadEmojiType(Button buttonTypePanel, Panel typePanel)
         {
             EmojiType emojiType = new EmojiType();
 
             foreach (var typeWithImage in emojiType.TypesWithImages)
             {
-                AddEmojiTypePanel(mainPanel, typeWithImage);
+                AddEmojiTypePanel(buttonTypePanel, typePanel, typeWithImage);
             }
         }
 
-        static private async void AddEmojiTypePanel(Panel mainPanel, TypeWithImage typeWithImage)
+        static private async void AddEmojiTypePanel(Button buttonTypePanel, Panel typePanel, TypeWithImage typeWithImage)
         {
             RoundedPanel panel = new RoundedPanel
             {
@@ -65,15 +65,15 @@ namespace VRCGalleryManager.Forms.Panels
 
             EventHandler eventClick = (sender, e) =>
             {
-                mainPanel.createOpenTypePanel.Text = typeWithImage.Type;
-                mainPanel.emojiTypePanel.Visible = false;
+                buttonTypePanel.Text = typeWithImage.Type;
+                typePanel.Visible = false;
             };
 
             panel.Click += eventClick;
             pictureBox.Click += eventClick;
             labelName.Click += eventClick;
 
-            mainPanel.emojiTypePanel.Controls.Add(panel);
+            typePanel.Controls.Add(panel);
         }
     }
 }
