@@ -198,6 +198,7 @@ namespace VRCGalleryManager.Design
             Console.WriteLine($"Resource {resourceName} not found.");
             return null;
         }
+
         protected override void OnPaint(PaintEventArgs pevent)
         {
             // Clear the entire drawing area

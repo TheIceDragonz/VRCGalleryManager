@@ -202,6 +202,18 @@
   <data name="NotFound" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\NotFound.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="add_svgrepo_com" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\svg\add-svgrepo-com.svg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="arrow_download_svgrepo_com" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\svg\arrow-download-svgrepo-com.svg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="arrow_sync_svgrepo_com" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\svg\arrow-sync-svgrepo-com.svg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="backward_svgrepo_com" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\svg\backward-svgrepo-com.svg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
   <data name="camera_add_svgrepo_com" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\svg\camera-add-svgrepo-com.svg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
@@ -213,6 +225,9 @@
   </data>
   <data name="copy_move_svgrepo_com" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\svg\copy-move-svgrepo-com.svg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="delete_svgrepo_com" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\svg\delete-svgrepo-com.svg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="emoji_add_svgrepo_com" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\svg\emoji-add-svgrepo-com.svg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>

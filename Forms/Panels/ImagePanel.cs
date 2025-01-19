@@ -1,7 +1,8 @@
 ﻿using System.Diagnostics;
 using VRCGalleryManager.Core;
 using VRCGalleryManager.Design;
-using Svg;
+using VRCGalleryManager.Properties;
+using VRCGalleryManager.Forms.UIComponents;
 
 namespace VRCGalleryManager.Forms
 {
@@ -31,69 +32,46 @@ namespace VRCGalleryManager.Forms
 
             if (!finalaviImage.Contains("imageNotFound"))
             {
-                CircularButton btn_open = new CircularButton
+                if (pictureBox.Controls["btn_open"] == null)
                 {
-                    Text = "🖼️",
-                    BackColor = Color.FromArgb(96, 159, 255),
-                    ForeColor = Color.White,
-                    Dock = DockStyle.Right,
-                    Width = 25,
-                    Height = 25,
-                    Location = new Point(pictureBox.Size.Width - 35, pictureBox.Size.Height - 35),
-                    Anchor = AnchorStyles.Bottom | AnchorStyles.Right
-                };
-                if (tags.Contains("animated"))
-                {
-                    SpriteSheetViewer viewer = new SpriteSheetViewer(pictureBox);
-                    await viewer.LoadSpriteSheetAsync(finalaviImage, int.Parse(frames), int.Parse(framesOverTime));
-                    viewer.StartAnimation();
-                }
-                else
-                {
-                    pictureBox.LoadAsync(finalaviImage);
-                }
+                    CircularButton btn_open = CircularButtonTools.CreateButton("open", (sender, e) =>
+                    {
+                        Process.Start("explorer.exe", $"https://api.vrchat.cloud/api/1/file/{imageId}/1/file");
+                    });
 
-                btn_open.Click += (sender, e) => Process.Start("explorer.exe", $"https://api.vrchat.cloud/api/1/file/{imageId}/1/file");
-                btn_open.Cursor = Cursors.Hand;
-                pictureBox.Controls.Add(btn_open);
-            }
-            else
-            {
-                pictureBox.Cursor = Cursors.Default;
+                    btn_open.Location = new Point(pictureBox.Size.Width - 60, pictureBox.Size.Height - 35);
+
+                    if (tags.Contains("animated"))
+                    {
+                        SpriteSheetViewer viewer = new SpriteSheetViewer(pictureBox);
+                        await viewer.LoadSpriteSheetAsync(finalaviImage, int.Parse(frames), int.Parse(framesOverTime));
+                        viewer.StartAnimation();
+                    }
+                    else
+                    {
+                        pictureBox.LoadAsync(finalaviImage);
+                    }
+
+                    pictureBox.Controls.Add(btn_open);
+                }
             }
 
-            CircularButton btn_delete = new CircularButton
+            if (pictureBox.Controls["btn_delete"] == null)
             {
-                Text = "✖",
-                BackColor = Color.FromArgb(255, 114, 114),
-                ForeColor = Color.White,
-                Dock = DockStyle.Right,
-                Width = 25,
-                Height = 25,
-                Location = new Point(pictureBox.Size.Width - 60, pictureBox.Size.Height - 35),
-                Anchor = AnchorStyles.Bottom | AnchorStyles.Right
-            };
-            btn_delete.Click += async (sender, e) =>
-            {
-                DialogResult result = DialogMessage.ShowDeleteFileDialog(imageId);
-
-                if (result == DialogResult.Yes)
+                CircularButton btn_delete = CircularButtonTools.CreateButton("delete", async (sender, e) =>
                 {
-                    Debug.WriteLine("Delete: " + imageId);
+                    DialogResult result = DialogMessage.ShowDeleteFileDialog(imageId);
 
-                    await apiRequest.DeleteApiData(imageId);
-
-                    mainPanel.Controls.Remove(pictureBox);
-
-                    /*
-                    emojiCount = emojiCount - 1;
-                    limitStickerLabel.Text = $"{emojiCount}/9 Emoji";
-                    if (emojiCount == 9) limitPanelEmoji.Visible = true;
-                    else limitPanelEmoji.Visible = false;
-                    */
-                }
-            };
-            pictureBox.Controls.Add(btn_delete);
+                    if (result == DialogResult.Yes)
+                    {
+                        Debug.WriteLine("Delete: " + imageId);
+                        await apiRequest.DeleteApiData(imageId);
+                        mainPanel.Controls.Remove(pictureBox);
+                    }
+                });
+                btn_delete.Location = new Point(pictureBox.Size.Width - 35, pictureBox.Size.Height - 35);
+                pictureBox.Controls.Add(btn_delete);
+            }
 
             mainPanel.Controls.Add(pictureBox);
         }
@@ -126,60 +104,36 @@ namespace VRCGalleryManager.Forms
 
             if (!finalaviImage.Contains("imageNotFound"))
             {
-                CircularButton btn_open = new CircularButton
+                if (pictureBox.Controls["btn_open"] == null)
                 {
-                    Text = "🖼️",
-                    BackColor = Color.FromArgb(96, 159, 255),
-                    ForeColor = Color.White,
-                    Dock = DockStyle.Right,
-                    Width = 25,
-                    Height = 25,
-                    Location = new Point(pictureBox.Size.Width - 35, pictureBox.Size.Height - 35),
-                    Anchor = AnchorStyles.Bottom | AnchorStyles.Right
-                };
-                pictureBox.LoadAsync(finalaviImage);
+                    CircularButton btn_open = CircularButtonTools.CreateButton("open", (sender, e) =>
+                    {
+                        Process.Start("explorer.exe", $"https://api.vrchat.cloud/api/1/file/{imageId}/1/file");
+                    });
 
-                btn_open.Click += (sender, e) => Process.Start("explorer.exe", $"https://api.vrchat.cloud/api/1/file/{imageId}/1/file");
-                btn_open.Cursor = Cursors.Hand;
-                pictureBox.Controls.Add(btn_open);
-            }
-            else
-            {
-                pictureBox.Cursor = Cursors.Default;
-            }
+                    btn_open.Location = new Point(pictureBox.Size.Width - 60, pictureBox.Size.Height - 35);
 
-            CircularButton btn_delete = new CircularButton
-            {
-                Text = "✖",
-                BackColor = Color.FromArgb(255, 114, 114),
-                ForeColor = Color.White,
-                Dock = DockStyle.Right,
-                Width = 25,
-                Height = 25,
-                Location = new Point(pictureBox.Size.Width - 60, pictureBox.Size.Height - 35),
-                Anchor = AnchorStyles.Bottom | AnchorStyles.Right
-            };
-            btn_delete.Click += async (sender, e) =>
-            {
-                DialogResult result = DialogMessage.ShowDeleteFileDialog(imageId);
+                    pictureBox.LoadAsync(finalaviImage);
 
-                if (result == DialogResult.Yes)
-                {
-                    Debug.WriteLine("Delete: " + imageId);
-
-                    await apiRequest.DeleteApiData(imageId);
-
-                    mainPanel.Controls.Remove(pictureBox);
-
-                    /*
-                    emojiCount = emojiCount - 1;
-                    limitStickerLabel.Text = $"{emojiCount}/9 Emoji";
-                    if (emojiCount == 9) limitPanelEmoji.Visible = true;
-                    else limitPanelEmoji.Visible = false;
-                    */
+                    pictureBox.Controls.Add(btn_open);
                 }
-            };
-            pictureBox.Controls.Add(btn_delete);
+            }
+            if (pictureBox.Controls["btn_delete"] == null)
+            {
+                CircularButton btn_delete = CircularButtonTools.CreateButton("delete", async (sender, e) =>
+                {
+                    DialogResult result = DialogMessage.ShowDeleteFileDialog(imageId);
+
+                    if (result == DialogResult.Yes)
+                    {
+                        Debug.WriteLine("Delete: " + imageId);
+                        await apiRequest.DeleteApiData(imageId);
+                        mainPanel.Controls.Remove(pictureBox);
+                    }
+                });
+                btn_delete.Location = new Point(pictureBox.Size.Width - 35, pictureBox.Size.Height - 35);
+                pictureBox.Controls.Add(btn_delete);
+            }
 
             mainPanel.Controls.Add(pictureBox);
         }

@@ -63,6 +63,46 @@ namespace VRCGalleryManager.Properties {
         /// <summary>
         ///   Cerca una risorsa localizzata di tipo System.Byte[].
         /// </summary>
+        internal static byte[] add_svgrepo_com {
+            get {
+                object obj = ResourceManager.GetObject("add_svgrepo_com", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Cerca una risorsa localizzata di tipo System.Byte[].
+        /// </summary>
+        internal static byte[] arrow_download_svgrepo_com {
+            get {
+                object obj = ResourceManager.GetObject("arrow_download_svgrepo_com", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Cerca una risorsa localizzata di tipo System.Byte[].
+        /// </summary>
+        internal static byte[] arrow_sync_svgrepo_com {
+            get {
+                object obj = ResourceManager.GetObject("arrow_sync_svgrepo_com", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Cerca una risorsa localizzata di tipo System.Byte[].
+        /// </summary>
+        internal static byte[] backward_svgrepo_com {
+            get {
+                object obj = ResourceManager.GetObject("backward_svgrepo_com", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Cerca una risorsa localizzata di tipo System.Byte[].
+        /// </summary>
         internal static byte[] camera_add_svgrepo_com {
             get {
                 object obj = ResourceManager.GetObject("camera_add_svgrepo_com", resourceCulture);
@@ -96,6 +136,16 @@ namespace VRCGalleryManager.Properties {
         internal static byte[] copy_move_svgrepo_com {
             get {
                 object obj = ResourceManager.GetObject("copy_move_svgrepo_com", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Cerca una risorsa localizzata di tipo System.Byte[].
+        /// </summary>
+        internal static byte[] delete_svgrepo_com {
+            get {
+                object obj = ResourceManager.GetObject("delete_svgrepo_com", resourceCulture);
                 return ((byte[])(obj));
             }
         }
