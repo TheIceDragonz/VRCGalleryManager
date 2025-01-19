@@ -90,8 +90,6 @@ namespace VRCGalleryManager.Design
 
         protected override void OnPaint(PaintEventArgs pevent)
         {
-            base.OnPaint(pevent);
-
             Rectangle rectSurface = ClientRectangle;
             Rectangle rectBorder = Rectangle.Inflate(rectSurface, -borderSize + 2, -borderSize + 2);
 
@@ -102,13 +100,30 @@ namespace VRCGalleryManager.Design
             if (borderSize > 0)
                 smoothSize = Math.Max(2, borderSize);
 
+            Rectangle rectContent = new Rectangle(
+                rectSurface.X + Padding.Left,
+                rectSurface.Y + Padding.Top,
+                rectSurface.Width - Padding.Horizontal,
+                rectSurface.Height - Padding.Vertical
+            );
+
+            if (Image != null)
+            {
+                using (GraphicsPath imagePath = GetFigurePath(rectSurface))
+                using (Region clipRegion = new Region(imagePath))
+                {
+                    pevent.Graphics.SetClip(clipRegion, CombineMode.Replace);
+                    pevent.Graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                    pevent.Graphics.DrawImage(Image, rectContent);
+                    pevent.Graphics.ResetClip();
+                }
+            }
 
             using (GraphicsPath pathSurface = GetFigurePath(rectSurface))
             using (GraphicsPath pathBorder = GetFigurePath(rectBorder))
             using (Pen penSurface = new Pen(Parent.BackColor, smoothSize))
             using (Pen penBorder = new Pen(borderColor, borderSize))
             {
-                pevent.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
                 Region = new Region(pathSurface);
                 pevent.Graphics.DrawPath(penSurface, pathSurface);
 
@@ -116,6 +131,8 @@ namespace VRCGalleryManager.Design
                     pevent.Graphics.DrawPath(penBorder, pathBorder);
             }
         }
+
+
 
         public RoundedPictureBox()
         {
