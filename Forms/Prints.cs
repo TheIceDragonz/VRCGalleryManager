@@ -14,6 +14,8 @@ namespace VRCGalleryManager.Forms
         private List<string> printsJson = new List<string>();
         private int printsCount;
 
+        private static string PRINTS_MASK_TYPE = "square";
+
         public Prints(VRCAuth auth)
         {
             InitializeComponent();
@@ -65,9 +67,9 @@ namespace VRCGalleryManager.Forms
 
                     try
                     {
-                        //ApiRequest.ApiData prints = await apiRequest.UploadImage();
+                        ApiRequest.ApiData prints = await apiRequest.UploadImage(selectedFilePath, PRINTS_MASK_TYPE, TagType.Print);
 
-                        //AddPrintsPanel();
+                        ImagePanel.AddImagePanel(printsPanel, apiRequest, prints.IdImageUploaded);
 
                         printsCount = printsCount + 1;
                         limitPrintsLabel.Text = $"{printsCount}/64 Emoji";

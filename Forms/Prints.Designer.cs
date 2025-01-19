@@ -85,7 +85,6 @@ namespace VRCGalleryManager.Forms
             roundedButton1.BorderColor = Color.FromArgb(5, 55, 66);
             roundedButton1.BorderRadius = 10;
             roundedButton1.BorderSize = 2;
-            roundedButton1.Enabled = false;
             roundedButton1.FlatAppearance.BorderSize = 0;
             roundedButton1.FlatStyle = FlatStyle.Flat;
             roundedButton1.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
