@@ -23,7 +23,7 @@ namespace VRCGalleryManager.Forms
 
             apiRequest = new ApiRequest(auth);
 
-            //GalleryList();
+            this.Shown += (s, e) => { if (galleryPanel.Controls.Count == 0) GalleryList(); };
         }
 
         private async void _refreshButton_Click(object sender, EventArgs e)

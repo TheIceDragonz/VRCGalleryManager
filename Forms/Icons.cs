@@ -23,7 +23,7 @@ namespace VRCGalleryManager.Forms
 
             apiRequest = new ApiRequest(auth);
 
-            //IconsList();
+            this.Shown += (s, e) => { if (iconsPanel.Controls.Count == 0) IconsList(); };
         }
 
         private async void _refreshButton_Click(object sender, EventArgs e)

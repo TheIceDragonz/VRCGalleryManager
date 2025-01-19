@@ -32,7 +32,7 @@ namespace VRCGalleryManager.Forms
 
             apiRequest = new ApiRequest(auth);
 
-            //EmojiList();
+            this.Shown += (s, e) => { if (emojiPanel.Controls.Count == 0) EmojiList(); };
 
             TypePanel.LoadEmojiType(emojiOpenTypePanel, emojiTypePanel);
         }

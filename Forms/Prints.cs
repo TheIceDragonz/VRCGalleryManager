@@ -24,7 +24,7 @@ namespace VRCGalleryManager.Forms
 
             apiRequest = new ApiRequest(auth);
 
-            //PrintsList();
+            this.Shown += (s, e) => { if (printsPanel.Controls.Count == 0) PrintsList(); };
         }
 
         private async void _refreshButton_Click(object sender, EventArgs e)
