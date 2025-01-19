@@ -30,6 +30,7 @@ namespace VRCGalleryManager.Forms
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Create));
             previewGif = new RoundedPictureBox();
             previewSS = new RoundedPictureBox();
             buttonSave = new RoundedButton();
@@ -41,6 +42,7 @@ namespace VRCGalleryManager.Forms
             labelFPS = new Label();
             createTypePanel = new RoundedPanel();
             createOpenTypePanel = new RoundedButton();
+            pasteButton = new RoundedButton();
             ((System.ComponentModel.ISupportInitialize)previewGif).BeginInit();
             ((System.ComponentModel.ISupportInitialize)previewSS).BeginInit();
             ((System.ComponentModel.ISupportInitialize)trackBarFPS).BeginInit();
@@ -100,6 +102,13 @@ namespace VRCGalleryManager.Forms
             buttonSave.Location = new Point(485, 509);
             buttonSave.Name = "buttonSave";
             buttonSave.Size = new Size(116, 40);
+            buttonSave.SvgAlignment = ContentAlignment.MiddleCenter;
+            buttonSave.SvgColor = Color.Black;
+            buttonSave.SvgContent = null;
+            buttonSave.SvgOffset = new Point(0, 0);
+            buttonSave.SvgPadding = new Padding(0);
+            buttonSave.SvgResource = null;
+            buttonSave.SvgSize = new Size(50, 50);
             buttonSave.TabIndex = 2;
             buttonSave.Text = "Local Save";
             buttonSave.TextColor = Color.FromArgb(106, 227, 249);
@@ -120,7 +129,14 @@ namespace VRCGalleryManager.Forms
             roundedButton1.ForeColor = Color.FromArgb(106, 227, 249);
             roundedButton1.Location = new Point(12, 509);
             roundedButton1.Name = "roundedButton1";
-            roundedButton1.Size = new Size(467, 40);
+            roundedButton1.Size = new Size(421, 40);
+            roundedButton1.SvgAlignment = ContentAlignment.MiddleCenter;
+            roundedButton1.SvgColor = Color.Black;
+            roundedButton1.SvgContent = null;
+            roundedButton1.SvgOffset = new Point(0, 0);
+            roundedButton1.SvgPadding = new Padding(0);
+            roundedButton1.SvgResource = null;
+            roundedButton1.SvgSize = new Size(50, 50);
             roundedButton1.TabIndex = 4;
             roundedButton1.Text = "Upload";
             roundedButton1.TextColor = Color.FromArgb(106, 227, 249);
@@ -219,11 +235,45 @@ namespace VRCGalleryManager.Forms
             createOpenTypePanel.Location = new Point(607, 509);
             createOpenTypePanel.Name = "createOpenTypePanel";
             createOpenTypePanel.Size = new Size(116, 40);
+            createOpenTypePanel.SvgAlignment = ContentAlignment.MiddleCenter;
+            createOpenTypePanel.SvgColor = Color.Black;
+            createOpenTypePanel.SvgContent = null;
+            createOpenTypePanel.SvgOffset = new Point(0, 0);
+            createOpenTypePanel.SvgPadding = new Padding(0);
+            createOpenTypePanel.SvgResource = null;
+            createOpenTypePanel.SvgSize = new Size(50, 50);
             createOpenTypePanel.TabIndex = 11;
             createOpenTypePanel.Text = "Type";
             createOpenTypePanel.TextColor = Color.FromArgb(106, 227, 249);
             createOpenTypePanel.UseVisualStyleBackColor = false;
             createOpenTypePanel.Click += createOpenTypePanel_Click;
+            // 
+            // pasteButton
+            // 
+            pasteButton.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            pasteButton.BackColor = Color.FromArgb(7, 36, 43);
+            pasteButton.BackgroundColor = Color.FromArgb(7, 36, 43);
+            pasteButton.BorderColor = Color.FromArgb(5, 55, 66);
+            pasteButton.BorderRadius = 10;
+            pasteButton.BorderSize = 2;
+            pasteButton.FlatAppearance.BorderSize = 0;
+            pasteButton.FlatStyle = FlatStyle.Flat;
+            pasteButton.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
+            pasteButton.ForeColor = Color.FromArgb(106, 227, 249);
+            pasteButton.Location = new Point(439, 509);
+            pasteButton.Name = "pasteButton";
+            pasteButton.Size = new Size(40, 40);
+            pasteButton.SvgAlignment = ContentAlignment.MiddleCenter;
+            pasteButton.SvgColor = Color.FromArgb(106, 227, 249);
+            pasteButton.SvgContent = resources.GetString("pasteButton.SvgContent");
+            pasteButton.SvgOffset = new Point(0, 0);
+            pasteButton.SvgPadding = new Padding(0);
+            pasteButton.SvgResource = "backward_svgrepo_com";
+            pasteButton.SvgSize = new Size(25, 25);
+            pasteButton.TabIndex = 13;
+            pasteButton.TextColor = Color.FromArgb(106, 227, 249);
+            pasteButton.UseVisualStyleBackColor = false;
+            pasteButton.Click += pasteButton_Click;
             // 
             // Create
             // 
@@ -231,6 +281,7 @@ namespace VRCGalleryManager.Forms
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(5, 5, 5);
             ClientSize = new Size(735, 561);
+            Controls.Add(pasteButton);
             Controls.Add(createTypePanel);
             Controls.Add(createOpenTypePanel);
             Controls.Add(labelFPS);
@@ -265,5 +316,6 @@ namespace VRCGalleryManager.Forms
         private Label labelFPS;
         private RoundedPanel createTypePanel;
         private RoundedButton createOpenTypePanel;
+        private RoundedButton pasteButton;
     }
 }

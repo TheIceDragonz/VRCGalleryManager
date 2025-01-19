@@ -305,5 +305,10 @@ namespace VRCGalleryManager.Forms
         {
             createTypePanel.Visible = !createTypePanel.Visible;
         }
+
+        private void pasteButton_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }

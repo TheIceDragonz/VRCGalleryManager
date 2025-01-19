@@ -30,12 +30,14 @@ namespace VRCGalleryManager.Forms
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Icons));
             iconsPanel = new FlowLayoutPanel();
             _refreshButton = new RoundedButton();
             roundedButton1 = new RoundedButton();
             limitPanelIcons = new RoundedPanel();
             limitLabel = new Label();
             limitIconsLabel = new Label();
+            pasteButton = new RoundedButton();
             limitPanelIcons.SuspendLayout();
             SuspendLayout();
             // 
@@ -91,7 +93,7 @@ namespace VRCGalleryManager.Forms
             roundedButton1.ForeColor = Color.FromArgb(106, 227, 249);
             roundedButton1.Location = new Point(12, 497);
             roundedButton1.Name = "roundedButton1";
-            roundedButton1.Size = new Size(778, 40);
+            roundedButton1.Size = new Size(732, 40);
             roundedButton1.SvgAlignment = ContentAlignment.MiddleCenter;
             roundedButton1.SvgColor = Color.Black;
             roundedButton1.SvgContent = null;
@@ -145,12 +147,40 @@ namespace VRCGalleryManager.Forms
             limitIconsLabel.Text = "0/64 Icons";
             limitIconsLabel.TextAlign = ContentAlignment.MiddleRight;
             // 
+            // pasteButton
+            // 
+            pasteButton.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            pasteButton.BackColor = Color.FromArgb(7, 36, 43);
+            pasteButton.BackgroundColor = Color.FromArgb(7, 36, 43);
+            pasteButton.BorderColor = Color.FromArgb(5, 55, 66);
+            pasteButton.BorderRadius = 10;
+            pasteButton.BorderSize = 2;
+            pasteButton.FlatAppearance.BorderSize = 0;
+            pasteButton.FlatStyle = FlatStyle.Flat;
+            pasteButton.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
+            pasteButton.ForeColor = Color.FromArgb(106, 227, 249);
+            pasteButton.Location = new Point(750, 497);
+            pasteButton.Name = "pasteButton";
+            pasteButton.Size = new Size(40, 40);
+            pasteButton.SvgAlignment = ContentAlignment.MiddleCenter;
+            pasteButton.SvgColor = Color.FromArgb(106, 227, 249);
+            pasteButton.SvgContent = resources.GetString("pasteButton.SvgContent");
+            pasteButton.SvgOffset = new Point(0, 0);
+            pasteButton.SvgPadding = new Padding(0);
+            pasteButton.SvgResource = "backward_svgrepo_com";
+            pasteButton.SvgSize = new Size(25, 25);
+            pasteButton.TabIndex = 8;
+            pasteButton.TextColor = Color.FromArgb(106, 227, 249);
+            pasteButton.UseVisualStyleBackColor = false;
+            pasteButton.Click += pasteButton_Click;
+            // 
             // Icons
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(5, 5, 5);
             ClientSize = new Size(802, 549);
+            Controls.Add(pasteButton);
             Controls.Add(limitIconsLabel);
             Controls.Add(limitPanelIcons);
             Controls.Add(roundedButton1);
@@ -171,5 +201,6 @@ namespace VRCGalleryManager.Forms
         private RoundedPanel limitPanelIcons;
         private Label limitLabel;
         private Label limitIconsLabel;
+        private RoundedButton pasteButton;
     }
 }

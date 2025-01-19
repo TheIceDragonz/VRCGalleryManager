@@ -30,6 +30,7 @@ namespace VRCGalleryManager.Forms
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Emoji));
             emojiPanel = new FlowLayoutPanel();
             _refreshButton = new RoundedButton();
             roundedButton1 = new RoundedButton();
@@ -38,6 +39,7 @@ namespace VRCGalleryManager.Forms
             limitPanelEmoji = new RoundedPanel();
             limitLabel = new Label();
             limitStickerLabel = new Label();
+            pasteButton = new RoundedButton();
             limitPanelEmoji.SuspendLayout();
             SuspendLayout();
             // 
@@ -93,7 +95,7 @@ namespace VRCGalleryManager.Forms
             roundedButton1.ForeColor = Color.FromArgb(106, 227, 249);
             roundedButton1.Location = new Point(12, 535);
             roundedButton1.Name = "roundedButton1";
-            roundedButton1.Size = new Size(639, 40);
+            roundedButton1.Size = new Size(593, 40);
             roundedButton1.SvgAlignment = ContentAlignment.MiddleCenter;
             roundedButton1.SvgColor = Color.Black;
             roundedButton1.SvgContent = null;
@@ -191,12 +193,40 @@ namespace VRCGalleryManager.Forms
             limitStickerLabel.Text = "0/9 Emoji";
             limitStickerLabel.TextAlign = ContentAlignment.MiddleRight;
             // 
+            // pasteButton
+            // 
+            pasteButton.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            pasteButton.BackColor = Color.FromArgb(7, 36, 43);
+            pasteButton.BackgroundColor = Color.FromArgb(7, 36, 43);
+            pasteButton.BorderColor = Color.FromArgb(5, 55, 66);
+            pasteButton.BorderRadius = 10;
+            pasteButton.BorderSize = 2;
+            pasteButton.FlatAppearance.BorderSize = 0;
+            pasteButton.FlatStyle = FlatStyle.Flat;
+            pasteButton.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
+            pasteButton.ForeColor = Color.FromArgb(106, 227, 249);
+            pasteButton.Location = new Point(611, 535);
+            pasteButton.Name = "pasteButton";
+            pasteButton.Size = new Size(40, 40);
+            pasteButton.SvgAlignment = ContentAlignment.MiddleCenter;
+            pasteButton.SvgColor = Color.FromArgb(106, 227, 249);
+            pasteButton.SvgContent = resources.GetString("pasteButton.SvgContent");
+            pasteButton.SvgOffset = new Point(0, 0);
+            pasteButton.SvgPadding = new Padding(0);
+            pasteButton.SvgResource = "backward_svgrepo_com";
+            pasteButton.SvgSize = new Size(25, 25);
+            pasteButton.TabIndex = 8;
+            pasteButton.TextColor = Color.FromArgb(106, 227, 249);
+            pasteButton.UseVisualStyleBackColor = false;
+            pasteButton.Click += pasteButton_Click;
+            // 
             // Emoji
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(5, 5, 5);
             ClientSize = new Size(785, 587);
+            Controls.Add(pasteButton);
             Controls.Add(limitStickerLabel);
             Controls.Add(limitPanelEmoji);
             Controls.Add(emojiTypePanel);
@@ -205,10 +235,8 @@ namespace VRCGalleryManager.Forms
             Controls.Add(_refreshButton);
             Controls.Add(emojiPanel);
             FormBorderStyle = FormBorderStyle.None;
-            KeyPreview = true;
             Name = "Emoji";
             Text = "Emoji";
-            KeyDown += Emoji_KeyDown;
             limitPanelEmoji.ResumeLayout(false);
             ResumeLayout(false);
             PerformLayout();
@@ -223,5 +251,6 @@ namespace VRCGalleryManager.Forms
         private Label limitLabel;
         private Label limitStickerLabel;
         public FlowLayoutPanel emojiPanel;
+        private RoundedButton pasteButton;
     }
 }
