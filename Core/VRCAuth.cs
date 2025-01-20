@@ -47,7 +47,7 @@ namespace VRCGalleryManager.Core
 
                 if (requiresEmail2FA(currentUserResp)) // If the API wants us to send an Email OTP code
                 {
-                    string imputAuth = Interaction.InputBox("Insert the 2FA Code", "2FA Authentication", "");
+                    string imputAuth = Interaction.InputBox("Insert the Email Code", "Email Authentication", "");
                     if (imputAuth != null)
                     {
                         AuthApi.Verify2FAEmailCode(new TwoFactorEmailCode(imputAuth));
@@ -55,10 +55,11 @@ namespace VRCGalleryManager.Core
                 }
                 else
                 {
-                    // requiresEmail2FA returned false, so we use secret-based 2fa verification
-                    // authApi.VerifyRecoveryCode(new TwoFactorAuthCode("12345678")); // To Use a Recovery Code
-
-                    //authApi.Verify2FA(new TwoFactorAuthCode("123456"));
+                    string imputAuth = Interaction.InputBox("Insert the 2FA Code", "2FA Authentication", "");
+                    if (imputAuth != null)
+                    {
+                        AuthApi.Verify2FA(new TwoFactorAuthCode(imputAuth));
+                    }
                 }
 
                 SaveCookies();
