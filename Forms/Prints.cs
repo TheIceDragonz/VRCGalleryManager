@@ -93,7 +93,7 @@ namespace VRCGalleryManager.Forms
         }
         private void pasteButton_Click(object sender, EventArgs e)
         {
-            ClipboardHandler.ClipboardDataImage(pasteButton, UploadImage);
+            ClipboardHandler.ClipboardDataImageOrLink(pasteButton, UploadImage);
         }
     }
 }
