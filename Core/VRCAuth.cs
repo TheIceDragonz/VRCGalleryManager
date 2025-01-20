@@ -95,6 +95,7 @@ namespace VRCGalleryManager.Core
         {
             var cookies = ApiClient.CookieContainer.GetAllCookies();
             string cookieString = string.Join(";", cookies.Select(c => $"{c.Name}={c.Value}"));
+            Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "VRCGalleryManager"));
             System.IO.File.WriteAllText(tokenFilePath, cookieString);
         }
 
