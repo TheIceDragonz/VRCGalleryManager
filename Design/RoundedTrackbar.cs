@@ -8,12 +8,16 @@ namespace CustomControls
 {
     public class RoundedTrackBar : TrackBar
     {
-        private int borderRadius = 10;
+        private int borderRadius = 5;
+        private int thumbSize = 16;
+        private int padding = 4;
+        private Point labelOffset = Point.Empty;
         private Color trackColor = Color.MediumSlateBlue;
         private Color thumbColor = Color.PaleVioletRed;
         private Color borderColor = Color.Gray;
+        private Label valueLabel;
 
-        [Category("Appearance")]
+        [Category("VRCGalleryManager")]
         public int BorderRadius
         {
             get => borderRadius;
@@ -24,7 +28,41 @@ namespace CustomControls
             }
         }
 
-        [Category("Appearance")]
+        [Category("VRCGalleryManager")]
+        public int ThumbSize
+        {
+            get => thumbSize;
+            set
+            {
+                thumbSize = Math.Max(10, value);
+                Invalidate();
+                UpdateValueLabelPosition();
+            }
+        }
+
+        [Category("VRCGalleryManager")]
+        public Point LabelOffset
+        {
+            get => labelOffset;
+            set
+            {
+                labelOffset = value;
+                UpdateValueLabelPosition();
+            }
+        }
+
+        [Category("VRCGalleryManager")]
+        public int Padding
+        {
+            get => padding;
+            set
+            {
+                padding = Math.Max(0, value);
+                Invalidate();
+            }
+        }
+
+        [Category("VRCGalleryManager")]
         public Color TrackColor
         {
             get => trackColor;
@@ -35,7 +73,7 @@ namespace CustomControls
             }
         }
 
-        [Category("Appearance")]
+        [Category("VRCGalleryManager")]
         public Color ThumbColor
         {
             get => thumbColor;
@@ -46,7 +84,7 @@ namespace CustomControls
             }
         }
 
-        [Category("Appearance")]
+        [Category("VRCGalleryManager")]
         public Color BorderColor
         {
             get => borderColor;
@@ -57,9 +95,56 @@ namespace CustomControls
             }
         }
 
+        [Category("VRCGalleryManager")]
+        public string LabelText
+        {
+            get => valueLabel.Text;
+            set
+            {
+                valueLabel.Text = value;
+                UpdateValueLabelPosition();
+                Invalidate();
+            }
+        }
+
+        [Category("VRCGalleryManager")]
+        public Font LabelFont
+        {
+            get => valueLabel.Font;
+            set
+            {
+                valueLabel.Font = value;
+                UpdateValueLabelPosition();
+                Invalidate();
+            }
+        }
+
+        [Category("VRCGalleryManager")]
+        public Color LabelTextColor
+        {
+            get => valueLabel.ForeColor;
+            set
+            {
+                valueLabel.ForeColor = value;
+                Invalidate();
+            }
+        }
+
         public RoundedTrackBar()
         {
             SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer | ControlStyles.ResizeRedraw | ControlStyles.UserPaint, true);
+
+            valueLabel = new Label
+            {
+                AutoSize = true,
+                BackColor = Color.Transparent,
+                ForeColor = Color.Black,
+                TextAlign = ContentAlignment.MiddleCenter
+            };
+
+            valueLabel.MouseDown += (s, e) => OnMouseDown(e);
+            Controls.Add(valueLabel);
+            UpdateValueLabelPosition();
         }
 
         protected override void OnPaint(PaintEventArgs e)
@@ -69,7 +154,7 @@ namespace CustomControls
             e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
 
             // Draw track
-            Rectangle trackRect = new Rectangle(0, Height / 2 - 4, Width, 8);
+            Rectangle trackRect = new Rectangle(padding, Height / 2 - 4, Width - 2 * padding, 8);
             using (GraphicsPath trackPath = GetRoundedRectangle(trackRect, borderRadius))
             using (Brush trackBrush = new SolidBrush(trackColor))
             {
@@ -77,7 +162,6 @@ namespace CustomControls
             }
 
             // Draw thumb
-            int thumbSize = 16;
             Rectangle thumbRect = new Rectangle(ValueToPixel(Value) - thumbSize / 2, Height / 2 - thumbSize / 2, thumbSize, thumbSize);
             using (GraphicsPath thumbPath = GetRoundedRectangle(thumbRect, thumbSize / 2))
             using (Brush thumbBrush = new SolidBrush(thumbColor))
@@ -88,19 +172,41 @@ namespace CustomControls
                     e.Graphics.DrawPath(borderPen, thumbPath);
                 }
             }
+
+            UpdateValueLabelPosition();
         }
 
         private int ValueToPixel(int value)
         {
             float range = Maximum - Minimum;
             float percentage = (value - Minimum) / range;
-            return (int)(percentage * (Width - 16) + 8); // Adjust for thumb size
+            return (int)(percentage * (Width - 2 * padding - thumbSize) + padding + thumbSize / 2);
+        }
+
+        private void UpdateValueLabelPosition()
+        {
+            int thumbX = ValueToPixel(Value) - thumbSize / 2;
+            int thumbY = Height / 2 - thumbSize / 2;
+
+            valueLabel.Size = valueLabel.PreferredSize;
+            valueLabel.Location = new Point(
+                thumbX + thumbSize / 2 - valueLabel.Width / 2 + labelOffset.X,
+                thumbY + thumbSize / 2 - valueLabel.Height / 2 + labelOffset.Y
+            );
+            valueLabel.BringToFront();
         }
 
         protected override void OnValueChanged(EventArgs e)
         {
             base.OnValueChanged(e);
-            Invalidate(); // Redraw the control when the value changes
+            Invalidate();
+            UpdateValueLabelPosition();
+        }
+
+        protected override void OnLayout(LayoutEventArgs levent)
+        {
+            base.OnLayout(levent);
+            UpdateValueLabelPosition();
         }
 
         protected override void OnMouseDown(MouseEventArgs e)
@@ -131,19 +237,29 @@ namespace CustomControls
         protected override void OnKeyDown(KeyEventArgs e)
         {
             base.OnKeyDown(e);
-            Invalidate(); // Ensure control is redrawn when using keyboard arrows
+            if (e.KeyCode == Keys.Left && Value > Minimum)
+            {
+                Value--;
+            }
+            else if (e.KeyCode == Keys.Right && Value < Maximum)
+            {
+                Value++;
+            }
+            Invalidate();
+            UpdateValueLabelPosition();
         }
 
         protected override void OnKeyUp(KeyEventArgs e)
         {
             base.OnKeyUp(e);
-            Invalidate(); // Ensure control is redrawn when using keyboard arrows
+            Invalidate();
+            UpdateValueLabelPosition();
         }
 
         private int PixelToValue(int x)
         {
             float range = Maximum - Minimum;
-            float percentage = Math.Max(0, Math.Min(1, (float)(x - 8) / (Width - 16)));
+            float percentage = Math.Max(0, Math.Min(1, (float)(x - padding - thumbSize / 2) / (Width - 2 * padding - thumbSize)));
             return (int)(percentage * range) + Minimum;
         }
 

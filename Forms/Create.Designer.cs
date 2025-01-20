@@ -59,7 +59,7 @@ namespace VRCGalleryManager.Forms
             previewGif.BorderRadiusTopRight = 10;
             previewGif.BorderSize = 0;
             previewGif.ImageLocation = "";
-            previewGif.Location = new Point(103, 86);
+            previewGif.Location = new Point(102, 100);
             previewGif.Name = "previewGif";
             previewGif.Size = new Size(260, 260);
             previewGif.SizeMode = PictureBoxSizeMode.StretchImage;
@@ -79,7 +79,7 @@ namespace VRCGalleryManager.Forms
             previewSS.BorderRadiusTopLeft = 10;
             previewSS.BorderRadiusTopRight = 10;
             previewSS.BorderSize = 0;
-            previewSS.Location = new Point(369, 86);
+            previewSS.Location = new Point(368, 100);
             previewSS.Name = "previewSS";
             previewSS.Size = new Size(260, 260);
             previewSS.SizeMode = PictureBoxSizeMode.StretchImage;
@@ -98,7 +98,7 @@ namespace VRCGalleryManager.Forms
             buttonSave.FlatStyle = FlatStyle.Flat;
             buttonSave.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
             buttonSave.ForeColor = Color.FromArgb(106, 227, 249);
-            buttonSave.Location = new Point(485, 509);
+            buttonSave.Location = new Point(485, 512);
             buttonSave.Name = "buttonSave";
             buttonSave.Size = new Size(116, 40);
             buttonSave.SvgAlignment = ContentAlignment.MiddleCenter;
@@ -126,7 +126,7 @@ namespace VRCGalleryManager.Forms
             roundedButton1.FlatStyle = FlatStyle.Flat;
             roundedButton1.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
             roundedButton1.ForeColor = Color.FromArgb(106, 227, 249);
-            roundedButton1.Location = new Point(12, 509);
+            roundedButton1.Location = new Point(12, 512);
             roundedButton1.Name = "roundedButton1";
             roundedButton1.Size = new Size(421, 40);
             roundedButton1.SvgAlignment = ContentAlignment.MiddleCenter;
@@ -158,15 +158,20 @@ namespace VRCGalleryManager.Forms
             // 
             trackBarFPS.Anchor = AnchorStyles.None;
             trackBarFPS.BackColor = Color.FromArgb(5, 5, 5);
-            trackBarFPS.BorderColor = Color.FromArgb(7, 36, 43);
+            trackBarFPS.BorderColor = Color.FromArgb(5, 5, 5);
             trackBarFPS.BorderRadius = 5;
-            trackBarFPS.Location = new Point(103, 379);
+            trackBarFPS.LabelFont = new Font("Segoe UI", 8.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            trackBarFPS.LabelOffset = new Point(0, 0);
+            trackBarFPS.LabelText = "0";
+            trackBarFPS.LabelTextColor = Color.FromArgb(106, 227, 249);
+            trackBarFPS.Location = new Point(102, 393);
             trackBarFPS.Maximum = 64;
             trackBarFPS.Minimum = 1;
             trackBarFPS.Name = "trackBarFPS";
             trackBarFPS.Size = new Size(526, 45);
             trackBarFPS.TabIndex = 9;
-            trackBarFPS.ThumbColor = Color.FromArgb(106, 227, 249);
+            trackBarFPS.ThumbColor = Color.FromArgb(7, 36, 43);
+            trackBarFPS.ThumbSize = 24;
             trackBarFPS.TrackColor = Color.FromArgb(7, 36, 43);
             trackBarFPS.Value = 15;
             trackBarFPS.ValueChanged += trackBarFPS_ValueChanged;
@@ -174,14 +179,14 @@ namespace VRCGalleryManager.Forms
             // labelFPS
             // 
             labelFPS.Anchor = AnchorStyles.None;
-            labelFPS.AutoSize = true;
             labelFPS.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
             labelFPS.ForeColor = Color.White;
-            labelFPS.Location = new Point(103, 361);
+            labelFPS.Location = new Point(102, 384);
             labelFPS.Name = "labelFPS";
-            labelFPS.Size = new Size(28, 15);
+            labelFPS.Size = new Size(526, 15);
             labelFPS.TabIndex = 10;
             labelFPS.Text = "FPS";
+            labelFPS.TextAlign = ContentAlignment.TopCenter;
             // 
             // createTypePanel
             // 
@@ -195,7 +200,7 @@ namespace VRCGalleryManager.Forms
             createTypePanel.Location = new Point(465, 12);
             createTypePanel.Name = "createTypePanel";
             createTypePanel.Padding = new Padding(5);
-            createTypePanel.Size = new Size(258, 491);
+            createTypePanel.Size = new Size(258, 494);
             createTypePanel.TabIndex = 12;
             createTypePanel.Visible = false;
             // 
@@ -211,7 +216,7 @@ namespace VRCGalleryManager.Forms
             createOpenTypePanel.FlatStyle = FlatStyle.Flat;
             createOpenTypePanel.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
             createOpenTypePanel.ForeColor = Color.FromArgb(106, 227, 249);
-            createOpenTypePanel.Location = new Point(607, 509);
+            createOpenTypePanel.Location = new Point(607, 512);
             createOpenTypePanel.Name = "createOpenTypePanel";
             createOpenTypePanel.Size = new Size(116, 40);
             createOpenTypePanel.SvgAlignment = ContentAlignment.MiddleCenter;
@@ -239,7 +244,7 @@ namespace VRCGalleryManager.Forms
             pasteButton.FlatStyle = FlatStyle.Flat;
             pasteButton.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
             pasteButton.ForeColor = Color.FromArgb(106, 227, 249);
-            pasteButton.Location = new Point(439, 509);
+            pasteButton.Location = new Point(439, 512);
             pasteButton.Name = "pasteButton";
             pasteButton.Size = new Size(40, 40);
             pasteButton.SvgAlignment = ContentAlignment.MiddleCenter;
@@ -259,7 +264,7 @@ namespace VRCGalleryManager.Forms
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(5, 5, 5);
-            ClientSize = new Size(735, 561);
+            ClientSize = new Size(735, 564);
             Controls.Add(pasteButton);
             Controls.Add(createTypePanel);
             Controls.Add(createOpenTypePanel);

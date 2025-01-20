@@ -13,9 +13,6 @@
     <Compile Update="Design\RoundedPictureBox.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Update="Design\RoundedProgressBar.cs">
-      <SubType>Component</SubType>
-    </Compile>
     <Compile Update="Design\RoundedTrackbar.cs">
       <SubType>Component</SubType>
     </Compile>

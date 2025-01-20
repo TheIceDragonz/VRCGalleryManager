@@ -6,7 +6,7 @@ namespace VRCGalleryManager.Forms.Panels
 {
     public class TypePanel
     {
-        static public async void LoadEmojiType(Button buttonTypePanel, Panel typePanel)
+        static public void LoadEmojiType(Button buttonTypePanel, Panel typePanel)
         {
             EmojiType emojiType = new EmojiType();
 
@@ -16,7 +16,7 @@ namespace VRCGalleryManager.Forms.Panels
             }
         }
 
-        static private async void AddEmojiTypePanel(Button buttonTypePanel, Panel typePanel, TypeWithImage typeWithImage)
+        static private void AddEmojiTypePanel(Button buttonTypePanel, Panel typePanel, TypeWithImage typeWithImage)
         {
             RoundedPanel panel = new RoundedPanel
             {

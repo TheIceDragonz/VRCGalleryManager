@@ -29,7 +29,7 @@ namespace VRCGalleryManager.Forms
 
             TypePanel.LoadEmojiType(createOpenTypePanel, createTypePanel);
 
-            labelFPS.Text = "FPS: " + trackBarFPS.Value.ToString();
+            trackBarFPS.LabelText = trackBarFPS.Value.ToString();
         }
 
         private void pictureSS_DragDrop(object sender, DragEventArgs e)
@@ -270,7 +270,7 @@ namespace VRCGalleryManager.Forms
 
         private void trackBarFPS_ValueChanged(object sender, EventArgs e)
         {
-            labelFPS.Text = "FPS: " + trackBarFPS.Value.ToString();
+            trackBarFPS.LabelText = trackBarFPS.Value.ToString();
         }
 
         private void createOpenTypePanel_Click(object sender, EventArgs e)
@@ -328,6 +328,5 @@ namespace VRCGalleryManager.Forms
                 NotificationManager.ShowNotification("Clipboard is empty!", "Error", NotificationType.Error);
             }
         }
-
     }
 }
