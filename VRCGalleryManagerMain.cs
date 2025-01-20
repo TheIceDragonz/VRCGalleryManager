@@ -47,12 +47,11 @@ namespace VRCGalleryManager
             ShowForm(6);
         }
 
-        private async void ProfileImage()
+        public async void ProfileImage()
         {
             Settings images = new Settings(Auth);
             profileIcon.LoadAsync(await HttpImage.GetFinalUrlAsync(images.UserIconImage));
             profileBanner.LoadAsync(await HttpImage.GetFinalUrlAsync(images.UserBannerImage));
-
             var badgeBoxes = new[] { badgeBox3, badgeBox2, badgeBox1 };
             foreach (var (badge, box) in images.Badges.Zip(badgeBoxes, (badge, box) => (badge, box)))
             {
@@ -63,7 +62,21 @@ namespace VRCGalleryManager
                 if (box.Visible)
                     box.LoadAsync(imageBadge);
             }
+            profileIcon.Visible = true;
         }
+        public void ProfileImageRemover()
+        {
+            profileIcon.Image = null;
+            profileBanner.Image = null;
+            var badgeBoxes = new[] { badgeBox3, badgeBox2, badgeBox1 };
+            foreach (var box in badgeBoxes)
+            {
+                box.Visible = false;
+                box.Image = null;
+            }
+            profileIcon.Visible = false;
+        }
+
 
         private void ShowForm(int index)
         {

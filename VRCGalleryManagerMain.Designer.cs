@@ -333,6 +333,7 @@ namespace VRCGalleryManager
             profileIcon.SizeMode = PictureBoxSizeMode.StretchImage;
             profileIcon.TabIndex = 8;
             profileIcon.TabStop = false;
+            profileIcon.Visible = false;
             // 
             // badgeBox1
             // 

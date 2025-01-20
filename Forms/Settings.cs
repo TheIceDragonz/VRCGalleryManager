@@ -1,7 +1,5 @@
 ﻿using VRCGalleryManager.Core;
-using System.Text.Json;
 using VRChat.API.Model;
-using System.Reflection;
 
 namespace VRCGalleryManager.Forms
 {
@@ -30,6 +28,9 @@ namespace VRCGalleryManager.Forms
             {
                 Auth.VRCAuthentication(_username.Text, _password.Text);
                 checkToken();
+
+                (Application.OpenForms["MainPanel"] as MainPanel)?.ProfileImage();
+
                 return;
             }
 
@@ -50,6 +51,8 @@ namespace VRCGalleryManager.Forms
 
                 Auth.LoggedIn = false;
                 Auth.CookieLoaded = false;
+
+                (Application.OpenForms["MainPanel"] as MainPanel)?.ProfileImageRemover();
             }
         }
 
@@ -69,7 +72,7 @@ namespace VRCGalleryManager.Forms
 
                     _username.Text = currentUser.DisplayName;
                     _password.Text = "password";
-                    
+
                     foreach (var badge in currentUser.Badges) Badges.Add(badge.ToJson());
                     UserIconImage = currentUser.UserIcon;
                     UserBannerImage = currentUser.ProfilePicOverrideThumbnail;
