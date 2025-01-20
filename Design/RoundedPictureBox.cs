@@ -124,6 +124,7 @@ namespace VRCGalleryManager.Design
             using (Pen penSurface = new Pen(Parent.BackColor, smoothSize))
             using (Pen penBorder = new Pen(borderColor, borderSize))
             {
+                pevent.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
                 Region = new Region(pathSurface);
                 pevent.Graphics.DrawPath(penSurface, pathSurface);
 
