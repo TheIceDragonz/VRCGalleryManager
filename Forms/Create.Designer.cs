@@ -1,4 +1,5 @@
-﻿using VRCGalleryManager.Design;
+﻿using CustomControls;
+using VRCGalleryManager.Design;
 
 namespace VRCGalleryManager.Forms
 {
@@ -36,7 +37,7 @@ namespace VRCGalleryManager.Forms
             buttonSave = new RoundedButton();
             roundedButton1 = new RoundedButton();
             titleGifCreator = new Label();
-            trackBarFPS = new TrackBar();
+            trackBarFPS = new RoundedTrackBar();
             labelFPS = new Label();
             createTypePanel = new RoundedPanel();
             createOpenTypePanel = new RoundedButton();
@@ -156,13 +157,17 @@ namespace VRCGalleryManager.Forms
             // trackBarFPS
             // 
             trackBarFPS.Anchor = AnchorStyles.None;
-            trackBarFPS.BackColor = Color.FromArgb(7, 36, 43);
+            trackBarFPS.BackColor = Color.FromArgb(5, 5, 5);
+            trackBarFPS.BorderColor = Color.FromArgb(7, 36, 43);
+            trackBarFPS.BorderRadius = 5;
             trackBarFPS.Location = new Point(103, 379);
             trackBarFPS.Maximum = 64;
             trackBarFPS.Minimum = 1;
             trackBarFPS.Name = "trackBarFPS";
             trackBarFPS.Size = new Size(526, 45);
             trackBarFPS.TabIndex = 9;
+            trackBarFPS.ThumbColor = Color.FromArgb(106, 227, 249);
+            trackBarFPS.TrackColor = Color.FromArgb(7, 36, 43);
             trackBarFPS.Value = 15;
             trackBarFPS.ValueChanged += trackBarFPS_ValueChanged;
             // 
@@ -282,7 +287,7 @@ namespace VRCGalleryManager.Forms
         private Design.RoundedButton buttonSave;
         private RoundedButton roundedButton1;
         private Label titleGifCreator;
-        private TrackBar trackBarFPS;
+        private RoundedTrackBar trackBarFPS;
         private Label labelFPS;
         private RoundedPanel createTypePanel;
         private RoundedButton createOpenTypePanel;
