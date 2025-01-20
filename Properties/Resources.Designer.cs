@@ -191,12 +191,12 @@ namespace VRCGalleryManager.Properties {
         }
         
         /// <summary>
-        ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
+        ///   Cerca una risorsa localizzata di tipo System.Drawing.Icon simile a (Icona).
         /// </summary>
-        internal static System.Drawing.Bitmap Icon {
+        internal static System.Drawing.Icon Icon {
             get {
                 object obj = ResourceManager.GetObject("Icon", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
+                return ((System.Drawing.Icon)(obj));
             }
         }
         
@@ -537,6 +537,16 @@ namespace VRCGalleryManager.Properties {
             get {
                 object obj = ResourceManager.GetObject("sticker_svgrepo_com", resourceCulture);
                 return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap VRCGM {
+            get {
+                object obj = ResourceManager.GetObject("VRCGM", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
             }
         }
     }

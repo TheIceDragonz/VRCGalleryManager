@@ -121,20 +121,38 @@
   <data name="Preview_B2-Pizza" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\animationStyle\Preview_B2-Pizza.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Preview_B2-Noise" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\animationStyle\Preview_B2-Noise.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
   <data name="Preview_B2-Bees" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\animationStyle\Preview_B2-Bees.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Preview_B2-Magnet" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\animationStyle\Preview_B2-Magnet.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="NotFound" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\NotFound.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="grid_svgrepo_com" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\svg\grid-svgrepo-com.svg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="Preview_B2-Idea" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\animationStyle\Preview_B2-Idea.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Preview_B2-Bounce" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\animationStyle\Preview_B2-Bounce.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="Preview_B2-Aura" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\animationStyle\Preview_B2-Aura.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="emoji_add_svgrepo_com" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\svg\emoji-add-svgrepo-com.svg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="copy_move_svgrepo_com" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\svg\copy-move-svgrepo-com.svg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
   <data name="Preview_B2-Spin" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\animationStyle\Preview_B2-Spin.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="add_svgrepo_com" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\svg\add-svgrepo-com.svg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="emoji_svgrepo_com" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\svg\emoji-svgrepo-com.svg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="Preview_B2-Stop" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\animationStyle\Preview_B2-Stop.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -145,8 +163,17 @@
   <data name="Preview_B2-Winter_Mistletoe" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\animationStyle\Preview_B2-Winter_Mistletoe.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Icon" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Icon.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="link_svgrepo_com" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\svg\link-svgrepo-com.svg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="settings_svgrepo_com" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\svg\settings-svgrepo-com.svg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="image_edit_svgrepo_com" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\svg\image-edit-svgrepo-com.svg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="sticker_add_svgrepo_com" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\svg\sticker-add-svgrepo-com.svg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="Preview_B2-Dislike" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\animationStyle\Preview_B2-Dislike.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -154,23 +181,44 @@
   <data name="Preview_B2-Fall_Bats" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\animationStyle\Preview_B2-Fall_Bats.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="camera_svgrepo_com" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\svg\camera-svgrepo-com.svg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
   <data name="Preview_B2-ZZZ" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\animationStyle\Preview_B2-ZZZ.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="Preview_B2-Money" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\animationStyle\Preview_B2-Money.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Preview_B2-Bounce" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\animationStyle\Preview_B2-Bounce.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="Preview_B2-Noise" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\animationStyle\Preview_B2-Noise.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Preview_B2-Idea" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\animationStyle\Preview_B2-Idea.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="Preview_B2-Magnet" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\animationStyle\Preview_B2-Magnet.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Preview_B2-SummerSplash" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\animationStyle\Preview_B2-SummerSplash.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="backward_svgrepo_com" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\svg\backward-svgrepo-com.svg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="delete_svgrepo_com" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\svg\delete-svgrepo-com.svg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="Preview_B2-Orbit" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\animationStyle\Preview_B2-Orbit.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="sticker_svgrepo_com" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\svg\sticker-svgrepo-com.svg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="camera_add_svgrepo_com" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\svg\camera-add-svgrepo-com.svg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="Preview_B2-Fire" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\animationStyle\Preview_B2-Fire.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="scan_svgrepo_com" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\svg\scan-svgrepo-com.svg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="Preview_B2-SummerSplash" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\animationStyle\Preview_B2-SummerSplash.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="Preview_B2-Lasers" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\animationStyle\Preview_B2-Lasers.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -181,8 +229,14 @@
   <data name="Preview_B2-Like" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\animationStyle\Preview_B2-Like.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Preview_B2-Orbit" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\animationStyle\Preview_B2-Orbit.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="image_svgrepo_com" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\svg\image-svgrepo-com.svg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="collections_svgrepo_com" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\svg\collections-svgrepo-com.svg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="arrow_sync_svgrepo_com" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\svg\arrow-sync-svgrepo-com.svg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="Preview_B2-Shake" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\animationStyle\Preview_B2-Shake.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -193,73 +247,22 @@
   <data name="Preview_B2-Rain" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\animationStyle\Preview_B2-Rain.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="arrow_download_svgrepo_com" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\svg\arrow-download-svgrepo-com.svg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="gif_svgrepo_com" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\svg\gif-svgrepo-com.svg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
   <data name="Preview_B2-Winter_Confetti" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\animationStyle\Preview_B2-Winter_Confetti.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="Preview_B2-Cloud" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\animationStyle\Preview_B2-Cloud.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="NotFound" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\NotFound.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="Icon" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Icon.ico;System.Drawing.Icon, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="add_svgrepo_com" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\svg\add-svgrepo-com.svg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="arrow_download_svgrepo_com" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\svg\arrow-download-svgrepo-com.svg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="arrow_sync_svgrepo_com" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\svg\arrow-sync-svgrepo-com.svg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="backward_svgrepo_com" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\svg\backward-svgrepo-com.svg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="camera_add_svgrepo_com" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\svg\camera-add-svgrepo-com.svg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="camera_svgrepo_com" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\svg\camera-svgrepo-com.svg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="collections_svgrepo_com" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\svg\collections-svgrepo-com.svg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="copy_move_svgrepo_com" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\svg\copy-move-svgrepo-com.svg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="delete_svgrepo_com" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\svg\delete-svgrepo-com.svg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="emoji_add_svgrepo_com" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\svg\emoji-add-svgrepo-com.svg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="emoji_svgrepo_com" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\svg\emoji-svgrepo-com.svg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="gif_svgrepo_com" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\svg\gif-svgrepo-com.svg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="grid_svgrepo_com" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\svg\grid-svgrepo-com.svg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="image_edit_svgrepo_com" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\svg\image-edit-svgrepo-com.svg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="image_svgrepo_com" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\svg\image-svgrepo-com.svg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="link_svgrepo_com" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\svg\link-svgrepo-com.svg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="scan_svgrepo_com" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\svg\scan-svgrepo-com.svg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="settings_svgrepo_com" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\svg\settings-svgrepo-com.svg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="sticker_add_svgrepo_com" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\svg\sticker-add-svgrepo-com.svg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="sticker_svgrepo_com" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\svg\sticker-svgrepo-com.svg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="VRCGM" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\VRCGM.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
 </root>

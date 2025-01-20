@@ -57,7 +57,7 @@ namespace VRCGalleryManager
             // 
             // bannerIcon
             // 
-            bannerIcon.Image = Properties.Resources.Icon;
+            bannerIcon.Image = Properties.Resources.VRCGM;
             bannerIcon.ImageLocation = "";
             bannerIcon.Location = new Point(12, 12);
             bannerIcon.Margin = new Padding(10);

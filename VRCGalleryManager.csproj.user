@@ -19,6 +19,9 @@
     <Compile Update="Design\TableLayoutPanelSettings.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Update="Forms\Create.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Update="Forms\Emoji.cs">
       <SubType>Form</SubType>
     </Compile>

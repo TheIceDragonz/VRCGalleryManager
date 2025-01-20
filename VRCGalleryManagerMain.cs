@@ -1,8 +1,7 @@
 using Newtonsoft.Json.Linq;
-using System;
+using System.Runtime.InteropServices;
 using VRCGalleryManager.Core;
 using VRCGalleryManager.Core.Helpers;
-using VRCGalleryManager.Design;
 using VRCGalleryManager.Forms;
 
 namespace VRCGalleryManager
@@ -25,6 +24,7 @@ namespace VRCGalleryManager
             }
 
             InitializeComponent();
+            
 
             this.AutoScaleMode = AutoScaleMode.Dpi;
             this.Scale(new SizeF(Screen.PrimaryScreen.Bounds.Width / 1920f, Screen.PrimaryScreen.Bounds.Height / 1080f));
@@ -47,6 +47,10 @@ namespace VRCGalleryManager
             }
 
             ShowForm(6);
+
+            //Recolor Bar
+            int color = Color.FromArgb(5, 5, 5).ToArgb() & 0xFFFFFF;
+            DwmSetWindowAttribute(this.Handle, 35, ref color, 4);
         }
 
         public async void ProfileImage()
@@ -79,7 +83,6 @@ namespace VRCGalleryManager
             profileIcon.Visible = false;
         }
 
-
         private void ShowForm(int index)
         {
             foreach (var form in _forms) form.Hide();
@@ -104,5 +107,9 @@ namespace VRCGalleryManager
 
         private void _switchCreate_Click(object sender, EventArgs e) => ShowForm(5);
         private void _switchSettings_Click(object sender, EventArgs e) => ShowForm(6);
+
+        //Recolor Bar
+        [DllImport("dwmapi.dll")]
+        private static extern int DwmSetWindowAttribute(IntPtr hwnd, int attr, ref int attrValue, int attrSize);
     }
 }

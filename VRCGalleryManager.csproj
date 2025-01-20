@@ -24,9 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="Forms\Create.cs">
-      <SubType>Form</SubType>
-    </Compile>
+    <Compile Update="Forms\Create.cs" />
     <Compile Update="Forms\Gallery.cs">
       <SubType>Form</SubType>
     </Compile>
