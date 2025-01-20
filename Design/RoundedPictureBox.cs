@@ -90,6 +90,8 @@ namespace VRCGalleryManager.Design
 
         protected override void OnPaint(PaintEventArgs pevent)
         {
+            base.OnPaint(pevent);
+
             Rectangle rectSurface = ClientRectangle;
             Rectangle rectBorder = Rectangle.Inflate(rectSurface, -borderSize + 2, -borderSize + 2);
 
@@ -133,8 +135,6 @@ namespace VRCGalleryManager.Design
             }
         }
 
-
-
         public RoundedPictureBox()
         {
             Size = new Size(150, 150);
@@ -164,7 +164,6 @@ namespace VRCGalleryManager.Design
             base.OnHandleCreated(e);
             Parent.BackColorChanged += new EventHandler(Container_BackColorChanged);
         }
-
         private void Container_BackColorChanged(object sender, EventArgs e)
         {
             Invalidate();

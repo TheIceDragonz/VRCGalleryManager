@@ -122,7 +122,7 @@ namespace VRCGalleryManager
             _switchCreate.SvgContent = resources.GetString("_switchCreate.SvgContent");
             _switchCreate.SvgOffset = new Point(10, 0);
             _switchCreate.SvgPadding = new Padding(0);
-            _switchCreate.SvgResource = "collections_svgrepo_com";
+            _switchCreate.SvgResource = "gif_svgrepo_com";
             _switchCreate.SvgSize = new Size(25, 25);
             _switchCreate.TabIndex = 6;
             _switchCreate.Text = "Create";

@@ -16,6 +16,9 @@
     <Compile Update="Design\RoundedProgressBar.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Update="Design\RoundedTrackbar.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Update="Design\TableLayoutPanelSettings.cs">
       <SubType>Component</SubType>
     </Compile>

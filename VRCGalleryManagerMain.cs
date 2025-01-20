@@ -26,8 +26,10 @@ namespace VRCGalleryManager
 
             InitializeComponent();
 
-            Auth = VRCAuth.Instance();
+            this.AutoScaleMode = AutoScaleMode.Dpi;
+            this.Scale(new SizeF(Screen.PrimaryScreen.Bounds.Width / 1920f, Screen.PrimaryScreen.Bounds.Height / 1080f));
 
+            Auth = VRCAuth.Instance();
             Auth.LoadCookies();
 
             _forms = new Form[] { new Icons(Auth), new Gallery(Auth), new Emoji(Auth), new Sticker(Auth), new Prints(Auth), new Create(Auth), new Settings(Auth) };
