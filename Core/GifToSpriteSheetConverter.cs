@@ -3,6 +3,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Net.Http;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -13,7 +14,7 @@ namespace VRCGalleryManager.Core
         private Image gifImage;
 
         public Bitmap SpriteSheet { get; private set; }
-        public int FrameCount { get; private set; }
+        public int frameCount { get; private set; }
 
         public async Task<string> DownloadImageFromUrl(string url)
         {
@@ -22,13 +23,49 @@ namespace VRCGalleryManager.Core
 
             string tempFilePath = Path.Combine(directoryPath, $"downloaded_image_{Guid.NewGuid()}.gif");
 
-            using (HttpClient client = new HttpClient())
+            using (HttpClient client = new HttpClient(new HttpClientHandler { AllowAutoRedirect = true }))
             {
-                byte[] imageBytes = await client.GetByteArrayAsync(url);
-                await File.WriteAllBytesAsync(tempFilePath, imageBytes);
+                if (url.ToLower().EndsWith(".gif"))
+                {
+                    // Scarica direttamente la GIF
+                    byte[] imageBytes = await client.GetByteArrayAsync(url);
+                    await File.WriteAllBytesAsync(tempFilePath, imageBytes);
+                    return tempFilePath;
+                }
+
+                string htmlContent = await client.GetStringAsync(url);
+
+                var gifUrls = ExtractGifUrlsFromEmbed(htmlContent);
+
+                foreach (var gifUrl in gifUrls)
+                {
+                    try
+                    {
+                        byte[] imageBytes = await client.GetByteArrayAsync(gifUrl);
+                        await File.WriteAllBytesAsync(tempFilePath, imageBytes);
+                        return tempFilePath;
+                    }
+                    catch
+                    {
+                        continue;
+                    }
+                }
             }
 
-            return tempFilePath;
+            throw new Exception("No valid GIF URLs found in the page!");
+        }
+        private IEnumerable<string> ExtractGifUrlsFromEmbed(string htmlContent)
+        {
+            string pattern = @"https?:\/\/[^\s""'<>]+\.gif";
+            var matches = System.Text.RegularExpressions.Regex.Matches(htmlContent, pattern);
+
+            foreach (Match match in matches)
+            {
+                if (match.Success)
+                {
+                    yield return match.Value;
+                }
+            }
         }
 
         public (Bitmap spriteSheet, int frameCount) ConvertGifToSpriteSheet(string gifPath)
@@ -37,11 +74,16 @@ namespace VRCGalleryManager.Core
             gifImage?.Dispose();
             gifImage = Image.FromFile(gifPath);
             FrameDimension dimension = new FrameDimension(gifImage.FrameDimensionsList[0]);
-            FrameCount = Math.Min(gifImage.GetFrameCount(dimension), 64);
+            frameCount = Math.Min(gifImage.GetFrameCount(dimension), 64);
 
             int squareSize, cols, rows;
 
-            if (FrameCount <= 16)
+            if (frameCount == 1)
+            {
+                throw new ArgumentException("The GIF must contain more than one frame.");
+            }
+
+            if (frameCount <= 16)
             {
                 squareSize = textureSize / 4;
                 cols = rows = 4;
@@ -58,7 +100,7 @@ namespace VRCGalleryManager.Core
             {
                 g.Clear(Color.Transparent);
 
-                for (int i = 0; i < FrameCount; i++)
+                for (int i = 0; i < frameCount; i++)
                 {
                     gifImage.SelectActiveFrame(dimension, i);
                     Bitmap squareFrame = CropToSquare(gifImage, squareSize);
@@ -70,9 +112,8 @@ namespace VRCGalleryManager.Core
                 }
             }
 
-            return (SpriteSheet, FrameCount);
+            return (SpriteSheet, frameCount);
         }
-
 
         public string SaveSpriteSheet(string outputPath)
         {
@@ -135,12 +176,9 @@ namespace VRCGalleryManager.Core
                 if (string.IsNullOrWhiteSpace(url))
                     throw new Exception("Invalid URL in the clipboard!");
 
-                if (!url.Contains(".gif"))
-                    throw new Exception("The URL does not point to a valid GIF!");
-
                 string gifPath = await DownloadImageFromUrl(url);
-                var (spriteSheet, frameCount) = ConvertGifToSpriteSheet(gifPath);
 
+                var (spriteSheet, frameCount) = ConvertGifToSpriteSheet(gifPath);
                 return (gifPath, spriteSheet, frameCount);
             }
 
