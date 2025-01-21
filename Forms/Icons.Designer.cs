@@ -33,12 +33,12 @@ namespace VRCGalleryManager.Forms
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Icons));
             iconsPanel = new FlowLayoutPanel();
             _refreshButton = new RoundedButton();
-            roundedButton1 = new RoundedButton();
-            limitPanelIcons = new RoundedPanel();
+            uploadButton = new RoundedButton();
+            limitPanel = new RoundedPanel();
             limitLabel = new Label();
-            limitIconsLabel = new Label();
+            limitCounterLabel = new Label();
             pasteButton = new RoundedButton();
-            limitPanelIcons.SuspendLayout();
+            limitPanel.SuspendLayout();
             SuspendLayout();
             // 
             // iconsPanel
@@ -79,47 +79,47 @@ namespace VRCGalleryManager.Forms
             _refreshButton.UseVisualStyleBackColor = false;
             _refreshButton.Click += _refreshButton_Click;
             // 
-            // roundedButton1
+            // uploadButton
             // 
-            roundedButton1.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            roundedButton1.BackColor = Color.FromArgb(7, 36, 43);
-            roundedButton1.BackgroundColor = Color.FromArgb(7, 36, 43);
-            roundedButton1.BorderColor = Color.FromArgb(5, 55, 66);
-            roundedButton1.BorderRadius = 10;
-            roundedButton1.BorderSize = 2;
-            roundedButton1.FlatAppearance.BorderSize = 0;
-            roundedButton1.FlatStyle = FlatStyle.Flat;
-            roundedButton1.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
-            roundedButton1.ForeColor = Color.FromArgb(106, 227, 249);
-            roundedButton1.Location = new Point(12, 497);
-            roundedButton1.Name = "roundedButton1";
-            roundedButton1.Size = new Size(732, 40);
-            roundedButton1.SvgAlignment = ContentAlignment.MiddleCenter;
-            roundedButton1.SvgColor = Color.Black;
-            roundedButton1.SvgContent = null;
-            roundedButton1.SvgOffset = new Point(0, 0);
-            roundedButton1.SvgPadding = new Padding(0);
-            roundedButton1.SvgResource = null;
-            roundedButton1.SvgSize = new Size(50, 50);
-            roundedButton1.TabIndex = 4;
-            roundedButton1.Text = "Upload";
-            roundedButton1.TextColor = Color.FromArgb(106, 227, 249);
-            roundedButton1.UseVisualStyleBackColor = false;
-            roundedButton1.Click += uploadIcons_Click;
+            uploadButton.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            uploadButton.BackColor = Color.FromArgb(7, 36, 43);
+            uploadButton.BackgroundColor = Color.FromArgb(7, 36, 43);
+            uploadButton.BorderColor = Color.FromArgb(5, 55, 66);
+            uploadButton.BorderRadius = 10;
+            uploadButton.BorderSize = 2;
+            uploadButton.FlatAppearance.BorderSize = 0;
+            uploadButton.FlatStyle = FlatStyle.Flat;
+            uploadButton.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
+            uploadButton.ForeColor = Color.FromArgb(106, 227, 249);
+            uploadButton.Location = new Point(12, 497);
+            uploadButton.Name = "uploadButton";
+            uploadButton.Size = new Size(732, 40);
+            uploadButton.SvgAlignment = ContentAlignment.MiddleCenter;
+            uploadButton.SvgColor = Color.Black;
+            uploadButton.SvgContent = null;
+            uploadButton.SvgOffset = new Point(0, 0);
+            uploadButton.SvgPadding = new Padding(0);
+            uploadButton.SvgResource = null;
+            uploadButton.SvgSize = new Size(50, 50);
+            uploadButton.TabIndex = 4;
+            uploadButton.Text = "Upload";
+            uploadButton.TextColor = Color.FromArgb(106, 227, 249);
+            uploadButton.UseVisualStyleBackColor = false;
+            uploadButton.Click += uploadIcons_Click;
             // 
-            // limitPanelIcons
+            // limitPanel
             // 
-            limitPanelIcons.BackColor = Color.FromArgb(7, 36, 43);
-            limitPanelIcons.BackgroundColor = Color.FromArgb(7, 36, 43);
-            limitPanelIcons.BorderColor = Color.FromArgb(255, 128, 128);
-            limitPanelIcons.BorderRadius = 10;
-            limitPanelIcons.BorderSize = 2;
-            limitPanelIcons.Controls.Add(limitLabel);
-            limitPanelIcons.Location = new Point(12, 10);
-            limitPanelIcons.Name = "limitPanelIcons";
-            limitPanelIcons.Size = new Size(284, 29);
-            limitPanelIcons.TabIndex = 5;
-            limitPanelIcons.Visible = false;
+            limitPanel.BackColor = Color.FromArgb(7, 36, 43);
+            limitPanel.BackgroundColor = Color.FromArgb(7, 36, 43);
+            limitPanel.BorderColor = Color.FromArgb(255, 128, 128);
+            limitPanel.BorderRadius = 10;
+            limitPanel.BorderSize = 2;
+            limitPanel.Controls.Add(limitLabel);
+            limitPanel.Location = new Point(12, 10);
+            limitPanel.Name = "limitPanel";
+            limitPanel.Size = new Size(284, 29);
+            limitPanel.TabIndex = 5;
+            limitPanel.Visible = false;
             // 
             // limitLabel
             // 
@@ -134,18 +134,18 @@ namespace VRCGalleryManager.Forms
             limitLabel.Text = "You have reached your icons limit!";
             limitLabel.TextAlign = ContentAlignment.MiddleCenter;
             // 
-            // limitIconsLabel
+            // limitCounterLabel
             // 
-            limitIconsLabel.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            limitIconsLabel.AutoSize = true;
-            limitIconsLabel.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            limitIconsLabel.ForeColor = Color.White;
-            limitIconsLabel.Location = new Point(603, 17);
-            limitIconsLabel.Name = "limitIconsLabel";
-            limitIconsLabel.Size = new Size(65, 15);
-            limitIconsLabel.TabIndex = 6;
-            limitIconsLabel.Text = "0/64 Icons";
-            limitIconsLabel.TextAlign = ContentAlignment.MiddleRight;
+            limitCounterLabel.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            limitCounterLabel.AutoSize = true;
+            limitCounterLabel.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            limitCounterLabel.ForeColor = Color.White;
+            limitCounterLabel.Location = new Point(603, 17);
+            limitCounterLabel.Name = "limitCounterLabel";
+            limitCounterLabel.Size = new Size(65, 15);
+            limitCounterLabel.TabIndex = 6;
+            limitCounterLabel.Text = "0/64 Icons";
+            limitCounterLabel.TextAlign = ContentAlignment.MiddleRight;
             // 
             // pasteButton
             // 
@@ -181,15 +181,15 @@ namespace VRCGalleryManager.Forms
             BackColor = Color.FromArgb(5, 5, 5);
             ClientSize = new Size(802, 549);
             Controls.Add(pasteButton);
-            Controls.Add(limitIconsLabel);
-            Controls.Add(limitPanelIcons);
-            Controls.Add(roundedButton1);
+            Controls.Add(limitCounterLabel);
+            Controls.Add(limitPanel);
+            Controls.Add(uploadButton);
             Controls.Add(_refreshButton);
             Controls.Add(iconsPanel);
             FormBorderStyle = FormBorderStyle.None;
             Name = "Icons";
             Text = "Icons";
-            limitPanelIcons.ResumeLayout(false);
+            limitPanel.ResumeLayout(false);
             ResumeLayout(false);
             PerformLayout();
         }
@@ -197,10 +197,10 @@ namespace VRCGalleryManager.Forms
         #endregion
         private FlowLayoutPanel iconsPanel;
         private RoundedButton _refreshButton;
-        private RoundedButton roundedButton1;
-        private RoundedPanel limitPanelIcons;
+        private RoundedButton uploadButton;
+        private RoundedPanel limitPanel;
         private Label limitLabel;
-        private Label limitIconsLabel;
+        private Label limitCounterLabel;
         private RoundedButton pasteButton;
     }
 }

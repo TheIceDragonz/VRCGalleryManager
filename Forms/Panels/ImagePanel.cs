@@ -7,7 +7,7 @@ namespace VRCGalleryManager.Forms.Panels
 {
     public class ImagePanel
     {
-        static public async void AddImagePanel(FlowLayoutPanel mainPanel, ApiRequest apiRequest, string imageId, string tags, string frames, string framesOverTime)
+        static public async void AddImagePanel(FlowLayoutPanel mainPanel, ApiRequest apiRequest, string imageId, string tags, string frames, string framesOverTime, Action<string> UpdateCounter)
         {
             //* IMAGE Animated PANEL
             RoundedPictureBox pictureBox = new RoundedPictureBox
@@ -74,7 +74,7 @@ namespace VRCGalleryManager.Forms.Panels
 
             mainPanel.Controls.Add(pictureBox);
         }
-        static public async void AddImagePanel(FlowLayoutPanel mainPanel, ApiRequest apiRequest, string imageId)
+        static public async void AddImagePanel(FlowLayoutPanel mainPanel, ApiRequest apiRequest, string imageId, Action<string> UpdateCounter)
         {
             Size size = new Size(150, 150);
             if (mainPanel.Name.Contains("prints")) size = new Size(190, 150);
@@ -128,6 +128,8 @@ namespace VRCGalleryManager.Forms.Panels
                         Debug.WriteLine("Delete: " + imageId);
                         await apiRequest.DeleteApiData(imageId);
                         mainPanel.Controls.Remove(pictureBox);
+
+                        UpdateCounter("Remove");
                     }
                 });
                 btn_delete.Location = new Point(pictureBox.Size.Width - 35, pictureBox.Size.Height - 35);

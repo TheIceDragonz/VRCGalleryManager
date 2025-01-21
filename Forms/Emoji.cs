@@ -15,7 +15,7 @@ namespace VRCGalleryManager.Forms
         private ApiRequest apiRequest;
 
         private List<string> emojiJson = new List<string>();
-        private int emojiCount;
+        private int imageCount;
 
         private static string EMOJI_MASK_TAG = "square";
         private static string EMOJI_ANIMATION_STYLE = "";
@@ -50,7 +50,7 @@ namespace VRCGalleryManager.Forms
             ApiRequest.ApiData emoji = await apiRequest.GetApiData(TagType.Emoji.ToString().ToLower());
 
             emojiJson = emoji.JsonImage;
-            emojiCount = emoji.JsonImage.Count;
+            imageCount = emoji.JsonImage.Count;
 
             foreach (string json in emojiJson)
             {
@@ -62,12 +62,10 @@ namespace VRCGalleryManager.Forms
                 string framesOverTime = jsonObject["framesOverTime"]?.ToString();
                 string tags = jsonObject["tags"]?.ToString();
 
-                ImagePanel.AddImagePanel(emojiPanel, apiRequest, id, tags, frames, framesOverTime);
+                ImagePanel.AddImagePanel(emojiPanel, apiRequest, id, tags, frames, framesOverTime, UpdateCounter);
             }
 
-            limitStickerLabel.Text = $"{emojiCount}/9 Emoji";
-            if (emojiCount == 9) limitPanelEmoji.Visible = true;
-            else limitPanelEmoji.Visible = false;
+            UpdateCounter("Add");
         }
 
         private async void uploadEmoji_Click(object sender, EventArgs e)
@@ -107,12 +105,8 @@ namespace VRCGalleryManager.Forms
 
                 ApiRequest.ApiData emoji = await apiRequest.UploadImage(resizedImage, EMOJI_MASK_TAG, TagType.Emoji, EMOJI_ANIMATION_STYLE);
 
-                ImagePanel.AddImagePanel(emojiPanel, apiRequest, emoji.IdImageUploaded, emoji.Tags, emoji.Frames, emoji.FramesOverTime);
-
-                emojiCount = emojiCount + 1;
-                limitStickerLabel.Text = $"{emojiCount}/9 Emoji";
-                if (emojiCount >= 9) limitPanelEmoji.Visible = true;
-                else limitPanelEmoji.Visible = false;
+                ImagePanel.AddImagePanel(emojiPanel, apiRequest, emoji.IdImageUploaded, emoji.Tags, emoji.Frames, emoji.FramesOverTime, UpdateCounter);
+                UpdateCounter("Add");
 
                 NotificationManager.ShowNotification("Emoji uploaded successfully", "Emoji uploaded", NotificationType.Success);
             }
@@ -130,6 +124,15 @@ namespace VRCGalleryManager.Forms
         private void pasteButton_Click(object sender, EventArgs e)
         {
             ClipboardHandler.ClipboardDataImageOrLink(pasteButton, UploadImage);
+        }
+
+        private void UpdateCounter(string action)
+        {
+            if (action == "Add") imageCount += 1;
+            else if (action == "Remove") imageCount -= 1;
+            limitCounterLabel.Text = $"{imageCount}/9 Emoji";
+            if (imageCount >= 9) limitPanel.Visible = true;
+            else limitPanel.Visible = false;
         }
     }
 }

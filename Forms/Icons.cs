@@ -12,7 +12,7 @@ namespace VRCGalleryManager.Forms
         private ApiRequest apiRequest;
 
         private List<string> iconsJson = new List<string>();
-        private int iconsCount;
+        private int imageCount;
 
         private static string ICONS_TAG = "icon";
         private static string ICONS_MASK_TYPE = "square";
@@ -39,7 +39,7 @@ namespace VRCGalleryManager.Forms
             ApiRequest.ApiData icons = await apiRequest.GetApiData(ICONS_TAG);
 
             iconsJson = icons.JsonImage;
-            iconsCount = icons.JsonImage.Count;
+            imageCount = icons.JsonImage.Count;
 
             foreach (string json in iconsJson)
             {
@@ -47,12 +47,10 @@ namespace VRCGalleryManager.Forms
 
                 string id = jsonObject["id"]?.ToString();
 
-                ImagePanel.AddImagePanel(iconsPanel, apiRequest, id);
+                ImagePanel.AddImagePanel(iconsPanel, apiRequest, id, UpdateCounter);
             }
 
-            limitIconsLabel.Text = $"{iconsCount}/64 Icons";
-            if (iconsCount == 64) limitPanelIcons.Visible = true;
-            else limitPanelIcons.Visible = false;
+            UpdateCounter("Add");
         }
 
         private async void uploadIcons_Click(object sender, EventArgs e)
@@ -77,12 +75,8 @@ namespace VRCGalleryManager.Forms
             {
                 ApiRequest.ApiData icons = await apiRequest.UploadImage(resizedImage, ICONS_MASK_TYPE, TagType.Icon);
 
-                ImagePanel.AddImagePanel(iconsPanel, apiRequest, icons.IdImageUploaded);
-
-                iconsCount = iconsCount + 1;
-                limitIconsLabel.Text = $"{iconsCount}/64 Icons";
-                if (iconsCount == 64) limitPanelIcons.Visible = true;
-                else limitPanelIcons.Visible = false;
+                ImagePanel.AddImagePanel(iconsPanel, apiRequest, icons.IdImageUploaded, UpdateCounter);
+                UpdateCounter("Add");
 
                 NotificationManager.ShowNotification("Icons uploaded successfully", "Icons uploaded", NotificationType.Success);
             }
@@ -95,6 +89,14 @@ namespace VRCGalleryManager.Forms
         private void pasteButton_Click(object sender, EventArgs e)
         {
             ClipboardHandler.ClipboardDataImageOrLink(pasteButton, UploadImage);
+        }
+        private void UpdateCounter(string action)
+        {
+            if (action == "Add") imageCount += 1;
+            else if (action == "Remove") imageCount -= 1;
+            limitCounterLabel.Text = $"{imageCount}/64 Icons";
+            if (imageCount >= 9) limitPanel.Visible = true;
+            else limitPanel.Visible = false;
         }
     }
 }

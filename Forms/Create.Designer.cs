@@ -35,7 +35,7 @@ namespace VRCGalleryManager.Forms
             previewGif = new RoundedPictureBox();
             previewSS = new RoundedPictureBox();
             buttonSave = new RoundedButton();
-            roundedButton1 = new RoundedButton();
+            uploadButton = new RoundedButton();
             titleGifCreator = new Label();
             trackBarFPS = new RoundedTrackBar();
             labelFPS = new Label();
@@ -114,33 +114,33 @@ namespace VRCGalleryManager.Forms
             buttonSave.UseVisualStyleBackColor = false;
             buttonSave.Click += buttonLocalSave_Click;
             // 
-            // roundedButton1
+            // uploadButton
             // 
-            roundedButton1.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            roundedButton1.BackColor = Color.FromArgb(7, 36, 43);
-            roundedButton1.BackgroundColor = Color.FromArgb(7, 36, 43);
-            roundedButton1.BorderColor = Color.FromArgb(5, 55, 66);
-            roundedButton1.BorderRadius = 10;
-            roundedButton1.BorderSize = 2;
-            roundedButton1.FlatAppearance.BorderSize = 0;
-            roundedButton1.FlatStyle = FlatStyle.Flat;
-            roundedButton1.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
-            roundedButton1.ForeColor = Color.FromArgb(106, 227, 249);
-            roundedButton1.Location = new Point(12, 512);
-            roundedButton1.Name = "roundedButton1";
-            roundedButton1.Size = new Size(421, 40);
-            roundedButton1.SvgAlignment = ContentAlignment.MiddleCenter;
-            roundedButton1.SvgColor = Color.Black;
-            roundedButton1.SvgContent = null;
-            roundedButton1.SvgOffset = new Point(0, 0);
-            roundedButton1.SvgPadding = new Padding(0);
-            roundedButton1.SvgResource = null;
-            roundedButton1.SvgSize = new Size(50, 50);
-            roundedButton1.TabIndex = 4;
-            roundedButton1.Text = "Upload";
-            roundedButton1.TextColor = Color.FromArgb(106, 227, 249);
-            roundedButton1.UseVisualStyleBackColor = false;
-            roundedButton1.Click += creatorUpload_Click;
+            uploadButton.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            uploadButton.BackColor = Color.FromArgb(7, 36, 43);
+            uploadButton.BackgroundColor = Color.FromArgb(7, 36, 43);
+            uploadButton.BorderColor = Color.FromArgb(5, 55, 66);
+            uploadButton.BorderRadius = 10;
+            uploadButton.BorderSize = 2;
+            uploadButton.FlatAppearance.BorderSize = 0;
+            uploadButton.FlatStyle = FlatStyle.Flat;
+            uploadButton.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
+            uploadButton.ForeColor = Color.FromArgb(106, 227, 249);
+            uploadButton.Location = new Point(12, 512);
+            uploadButton.Name = "uploadButton";
+            uploadButton.Size = new Size(421, 40);
+            uploadButton.SvgAlignment = ContentAlignment.MiddleCenter;
+            uploadButton.SvgColor = Color.Black;
+            uploadButton.SvgContent = null;
+            uploadButton.SvgOffset = new Point(0, 0);
+            uploadButton.SvgPadding = new Padding(0);
+            uploadButton.SvgResource = null;
+            uploadButton.SvgSize = new Size(50, 50);
+            uploadButton.TabIndex = 4;
+            uploadButton.Text = "Upload";
+            uploadButton.TextColor = Color.FromArgb(106, 227, 249);
+            uploadButton.UseVisualStyleBackColor = false;
+            uploadButton.Click += creatorUpload_Click;
             // 
             // titleGifCreator
             // 
@@ -271,7 +271,7 @@ namespace VRCGalleryManager.Forms
             Controls.Add(labelFPS);
             Controls.Add(trackBarFPS);
             Controls.Add(titleGifCreator);
-            Controls.Add(roundedButton1);
+            Controls.Add(uploadButton);
             Controls.Add(previewGif);
             Controls.Add(previewSS);
             Controls.Add(buttonSave);
@@ -290,7 +290,7 @@ namespace VRCGalleryManager.Forms
         private RoundedPictureBox previewGif;
         private RoundedPictureBox previewSS;
         private Design.RoundedButton buttonSave;
-        private RoundedButton roundedButton1;
+        private RoundedButton uploadButton;
         private Label titleGifCreator;
         private RoundedTrackBar trackBarFPS;
         private Label labelFPS;

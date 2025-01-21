@@ -33,12 +33,12 @@ namespace VRCGalleryManager.Forms
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Gallery));
             galleryPanel = new FlowLayoutPanel();
             _refreshButton = new RoundedButton();
-            roundedButton1 = new RoundedButton();
-            limitPanelGallery = new RoundedPanel();
+            uploadButton = new RoundedButton();
+            limitPanel = new RoundedPanel();
             limitLabel = new Label();
-            limitGalleryLabel = new Label();
+            limitCounterLabel = new Label();
             pasteButton = new RoundedButton();
-            limitPanelGallery.SuspendLayout();
+            limitPanel.SuspendLayout();
             SuspendLayout();
             // 
             // galleryPanel
@@ -79,47 +79,47 @@ namespace VRCGalleryManager.Forms
             _refreshButton.UseVisualStyleBackColor = false;
             _refreshButton.Click += _refreshButton_Click;
             // 
-            // roundedButton1
+            // uploadButton
             // 
-            roundedButton1.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            roundedButton1.BackColor = Color.FromArgb(7, 36, 43);
-            roundedButton1.BackgroundColor = Color.FromArgb(7, 36, 43);
-            roundedButton1.BorderColor = Color.FromArgb(5, 55, 66);
-            roundedButton1.BorderRadius = 10;
-            roundedButton1.BorderSize = 2;
-            roundedButton1.FlatAppearance.BorderSize = 0;
-            roundedButton1.FlatStyle = FlatStyle.Flat;
-            roundedButton1.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
-            roundedButton1.ForeColor = Color.FromArgb(106, 227, 249);
-            roundedButton1.Location = new Point(12, 497);
-            roundedButton1.Name = "roundedButton1";
-            roundedButton1.Size = new Size(732, 40);
-            roundedButton1.SvgAlignment = ContentAlignment.MiddleCenter;
-            roundedButton1.SvgColor = Color.Black;
-            roundedButton1.SvgContent = null;
-            roundedButton1.SvgOffset = new Point(0, 0);
-            roundedButton1.SvgPadding = new Padding(0);
-            roundedButton1.SvgResource = null;
-            roundedButton1.SvgSize = new Size(50, 50);
-            roundedButton1.TabIndex = 4;
-            roundedButton1.Text = "Upload";
-            roundedButton1.TextColor = Color.FromArgb(106, 227, 249);
-            roundedButton1.UseVisualStyleBackColor = false;
-            roundedButton1.Click += uploadGallery_Click;
+            uploadButton.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            uploadButton.BackColor = Color.FromArgb(7, 36, 43);
+            uploadButton.BackgroundColor = Color.FromArgb(7, 36, 43);
+            uploadButton.BorderColor = Color.FromArgb(5, 55, 66);
+            uploadButton.BorderRadius = 10;
+            uploadButton.BorderSize = 2;
+            uploadButton.FlatAppearance.BorderSize = 0;
+            uploadButton.FlatStyle = FlatStyle.Flat;
+            uploadButton.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
+            uploadButton.ForeColor = Color.FromArgb(106, 227, 249);
+            uploadButton.Location = new Point(12, 497);
+            uploadButton.Name = "uploadButton";
+            uploadButton.Size = new Size(732, 40);
+            uploadButton.SvgAlignment = ContentAlignment.MiddleCenter;
+            uploadButton.SvgColor = Color.Black;
+            uploadButton.SvgContent = null;
+            uploadButton.SvgOffset = new Point(0, 0);
+            uploadButton.SvgPadding = new Padding(0);
+            uploadButton.SvgResource = null;
+            uploadButton.SvgSize = new Size(50, 50);
+            uploadButton.TabIndex = 4;
+            uploadButton.Text = "Upload";
+            uploadButton.TextColor = Color.FromArgb(106, 227, 249);
+            uploadButton.UseVisualStyleBackColor = false;
+            uploadButton.Click += uploadGallery_Click;
             // 
-            // limitPanelGallery
+            // limitPanel
             // 
-            limitPanelGallery.BackColor = Color.FromArgb(7, 36, 43);
-            limitPanelGallery.BackgroundColor = Color.FromArgb(7, 36, 43);
-            limitPanelGallery.BorderColor = Color.FromArgb(255, 128, 128);
-            limitPanelGallery.BorderRadius = 10;
-            limitPanelGallery.BorderSize = 2;
-            limitPanelGallery.Controls.Add(limitLabel);
-            limitPanelGallery.Location = new Point(12, 10);
-            limitPanelGallery.Name = "limitPanelGallery";
-            limitPanelGallery.Size = new Size(284, 29);
-            limitPanelGallery.TabIndex = 5;
-            limitPanelGallery.Visible = false;
+            limitPanel.BackColor = Color.FromArgb(7, 36, 43);
+            limitPanel.BackgroundColor = Color.FromArgb(7, 36, 43);
+            limitPanel.BorderColor = Color.FromArgb(255, 128, 128);
+            limitPanel.BorderRadius = 10;
+            limitPanel.BorderSize = 2;
+            limitPanel.Controls.Add(limitLabel);
+            limitPanel.Location = new Point(12, 10);
+            limitPanel.Name = "limitPanel";
+            limitPanel.Size = new Size(284, 29);
+            limitPanel.TabIndex = 5;
+            limitPanel.Visible = false;
             // 
             // limitLabel
             // 
@@ -134,19 +134,19 @@ namespace VRCGalleryManager.Forms
             limitLabel.Text = "You have reached your photos limit!";
             limitLabel.TextAlign = ContentAlignment.MiddleCenter;
             // 
-            // limitGalleryLabel
+            // limitCounterLabel
             // 
-            limitGalleryLabel.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            limitGalleryLabel.AutoSize = true;
-            limitGalleryLabel.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            limitGalleryLabel.ForeColor = Color.White;
-            limitGalleryLabel.Location = new Point(594, 17);
-            limitGalleryLabel.Name = "limitGalleryLabel";
-            limitGalleryLabel.RightToLeft = RightToLeft.No;
-            limitGalleryLabel.Size = new Size(74, 15);
-            limitGalleryLabel.TabIndex = 6;
-            limitGalleryLabel.Text = "0/64 Photos";
-            limitGalleryLabel.TextAlign = ContentAlignment.MiddleRight;
+            limitCounterLabel.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            limitCounterLabel.AutoSize = true;
+            limitCounterLabel.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            limitCounterLabel.ForeColor = Color.White;
+            limitCounterLabel.Location = new Point(594, 17);
+            limitCounterLabel.Name = "limitCounterLabel";
+            limitCounterLabel.RightToLeft = RightToLeft.No;
+            limitCounterLabel.Size = new Size(74, 15);
+            limitCounterLabel.TabIndex = 6;
+            limitCounterLabel.Text = "0/64 Photos";
+            limitCounterLabel.TextAlign = ContentAlignment.MiddleRight;
             // 
             // pasteButton
             // 
@@ -182,15 +182,15 @@ namespace VRCGalleryManager.Forms
             BackColor = Color.FromArgb(5, 5, 5);
             ClientSize = new Size(802, 549);
             Controls.Add(pasteButton);
-            Controls.Add(limitGalleryLabel);
-            Controls.Add(limitPanelGallery);
-            Controls.Add(roundedButton1);
+            Controls.Add(limitCounterLabel);
+            Controls.Add(limitPanel);
+            Controls.Add(uploadButton);
             Controls.Add(_refreshButton);
             Controls.Add(galleryPanel);
             FormBorderStyle = FormBorderStyle.None;
             Name = "Gallery";
             Text = "Gallery";
-            limitPanelGallery.ResumeLayout(false);
+            limitPanel.ResumeLayout(false);
             ResumeLayout(false);
             PerformLayout();
         }
@@ -198,10 +198,10 @@ namespace VRCGalleryManager.Forms
         #endregion
         private FlowLayoutPanel galleryPanel;
         private RoundedButton _refreshButton;
-        private RoundedButton roundedButton1;
-        private RoundedPanel limitPanelGallery;
+        private RoundedButton uploadButton;
+        private RoundedPanel limitPanel;
         private Label limitLabel;
-        private Label limitGalleryLabel;
+        private Label limitCounterLabel;
         private RoundedButton pasteButton;
     }
 }

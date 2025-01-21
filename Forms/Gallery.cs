@@ -12,7 +12,7 @@ namespace VRCGalleryManager.Forms
         private ApiRequest apiRequest;
 
         private List<string> galleryJson = new List<string>();
-        private int galleryCount;
+        private int imageCount;
 
         private static string GALLERY_TAG = "gallery";
         private static string GALLERY_MASK_TYPE = "square";
@@ -39,7 +39,7 @@ namespace VRCGalleryManager.Forms
             ApiRequest.ApiData gallery = await apiRequest.GetApiData(GALLERY_TAG);
 
             galleryJson = gallery.JsonImage;
-            galleryCount = gallery.JsonImage.Count;
+            imageCount = gallery.JsonImage.Count;
 
             foreach (string json in galleryJson)
             {
@@ -47,12 +47,10 @@ namespace VRCGalleryManager.Forms
 
                 string id = jsonObject["id"]?.ToString();
 
-                ImagePanel.AddImagePanel(galleryPanel, apiRequest, id);
+                ImagePanel.AddImagePanel(galleryPanel, apiRequest, id, UpdateCounter);
             }
 
-            limitGalleryLabel.Text = $"{galleryCount}/64 Photos";
-            if (galleryCount == 64) limitPanelGallery.Visible = true;
-            else limitPanelGallery.Visible = false;
+            UpdateCounter("Add");
         }
 
         private async void uploadGallery_Click(object sender, EventArgs e)
@@ -76,12 +74,8 @@ namespace VRCGalleryManager.Forms
             {
                 ApiRequest.ApiData gallery = await apiRequest.UploadImage(resizedImage, GALLERY_MASK_TYPE, TagType.Gallery);
 
-                ImagePanel.AddImagePanel(galleryPanel, apiRequest, gallery.IdImageUploaded);
-
-                galleryCount = galleryCount + 1;
-                limitGalleryLabel.Text = $"{galleryCount}/64 Photos";
-                if (galleryCount == 64) limitPanelGallery.Visible = true;
-                else limitPanelGallery.Visible = false;
+                ImagePanel.AddImagePanel(galleryPanel, apiRequest, gallery.IdImageUploaded, UpdateCounter);
+                UpdateCounter("Add");
 
                 NotificationManager.ShowNotification("Photos uploaded successfully", "Photos uploaded", NotificationType.Success);
             }
@@ -94,6 +88,15 @@ namespace VRCGalleryManager.Forms
         private void pasteButton_Click(object sender, EventArgs e)
         {
             ClipboardHandler.ClipboardDataImageOrLink(pasteButton, UploadImage);
+        }
+
+        private void UpdateCounter(string action)
+        {
+            if (action == "Add") imageCount += 1;
+            else if (action == "Remove") imageCount -= 1;
+            limitCounterLabel.Text = $"{imageCount}/64 Photos";
+            if (imageCount >= 9) limitPanel.Visible = true;
+            else limitPanel.Visible = false;
         }
     }
 }
