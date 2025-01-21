@@ -66,6 +66,8 @@ namespace VRCGalleryManager.Forms.Panels
                         Debug.WriteLine("Delete: " + imageId);
                         await apiRequest.DeleteApiData(imageId);
                         mainPanel.Controls.Remove(pictureBox);
+
+                        UpdateCounter("Remove");
                     }
                 });
                 btn_delete.Location = new Point(pictureBox.Size.Width - 35, pictureBox.Size.Height - 35);
