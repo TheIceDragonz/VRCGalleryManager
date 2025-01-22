@@ -9,9 +9,10 @@ namespace VRCGalleryManager.Forms
         public static int MaxDataPages = 10;
         private string[] _allFiles = new string[0];
 
-        public string UserIconImage = "";
-        public string UserBannerImage = "";
-        public List<string> Badges = new List<string>();
+        public static string UserId = "";
+        public static string UserIconImage = "";
+        public static string UserBannerImage = "";
+        public static List<string> Badges = new List<string>();
 
         public Settings(VRCAuth Auth)
         {
@@ -28,8 +29,6 @@ namespace VRCGalleryManager.Forms
             {
                 Auth.VRCAuthentication(_username.Text, _password.Text);
                 checkToken();
-
-                (Application.OpenForms["MainPanel"] as MainPanel)?.ProfileImage();
 
                 return;
             }
@@ -73,11 +72,13 @@ namespace VRCGalleryManager.Forms
                     _username.Text = currentUser.DisplayName;
                     _password.Text = "password";
 
-                    foreach (var badge in currentUser.Badges) Badges.Add(badge.ToJson());
+                    UserId = currentUser.Id;
                     UserIconImage = currentUser.UserIcon;
                     UserBannerImage = currentUser.ProfilePicOverrideThumbnail;
-
                     if (string.IsNullOrEmpty(UserBannerImage)) UserBannerImage = currentUser.CurrentAvatarThumbnailImageUrl;
+                    foreach (var badge in currentUser.Badges) Badges.Add(badge.ToJson());
+
+                    (Application.OpenForms["MainPanel"] as MainPanel)?.ProfileImage();
                 }
                 catch (Exception ex)
                 {

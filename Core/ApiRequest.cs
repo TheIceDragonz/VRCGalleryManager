@@ -3,6 +3,8 @@ using VRCGalleryManager.Core.DTO;
 using VRChat.API.Api;
 using VRChat.API.Client;
 using VRChat.API.Model;
+using VRCGalleryManager.Forms;
+using System.Data;
 
 namespace VRCGalleryManager.Core
 {
@@ -10,11 +12,13 @@ namespace VRCGalleryManager.Core
     {
         private VRCAuth Auth;
         private FilesApi filesApi;
+        private UsersApi usersApi;
 
         public ApiRequest(VRCAuth Auth)
         {
             this.Auth = Auth;
             filesApi = new FilesApi(Auth.ApiClient, Auth.ApiClient, Auth.Config);
+            usersApi = new UsersApi(Auth.ApiClient, Auth.ApiClient, Auth.Config);
         }
 
         public class ApiData
@@ -145,6 +149,33 @@ namespace VRCGalleryManager.Core
             }
 
             return apiData;
+        }
+
+        public async Task SetProfileIcon(string urlImage)
+        {
+            try
+            {
+                await usersApi.UpdateUserAsync(Settings.UserId, new  UpdateUserRequest { UserIcon = urlImage });
+            }
+            catch (ApiException ex)
+            {
+                Console.WriteLine($"Errore: {ex.Message}");
+            }
+
+            (Application.OpenForms["MainPanel"] as MainPanel)?.ProfileUpdateIcon(urlImage);
+        }
+        public async Task SetProfilePicture(string urlImage)
+        {
+            try
+            {
+                await usersApi.UpdateUserAsync(Settings.UserId, new UpdateUserRequest { ProfilePicOverride = urlImage });
+            }
+            catch (ApiException ex)
+            {
+                Console.WriteLine($"Errore: {ex.Message}");
+            }
+
+            (Application.OpenForms["MainPanel"] as MainPanel)?.ProfileUpdateBanner(urlImage);
         }
     }
 }

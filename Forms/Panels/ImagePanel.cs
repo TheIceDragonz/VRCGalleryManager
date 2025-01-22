@@ -23,6 +23,7 @@ namespace VRCGalleryManager.Forms.Panels
                 BorderSize = 5,
                 Padding = new Padding(5)
             };
+
             string image = tags.Contains("animated")
                 ? $"https://api.vrchat.cloud/api/1/file/{imageId}/1/file"
                 : $"https://api.vrchat.cloud/api/1/image/{imageId}/1/256";
@@ -76,6 +77,10 @@ namespace VRCGalleryManager.Forms.Panels
 
             mainPanel.Controls.Add(pictureBox);
         }
+
+        private static List<RoundedPictureBox> pictureIconList = new List<RoundedPictureBox>();
+        private static List<RoundedPictureBox> pictureGalleryList = new List<RoundedPictureBox>();
+
         static public async void AddImagePanel(FlowLayoutPanel mainPanel, ApiRequest apiRequest, string imageId, Action<string> UpdateCounter)
         {
             Size size = new Size(150, 150);
@@ -84,6 +89,10 @@ namespace VRCGalleryManager.Forms.Panels
 
             int value = 10;
             if (mainPanel.Name.Contains("icons")) value = 100; //Max Rounded
+
+            string imageFull = $"https://api.vrchat.cloud/api/1/file/{imageId}/1/file";
+            string image256 = $"https://api.vrchat.cloud/api/1/image/{imageId}/1/256";
+            string finalaviImage = await HttpImage.GetFinalUrlAsync(image256);
 
             //* IMAGE Static PANEL
             RoundedPictureBox pictureBox = new RoundedPictureBox
@@ -100,8 +109,36 @@ namespace VRCGalleryManager.Forms.Panels
                 BorderSize = 5,
                 Padding = new Padding(5)
             };
-            string image = $"https://api.vrchat.cloud/api/1/image/{imageId}/1/256";
-            string finalaviImage = await HttpImage.GetFinalUrlAsync(image);
+
+            if (mainPanel.Name.Contains("icons"))
+            {
+                if (Settings.UserIconImage.Contains(imageId)) pictureBox.BorderColor = Color.FromArgb(106, 227, 249);
+
+                pictureBox.Click += async (sender, e) =>
+                {
+                    await apiRequest.SetProfileIcon(imageFull);
+
+                    foreach (var pb in pictureIconList) pb.BorderColor = Color.FromArgb(24, 27, 31);
+                    pictureBox.BorderColor = Color.FromArgb(106, 227, 249);
+
+                    NotificationManager.ShowNotification("Profile Icon", "Profile Icon Updated", NotificationType.Success);
+                };
+                pictureIconList.Add(pictureBox);
+            }
+            if (mainPanel.Name.Contains("gallery"))
+            {
+                if (Settings.UserBannerImage.Contains(imageId)) pictureBox.BorderColor = Color.FromArgb(106, 227, 249);
+                pictureBox.Click += async (sender, e) =>
+                {
+                    await apiRequest.SetProfilePicture(imageFull);
+
+                    foreach (var pb in pictureGalleryList) pb.BorderColor = Color.FromArgb(24, 27, 31);
+                    pictureBox.BorderColor = Color.FromArgb(106, 227, 249);
+
+                    NotificationManager.ShowNotification("Profile Picture", "Profile Picture Updated", NotificationType.Success);
+                };
+                pictureGalleryList.Add(pictureBox);
+            }
 
             if (!finalaviImage.Contains("imageNotFound"))
             {
@@ -109,7 +146,7 @@ namespace VRCGalleryManager.Forms.Panels
                 {
                     CircularButton btn_open = CircularButtonTools.CreateButton("open", (sender, e) =>
                     {
-                        Process.Start("explorer.exe", $"https://api.vrchat.cloud/api/1/file/{imageId}/1/file");
+                        Process.Start("explorer.exe", imageFull);
                     });
 
                     btn_open.Location = new Point(pictureBox.Size.Width - 60, pictureBox.Size.Height - 35);

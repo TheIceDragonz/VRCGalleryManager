@@ -24,7 +24,6 @@ namespace VRCGalleryManager
             }
 
             InitializeComponent();
-            
 
             this.AutoScaleMode = AutoScaleMode.Dpi;
             this.Scale(new SizeF(Screen.PrimaryScreen.Bounds.Width / 1920f, Screen.PrimaryScreen.Bounds.Height / 1080f));
@@ -41,25 +40,24 @@ namespace VRCGalleryManager
                 form.Hide();
             }
 
+            ShowForm(6);
+
             if (Auth.LoggedIn || Auth.CookieLoaded)
             {
                 ProfileImage();
             }
-
-            ShowForm(6);
 
             //Recolor Bar
             int color = Color.FromArgb(5, 5, 5).ToArgb() & 0xFFFFFF;
             DwmSetWindowAttribute(this.Handle, 35, ref color, 4);
         }
 
-        public async void ProfileImage()
+        public async Task ProfileImage()
         {
-            Settings images = new Settings(Auth);
-            profileIcon.LoadAsync(await HttpImage.GetFinalUrlAsync(images.UserIconImage));
-            profileBanner.LoadAsync(await HttpImage.GetFinalUrlAsync(images.UserBannerImage));
+            profileIcon.LoadAsync(await HttpImage.GetFinalUrlAsync(Settings.UserIconImage));
+            profileBanner.LoadAsync(await HttpImage.GetFinalUrlAsync(Settings.UserBannerImage));
             var badgeBoxes = new[] { badgeBox3, badgeBox2, badgeBox1 };
-            foreach (var (badge, box) in images.Badges.Zip(badgeBoxes, (badge, box) => (badge, box)))
+            foreach (var (badge, box) in Settings.Badges.Zip(badgeBoxes, (badge, box) => (badge, box)))
             {
                 JObject jsonObject = JObject.Parse(badge);
                 string imageBadge = jsonObject["badgeImageUrl"]?.ToString();
@@ -69,6 +67,14 @@ namespace VRCGalleryManager
                     box.LoadAsync(imageBadge);
             }
             profileIcon.Visible = true;
+        }
+        public async Task ProfileUpdateIcon(string IconImage)
+        {
+            profileIcon.LoadAsync(await HttpImage.GetFinalUrlAsync(IconImage));
+        }
+        public async Task ProfileUpdateBanner(string BannerImage)
+        {
+            profileBanner.LoadAsync(await HttpImage.GetFinalUrlAsync(BannerImage));
         }
         public void ProfileImageRemover()
         {
