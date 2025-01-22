@@ -6,8 +6,8 @@ namespace VRCGalleryManager.Core
     public static class NotificationManager
     {
         private static readonly List<RoundedPanel> ActiveNotifications = new List<RoundedPanel>();
-        private const int PanelWidth = 310;
-        private const int PanelHeight = 80;
+        private const int PanelWidth = 350;
+        private const int PanelHeight = 100;
         private const int Spacing = 10;
 
         public static void ShowNotification(string message, string title, NotificationType type)
@@ -17,8 +17,10 @@ namespace VRCGalleryManager.Core
             RoundedPanel notificationPanel = new RoundedPanel
             {
                 BorderRadius = 10,
+                BorderSize = 3,
+                BorderColor = type == NotificationType.Success ? Color.LightGreen : Color.LightCoral,
                 Size = new Size(PanelWidth, PanelHeight),
-                BackColor = type == NotificationType.Success ? Color.LightGreen : Color.LightCoral,
+                BackColor = Color.FromArgb(5, 5, 5),
                 Location = new Point(-PanelWidth, mainForm.ClientSize.Height - (PanelHeight + Spacing)),
                 Anchor = AnchorStyles.Bottom | AnchorStyles.Left
             };
@@ -27,7 +29,7 @@ namespace VRCGalleryManager.Core
             {
                 Text = title,
                 Font = new Font("Arial", 12, FontStyle.Bold),
-                ForeColor = Color.Black,
+                ForeColor = type == NotificationType.Success ? Color.LightGreen : Color.LightCoral,
                 AutoSize = true,
                 Location = new Point(10, 10)
             };
@@ -37,7 +39,7 @@ namespace VRCGalleryManager.Core
             {
                 Text = message,
                 Font = new Font("Arial", 10),
-                ForeColor = Color.Black,
+                ForeColor = type == NotificationType.Success ? Color.LightGreen : Color.LightCoral,
                 AutoSize = true,
                 MaximumSize = new Size(PanelWidth - 20, 0),
                 Location = new Point(10, 40)
