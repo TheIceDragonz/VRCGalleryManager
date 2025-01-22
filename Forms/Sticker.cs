@@ -24,7 +24,7 @@ namespace VRCGalleryManager.Forms
             this.Shown += (s, e) => { if (stickerPanel.Controls.Count == 0) StickerList(); };
         }
 
-        private async void _refreshButton_Click(object sender, EventArgs e)
+        private void _refreshButton_Click(object sender, EventArgs e)
         {
             StickerList();
         }

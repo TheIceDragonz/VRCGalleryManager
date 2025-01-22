@@ -24,7 +24,7 @@ namespace VRCGalleryManager.Forms
             this.Shown += (s, e) => { if (iconsPanel.Controls.Count == 0) IconsList(); };
         }
 
-        private async void _refreshButton_Click(object sender, EventArgs e)
+        private void _refreshButton_Click(object sender, EventArgs e)
         {
             IconsList();
         }
@@ -93,7 +93,7 @@ namespace VRCGalleryManager.Forms
             if (action == "Add") imageCount += 1;
             else if (action == "Remove") imageCount -= 1;
             limitCounterLabel.Text = $"{imageCount}/64 Icons";
-            if (imageCount >= 9) limitPanel.Visible = true;
+            if (imageCount >= 64) limitPanel.Visible = true;
             else limitPanel.Visible = false;
         }
     }

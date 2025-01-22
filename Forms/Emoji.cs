@@ -32,7 +32,7 @@ namespace VRCGalleryManager.Forms
             TypePanel.LoadEmojiType(emojiOpenTypePanel, emojiTypePanel);
         }
 
-        private async void _refreshButton_Click(object sender, EventArgs e)
+        private void _refreshButton_Click(object sender, EventArgs e)
         {
             EmojiList();
         }
@@ -118,7 +118,14 @@ namespace VRCGalleryManager.Forms
 
         private void pasteButton_Click(object sender, EventArgs e)
         {
-            ClipboardHandler.ClipboardDataImageOrLink(pasteButton, UploadImage);
+            if (!emojiOpenTypePanel.Text.Contains("Type"))
+            {
+                ClipboardHandler.ClipboardDataImageOrLink(pasteButton, UploadImage);
+            }
+            else
+            {
+                DialogMessage.ShowMissingTypeDialog(this);
+            }
         }
 
         private void UpdateCounter(string action)
