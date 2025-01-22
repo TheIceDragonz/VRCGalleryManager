@@ -124,9 +124,6 @@
   <data name="Preview_B2-Bees" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\animationStyle\Preview_B2-Bees.gif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="NotFound" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\NotFound.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
   <data name="grid_svgrepo_com" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\svg\grid-svgrepo-com.svg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
