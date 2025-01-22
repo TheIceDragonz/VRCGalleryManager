@@ -1,11 +1,4 @@
-﻿using System;
-using System.Drawing;
-using System.IO;
-using System.Net.Http;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-
-namespace VRCGalleryManager.Core
+﻿namespace VRCGalleryManager.Core
 {
     public class ClipboardHandler
     {
@@ -80,7 +73,7 @@ namespace VRCGalleryManager.Core
             if (files.Length > 0)
             {
                 pasteButton.Enabled = false;
-                UploadImage(files[0]); // Passa direttamente il file
+                UploadImage(files[0]);
                 pasteButton.Enabled = true;
             }
         }
@@ -101,7 +94,7 @@ namespace VRCGalleryManager.Core
             }
             catch
             {
-                // Ignorare errori come timeout o URL non valido
+
             }
             return false;
         }

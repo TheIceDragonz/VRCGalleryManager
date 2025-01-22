@@ -1,18 +1,11 @@
-﻿using System;
-using System.Drawing;
-using System.Drawing.Imaging;
-using System.IO;
-using System.Net.Http;
+﻿using System.Drawing.Imaging;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 
 namespace VRCGalleryManager.Core
 {
     public class GifToSpriteSheetConverter
     {
         private Image gifImage;
-
         public Bitmap SpriteSheet { get; private set; }
         public int frameCount { get; private set; }
 
@@ -27,7 +20,6 @@ namespace VRCGalleryManager.Core
             {
                 if (url.ToLower().EndsWith(".gif"))
                 {
-                    // Scarica direttamente la GIF
                     byte[] imageBytes = await client.GetByteArrayAsync(url);
                     await File.WriteAllBytesAsync(tempFilePath, imageBytes);
                     return tempFilePath;
@@ -54,6 +46,7 @@ namespace VRCGalleryManager.Core
 
             throw new Exception("No valid GIF URLs found in the page!");
         }
+
         private IEnumerable<string> ExtractGifUrlsFromEmbed(string htmlContent)
         {
             string pattern = @"https?:\/\/[^\s""'<>]+\.gif";

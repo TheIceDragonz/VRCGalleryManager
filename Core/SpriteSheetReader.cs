@@ -1,11 +1,4 @@
-﻿using System;
-using System.Drawing;
-using System.Net;
-using System.Net.Http;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-
-namespace VRCGalleryManager.Core
+﻿namespace VRCGalleryManager.Core
 {
     public class SpriteSheetViewer
     {
@@ -46,25 +39,23 @@ namespace VRCGalleryManager.Core
             _frameCount = frameCount;
             _currentFrame = 0;
 
-            // Calcolo della dimensione dei frame
             int squareSize;
             int cols, rows;
 
             if (frameCount <= 16)
             {
-                squareSize = 256; // Dimensione per 4x4 griglia
+                squareSize = 256;
                 cols = rows = 4;
             }
             else
             {
-                squareSize = 128; // Dimensione per 8x8 griglia
+                squareSize = 128;
                 cols = rows = 8;
             }
 
             _frameWidth = squareSize;
             _frameHeight = squareSize;
 
-            // Imposta la velocità dell'animazione in base ai frame per secondo
             _frameTimer.Interval = 1000 / framesPerSecond;
             _pictureBox.Image = new Bitmap(_frameWidth, _frameHeight);
         }

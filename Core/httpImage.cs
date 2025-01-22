@@ -1,5 +1,4 @@
 ﻿using System.Net;
-using VRCGalleryManager.Forms;
 
 namespace VRCGalleryManager.Core
 {

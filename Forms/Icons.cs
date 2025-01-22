@@ -1,6 +1,4 @@
 ﻿using Newtonsoft.Json.Linq;
-using System.IO;
-using System.Windows.Forms;
 using VRCGalleryManager.Core;
 using VRCGalleryManager.Core.DTO;
 using VRCGalleryManager.Forms.Panels;

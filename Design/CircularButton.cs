@@ -1,10 +1,7 @@
 ﻿using Svg;
-using System;
 using System.Collections;
 using System.ComponentModel;
-using System.Drawing;
 using System.Drawing.Drawing2D;
-using System.Windows.Forms;
 
 namespace VRCGalleryManager.Design
 {

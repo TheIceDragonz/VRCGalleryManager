@@ -1,13 +1,10 @@
-﻿using System;
-using System.Diagnostics;
-using System.Linq;
+﻿using System.Diagnostics;
 using System.Runtime.InteropServices;
 
 namespace VRCGalleryManager.Core.Helpers
 {
     public static class InstanceChecker
     {
-        // Importazioni delle API di Windows
         [DllImport("user32.dll")]
         private static extern bool SetForegroundWindow(nint hWnd);
 

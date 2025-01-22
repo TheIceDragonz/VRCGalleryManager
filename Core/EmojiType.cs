@@ -1,5 +1,4 @@
-﻿using VRCGalleryManager.Forms;
-using VRCGalleryManager.Properties;
+﻿using VRCGalleryManager.Properties;
 
 namespace VRCGalleryManager.Core
 {

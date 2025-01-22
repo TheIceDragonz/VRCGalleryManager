@@ -1,6 +1,3 @@
-using VRCGalleryManager.Design;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.ListView;
-
 namespace VRCGalleryManager.Core
 {
     public static class DialogMessage

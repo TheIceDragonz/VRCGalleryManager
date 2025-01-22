@@ -1,7 +1,4 @@
-﻿using System;
-using System.Drawing;
-using System.Drawing.Imaging;
-using System.IO;
+﻿using System.Drawing.Imaging;
 
 namespace VRCGalleryManager.Core
 {
@@ -58,7 +55,7 @@ namespace VRCGalleryManager.Core
             {
                 if (inputImage.Width <= 2048 && inputImage.Height <= 2048)
                 {
-                    return imagePath; // Return the original image path if dimensions are within 2048x2048
+                    return imagePath;
                 }
 
                 float maxDimension = 2048;

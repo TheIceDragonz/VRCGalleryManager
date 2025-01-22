@@ -71,7 +71,6 @@ namespace VRCGalleryManager.Core
             };
             closeTimer.Start();
         }
-
         private static void RemoveNotification(RoundedPanel notificationPanel)
         {
             Timer slideOutTimer = new Timer { Interval = 5 };

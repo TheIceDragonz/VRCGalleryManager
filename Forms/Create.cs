@@ -130,7 +130,7 @@ namespace VRCGalleryManager.Forms
                 DialogMessage.ShowMissingSpriteSheet(this);
             }
         }
-       
+
 
         private void trackBarFPS_ValueChanged(object sender, EventArgs e)
         {
