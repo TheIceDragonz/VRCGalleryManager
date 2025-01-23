@@ -48,7 +48,7 @@ namespace VRCGalleryManager.Forms
                 ImagePanel.AddImagePanel(stickerPanel, apiRequest, id, UpdateCounter);
             }
 
-            UpdateCounter("Add");
+            UpdateCounter("");
         }
 
         private async void uploadSticker_Click(object sender, EventArgs e)

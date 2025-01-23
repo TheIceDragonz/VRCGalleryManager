@@ -60,7 +60,7 @@ namespace VRCGalleryManager.Forms
                 ImagePanel.AddImagePanel(emojiPanel, apiRequest, id, tags, frames, framesOverTime, UpdateCounter);
             }
 
-            UpdateCounter("Add");
+            UpdateCounter("");
         }
 
         private async void uploadEmoji_Click(object sender, EventArgs e)

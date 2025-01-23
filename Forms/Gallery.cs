@@ -48,7 +48,7 @@ namespace VRCGalleryManager.Forms
                 ImagePanel.AddImagePanel(galleryPanel, apiRequest, id, UpdateCounter);
             }
 
-            UpdateCounter("Add");
+            UpdateCounter("");
         }
 
         private async void uploadGallery_Click(object sender, EventArgs e)
