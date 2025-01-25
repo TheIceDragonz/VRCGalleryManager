@@ -60,41 +60,17 @@ namespace VRChat.API.Model
         public File(string extension = default(string), string id = default(string), MIMEType mimeType = default(MIMEType), string name = default(string), string ownerId = default(string), List<string> tags = default(List<string>), List<FileVersion> versions = default(List<FileVersion>), string animationStyle = default(string), int? frames = default(int?), string framesOverTime = default(string), string loopStyle = default(string), string maskTag = default(string))
         {
             // to ensure "extension" is required (not null)
-            if (extension == null)
-            {
-                throw new ArgumentNullException("extension is a required property for File and cannot be null");
-            }
             this.Extension = extension;
             // to ensure "id" is required (not null)
-            if (id == null)
-            {
-                throw new ArgumentNullException("id is a required property for File and cannot be null");
-            }
             this.Id = id;
             this.MimeType = mimeType;
             // to ensure "name" is required (not null)
-            if (name == null)
-            {
-                throw new ArgumentNullException("name is a required property for File and cannot be null");
-            }
             this.Name = name;
             // to ensure "ownerId" is required (not null)
-            if (ownerId == null)
-            {
-                throw new ArgumentNullException("ownerId is a required property for File and cannot be null");
-            }
             this.OwnerId = ownerId;
             // to ensure "tags" is required (not null)
-            if (tags == null)
-            {
-                throw new ArgumentNullException("tags is a required property for File and cannot be null");
-            }
             this.Tags = tags;
             // to ensure "versions" is required (not null)
-            if (versions == null)
-            {
-                throw new ArgumentNullException("versions is a required property for File and cannot be null");
-            }
             this.Versions = versions;
 
             // Assign new fields

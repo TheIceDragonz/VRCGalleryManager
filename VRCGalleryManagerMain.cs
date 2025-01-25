@@ -25,8 +25,8 @@ namespace VRCGalleryManager
 
             InitializeComponent();
 
-            this.AutoScaleMode = AutoScaleMode.Dpi;
-            this.Scale(new SizeF(Screen.PrimaryScreen.Bounds.Width / 1920f, Screen.PrimaryScreen.Bounds.Height / 1080f));
+            //this.AutoScaleMode = AutoScaleMode.Dpi;
+            //this.Scale(new SizeF(Screen.PrimaryScreen.Bounds.Width / 1920f, Screen.PrimaryScreen.Bounds.Height / 1080f));
 
             Auth = VRCAuth.Instance();
             Auth.LoadCookies();

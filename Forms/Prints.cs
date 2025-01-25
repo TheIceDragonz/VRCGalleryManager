@@ -69,10 +69,11 @@ namespace VRCGalleryManager.Forms
 
             try
             {
-                ApiRequest.ApiData prints = await apiRequest.UploadImage(selectedFilePath, PRINTS_MASK_TYPE, TagType.Print);
+                ApiRequest.ApiData prints = await apiRequest.UploadPrint(selectedFilePath, "");
+                //ImagePanel.AddImagePanel(printsPanel, apiRequest, prints.IdImageUploaded, UpdateCounter);
+                //UpdateCounter("Add");
 
-                ImagePanel.AddImagePanel(printsPanel, apiRequest, prints.IdImageUploaded, UpdateCounter);
-                UpdateCounter("Add");
+                PrintsList();
 
                 NotificationManager.ShowNotification("File uploaded successfully", "File upload", NotificationType.Success);
             }

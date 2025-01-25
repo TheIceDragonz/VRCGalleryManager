@@ -846,7 +846,7 @@ namespace VRChat.API.Api
 
         public async Task<VRChat.API.Client.ApiResponse<File>> UploadImageAsync(ImageUploadPayload payload)
         {
-            var requestUrl = "https://api.vrchat.cloud/api/1/file/image";
+            var requestUrl = "https://api.vrchat.cloud/api/1";
             string tokenFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "VRCGalleryManager", "authToken.txt");
             string cookieString = System.IO.File.ReadAllText(tokenFilePath);
 
@@ -857,34 +857,20 @@ namespace VRChat.API.Api
 
                 var content = new MultipartFormDataContent();
 
-                if(payload.Tag != null)
+                if (payload.FileType == FileType.NonPrint)
                 {
-                    content.Add(new StringContent(payload.Tag.ToString()!.ToLower()), "tag");
+                    HandleNonPrintUpload(payload, content);
+                    requestUrl += "/file/image";
                 }
-
-                if(payload.MaskType != null)
+                else
                 {
-                    content.Add(new StringContent(payload.MaskType), "maskType");
-                }
-
-                if(payload.MaskTag != null)
-                {
-                    content.Add(new StringContent(payload.MaskTag), "maskTag");
-                }
-
-                if(payload.AnimationStyle != null)
-                {
-                    content.Add(new StringContent(payload.AnimationStyle), "animationStyle");
-                }
-
-                if(payload.Frames != null)
-                {
-                    content.Add(new StringContent(payload.Frames.ToString()), "frames");
-                }
-
-                if(payload.FramesOverTime != null)
-                {
-                    content.Add(new StringContent(payload.FramesOverTime.ToString()), "framesOverTime");
+                    if (payload.Note != null)
+                    {
+                        content.Add(new StringContent(payload.Note), "note");
+                    }
+                    var timestamp = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss");
+                    content.Add(new StringContent(timestamp), "timestamp");
+                    requestUrl += "/prints";
                 }
 
 
@@ -928,9 +914,45 @@ namespace VRChat.API.Api
                     }
                     catch (Exception ex)
                     {
-                        throw new Exception($"Error parsing image");
+                        var responseDict = JsonConvert.DeserializeObject<Dictionary<string, object>>(responseString);
+                        File file = new File("Print", responseDict["id"]?.ToString(), MIMEType.ImagePng);
+                        file.Id = responseDict["id"]?.ToString();
+                        return new ApiResponse<File>(response.StatusCode, null, file);
                     }
                 }
+            }
+        }
+
+        private static void HandleNonPrintUpload(ImageUploadPayload payload, MultipartFormDataContent content)
+        {
+            if (payload.Tag != null)
+            {
+                content.Add(new StringContent(payload.Tag.ToString()!.ToLower()), "tag");
+            }
+
+            if (payload.MaskType != null)
+            {
+                content.Add(new StringContent(payload.MaskType), "maskType");
+            }
+
+            if (payload.MaskTag != null)
+            {
+                content.Add(new StringContent(payload.MaskTag), "maskTag");
+            }
+
+            if (payload.AnimationStyle != null)
+            {
+                content.Add(new StringContent(payload.AnimationStyle), "animationStyle");
+            }
+
+            if (payload.Frames != null)
+            {
+                content.Add(new StringContent(payload.Frames.ToString()), "frames");
+            }
+
+            if (payload.FramesOverTime != null)
+            {
+                content.Add(new StringContent(payload.FramesOverTime.ToString()), "framesOverTime");
             }
         }
 

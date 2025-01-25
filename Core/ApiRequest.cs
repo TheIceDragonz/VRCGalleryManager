@@ -90,8 +90,26 @@ namespace VRCGalleryManager.Core
             //var response = await filesApi.UploadImageAsync(path, maskType, tag);
             //
             ImageUploadPayload imageUploadPayload = new ImageUploadPayload(path);
+
             imageUploadPayload.MaskTag = maskType;
             imageUploadPayload.Tag = tag;
+
+            var response = await filesApi.UploadImageAsync(imageUploadPayload);
+
+            apiData.IdImageUploaded = response.Data.Id;
+
+            return apiData;
+        }
+
+        public async Task<ApiData> UploadPrint(string path, string note)
+        {
+            ApiData apiData = new ApiData();
+
+            //var response = await filesApi.UploadImageAsync(path, maskType, tag);
+            //
+            ImageUploadPayload imageUploadPayload = new ImageUploadPayload(path);
+            imageUploadPayload.FileType = FileType.Print;
+            imageUploadPayload.Note = note;
 
             var response = await filesApi.UploadImageAsync(imageUploadPayload);
 

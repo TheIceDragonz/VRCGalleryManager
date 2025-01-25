@@ -1091,7 +1091,8 @@ namespace VRChat.API.Api
                 Exception _exception = this.ExceptionFactory("Logout", localVarResponse);
                 if (_exception != null)
                 {
-                    throw _exception;
+                    //throw _exception;
+                    Console.WriteLine(_exception);
                 }
             }
 
