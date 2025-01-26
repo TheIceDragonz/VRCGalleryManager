@@ -33,10 +33,10 @@ namespace VRCGalleryManager.Core
             return instance;
         }
 
-        public void VRCAuthentication(string usernameVRC, string passworldVRC)
+        public void VRCAuthentication(string usernameVRC, string passwordVRC)
         {
             Config.Username = usernameVRC;
-            Config.Password = passworldVRC;
+            Config.Password = passwordVRC;
             Config.UserAgent = "VRCGalleryManager/0.0.1 (Testing)";
 
             AuthApi = new AuthenticationApi(ApiClient, ApiClient, Config);

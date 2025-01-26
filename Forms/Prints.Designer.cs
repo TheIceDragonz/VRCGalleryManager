@@ -38,6 +38,8 @@ namespace VRCGalleryManager.Forms
             limitLabel = new Label();
             limitCounterLabel = new Label();
             pasteButton = new RoundedButton();
+            notePrintsLabel = new Label();
+            textBoxNotePrint = new TextBox();
             limitPanel.SuspendLayout();
             SuspendLayout();
             // 
@@ -48,7 +50,7 @@ namespace VRCGalleryManager.Forms
             printsPanel.BackColor = Color.FromArgb(5, 5, 5);
             printsPanel.Location = new Point(12, 45);
             printsPanel.Name = "printsPanel";
-            printsPanel.Size = new Size(772, 484);
+            printsPanel.Size = new Size(772, 462);
             printsPanel.TabIndex = 2;
             // 
             // _refreshButton
@@ -175,12 +177,38 @@ namespace VRCGalleryManager.Forms
             pasteButton.UseVisualStyleBackColor = false;
             pasteButton.Click += pasteButton_Click;
             // 
+            // notePrintsLabel
+            // 
+            notePrintsLabel.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
+            notePrintsLabel.AutoSize = true;
+            notePrintsLabel.BackColor = Color.FromArgb(5, 5, 5);
+            notePrintsLabel.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            notePrintsLabel.ForeColor = Color.White;
+            notePrintsLabel.Location = new Point(12, 513);
+            notePrintsLabel.Name = "notePrintsLabel";
+            notePrintsLabel.Size = new Size(41, 15);
+            notePrintsLabel.TabIndex = 11;
+            notePrintsLabel.Text = "Note:";
+            // 
+            // textBoxNotePrint
+            // 
+            textBoxNotePrint.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            textBoxNotePrint.BackColor = Color.FromArgb(7, 36, 43);
+            textBoxNotePrint.BorderStyle = BorderStyle.None;
+            textBoxNotePrint.ForeColor = Color.White;
+            textBoxNotePrint.Location = new Point(59, 513);
+            textBoxNotePrint.Name = "textBoxNotePrint";
+            textBoxNotePrint.Size = new Size(725, 16);
+            textBoxNotePrint.TabIndex = 12;
+            // 
             // Prints
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(5, 5, 5);
             ClientSize = new Size(796, 587);
+            Controls.Add(textBoxNotePrint);
+            Controls.Add(notePrintsLabel);
             Controls.Add(pasteButton);
             Controls.Add(limitCounterLabel);
             Controls.Add(limitPanel);
@@ -203,5 +231,7 @@ namespace VRCGalleryManager.Forms
         private Label limitLabel;
         private Label limitCounterLabel;
         private RoundedButton pasteButton;
+        private Label notePrintsLabel;
+        private TextBox textBoxNotePrint;
     }
 }

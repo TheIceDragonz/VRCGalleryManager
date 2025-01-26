@@ -69,7 +69,7 @@ namespace VRCGalleryManager.Forms
 
             try
             {
-                ApiRequest.ApiData prints = await apiRequest.UploadPrint(selectedFilePath, "");
+                ApiRequest.ApiData prints = await apiRequest.UploadPrint(selectedFilePath, textBoxNotePrint.Text);
                 //ImagePanel.AddImagePanel(printsPanel, apiRequest, prints.IdImageUploaded, UpdateCounter);
                 //UpdateCounter("Add");
 
