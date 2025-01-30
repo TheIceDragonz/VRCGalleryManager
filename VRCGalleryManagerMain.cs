@@ -31,7 +31,7 @@ namespace VRCGalleryManager
             Auth = VRCAuth.Instance();
             Auth.LoadCookies();
 
-            _forms = new Form[] { new Icons(Auth), new Gallery(Auth), new Emoji(Auth), new Sticker(Auth), new Prints(Auth), new Create(Auth), new Settings(Auth) };
+            _forms = new Form[] { new Icons(Auth), new Gallery(Auth), new Emoji(Auth), new Sticker(Auth), new Prints(Auth), new Picflow(Auth),  new Create(Auth), new Settings(Auth) };
             foreach (var form in _forms)
             {
                 form.TopLevel = false;
@@ -40,7 +40,7 @@ namespace VRCGalleryManager
                 form.Hide();
             }
 
-            ShowForm(6);
+            ShowForm(7);
 
             if (Auth.LoggedIn || Auth.CookieLoaded)
             {
@@ -101,8 +101,9 @@ namespace VRCGalleryManager
             _switchSticker.BorderColor = index == 3 ? Color.FromArgb(255, 255, 255) : Color.FromArgb(5, 55, 66);
             _switchPrints.BorderColor = index == 4 ? Color.FromArgb(255, 255, 255) : Color.FromArgb(5, 55, 66);
 
-            _switchCreate.BorderColor = index == 5 ? Color.FromArgb(255, 255, 255) : Color.FromArgb(5, 55, 66);
-            _switchSettings.BorderColor = index == 6 ? Color.FromArgb(255, 255, 255) : Color.FromArgb(5, 55, 66);
+            _switchPicflow.BorderColor = index == 5 ? Color.FromArgb(255, 255, 255) : Color.FromArgb(5, 55, 66);
+            _switchCreate.BorderColor = index == 6 ? Color.FromArgb(255, 255, 255) : Color.FromArgb(5, 55, 66);
+            _switchSettings.BorderColor = index == 7 ? Color.FromArgb(255, 255, 255) : Color.FromArgb(5, 55, 66);
         }
 
         private void _switchIcons_Click(object sender, EventArgs e) => ShowForm(0);
@@ -111,8 +112,9 @@ namespace VRCGalleryManager
         private void _switchSticker_Click(object sender, EventArgs e) => ShowForm(3);
         private void _switchPrints_Click(object sender, EventArgs e) => ShowForm(4);
 
-        private void _switchCreate_Click(object sender, EventArgs e) => ShowForm(5);
-        private void _switchSettings_Click(object sender, EventArgs e) => ShowForm(6);
+        private void _switchPicflow_Click(object sender, EventArgs e) => ShowForm(5);
+        private void _switchCreate_Click(object sender, EventArgs e) => ShowForm(6);
+        private void _switchSettings_Click(object sender, EventArgs e) => ShowForm(7);
 
         //Recolor Bar
         [DllImport("dwmapi.dll")]

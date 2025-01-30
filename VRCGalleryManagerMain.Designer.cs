@@ -34,6 +34,7 @@ namespace VRCGalleryManager
             bannerIcon = new PictureBox();
             FormsPanel = new RoundedPanel();
             SwitchPanel = new RoundedPanel();
+            _switchPicflow = new RoundedButton();
             _switchCreate = new RoundedButton();
             _switchPrints = new RoundedButton();
             _switchSettings = new RoundedButton();
@@ -77,7 +78,7 @@ namespace VRCGalleryManager
             FormsPanel.BorderSize = 0;
             FormsPanel.Location = new Point(182, 12);
             FormsPanel.Name = "FormsPanel";
-            FormsPanel.Size = new Size(815, 487);
+            FormsPanel.Size = new Size(815, 565);
             FormsPanel.TabIndex = 5;
             // 
             // SwitchPanel
@@ -88,6 +89,7 @@ namespace VRCGalleryManager
             SwitchPanel.BorderColor = Color.FromArgb(80, 80, 80);
             SwitchPanel.BorderRadius = 15;
             SwitchPanel.BorderSize = 0;
+            SwitchPanel.Controls.Add(_switchPicflow);
             SwitchPanel.Controls.Add(_switchCreate);
             SwitchPanel.Controls.Add(_switchPrints);
             SwitchPanel.Controls.Add(_switchSettings);
@@ -99,8 +101,36 @@ namespace VRCGalleryManager
             SwitchPanel.Margin = new Padding(5);
             SwitchPanel.Name = "SwitchPanel";
             SwitchPanel.Padding = new Padding(5);
-            SwitchPanel.Size = new Size(157, 329);
+            SwitchPanel.Size = new Size(157, 407);
             SwitchPanel.TabIndex = 6;
+            // 
+            // _switchPicflow
+            // 
+            _switchPicflow.BackColor = Color.FromArgb(7, 36, 43);
+            _switchPicflow.BackgroundColor = Color.FromArgb(7, 36, 43);
+            _switchPicflow.BorderColor = Color.FromArgb(5, 55, 66);
+            _switchPicflow.BorderRadius = 10;
+            _switchPicflow.BorderSize = 2;
+            _switchPicflow.Dock = DockStyle.Bottom;
+            _switchPicflow.FlatAppearance.BorderSize = 0;
+            _switchPicflow.FlatStyle = FlatStyle.Flat;
+            _switchPicflow.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
+            _switchPicflow.ForeColor = Color.FromArgb(106, 227, 249);
+            _switchPicflow.Location = new Point(5, 282);
+            _switchPicflow.Name = "_switchPicflow";
+            _switchPicflow.Size = new Size(147, 40);
+            _switchPicflow.SvgAlignment = ContentAlignment.MiddleLeft;
+            _switchPicflow.SvgColor = Color.FromArgb(106, 227, 249);
+            _switchPicflow.SvgContent = resources.GetString("_switchPicflow.SvgContent");
+            _switchPicflow.SvgOffset = new Point(10, 0);
+            _switchPicflow.SvgPadding = new Padding(0);
+            _switchPicflow.SvgResource = "grid_svgrepo_com";
+            _switchPicflow.SvgSize = new Size(25, 25);
+            _switchPicflow.TabIndex = 8;
+            _switchPicflow.Text = "Picflow";
+            _switchPicflow.TextColor = Color.FromArgb(106, 227, 249);
+            _switchPicflow.UseVisualStyleBackColor = false;
+            _switchPicflow.Click += _switchPicflow_Click;
             // 
             // _switchCreate
             // 
@@ -114,7 +144,7 @@ namespace VRCGalleryManager
             _switchCreate.FlatStyle = FlatStyle.Flat;
             _switchCreate.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
             _switchCreate.ForeColor = Color.FromArgb(106, 227, 249);
-            _switchCreate.Location = new Point(5, 244);
+            _switchCreate.Location = new Point(5, 322);
             _switchCreate.Name = "_switchCreate";
             _switchCreate.Size = new Size(147, 40);
             _switchCreate.SvgAlignment = ContentAlignment.MiddleLeft;
@@ -170,7 +200,7 @@ namespace VRCGalleryManager
             _switchSettings.FlatStyle = FlatStyle.Flat;
             _switchSettings.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
             _switchSettings.ForeColor = Color.FromArgb(106, 227, 249);
-            _switchSettings.Location = new Point(5, 284);
+            _switchSettings.Location = new Point(5, 362);
             _switchSettings.Name = "_switchSettings";
             _switchSettings.Size = new Size(147, 40);
             _switchSettings.SvgAlignment = ContentAlignment.MiddleLeft;
@@ -397,7 +427,7 @@ namespace VRCGalleryManager
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(15, 17, 19);
-            ClientSize = new Size(1009, 511);
+            ClientSize = new Size(1009, 589);
             Controls.Add(badgeBox3);
             Controls.Add(badgeBox2);
             Controls.Add(badgeBox1);
@@ -438,5 +468,6 @@ namespace VRCGalleryManager
         private RoundedPictureBox badgeBox1;
         private RoundedPictureBox badgeBox2;
         private RoundedPictureBox badgeBox3;
+        private RoundedButton _switchPicflow;
     }
 }

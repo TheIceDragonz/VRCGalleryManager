@@ -21,6 +21,7 @@ namespace VRCGalleryManager.Forms.UIComponents
                 {
                     "open" => Color.FromArgb(96, 159, 255),
                     "delete" => Color.FromArgb(255, 114, 114),
+                    "picflowupload" => Color.FromArgb(100, 200, 100),
                     _ => Color.Gray
                 },
                 ForeColor = Color.White,
@@ -32,6 +33,7 @@ namespace VRCGalleryManager.Forms.UIComponents
             {
                 "open" => nameof(Resources.backward_svgrepo_com),
                 "delete" => nameof(Resources.delete_svgrepo_com),
+                "picflowupload" => nameof(Resources.arrow_download_svgrepo_com),
                 _ => null
             };
 

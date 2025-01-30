@@ -51,6 +51,9 @@
     <Compile Update="Forms\icons.Designer.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Update="Forms\Picflow.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Update="Properties\Resources.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
