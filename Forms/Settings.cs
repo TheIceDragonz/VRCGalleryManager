@@ -1,5 +1,7 @@
-﻿using VRCGalleryManager.Core;
+﻿using System.Diagnostics;
+using VRCGalleryManager.Core;
 using VRChat.API.Model;
+using NotificationType = VRCGalleryManager.Core.NotificationType;
 
 namespace VRCGalleryManager.Forms
 {
@@ -21,6 +23,15 @@ namespace VRCGalleryManager.Forms
             this.Auth = Auth;
 
             checkToken();
+        }
+
+        protected override void OnVisibleChanged(EventArgs e)
+        {
+            base.OnVisibleChanged(e);
+            if (this.Visible)
+            {
+                UpdateCacheInfo();
+            }
         }
 
         private void LoginButton(object sender, EventArgs e)
@@ -88,6 +99,98 @@ namespace VRCGalleryManager.Forms
                     _vrcLoginLabel.Text = ex.ToString();
                 }
             }
+        }
+
+        private void _openCacheFolder_Click(object sender, EventArgs e)
+        {
+            string cacheFolderPath = Path.Combine(Path.GetTempPath(), "VRCGalleryManager");
+            if (Directory.Exists(cacheFolderPath))
+            {
+                Process.Start("explorer.exe", cacheFolderPath);
+            }
+            else
+            {
+                NotificationManager.ShowNotification("Cache folder does not exist.", "Error", NotificationType.Error);
+            }
+        }
+
+        private void _openVrchatLogs_Click(object sender, EventArgs e)
+        {
+            string vrchatLogPath = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData).Replace("Local", "LocalLow"),
+                "VRChat",
+                "VRChat");
+
+            if (Directory.Exists(vrchatLogPath))
+            {
+                Process.Start("explorer.exe", vrchatLogPath);
+            }
+            else
+            {
+                NotificationManager.ShowNotification("VRChat logs folder does not exist.", "Error", NotificationType.Error);
+            }
+        }
+
+        private void _clearAllCacheFiles_Click(object sender, EventArgs e)
+        {
+            string cacheFolderPath = Path.Combine(Path.GetTempPath(), "VRCGalleryManager");
+
+            if (!Directory.Exists(cacheFolderPath))
+            {
+                NotificationManager.ShowNotification("Cache folder does not exist.", "Error", NotificationType.Error);
+                return;
+            }
+
+            try
+            {
+                foreach (string file in Directory.GetFiles(cacheFolderPath))
+                {
+                    System.IO.File.Delete(file);
+                }
+                NotificationManager.ShowNotification("All cache files have been successfully deleted!", "Success", NotificationType.Success);
+            }
+            catch (Exception ex)
+            {
+                NotificationManager.ShowNotification($"Error clearing cache files: {ex.Message}", "Error", NotificationType.Success);
+            }
+
+            UpdateCacheInfo();
+        }
+
+        private void UpdateCacheInfo()
+        {
+            string cacheFolder = Path.Combine(Path.GetTempPath(), "VRCGalleryManager");
+            if (!Directory.Exists(cacheFolder))
+            {
+                infoCacheLabel.Text = "Cache folder not found.";
+                return;
+            }
+
+            string[] files = Directory.GetFiles(cacheFolder);
+            long totalSize = files.Sum(file => new FileInfo(file).Length);
+            string formattedSize;
+            FormatSize(totalSize, out formattedSize);
+
+            infoCacheLabel.Text = "~ Info Cache ~\n" + 
+                                "\n" +
+                                $"Files: {files.Length}\n" +
+                                $"Total Size: {formattedSize}\n" +
+                                $"Cache Path: {cacheFolder}";
+        }
+
+        private void FormatSize(long bytes, out string formatted)
+        {
+            string[] units = { "B", "KB", "MB", "GB", "TB" };
+            double size = bytes;
+            int unitIndex = 0;
+
+            while (size >= 1024 && unitIndex < units.Length - 1)
+            {
+                size /= 1024;
+                unitIndex++;
+            }
+
+            formatted = $"{size:0.##} {units[unitIndex]}";
         }
     }
 }

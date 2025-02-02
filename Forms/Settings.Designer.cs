@@ -39,6 +39,10 @@ namespace VRCGalleryManager.Forms
             panel5 = new RoundedPanel();
             _username = new TextBox();
             label7 = new Label();
+            _openTempFile = new RoundedButton();
+            _openVrchatLogs = new RoundedButton();
+            _clearAllCacheFiles = new RoundedButton();
+            infoCacheLabel = new Label();
             _vrcLogin.SuspendLayout();
             panel1.SuspendLayout();
             panel5.SuspendLayout();
@@ -69,7 +73,7 @@ namespace VRCGalleryManager.Forms
             _vrcLogin.RowStyles.Add(new RowStyle(SizeType.Absolute, 35F));
             _vrcLogin.RowStyles.Add(new RowStyle(SizeType.Absolute, 35F));
             _vrcLogin.RowStyles.Add(new RowStyle(SizeType.Absolute, 35F));
-            _vrcLogin.Size = new Size(487, 136);
+            _vrcLogin.Size = new Size(820, 136);
             _vrcLogin.TabIndex = 7;
             // 
             // _loginButton
@@ -87,7 +91,14 @@ namespace VRCGalleryManager.Forms
             _loginButton.ForeColor = Color.FromArgb(106, 227, 249);
             _loginButton.Location = new Point(7, 100);
             _loginButton.Name = "_loginButton";
-            _loginButton.Size = new Size(473, 29);
+            _loginButton.Size = new Size(806, 29);
+            _loginButton.SvgAlignment = ContentAlignment.MiddleCenter;
+            _loginButton.SvgColor = Color.Black;
+            _loginButton.SvgContent = null;
+            _loginButton.SvgOffset = new Point(0, 0);
+            _loginButton.SvgPadding = new Padding(0);
+            _loginButton.SvgResource = null;
+            _loginButton.SvgSize = new Size(50, 50);
             _loginButton.TabIndex = 9;
             _loginButton.Text = "Login";
             _loginButton.TextColor = Color.FromArgb(106, 227, 249);
@@ -104,7 +115,7 @@ namespace VRCGalleryManager.Forms
             _vrcLoginLabel.Location = new Point(8, 4);
             _vrcLoginLabel.Margin = new Padding(4, 0, 4, 0);
             _vrcLoginLabel.Name = "_vrcLoginLabel";
-            _vrcLoginLabel.Size = new Size(471, 23);
+            _vrcLoginLabel.Size = new Size(804, 23);
             _vrcLoginLabel.TabIndex = 1;
             _vrcLoginLabel.Text = "VRChat Login";
             _vrcLoginLabel.TextAlign = ContentAlignment.MiddleLeft;
@@ -123,7 +134,7 @@ namespace VRCGalleryManager.Forms
             panel1.Location = new Point(4, 62);
             panel1.Margin = new Padding(0);
             panel1.Name = "panel1";
-            panel1.Size = new Size(479, 35);
+            panel1.Size = new Size(812, 35);
             panel1.TabIndex = 5;
             // 
             // _password
@@ -138,7 +149,7 @@ namespace VRCGalleryManager.Forms
             _password.Margin = new Padding(4, 3, 4, 3);
             _password.Name = "_password";
             _password.PasswordChar = '*';
-            _password.Size = new Size(357, 13);
+            _password.Size = new Size(690, 13);
             _password.TabIndex = 5;
             _password.UseSystemPasswordChar = true;
             // 
@@ -171,7 +182,7 @@ namespace VRCGalleryManager.Forms
             panel5.Location = new Point(4, 27);
             panel5.Margin = new Padding(0);
             panel5.Name = "panel5";
-            panel5.Size = new Size(479, 35);
+            panel5.Size = new Size(812, 35);
             panel5.TabIndex = 6;
             // 
             // _username
@@ -185,7 +196,7 @@ namespace VRCGalleryManager.Forms
             _username.Location = new Point(111, 11);
             _username.Margin = new Padding(4, 3, 4, 3);
             _username.Name = "_username";
-            _username.Size = new Size(357, 13);
+            _username.Size = new Size(690, 13);
             _username.TabIndex = 5;
             // 
             // label7
@@ -203,13 +214,112 @@ namespace VRCGalleryManager.Forms
             label7.Text = "Username:";
             label7.TextAlign = ContentAlignment.MiddleLeft;
             // 
+            // _openTempFile
+            // 
+            _openTempFile.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            _openTempFile.BackColor = Color.FromArgb(7, 36, 43);
+            _openTempFile.BackgroundColor = Color.FromArgb(7, 36, 43);
+            _openTempFile.BorderColor = Color.FromArgb(5, 55, 66);
+            _openTempFile.BorderRadius = 10;
+            _openTempFile.BorderSize = 2;
+            _openTempFile.FlatAppearance.BorderSize = 0;
+            _openTempFile.FlatStyle = FlatStyle.Flat;
+            _openTempFile.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
+            _openTempFile.ForeColor = Color.FromArgb(106, 227, 249);
+            _openTempFile.Location = new Point(66, 262);
+            _openTempFile.Name = "_openTempFile";
+            _openTempFile.Size = new Size(705, 40);
+            _openTempFile.SvgAlignment = ContentAlignment.MiddleCenter;
+            _openTempFile.SvgColor = Color.Black;
+            _openTempFile.SvgContent = null;
+            _openTempFile.SvgOffset = new Point(0, 0);
+            _openTempFile.SvgPadding = new Padding(0);
+            _openTempFile.SvgResource = null;
+            _openTempFile.SvgSize = new Size(50, 50);
+            _openTempFile.TabIndex = 8;
+            _openTempFile.Text = "Open Cache Folder";
+            _openTempFile.TextColor = Color.FromArgb(106, 227, 249);
+            _openTempFile.UseVisualStyleBackColor = false;
+            _openTempFile.Click += _openCacheFolder_Click;
+            // 
+            // _openVrchatLogs
+            // 
+            _openVrchatLogs.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            _openVrchatLogs.BackColor = Color.FromArgb(7, 36, 43);
+            _openVrchatLogs.BackgroundColor = Color.FromArgb(7, 36, 43);
+            _openVrchatLogs.BorderColor = Color.FromArgb(5, 55, 66);
+            _openVrchatLogs.BorderRadius = 10;
+            _openVrchatLogs.BorderSize = 2;
+            _openVrchatLogs.FlatAppearance.BorderSize = 0;
+            _openVrchatLogs.FlatStyle = FlatStyle.Flat;
+            _openVrchatLogs.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
+            _openVrchatLogs.ForeColor = Color.FromArgb(106, 227, 249);
+            _openVrchatLogs.Location = new Point(66, 216);
+            _openVrchatLogs.Name = "_openVrchatLogs";
+            _openVrchatLogs.Size = new Size(705, 40);
+            _openVrchatLogs.SvgAlignment = ContentAlignment.MiddleCenter;
+            _openVrchatLogs.SvgColor = Color.Black;
+            _openVrchatLogs.SvgContent = null;
+            _openVrchatLogs.SvgOffset = new Point(0, 0);
+            _openVrchatLogs.SvgPadding = new Padding(0);
+            _openVrchatLogs.SvgResource = null;
+            _openVrchatLogs.SvgSize = new Size(50, 50);
+            _openVrchatLogs.TabIndex = 9;
+            _openVrchatLogs.Text = "Open Vrchat Logs";
+            _openVrchatLogs.TextColor = Color.FromArgb(106, 227, 249);
+            _openVrchatLogs.UseVisualStyleBackColor = false;
+            _openVrchatLogs.Click += _openVrchatLogs_Click;
+            // 
+            // _clearAllCacheFiles
+            // 
+            _clearAllCacheFiles.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            _clearAllCacheFiles.BackColor = Color.FromArgb(7, 36, 43);
+            _clearAllCacheFiles.BackgroundColor = Color.FromArgb(7, 36, 43);
+            _clearAllCacheFiles.BorderColor = Color.FromArgb(5, 55, 66);
+            _clearAllCacheFiles.BorderRadius = 10;
+            _clearAllCacheFiles.BorderSize = 2;
+            _clearAllCacheFiles.FlatAppearance.BorderSize = 0;
+            _clearAllCacheFiles.FlatStyle = FlatStyle.Flat;
+            _clearAllCacheFiles.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
+            _clearAllCacheFiles.ForeColor = Color.FromArgb(255, 128, 128);
+            _clearAllCacheFiles.Location = new Point(66, 308);
+            _clearAllCacheFiles.Name = "_clearAllCacheFiles";
+            _clearAllCacheFiles.Size = new Size(705, 40);
+            _clearAllCacheFiles.SvgAlignment = ContentAlignment.MiddleCenter;
+            _clearAllCacheFiles.SvgColor = Color.Black;
+            _clearAllCacheFiles.SvgContent = null;
+            _clearAllCacheFiles.SvgOffset = new Point(0, 0);
+            _clearAllCacheFiles.SvgPadding = new Padding(0);
+            _clearAllCacheFiles.SvgResource = null;
+            _clearAllCacheFiles.SvgSize = new Size(50, 50);
+            _clearAllCacheFiles.TabIndex = 10;
+            _clearAllCacheFiles.Text = "Clear All Cache Files";
+            _clearAllCacheFiles.TextColor = Color.FromArgb(255, 128, 128);
+            _clearAllCacheFiles.UseVisualStyleBackColor = false;
+            _clearAllCacheFiles.Click += _clearAllCacheFiles_Click;
+            // 
+            // infoCacheLabel
+            // 
+            infoCacheLabel.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            infoCacheLabel.BackColor = Color.FromArgb(14, 16, 19);
+            infoCacheLabel.ForeColor = Color.FromArgb(106, 227, 249);
+            infoCacheLabel.Location = new Point(66, 361);
+            infoCacheLabel.Name = "infoCacheLabel";
+            infoCacheLabel.Size = new Size(705, 81);
+            infoCacheLabel.TabIndex = 11;
+            infoCacheLabel.Text = "Info\r";
+            // 
             // Settings
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             AutoScroll = true;
             BackColor = Color.FromArgb(5, 5, 5);
-            ClientSize = new Size(515, 387);
+            ClientSize = new Size(848, 546);
+            Controls.Add(infoCacheLabel);
+            Controls.Add(_clearAllCacheFiles);
+            Controls.Add(_openVrchatLogs);
+            Controls.Add(_openTempFile);
             Controls.Add(_vrcLogin);
             FormBorderStyle = FormBorderStyle.None;
             Margin = new Padding(4, 3, 4, 3);
@@ -235,5 +345,9 @@ namespace VRCGalleryManager.Forms
         public System.Windows.Forms.TextBox _password;
         public System.Windows.Forms.TextBox _username;
         public VRCGalleryManager.Design.RoundedButton _loginButton;
+        private RoundedButton _openTempFile;
+        private RoundedButton _openVrchatLogs;
+        private RoundedButton _clearAllCacheFiles;
+        private Label infoCacheLabel;
     }
 }

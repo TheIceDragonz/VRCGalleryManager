@@ -231,7 +231,7 @@ namespace VRCGalleryManager.Forms.Panels
                             string tempFolder = Path.Combine(Path.GetTempPath(), "VRCGalleryManager");
                             Directory.CreateDirectory(tempFolder);
 
-                            string localImagePath = Path.Combine(tempFolder, $"downloaded_image_{Guid.NewGuid()}.gif");
+                            string localImagePath = Path.Combine(tempFolder, $"downloaded_image_{Guid.NewGuid()}.png");
 
                             using (WebClient client = new WebClient())
                             {

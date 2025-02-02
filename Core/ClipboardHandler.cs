@@ -1,48 +1,67 @@
-﻿namespace VRCGalleryManager.Core
+﻿using System;
+using System.Drawing;
+using System.IO;
+using System.Net.Http;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace VRCGalleryManager.Core
 {
-    public class ClipboardHandler
+    public static class ClipboardHandler
     {
-        public static async void ClipboardDataImageOrLink(Button pasteButton, Action<string> UploadImage)
+        private static readonly string TempDirectory;
+
+        static ClipboardHandler()
+        {
+            TempDirectory = Path.Combine(Path.GetTempPath(), "VRCGalleryManager");
+            Directory.CreateDirectory(TempDirectory);
+        }
+
+        /// <summary>
+        /// Gestisce i dati presenti negli appunti, cercando di riconoscere un'immagine, un file o un link a immagine.
+        /// </summary>
+        /// <param name="pasteButton">Il bottone che attiva l'operazione, da disabilitare temporaneamente in alcuni casi.</param>
+        /// <param name="uploadImage">L'azione da eseguire una volta ottenuto il percorso dell'immagine.</param>
+        public static async Task ClipboardDataImageOrLink(Button pasteButton, Action<string> uploadImage)
         {
             IDataObject data = Clipboard.GetDataObject();
-            if (data != null)
+            if (data == null)
             {
-                if (data.GetDataPresent(DataFormats.Bitmap))
+                NotificationManager.ShowNotification("Clipboard is empty!", "Error", NotificationType.Error);
+                return;
+            }
+
+            if (data.GetDataPresent(DataFormats.Bitmap))
+            {
+                string savedPath = HandleBitmap(data);
+                if (!string.IsNullOrEmpty(savedPath))
                 {
-                    string savedPath = HandleBitmap(data);
+                    uploadImage(savedPath);
+                }
+            }
+            else if (data.GetDataPresent(DataFormats.FileDrop))
+            {
+                HandleFileDrop(data, pasteButton, uploadImage);
+            }
+            else if (data.GetDataPresent(DataFormats.Text))
+            {
+                string clipboardText = Clipboard.GetText();
+                if (await IsValidImageLinkAsync(clipboardText).ConfigureAwait(false))
+                {
+                    string savedPath = await SaveImageFromUrlAsync(clipboardText).ConfigureAwait(false);
                     if (!string.IsNullOrEmpty(savedPath))
                     {
-                        UploadImage(savedPath);
-                    }
-                }
-                else if (data.GetDataPresent(DataFormats.FileDrop))
-                {
-                    HandleFileDrop(data, pasteButton, UploadImage);
-                }
-                else if (data.GetDataPresent(DataFormats.Text))
-                {
-                    string clipboardText = Clipboard.GetText();
-                    if (await IsValidImageLink(clipboardText))
-                    {
-                        string savedPath = await SaveImageFromUrlAsync(clipboardText);
-                        if (!string.IsNullOrEmpty(savedPath))
-                        {
-                            UploadImage(savedPath);
-                        }
-                    }
-                    else
-                    {
-                        NotificationManager.ShowNotification("The link does not contain a valid image!", "Error", NotificationType.Error);
+                        uploadImage(savedPath);
                     }
                 }
                 else
                 {
-                    NotificationManager.ShowNotification("No image, file, or link found in the clipboard!", "Error", NotificationType.Error);
+                    NotificationManager.ShowNotification("The link does not contain a valid image!", "Error", NotificationType.Error);
                 }
             }
             else
             {
-                NotificationManager.ShowNotification("Clipboard is empty!", "Error", NotificationType.Error);
+                NotificationManager.ShowNotification("No image, file, or link found in the clipboard!", "Error", NotificationType.Error);
             }
         }
 
@@ -50,15 +69,18 @@
         {
             try
             {
-                var image = (Image)data.GetData(DataFormats.Bitmap);
-
-                string directoryPath = Path.Combine(Path.GetTempPath(), "VRCGalleryManager");
-                Directory.CreateDirectory(directoryPath);
-                string tempPath = Path.Combine(directoryPath, $"Pasted-Image_{Guid.NewGuid()}.png");
-
-                image.Save(tempPath, System.Drawing.Imaging.ImageFormat.Png);
-                NotificationManager.ShowNotification("Image pasted and saved successfully!", "Paste Image", NotificationType.Success);
-                return tempPath;
+                if (data.GetData(DataFormats.Bitmap) is Image image)
+                {
+                    string filePath = GetTempFilePath("Pasted-Image");
+                    image.Save(filePath, System.Drawing.Imaging.ImageFormat.Png);
+                    NotificationManager.ShowNotification("Image pasted and saved successfully!", "Paste Image", NotificationType.Success);
+                    return filePath;
+                }
+                else
+                {
+                    NotificationManager.ShowNotification("No valid image found in clipboard data!", "Error", NotificationType.Error);
+                    return null;
+                }
             }
             catch (Exception ex)
             {
@@ -67,24 +89,30 @@
             }
         }
 
-        private static void HandleFileDrop(IDataObject data, Button pasteButton, Action<string> UploadImage)
+        private static void HandleFileDrop(IDataObject data, Button pasteButton, Action<string> uploadImage)
         {
-            string[] files = (string[])data.GetData(DataFormats.FileDrop);
-            if (files.Length > 0)
+            if (data.GetData(DataFormats.FileDrop) is string[] files && files.Length > 0)
             {
-                pasteButton.Enabled = false;
-                UploadImage(files[0]);
-                pasteButton.Enabled = true;
+                try
+                {
+                    pasteButton.Enabled = false;
+                    uploadImage(files[0]);
+                }
+                finally
+                {
+                    pasteButton.Enabled = true;
+                }
             }
         }
 
-        private static async Task<bool> IsValidImageLink(string url)
+        private static async Task<bool> IsValidImageLinkAsync(string url)
         {
             try
             {
                 using (HttpClient client = new HttpClient())
                 {
-                    HttpResponseMessage response = await client.SendAsync(new HttpRequestMessage(HttpMethod.Head, url));
+                    var request = new HttpRequestMessage(HttpMethod.Head, url);
+                    HttpResponseMessage response = await client.SendAsync(request).ConfigureAwait(false);
                     if (response.IsSuccessStatusCode && response.Content.Headers.ContentType != null)
                     {
                         string mimeType = response.Content.Headers.ContentType.MediaType;
@@ -94,7 +122,7 @@
             }
             catch
             {
-
+                // Se si verifica un'eccezione, consideriamo il link non valido.
             }
             return false;
         }
@@ -105,26 +133,20 @@
             {
                 using (HttpClient client = new HttpClient())
                 {
-                    HttpResponseMessage response = await client.GetAsync(url);
+                    HttpResponseMessage response = await client.GetAsync(url).ConfigureAwait(false);
                     if (response.IsSuccessStatusCode && response.Content.Headers.ContentType != null)
                     {
                         string mimeType = response.Content.Headers.ContentType.MediaType;
                         if (mimeType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
                         {
-                            string directoryPath = Path.Combine(Path.GetTempPath(), "VRCGalleryManager");
-                            Directory.CreateDirectory(directoryPath);
-                            string tempPath = Path.Combine(directoryPath, $"Downloaded-Image_{Guid.NewGuid()}.png");
-
-                            using (var stream = await response.Content.ReadAsStreamAsync())
+                            string filePath = GetTempFilePath("Downloaded-Image");
+                            using (Stream stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
+                            using (Image image = Image.FromStream(stream))
                             {
-                                using (var image = Image.FromStream(stream))
-                                {
-                                    image.Save(tempPath, System.Drawing.Imaging.ImageFormat.Png);
-                                }
+                                image.Save(filePath, System.Drawing.Imaging.ImageFormat.Png);
                             }
-
                             NotificationManager.ShowNotification("Image downloaded and saved successfully!", "Download Image", NotificationType.Success);
-                            return tempPath;
+                            return filePath;
                         }
                     }
                 }
@@ -134,6 +156,11 @@
                 NotificationManager.ShowNotification($"Error downloading image: {ex.Message}", "Error", NotificationType.Error);
             }
             return null;
+        }
+
+        private static string GetTempFilePath(string prefix)
+        {
+            return Path.Combine(TempDirectory, $"{prefix}_{Guid.NewGuid()}.png");
         }
     }
 }
