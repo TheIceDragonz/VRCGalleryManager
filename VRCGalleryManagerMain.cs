@@ -31,7 +31,18 @@ namespace VRCGalleryManager
             Auth = VRCAuth.Instance();
             Auth.LoadCookies();
 
-            _forms = new Form[] { new Icons(Auth), new Gallery(Auth), new Emoji(Auth), new Sticker(Auth), new Prints(Auth), new Picflow(Auth),  new Create(Auth), new Settings(Auth) };
+            _forms = new Form[]
+            {
+                new Icons(Auth),
+                new Gallery(Auth),
+                new Emoji(Auth),
+                new Sticker(Auth),
+                new Prints(Auth),
+
+                new Picflow(Auth),
+                new Create(Auth),
+                new Settings(Auth, this)
+            };
             foreach (var form in _forms)
             {
                 form.TopLevel = false;
@@ -44,10 +55,13 @@ namespace VRCGalleryManager
 
             if (Auth.LoggedIn || Auth.CookieLoaded)
             {
-                ProfileImage();
+                _ = ProfileImage();
             }
 
-            //Recolor Bar
+            ApplyRecolorBar();
+        }
+        private void ApplyRecolorBar()
+        {
             int color = Color.FromArgb(5, 5, 5).ToArgb() & 0xFFFFFF;
             DwmSetWindowAttribute(this.Handle, 35, ref color, 4);
         }
@@ -115,6 +129,17 @@ namespace VRCGalleryManager
         private void _switchPicflow_Click(object sender, EventArgs e) => ShowForm(5);
         private void _switchCreate_Click(object sender, EventArgs e) => ShowForm(6);
         private void _switchSettings_Click(object sender, EventArgs e) => ShowForm(7);
+
+        public void SetFeatureControlsEnabled(bool enabled)
+        {
+            _switchIcons.Enabled = enabled;
+            _switchPhotos.Enabled = enabled;
+            _switchEmoji.Enabled = enabled;
+            _switchSticker.Enabled = enabled;
+            _switchPrints.Enabled = enabled;
+            _switchPicflow.Enabled = enabled;
+            _switchCreate.Enabled = enabled;
+        }
 
         //Recolor Bar
         [DllImport("dwmapi.dll")]

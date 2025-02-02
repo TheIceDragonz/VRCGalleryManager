@@ -105,7 +105,7 @@ namespace VRCGalleryManager.Forms
             _loginButton.Text = "Login";
             _loginButton.TextColor = Color.FromArgb(106, 227, 249);
             _loginButton.UseVisualStyleBackColor = false;
-            _loginButton.Click += LoginButton;
+            _loginButton.Click += LoginButton_Click;
             // 
             // _vrcLoginLabel
             // 

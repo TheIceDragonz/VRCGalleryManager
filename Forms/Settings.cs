@@ -4,27 +4,28 @@ using System.Text.Json;
 using VRCGalleryManager.Core;
 using VRChat.API.Model;
 using NotificationType = VRCGalleryManager.Core.NotificationType;
+using File = System.IO.File;
 
 namespace VRCGalleryManager.Forms
 {
     public partial class Settings : Form
     {
         private VRCAuth Auth;
-        public static int MaxDataPages = 10;
-        private string[] _allFiles = new string[0];
+        private MainPanel _mainPanel;
 
         public static string UserId = "";
         public static string UserIconImage = "";
         public static string UserBannerImage = "";
         public static List<string> Badges = new List<string>();
 
-        public Settings(VRCAuth Auth)
+        public Settings(VRCAuth Auth, MainPanel mainPanel)
         {
             InitializeComponent();
 
             this.Auth = Auth;
+            _mainPanel = mainPanel;
 
-            checkToken();
+            CheckToken();
         }
 
         protected override void OnVisibleChanged(EventArgs e)
@@ -36,70 +37,114 @@ namespace VRCGalleryManager.Forms
             }
         }
 
-        private void LoginButton(object sender, EventArgs e)
+        private async void LoginButton_Click(object sender, EventArgs e)
         {
-            if (!(Auth.LoggedIn || Auth.CookieLoaded))
+            if (!Auth.LoggedIn && !Auth.CookieLoaded)
             {
-                Auth.VRCAuthentication(_username.Text, _password.Text);
-                checkToken();
+                try
+                {
+                    ToggleLoginFields(true);
+                    Auth.VRCAuthentication(_username.Text, _password.Text);
+                    CheckToken();
 
-                return;
+                    _mainPanel.SetFeatureControlsEnabled(true);
+                }
+                catch (Exception ex)
+                {
+                    NotificationManager.ShowNotification("Login error: " + ex.Message, "Login Failed", NotificationType.Error);
+                    ToggleLoginFields(true);
+                }
             }
-
-            if (Auth.LoggedIn || Auth.CookieLoaded)
+            else
             {
-                Auth.AuthApi.Logout();
-                System.IO.File.Delete(VRCAuth.tokenFilePath);
-
-                _username.Enabled = true;
-                _password.Enabled = true;
-
-                _username.Text = "";
-                _password.Text = "";
-
-                _loginButton.Text = "Login";
-                _loginButton.TextColor = Color.FromArgb(106, 227, 249);
-                _loginButton.BackColor = Color.FromArgb(7, 36, 43);
-
-                Auth.LoggedIn = false;
-                Auth.CookieLoaded = false;
-
-                (Application.OpenForms["MainPanel"] as MainPanel)?.ProfileImageRemover();
+                Logout();
             }
         }
 
-        private void checkToken()
+        private void Logout()
+        {
+            try
+            {
+                Auth.AuthApi.Logout();
+                if (File.Exists(VRCAuth.tokenFilePath))
+                {
+                    File.Delete(VRCAuth.tokenFilePath);
+                }
+                _mainPanel.SetFeatureControlsEnabled(false);
+            }
+            catch (Exception ex)
+            {
+                NotificationManager.ShowNotification("Logout error: " + ex.Message, "Logout Failed", NotificationType.Error);
+            }
+            finally
+            {
+                Auth.LoggedIn = false;
+                Auth.CookieLoaded = false;
+                _username.Text = "";
+                _password.Text = "";
+                ToggleLoginFields(true);
+                UpdateLoginButtonUI(false);
+                _mainPanel.ProfileImageRemover();
+            }
+        }
+
+        private async void CheckToken()
         {
             if (Auth.LoggedIn || Auth.CookieLoaded)
             {
                 try
                 {
-                    _username.Enabled = false;
-                    _password.Enabled = false;
-
-                    _loginButton.Text = "Logout";
-                    _loginButton.TextColor = Color.FromArgb(255, 128, 128);
-
+                    ToggleLoginFields(false);
+                    UpdateLoginButtonUI(true);
                     CurrentUser currentUser = Auth.AuthApi.GetCurrentUser();
-
                     _username.Text = currentUser.DisplayName;
                     _password.Text = "password";
-
                     UserId = currentUser.Id;
                     UserIconImage = currentUser.UserIcon;
-                    UserBannerImage = currentUser.ProfilePicOverrideThumbnail;
-                    if (string.IsNullOrEmpty(UserBannerImage)) UserBannerImage = currentUser.CurrentAvatarThumbnailImageUrl;
-                    foreach (var badge in currentUser.Badges) Badges.Add(badge.ToJson());
-
-                    (Application.OpenForms["MainPanel"] as MainPanel)?.ProfileImage();
+                    UserBannerImage = !string.IsNullOrEmpty(currentUser.ProfilePicOverrideThumbnail) ? currentUser.ProfilePicOverrideThumbnail : currentUser.CurrentAvatarThumbnailImageUrl;
+                    Badges.Clear();
+                    foreach (var badge in currentUser.Badges)
+                    {
+                        Badges.Add(badge.ToJson());
+                    }
+                    await _mainPanel.ProfileImage();
+                    _mainPanel.SetFeatureControlsEnabled(true);
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine(ex.ToString());
-
-                    _vrcLogin.BackColor = Color.IndianRed;
-                    _vrcLoginLabel.Text = ex.ToString();
+                    if (ex.Message.ToLower().Contains("expired"))
+                    {
+                        NotificationManager.ShowNotification("Token expired. Please log in again.", "Token Expired", NotificationType.Error);
+                        Logout();
+                    }
+                    else
+                    {
+                        _vrcLogin.BackColor = System.Drawing.Color.IndianRed;
+                        _vrcLoginLabel.Text = ex.Message;
+                        NotificationManager.ShowNotification("Token error: " + ex.Message, "Authentication Error", NotificationType.Error);
+                    }
                 }
+            }
+        }
+
+        private void ToggleLoginFields(bool enabled)
+        {
+            _username.Enabled = enabled;
+            _password.Enabled = enabled;
+        }
+
+        private void UpdateLoginButtonUI(bool loggedIn)
+        {
+            if (loggedIn)
+            {
+                _loginButton.Text = "Logout";
+                _loginButton.TextColor = System.Drawing.Color.FromArgb(255, 128, 128);
+            }
+            else
+            {
+                _loginButton.Text = "Login";
+                _loginButton.TextColor = System.Drawing.Color.FromArgb(106, 227, 249);
+                _loginButton.BackColor = System.Drawing.Color.FromArgb(7, 36, 43);
             }
         }
 
@@ -111,7 +156,6 @@ namespace VRCGalleryManager.Forms
             });
         }
 
-
         private async void _checkUpdate_Click(object sender, EventArgs e)
         {
             try
@@ -119,16 +163,13 @@ namespace VRCGalleryManager.Forms
                 using (var client = new HttpClient())
                 {
                     client.DefaultRequestHeaders.UserAgent.ParseAdd("VRCGalleryManager");
-
                     string apiUrl = "https://api.github.com/repos/TheIceDragonz/VRCGalleryManager/releases/latest";
                     string jsonResponse = await client.GetStringAsync(apiUrl);
-
                     using (JsonDocument doc = JsonDocument.Parse(jsonResponse))
                     {
                         JsonElement root = doc.RootElement;
                         string latestVersion = root.GetProperty("tag_name").GetString();
                         string localVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString();
-
                         if (!string.Equals(localVersion, latestVersion, StringComparison.OrdinalIgnoreCase))
                         {
                             DialogResult result = MessageBox.Show(
@@ -136,7 +177,6 @@ namespace VRCGalleryManager.Forms
                                 "Update Available",
                                 MessageBoxButtons.YesNo,
                                 MessageBoxIcon.Information);
-
                             if (result == DialogResult.Yes)
                             {
                                 Process.Start(new ProcessStartInfo("https://github.com/TheIceDragonz/VRCGalleryManager/releases")
@@ -158,7 +198,6 @@ namespace VRCGalleryManager.Forms
             }
         }
 
-
         private void _openCacheFolder_Click(object sender, EventArgs e)
         {
             string cacheFolderPath = Path.Combine(Path.GetTempPath(), "VRCGalleryManager");
@@ -178,7 +217,6 @@ namespace VRCGalleryManager.Forms
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData).Replace("Local", "LocalLow"),
                 "VRChat",
                 "VRChat");
-
             if (Directory.Exists(vrchatLogPath))
             {
                 Process.Start("explorer.exe", vrchatLogPath);
@@ -192,18 +230,16 @@ namespace VRCGalleryManager.Forms
         private void _clearAllCacheFiles_Click(object sender, EventArgs e)
         {
             string cacheFolderPath = Path.Combine(Path.GetTempPath(), "VRCGalleryManager");
-
             if (!Directory.Exists(cacheFolderPath))
             {
                 NotificationManager.ShowNotification("Cache folder does not exist.", "Error", NotificationType.Error);
                 return;
             }
-
             try
             {
                 foreach (string file in Directory.GetFiles(cacheFolderPath))
                 {
-                    System.IO.File.Delete(file);
+                    File.Delete(file);
                 }
                 NotificationManager.ShowNotification("All cache files have been successfully deleted!", "Success", NotificationType.Success);
             }
@@ -211,7 +247,6 @@ namespace VRCGalleryManager.Forms
             {
                 NotificationManager.ShowNotification($"Error clearing cache files: {ex.Message}", "Error", NotificationType.Success);
             }
-
             UpdateCacheInfo();
         }
 
@@ -223,17 +258,15 @@ namespace VRCGalleryManager.Forms
                 infoCacheLabel.Text = "Cache folder not found.";
                 return;
             }
-
             string[] files = Directory.GetFiles(cacheFolder);
             long totalSize = files.Sum(file => new FileInfo(file).Length);
             string formattedSize;
             FormatSize(totalSize, out formattedSize);
-
             infoCacheLabel.Text = "~ Info Cache ~\n" +
-                                "\n" +
-                                $"Files: {files.Length}\n" +
-                                $"Total Size: {formattedSize}\n" +
-                                $"Cache Path: {cacheFolder}";
+                                  "\n" +
+                                  $"Files: {files.Length}\n" +
+                                  $"Total Size: {formattedSize}\n" +
+                                  $"Cache Path: {cacheFolder}";
         }
 
         private void FormatSize(long bytes, out string formatted)
@@ -241,16 +274,12 @@ namespace VRCGalleryManager.Forms
             string[] units = { "B", "KB", "MB", "GB", "TB" };
             double size = bytes;
             int unitIndex = 0;
-
             while (size >= 1024 && unitIndex < units.Length - 1)
             {
                 size /= 1024;
                 unitIndex++;
             }
-
             formatted = $"{size:0.##} {units[unitIndex]}";
         }
-
-        
     }
 }

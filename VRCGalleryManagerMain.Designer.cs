@@ -112,6 +112,7 @@ namespace VRCGalleryManager
             _switchPicflow.BorderRadius = 10;
             _switchPicflow.BorderSize = 2;
             _switchPicflow.Dock = DockStyle.Bottom;
+            _switchPicflow.Enabled = false;
             _switchPicflow.FlatAppearance.BorderSize = 0;
             _switchPicflow.FlatStyle = FlatStyle.Flat;
             _switchPicflow.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
@@ -140,6 +141,7 @@ namespace VRCGalleryManager
             _switchCreate.BorderRadius = 10;
             _switchCreate.BorderSize = 2;
             _switchCreate.Dock = DockStyle.Bottom;
+            _switchCreate.Enabled = false;
             _switchCreate.FlatAppearance.BorderSize = 0;
             _switchCreate.FlatStyle = FlatStyle.Flat;
             _switchCreate.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
@@ -168,6 +170,7 @@ namespace VRCGalleryManager
             _switchPrints.BorderRadius = 10;
             _switchPrints.BorderSize = 2;
             _switchPrints.Dock = DockStyle.Top;
+            _switchPrints.Enabled = false;
             _switchPrints.FlatAppearance.BorderSize = 0;
             _switchPrints.FlatStyle = FlatStyle.Flat;
             _switchPrints.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
@@ -224,6 +227,7 @@ namespace VRCGalleryManager
             _switchSticker.BorderRadius = 10;
             _switchSticker.BorderSize = 2;
             _switchSticker.Dock = DockStyle.Top;
+            _switchSticker.Enabled = false;
             _switchSticker.FlatAppearance.BorderSize = 0;
             _switchSticker.FlatStyle = FlatStyle.Flat;
             _switchSticker.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
@@ -252,6 +256,7 @@ namespace VRCGalleryManager
             _switchEmoji.BorderRadius = 10;
             _switchEmoji.BorderSize = 2;
             _switchEmoji.Dock = DockStyle.Top;
+            _switchEmoji.Enabled = false;
             _switchEmoji.FlatAppearance.BorderSize = 0;
             _switchEmoji.FlatStyle = FlatStyle.Flat;
             _switchEmoji.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
@@ -280,6 +285,7 @@ namespace VRCGalleryManager
             _switchPhotos.BorderRadius = 10;
             _switchPhotos.BorderSize = 2;
             _switchPhotos.Dock = DockStyle.Top;
+            _switchPhotos.Enabled = false;
             _switchPhotos.FlatAppearance.BorderSize = 0;
             _switchPhotos.FlatStyle = FlatStyle.Flat;
             _switchPhotos.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
@@ -308,6 +314,7 @@ namespace VRCGalleryManager
             _switchIcons.BorderRadius = 10;
             _switchIcons.BorderSize = 2;
             _switchIcons.Dock = DockStyle.Top;
+            _switchIcons.Enabled = false;
             _switchIcons.FlatAppearance.BorderSize = 0;
             _switchIcons.FlatStyle = FlatStyle.Flat;
             _switchIcons.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
