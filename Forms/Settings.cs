@@ -46,8 +46,6 @@ namespace VRCGalleryManager.Forms
                     ToggleLoginFields(true);
                     Auth.VRCAuthentication(_username.Text, _password.Text);
                     CheckToken();
-
-                    _mainPanel.SetFeatureControlsEnabled(true);
                 }
                 catch (Exception ex)
                 {
@@ -119,7 +117,7 @@ namespace VRCGalleryManager.Forms
                     }
                     else
                     {
-                        _vrcLogin.BackColor = System.Drawing.Color.IndianRed;
+                        _vrcLogin.BackColor = Color.IndianRed;
                         _vrcLoginLabel.Text = ex.Message;
                         NotificationManager.ShowNotification("Token error: " + ex.Message, "Authentication Error", NotificationType.Error);
                     }
@@ -138,13 +136,13 @@ namespace VRCGalleryManager.Forms
             if (loggedIn)
             {
                 _loginButton.Text = "Logout";
-                _loginButton.TextColor = System.Drawing.Color.FromArgb(255, 128, 128);
+                _loginButton.TextColor = Color.FromArgb(255, 128, 128);
             }
             else
             {
                 _loginButton.Text = "Login";
-                _loginButton.TextColor = System.Drawing.Color.FromArgb(106, 227, 249);
-                _loginButton.BackColor = System.Drawing.Color.FromArgb(7, 36, 43);
+                _loginButton.TextColor = Color.FromArgb(106, 227, 249);
+                _loginButton.BackColor = Color.FromArgb(7, 36, 43);
             }
         }
 
