@@ -43,6 +43,8 @@ namespace VRCGalleryManager.Forms
             _openVrchatLogs = new RoundedButton();
             _clearAllCacheFiles = new RoundedButton();
             infoCacheLabel = new Label();
+            _openGitHubPage = new RoundedButton();
+            _checkUpdate = new RoundedButton();
             _vrcLogin.SuspendLayout();
             panel1.SuspendLayout();
             panel5.SuspendLayout();
@@ -226,7 +228,7 @@ namespace VRCGalleryManager.Forms
             _openTempFile.FlatStyle = FlatStyle.Flat;
             _openTempFile.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
             _openTempFile.ForeColor = Color.FromArgb(106, 227, 249);
-            _openTempFile.Location = new Point(66, 262);
+            _openTempFile.Location = new Point(71, 343);
             _openTempFile.Name = "_openTempFile";
             _openTempFile.Size = new Size(705, 40);
             _openTempFile.SvgAlignment = ContentAlignment.MiddleCenter;
@@ -254,7 +256,7 @@ namespace VRCGalleryManager.Forms
             _openVrchatLogs.FlatStyle = FlatStyle.Flat;
             _openVrchatLogs.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
             _openVrchatLogs.ForeColor = Color.FromArgb(106, 227, 249);
-            _openVrchatLogs.Location = new Point(66, 216);
+            _openVrchatLogs.Location = new Point(71, 297);
             _openVrchatLogs.Name = "_openVrchatLogs";
             _openVrchatLogs.Size = new Size(705, 40);
             _openVrchatLogs.SvgAlignment = ContentAlignment.MiddleCenter;
@@ -282,7 +284,7 @@ namespace VRCGalleryManager.Forms
             _clearAllCacheFiles.FlatStyle = FlatStyle.Flat;
             _clearAllCacheFiles.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
             _clearAllCacheFiles.ForeColor = Color.FromArgb(255, 128, 128);
-            _clearAllCacheFiles.Location = new Point(66, 308);
+            _clearAllCacheFiles.Location = new Point(71, 389);
             _clearAllCacheFiles.Name = "_clearAllCacheFiles";
             _clearAllCacheFiles.Size = new Size(705, 40);
             _clearAllCacheFiles.SvgAlignment = ContentAlignment.MiddleCenter;
@@ -303,11 +305,67 @@ namespace VRCGalleryManager.Forms
             infoCacheLabel.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             infoCacheLabel.BackColor = Color.FromArgb(14, 16, 19);
             infoCacheLabel.ForeColor = Color.FromArgb(106, 227, 249);
-            infoCacheLabel.Location = new Point(66, 361);
+            infoCacheLabel.Location = new Point(71, 442);
             infoCacheLabel.Name = "infoCacheLabel";
             infoCacheLabel.Size = new Size(705, 81);
             infoCacheLabel.TabIndex = 11;
             infoCacheLabel.Text = "Info\r";
+            // 
+            // _openGitHubPage
+            // 
+            _openGitHubPage.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            _openGitHubPage.BackColor = Color.FromArgb(7, 36, 43);
+            _openGitHubPage.BackgroundColor = Color.FromArgb(7, 36, 43);
+            _openGitHubPage.BorderColor = Color.FromArgb(5, 55, 66);
+            _openGitHubPage.BorderRadius = 10;
+            _openGitHubPage.BorderSize = 2;
+            _openGitHubPage.FlatAppearance.BorderSize = 0;
+            _openGitHubPage.FlatStyle = FlatStyle.Flat;
+            _openGitHubPage.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
+            _openGitHubPage.ForeColor = Color.FromArgb(106, 227, 249);
+            _openGitHubPage.Location = new Point(71, 179);
+            _openGitHubPage.Name = "_openGitHubPage";
+            _openGitHubPage.Size = new Size(705, 40);
+            _openGitHubPage.SvgAlignment = ContentAlignment.MiddleCenter;
+            _openGitHubPage.SvgColor = Color.Black;
+            _openGitHubPage.SvgContent = null;
+            _openGitHubPage.SvgOffset = new Point(0, 0);
+            _openGitHubPage.SvgPadding = new Padding(0);
+            _openGitHubPage.SvgResource = null;
+            _openGitHubPage.SvgSize = new Size(50, 50);
+            _openGitHubPage.TabIndex = 12;
+            _openGitHubPage.Text = "GitHub Page";
+            _openGitHubPage.TextColor = Color.FromArgb(106, 227, 249);
+            _openGitHubPage.UseVisualStyleBackColor = false;
+            _openGitHubPage.Click += _openGitHubPage_Click;
+            // 
+            // _checkUpdate
+            // 
+            _checkUpdate.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            _checkUpdate.BackColor = Color.FromArgb(7, 36, 43);
+            _checkUpdate.BackgroundColor = Color.FromArgb(7, 36, 43);
+            _checkUpdate.BorderColor = Color.FromArgb(5, 55, 66);
+            _checkUpdate.BorderRadius = 10;
+            _checkUpdate.BorderSize = 2;
+            _checkUpdate.FlatAppearance.BorderSize = 0;
+            _checkUpdate.FlatStyle = FlatStyle.Flat;
+            _checkUpdate.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
+            _checkUpdate.ForeColor = Color.FromArgb(255, 255, 128);
+            _checkUpdate.Location = new Point(71, 225);
+            _checkUpdate.Name = "_checkUpdate";
+            _checkUpdate.Size = new Size(705, 40);
+            _checkUpdate.SvgAlignment = ContentAlignment.MiddleCenter;
+            _checkUpdate.SvgColor = Color.Black;
+            _checkUpdate.SvgContent = null;
+            _checkUpdate.SvgOffset = new Point(0, 0);
+            _checkUpdate.SvgPadding = new Padding(0);
+            _checkUpdate.SvgResource = null;
+            _checkUpdate.SvgSize = new Size(50, 50);
+            _checkUpdate.TabIndex = 13;
+            _checkUpdate.Text = "Check Update";
+            _checkUpdate.TextColor = Color.FromArgb(255, 255, 128);
+            _checkUpdate.UseVisualStyleBackColor = false;
+            _checkUpdate.Click += _checkUpdate_Click;
             // 
             // Settings
             // 
@@ -316,6 +374,8 @@ namespace VRCGalleryManager.Forms
             AutoScroll = true;
             BackColor = Color.FromArgb(5, 5, 5);
             ClientSize = new Size(848, 546);
+            Controls.Add(_checkUpdate);
+            Controls.Add(_openGitHubPage);
             Controls.Add(infoCacheLabel);
             Controls.Add(_clearAllCacheFiles);
             Controls.Add(_openVrchatLogs);
@@ -349,5 +409,7 @@ namespace VRCGalleryManager.Forms
         private RoundedButton _openVrchatLogs;
         private RoundedButton _clearAllCacheFiles;
         private Label infoCacheLabel;
+        private RoundedButton _openGitHubPage;
+        private RoundedButton _checkUpdate;
     }
 }

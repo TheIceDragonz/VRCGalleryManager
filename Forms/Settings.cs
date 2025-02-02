@@ -1,4 +1,6 @@
 ﻿using System.Diagnostics;
+using System.Reflection;
+using System.Text.Json;
 using VRCGalleryManager.Core;
 using VRChat.API.Model;
 using NotificationType = VRCGalleryManager.Core.NotificationType;
@@ -101,6 +103,62 @@ namespace VRCGalleryManager.Forms
             }
         }
 
+        private void _openGitHubPage_Click(object sender, EventArgs e)
+        {
+            Process.Start(new ProcessStartInfo("https://github.com/TheIceDragonz/VRCGalleryManager")
+            {
+                UseShellExecute = true
+            });
+        }
+
+
+        private async void _checkUpdate_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                using (var client = new HttpClient())
+                {
+                    client.DefaultRequestHeaders.UserAgent.ParseAdd("VRCGalleryManager");
+
+                    string apiUrl = "https://api.github.com/repos/TheIceDragonz/VRCGalleryManager/releases/latest";
+                    string jsonResponse = await client.GetStringAsync(apiUrl);
+
+                    using (JsonDocument doc = JsonDocument.Parse(jsonResponse))
+                    {
+                        JsonElement root = doc.RootElement;
+                        string latestVersion = root.GetProperty("tag_name").GetString();
+                        string localVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString();
+
+                        if (!string.Equals(localVersion, latestVersion, StringComparison.OrdinalIgnoreCase))
+                        {
+                            DialogResult result = MessageBox.Show(
+                                $"A new version ({latestVersion}) is available.\nYou are currently using version {localVersion}.\n\nDo you want to open the releases page?",
+                                "Update Available",
+                                MessageBoxButtons.YesNo,
+                                MessageBoxIcon.Information);
+
+                            if (result == DialogResult.Yes)
+                            {
+                                Process.Start(new ProcessStartInfo("https://github.com/TheIceDragonz/VRCGalleryManager/releases")
+                                {
+                                    UseShellExecute = true
+                                });
+                            }
+                        }
+                        else
+                        {
+                            NotificationManager.ShowNotification("You are using the latest version.", "No Update", NotificationType.Error);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                NotificationManager.ShowNotification("Error checking for updates:\n" + ex.Message, "Error", NotificationType.Error);
+            }
+        }
+
+
         private void _openCacheFolder_Click(object sender, EventArgs e)
         {
             string cacheFolderPath = Path.Combine(Path.GetTempPath(), "VRCGalleryManager");
@@ -171,7 +229,7 @@ namespace VRCGalleryManager.Forms
             string formattedSize;
             FormatSize(totalSize, out formattedSize);
 
-            infoCacheLabel.Text = "~ Info Cache ~\n" + 
+            infoCacheLabel.Text = "~ Info Cache ~\n" +
                                 "\n" +
                                 $"Files: {files.Length}\n" +
                                 $"Total Size: {formattedSize}\n" +
@@ -192,5 +250,7 @@ namespace VRCGalleryManager.Forms
 
             formatted = $"{size:0.##} {units[unitIndex]}";
         }
+
+        
     }
 }
