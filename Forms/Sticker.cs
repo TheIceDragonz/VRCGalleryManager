@@ -31,6 +31,8 @@ namespace VRCGalleryManager.Forms
 
         private async void StickerList()
         {
+            _refreshButton.Enabled = false;
+
             stickerPanel.Controls.Clear();
             stickerJson.Clear();
 
@@ -49,6 +51,8 @@ namespace VRCGalleryManager.Forms
             }
 
             UpdateCounter("");
+
+            _refreshButton.Enabled = true;
         }
 
         private async void uploadSticker_Click(object sender, EventArgs e)

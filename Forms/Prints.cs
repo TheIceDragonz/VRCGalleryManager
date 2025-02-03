@@ -30,6 +30,8 @@ namespace VRCGalleryManager.Forms
 
         private async void PrintsList()
         {
+            _refreshButton.Enabled = false;
+
             printsPanel.Controls.Clear();
             printsJson.Clear();
 
@@ -48,6 +50,8 @@ namespace VRCGalleryManager.Forms
             }
 
             UpdateCounter("");
+
+            _refreshButton.Enabled = true;
         }
 
         private async void uploadPrints_Click(object sender, EventArgs e)

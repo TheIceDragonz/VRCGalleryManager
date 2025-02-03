@@ -39,6 +39,8 @@ namespace VRCGalleryManager.Forms
 
         private async void EmojiList()
         {
+            _refreshButton.Enabled = false;
+
             emojiPanel.Controls.Clear();
             emojiJson.Clear();
 
@@ -61,6 +63,8 @@ namespace VRCGalleryManager.Forms
             }
 
             UpdateCounter("");
+
+            _refreshButton.Enabled = true;
         }
 
         private async void uploadEmoji_Click(object sender, EventArgs e)

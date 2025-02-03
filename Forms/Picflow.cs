@@ -29,6 +29,8 @@ namespace VRCGalleryManager.Forms
 
         private async void PicflowList()
         {
+            _refreshButton.Enabled = false;
+
             picflowPanel.Controls.Clear();
 
             var mediaItems = await ExtractAllStickersAsync();
@@ -41,6 +43,8 @@ namespace VRCGalleryManager.Forms
             }
 
             limitCounterLabel.Text = $"{imageCount} Stickers";
+
+            _refreshButton.Enabled = true;
         }
 
         private async Task<HashSet<string>> ExtractAllStickersAsync()

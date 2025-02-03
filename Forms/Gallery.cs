@@ -31,6 +31,8 @@ namespace VRCGalleryManager.Forms
 
         private async void GalleryList()
         {
+            _refreshButton.Enabled = false;
+
             galleryPanel.Controls.Clear();
             galleryJson.Clear();
 
@@ -49,6 +51,8 @@ namespace VRCGalleryManager.Forms
             }
 
             UpdateCounter("");
+
+            _refreshButton.Enabled = true;
         }
 
         private async void uploadGallery_Click(object sender, EventArgs e)

@@ -31,6 +31,8 @@ namespace VRCGalleryManager.Forms
 
         private async void IconsList()
         {
+            _refreshButton.Enabled = false;
+
             iconsPanel.Controls.Clear();
             iconsJson.Clear();
 
@@ -49,6 +51,8 @@ namespace VRCGalleryManager.Forms
             }
 
             UpdateCounter("");
+
+            _refreshButton.Enabled = true;
         }
 
         private async void uploadIcons_Click(object sender, EventArgs e)
