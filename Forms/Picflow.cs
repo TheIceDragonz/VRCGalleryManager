@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json.Linq;
+using System.Collections.Concurrent;
 using System.Text.RegularExpressions;
 using VRCGalleryManager.Core;
 using VRCGalleryManager.Core.DTO;
@@ -30,7 +31,7 @@ namespace VRCGalleryManager.Forms
         {
             picflowPanel.Controls.Clear();
 
-            var mediaItems = await ExtractLatestStickersAsync();
+            var mediaItems = await ExtractAllStickersAsync();
 
             imageCount = mediaItems.Count();
 
@@ -42,32 +43,42 @@ namespace VRCGalleryManager.Forms
             limitCounterLabel.Text = $"{imageCount} Stickers";
         }
 
-        private async Task<HashSet<string>> ExtractLatestStickersAsync()
+        private async Task<HashSet<string>> ExtractAllStickersAsync()
         {
-            string vrchatLogPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData).Replace("Local", "LocalLow"), "VRChat", "VRChat");
-            string logFile = Directory.GetFiles(vrchatLogPath, "output_log_*.txt").MaxBy(File.GetCreationTime);
+            string vrchatLogPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)
+                .Replace("Local", "LocalLow"), "VRChat", "VRChat");
 
-            if (logFile is null) return new();
+            string[] logFiles = Directory.GetFiles(vrchatLogPath, "output_log_*.txt");
 
-            try
+            if (logFiles.Length == 0) return new();
+
+            ConcurrentBag<string> allStickers = new();
+            Regex stickerRegex = new(@"\[Always\] \[StickersManager\] User .*? spawned sticker (file_[a-f0-9\-]+)");
+
+            await Parallel.ForEachAsync(logFiles, async (logFile, _) =>
             {
-                using FileStream fileStream = new(logFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-                using StreamReader reader = new(fileStream);
-                string logContent = await reader.ReadToEndAsync();
+                try
+                {
+                    using FileStream fileStream = new(logFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                    using StreamReader reader = new(fileStream);
+                    string logContent = await reader.ReadToEndAsync();
 
-                Regex stickerRegex = new(@"\[Always\] \[StickersManager\] User .*? spawned sticker (file_[a-f0-9\-]+)");
+                    var stickers = stickerRegex.Matches(logContent)
+                        .Select(m => m.Groups[1].Value)
+                        .Distinct();
 
-                var stickers = stickerRegex.Matches(logContent)
-                    .Select(m => m.Groups[1].Value)
-                    .Distinct()
-                    .ToHashSet();
+                    foreach (var sticker in stickers)
+                    {
+                        allStickers.Add(sticker);
+                    }
+                }
+                catch (IOException ex)
+                {
+                    Console.WriteLine($"Error opening the file {logFile}: {ex.Message}");
+                }
+            });
 
-                return stickers;
-            }
-            catch (IOException ex)
-            {
-                throw new Exception($"Error opening the file: {ex.Message}");
-            }
+            return allStickers.ToHashSet();
         }
     }
 }
