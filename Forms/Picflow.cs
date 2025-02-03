@@ -50,11 +50,21 @@ namespace VRCGalleryManager.Forms
         private async Task<HashSet<string>> ExtractAllStickersAsync()
         {
             string vrchatLogPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)
-                .Replace("Local", "LocalLow"), "VRChat", "VRChat");
+                   .Replace("Local", "LocalLow"), "VRChat", "VRChat");
 
             string[] logFiles = Directory.GetFiles(vrchatLogPath, "output_log_*.txt");
 
-            if (logFiles.Length == 0) return new();
+            string initialText = $"Found {logFiles.Length} log files";
+
+            if (logFiles.Length == 0)
+            {
+                await AnimateTextAsync(initialText);
+                return new HashSet<string>();
+            }
+            else
+            {
+                await AnimateTextAsync(initialText + " | Wait for the process...");
+            }
 
             ConcurrentBag<string> allStickers = new();
             Regex stickerRegex = new(@"\[Always\] \[StickersManager\] User .*? spawned sticker (file_[a-f0-9\-]+)");
@@ -82,7 +92,28 @@ namespace VRCGalleryManager.Forms
                 }
             });
 
+            await AnimateClearTextAsync();
+
             return allStickers.ToHashSet();
+        }
+
+        private async Task AnimateTextAsync(string text)
+        {
+            logLabel.Text = "";
+            foreach (char c in text)
+            {
+                logLabel.Text += c;
+                await Task.Delay(1);
+            }
+        }
+
+        private async Task AnimateClearTextAsync()
+        {
+            while (!string.IsNullOrEmpty(logLabel.Text))
+            {
+                logLabel.Text = logLabel.Text.Substring(0, logLabel.Text.Length - 1);
+                await Task.Delay(1);
+            }
         }
     }
 }

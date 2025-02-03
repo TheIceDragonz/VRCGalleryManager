@@ -33,6 +33,7 @@ namespace VRCGalleryManager.Forms
             picflowPanel = new FlowLayoutPanel();
             _refreshButton = new RoundedButton();
             limitCounterLabel = new Label();
+            logLabel = new Label();
             SuspendLayout();
             // 
             // picflowPanel
@@ -85,12 +86,23 @@ namespace VRCGalleryManager.Forms
             limitCounterLabel.Text = "0";
             limitCounterLabel.TextAlign = ContentAlignment.MiddleRight;
             // 
+            // logLabel
+            // 
+            logLabel.AutoSize = true;
+            logLabel.ForeColor = Color.FromArgb(106, 227, 249);
+            logLabel.Location = new Point(12, 17);
+            logLabel.Name = "logLabel";
+            logLabel.Size = new Size(27, 15);
+            logLabel.TabIndex = 7;
+            logLabel.Text = "Log";
+            // 
             // Picflow
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(5, 5, 5);
             ClientSize = new Size(802, 549);
+            Controls.Add(logLabel);
             Controls.Add(limitCounterLabel);
             Controls.Add(_refreshButton);
             Controls.Add(picflowPanel);
@@ -98,11 +110,13 @@ namespace VRCGalleryManager.Forms
             Name = "Picflow";
             Text = "picflow";
             ResumeLayout(false);
+            PerformLayout();
         }
 
         #endregion
         private FlowLayoutPanel picflowPanel;
         private RoundedButton _refreshButton;
         private Label limitCounterLabel;
+        private Label logLabel;
     }
 }
