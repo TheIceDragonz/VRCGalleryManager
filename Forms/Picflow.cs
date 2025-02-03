@@ -32,6 +32,7 @@ namespace VRCGalleryManager.Forms
             _refreshButton.Enabled = false;
 
             picflowPanel.Controls.Clear();
+            limitCounterLabel.Text = $"0 Stickers";
 
             var mediaItems = await ExtractAllStickersAsync();
 
@@ -44,46 +45,53 @@ namespace VRCGalleryManager.Forms
 
             limitCounterLabel.Text = $"{imageCount} Stickers";
 
+            await AnimateClearTextAsync();
+
             _refreshButton.Enabled = true;
         }
 
         private async Task<HashSet<string>> ExtractAllStickersAsync()
         {
-            string vrchatLogPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)
-                   .Replace("Local", "LocalLow"), "VRChat", "VRChat");
+            string vrchatLogPath = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData).Replace("Local", "LocalLow"),
+                "VRChat", "VRChat");
 
             string[] logFiles = Directory.GetFiles(vrchatLogPath, "output_log_*.txt");
 
-            string initialText = $"Found {logFiles.Length} log files";
-
             if (logFiles.Length == 0)
             {
-                await AnimateTextAsync(initialText);
+                await AnimateTextAsync("No data found");
                 return new HashSet<string>();
             }
             else
             {
-                await AnimateTextAsync(initialText + " | Wait for the process...");
+                await AnimateTextAsync($"Found data from VRChat | Wait for the process...");
             }
 
             ConcurrentBag<string> allStickers = new();
-            Regex stickerRegex = new(@"\[Always\] \[StickersManager\] User .*? spawned sticker (file_[a-f0-9\-]+)");
 
-            await Parallel.ForEachAsync(logFiles, async (logFile, _) =>
+            Regex stickerRegex = new(@"\[Always\] \[StickersManager\] User .*? spawned sticker (file_[a-f0-9\-]+)", RegexOptions.Compiled);
+
+            var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount };
+
+            await Parallel.ForEachAsync(logFiles, parallelOptions, async (logFile, cancellationToken) =>
             {
                 try
                 {
                     using FileStream fileStream = new(logFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
                     using StreamReader reader = new(fileStream);
-                    string logContent = await reader.ReadToEndAsync();
 
-                    var stickers = stickerRegex.Matches(logContent)
-                        .Select(m => m.Groups[1].Value)
-                        .Distinct();
-
-                    foreach (var sticker in stickers)
+                    string? line;
+                    while ((line = await reader.ReadLineAsync()) != null)
                     {
-                        allStickers.Add(sticker);
+                        foreach (Match match in stickerRegex.Matches(line))
+                        {
+                            if (match.Success)
+                            {
+                                string sticker = match.Groups[1].Value;
+                                allStickers.Add(sticker);
+                            }
+                        }
                     }
                 }
                 catch (IOException ex)
@@ -91,8 +99,6 @@ namespace VRCGalleryManager.Forms
                     Console.WriteLine($"Error opening the file {logFile}: {ex.Message}");
                 }
             });
-
-            await AnimateClearTextAsync();
 
             return allStickers.ToHashSet();
         }

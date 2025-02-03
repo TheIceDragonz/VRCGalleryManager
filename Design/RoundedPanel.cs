@@ -1,5 +1,8 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
+using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.Windows.Forms;
 
 namespace VRCGalleryManager.Design
 {
@@ -26,7 +29,7 @@ namespace VRCGalleryManager.Design
             get { return borderRadius; }
             set
             {
-                borderRadius = Math.Min(value, Height);
+                borderRadius = value;
                 Invalidate();
             }
         }
@@ -49,6 +52,18 @@ namespace VRCGalleryManager.Design
             set { BackColor = value; }
         }
 
+        public RoundedPanel()
+        {
+            Size = new Size(150, 150);
+            BackColor = Color.MediumSlateBlue;
+            this.Resize += RoundedPanel_Resize;
+        }
+
+        private void RoundedPanel_Resize(object sender, EventArgs e)
+        {
+            Invalidate();
+        }
+
         protected override void OnPaint(PaintEventArgs pevent)
         {
             base.OnPaint(pevent);
@@ -57,11 +72,15 @@ namespace VRCGalleryManager.Design
             Rectangle rectBorder = Rectangle.Inflate(rectSurface, -borderSize, -borderSize);
             int smoothSize = borderSize > 0 ? borderSize : 2;
 
-            if (borderRadius > 2)
+            int effectiveRadius = borderRadius;
+            if (effectiveRadius > Height)
+                effectiveRadius = Height;
+
+            if (effectiveRadius > 2)
             {
-                using (GraphicsPath pathSurface = GetFigurePath(rectSurface, borderRadius))
-                using (GraphicsPath pathBorder = GetFigurePath(rectBorder, borderRadius - borderSize))
-                using (Pen penSurface = new Pen(Parent.BackColor, smoothSize))
+                using (GraphicsPath pathSurface = GetFigurePath(rectSurface, effectiveRadius))
+                using (GraphicsPath pathBorder = GetFigurePath(rectBorder, effectiveRadius - borderSize))
+                using (Pen penSurface = new Pen(Parent?.BackColor ?? Color.Transparent, smoothSize))
                 using (Pen penBorder = new Pen(borderColor, borderSize))
                 {
                     pevent.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
@@ -89,13 +108,6 @@ namespace VRCGalleryManager.Design
             }
         }
 
-        public RoundedPanel()
-        {
-            Size = new Size(150, 150);
-            BackColor = Color.MediumSlateBlue;
-            Resize += Panel_Resize;
-        }
-
         private GraphicsPath GetFigurePath(Rectangle rect, float radius)
         {
             GraphicsPath path = new GraphicsPath();
@@ -112,7 +124,8 @@ namespace VRCGalleryManager.Design
         protected override void OnHandleCreated(EventArgs e)
         {
             base.OnHandleCreated(e);
-            Parent.BackColorChanged += Container_BackColorChanged;
+            if (Parent != null)
+                Parent.BackColorChanged += Container_BackColorChanged;
         }
 
         private void Container_BackColorChanged(object sender, EventArgs e)
@@ -120,16 +133,9 @@ namespace VRCGalleryManager.Design
             Invalidate();
         }
 
-        private void Panel_Resize(object sender, EventArgs e)
-        {
-            if (borderRadius > Height)
-                borderRadius = Height;
-        }
-
         protected override void OnResize(EventArgs e)
         {
             base.OnResize(e);
-
             Region = null;
             Invalidate();
         }

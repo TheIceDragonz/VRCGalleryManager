@@ -92,9 +92,9 @@ namespace VRCGalleryManager.Forms
             logLabel.ForeColor = Color.FromArgb(106, 227, 249);
             logLabel.Location = new Point(12, 17);
             logLabel.Name = "logLabel";
-            logLabel.Size = new Size(27, 15);
+            logLabel.Size = new Size(192, 15);
             logLabel.TabIndex = 7;
-            logLabel.Text = "Log";
+            logLabel.Text = "$\"Found {logFiles.Length} log files\"";
             // 
             // Picflow
             // 

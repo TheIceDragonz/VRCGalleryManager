@@ -32,7 +32,7 @@ namespace VRCGalleryManager
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainPanel));
             bannerIcon = new PictureBox();
-            FormsPanel = new RoundedPanel();
+            FormsPanel = new Panel();
             SwitchPanel = new RoundedPanel();
             _switchPicflow = new RoundedButton();
             _switchCreate = new RoundedButton();
@@ -72,13 +72,9 @@ namespace VRCGalleryManager
             // 
             FormsPanel.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             FormsPanel.BackColor = Color.FromArgb(5, 5, 5);
-            FormsPanel.BackgroundColor = Color.FromArgb(5, 5, 5);
-            FormsPanel.BorderColor = Color.FromArgb(80, 80, 80);
-            FormsPanel.BorderRadius = 15;
-            FormsPanel.BorderSize = 0;
-            FormsPanel.Location = new Point(182, 12);
+            FormsPanel.Location = new Point(182, 0);
             FormsPanel.Name = "FormsPanel";
-            FormsPanel.Size = new Size(838, 565);
+            FormsPanel.Size = new Size(850, 589);
             FormsPanel.TabIndex = 5;
             // 
             // SwitchPanel
@@ -352,6 +348,7 @@ namespace VRCGalleryManager
             profileBanner.SizeMode = PictureBoxSizeMode.StretchImage;
             profileBanner.TabIndex = 7;
             profileBanner.TabStop = false;
+            profileBanner.Visible = false;
             // 
             // profileIcon
             // 
@@ -460,7 +457,7 @@ namespace VRCGalleryManager
         #endregion
 
         private PictureBox bannerIcon;
-        private RoundedPanel FormsPanel;
+        private Panel FormsPanel;
         private RoundedPanel SwitchPanel;
         private RoundedButton _switchEmoji;
         private RoundedButton _switchSticker;

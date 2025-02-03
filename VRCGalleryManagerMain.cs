@@ -1,4 +1,5 @@
 using Newtonsoft.Json.Linq;
+using System;
 using System.Runtime.InteropServices;
 using VRCGalleryManager.Core;
 using VRCGalleryManager.Core.Helpers;
@@ -24,6 +25,8 @@ namespace VRCGalleryManager
             }
 
             InitializeComponent();
+
+            bannerIcon.Height = 150;
 
             //this.AutoScaleMode = AutoScaleMode.Dpi;
             //this.Scale(new SizeF(Screen.PrimaryScreen.Bounds.Width / 1920f, Screen.PrimaryScreen.Bounds.Height / 1080f));
@@ -62,12 +65,15 @@ namespace VRCGalleryManager
         }
         private void ApplyRecolorBar()
         {
-            int color = Color.FromArgb(5, 5, 5).ToArgb() & 0xFFFFFF;
-            DwmSetWindowAttribute(this.Handle, 35, ref color, 4);
+            Color c = Color.FromArgb(15, 17, 19);
+            int color = ColorTranslator.ToWin32(c);
+            DwmSetWindowAttribute(this.Handle, 35, ref color, sizeof(int));
         }
 
         public async Task ProfileImage()
         {
+            BigBannerIcon(false);
+
             profileIcon.LoadAsync(await HttpImage.GetFinalUrlAsync(Settings.UserIconImage));
             profileBanner.LoadAsync(await HttpImage.GetFinalUrlAsync(Settings.UserBannerImage));
             var badgeBoxes = new[] { badgeBox3, badgeBox2, badgeBox1 };
@@ -81,6 +87,7 @@ namespace VRCGalleryManager
                     box.LoadAsync(imageBadge);
             }
             profileIcon.Visible = true;
+            profileBanner.Visible = true;
         }
         public async Task ProfileUpdateIcon(string IconImage)
         {
@@ -92,6 +99,8 @@ namespace VRCGalleryManager
         }
         public void ProfileImageRemover()
         {
+            BigBannerIcon(true);
+
             profileIcon.Image = null;
             profileBanner.Image = null;
             var badgeBoxes = new[] { badgeBox3, badgeBox2, badgeBox1 };
@@ -101,6 +110,7 @@ namespace VRCGalleryManager
                 box.Image = null;
             }
             profileIcon.Visible = false;
+            profileBanner.Visible = false;
         }
 
         private void ShowForm(int index)
@@ -144,5 +154,40 @@ namespace VRCGalleryManager
         //Recolor Bar
         [DllImport("dwmapi.dll")]
         private static extern int DwmSetWindowAttribute(IntPtr hwnd, int attr, ref int attrValue, int attrSize);
+
+        //Banner Icon Animation
+        public void BigBannerIcon(bool active)
+        {
+            int targetWidth = 157;
+            int targetHeight = active ? 150 : 45;
+
+            bannerIcon.Width = targetWidth;
+
+            int totalDuration = 300;
+            int interval = 10;
+            int steps = totalDuration / interval;
+
+            int startHeight = bannerIcon.Height;
+            double animHeight = startHeight;
+            double increment = (targetHeight - startHeight) / (double)steps;
+
+            System.Windows.Forms.Timer timer = new System.Windows.Forms.Timer();
+            timer.Interval = interval;
+            timer.Tick += (sender, e) =>
+            {
+                animHeight += increment;
+
+                if ((increment > 0 && animHeight >= targetHeight) ||
+                    (increment < 0 && animHeight <= targetHeight))
+                {
+                    animHeight = targetHeight;
+                    timer.Stop();
+                    timer.Dispose();
+                }
+
+                bannerIcon.Height = (int)Math.Round(animHeight);
+            };
+            timer.Start();
+        }
     }
 }
