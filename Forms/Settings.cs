@@ -225,9 +225,44 @@ namespace VRCGalleryManager.Forms
             }
         }
 
+        private void _clearAllVRChatLogs_Click(object sender, EventArgs e)
+        {
+            string vrchatLogPath = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData).Replace("Local", "LocalLow"),
+                "VRChat", "VRChat");
+            string[] logFiles = Directory.GetFiles(vrchatLogPath, "output_log_*.txt");
+
+            if (logFiles.Length == 0)
+            {
+                NotificationManager.ShowNotification("No log files found.", "Error", NotificationType.Error);
+                return;
+            }
+
+            DialogResult result = MessageBox.Show(
+                                $"Do you want to delete \"{logFiles.Length}\" VRChat Logs?",
+                                "VRChat Logs",
+                                MessageBoxButtons.YesNo);
+            if (result == DialogResult.Yes)
+            {
+                foreach (string file in logFiles)
+                {
+                    File.Delete(file);
+                }
+                NotificationManager.ShowNotification("All logs have been successfully deleted!", "Success", NotificationType.Success);
+            }
+        }
+
         private void _clearAllCacheFiles_Click(object sender, EventArgs e)
         {
             string cacheFolderPath = Path.Combine(Path.GetTempPath(), "VRCGalleryManager");
+            string[] cacheFiles = Directory.GetFiles(cacheFolderPath);
+
+            if(cacheFiles.Length == 0)
+            {
+                NotificationManager.ShowNotification("No cache files found.", "Error", NotificationType.Error);
+                return;
+            }
+
             if (!Directory.Exists(cacheFolderPath))
             {
                 NotificationManager.ShowNotification("Cache folder does not exist.", "Error", NotificationType.Error);
@@ -235,11 +270,18 @@ namespace VRCGalleryManager.Forms
             }
             try
             {
-                foreach (string file in Directory.GetFiles(cacheFolderPath))
+                DialogResult result = MessageBox.Show(
+                                $"Do you want to delete All Cache Files?",
+                                "Cache Files",
+                                MessageBoxButtons.YesNo);
+                if (result == DialogResult.Yes)
                 {
-                    File.Delete(file);
+                    foreach (string file in cacheFiles)
+                    {
+                        File.Delete(file);
+                    }
+                    NotificationManager.ShowNotification("All cache files have been successfully deleted!", "Success", NotificationType.Success);
                 }
-                NotificationManager.ShowNotification("All cache files have been successfully deleted!", "Success", NotificationType.Success);
             }
             catch (Exception ex)
             {
@@ -279,5 +321,7 @@ namespace VRCGalleryManager.Forms
             }
             formatted = $"{size:0.##} {units[unitIndex]}";
         }
+
+        
     }
 }
