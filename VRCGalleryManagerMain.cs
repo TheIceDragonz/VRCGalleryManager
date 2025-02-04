@@ -86,7 +86,7 @@ namespace VRCGalleryManager
                 if (box.Visible)
                     box.LoadAsync(imageBadge);
             }
-            profileIcon.Visible = true;
+            if (!string.IsNullOrEmpty(Settings.UserIconImage)) profileIcon.Visible = true;
             profileBanner.Visible = true;
         }
         public async Task ProfileUpdateIcon(string IconImage)

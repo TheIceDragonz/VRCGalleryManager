@@ -18,6 +18,8 @@ namespace VRCGalleryManager.Forms
         public static string UserBannerImage = "";
         public static List<string> Badges = new List<string>();
 
+        public bool VRCPlus = false;
+
         public Settings(VRCAuth Auth, MainPanel mainPanel)
         {
             InitializeComponent();
@@ -80,6 +82,8 @@ namespace VRCGalleryManager.Forms
                 Auth.CookieLoaded = false;
                 _username.Text = "";
                 _password.Text = "";
+                _vrcLoginLabel.Text = "VRChat Login";
+                _vrcLoginLabel.ForeColor = Color.Azure;
                 ToggleLoginFields(true);
                 UpdateLoginButtonUI(false);
                 _mainPanel.ProfileImageRemover();
@@ -104,9 +108,22 @@ namespace VRCGalleryManager.Forms
                     foreach (var badge in currentUser.Badges)
                     {
                         Badges.Add(badge.ToJson());
+
+                        if (badge.BadgeName == "Supporter") VRCPlus = true;
                     }
                     await _mainPanel.ProfileImage();
-                    _mainPanel.SetFeatureControlsEnabled(true);
+
+                    if (VRCPlus)
+                    {
+                        _mainPanel.SetFeatureControlsEnabled(true);
+                    }
+                    else
+                    {
+                        _vrcLoginLabel.Text = "VRChat Login (You need VRChat Plus to use this program.)";
+                        _vrcLoginLabel.ForeColor = Color.Yellow;
+
+                        NotificationManager.ShowNotification("You need VRChat Plus to use this program.", "VRChat Plus Required", NotificationType.Error);
+                    }
                 }
                 catch (Exception ex)
                 {
