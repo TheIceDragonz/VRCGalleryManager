@@ -5,6 +5,8 @@ VisualStudioVersion = 17.10.35027.167
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VRCGalleryManager", "VRCGalleryManager.csproj", "{B478C14D-5361-49C3-96F0-21FFDB797A6A}"
 EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "SetupProject", "SetupProject.vdproj", "{31884CD6-DD73-4FF6-9A7F-A365082CBD3B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{B478C14D-5361-49C3-96F0-21FFDB797A6A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B478C14D-5361-49C3-96F0-21FFDB797A6A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B478C14D-5361-49C3-96F0-21FFDB797A6A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{31884CD6-DD73-4FF6-9A7F-A365082CBD3B}.Debug|Any CPU.ActiveCfg = Debug
+		{31884CD6-DD73-4FF6-9A7F-A365082CBD3B}.Debug|Any CPU.Build.0 = Debug
+		{31884CD6-DD73-4FF6-9A7F-A365082CBD3B}.Release|Any CPU.ActiveCfg = Release
+		{31884CD6-DD73-4FF6-9A7F-A365082CBD3B}.Release|Any CPU.Build.0 = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
