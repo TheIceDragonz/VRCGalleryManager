@@ -8,3 +8,6 @@
 /obj/VRCGalleryManager.csproj.nuget.dgspec.json
 /obj/VRCGalleryManager.csproj.nuget.g.props
 /obj/project.assets.json
+/bin/Release/net8.0-windows
+/obj/Publish/net8.0-windows
+/VRCGalleryManager.csproj.user
