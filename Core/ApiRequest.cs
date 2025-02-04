@@ -179,8 +179,6 @@ namespace VRCGalleryManager.Core
             {
                 Console.WriteLine($"Errore: {ex.Message}");
             }
-
-            (Application.OpenForms["MainPanel"] as MainPanel)?.ProfileUpdateIcon(urlImage);
         }
         public async Task SetProfilePicture(string urlImage)
         {
@@ -192,8 +190,6 @@ namespace VRCGalleryManager.Core
             {
                 Console.WriteLine($"Errore: {ex.Message}");
             }
-
-            (Application.OpenForms["MainPanel"] as MainPanel)?.ProfileUpdateBanner(urlImage);
         }
     }
 }

@@ -231,6 +231,26 @@ namespace VRCGalleryManager.Properties {
         }
         
         /// <summary>
+        ///   Cerca una risorsa localizzata di tipo System.Byte[].
+        /// </summary>
+        internal static byte[] note_add_svgrepo_com {
+            get {
+                object obj = ResourceManager.GetObject("note_add_svgrepo_com", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Cerca una risorsa localizzata di tipo System.Byte[].
+        /// </summary>
+        internal static byte[] open_in_browser_svgrepo_com {
+            get {
+                object obj = ResourceManager.GetObject("open_in_browser_svgrepo_com", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
         ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
         /// </summary>
         internal static System.Drawing.Bitmap Preview_B2_Aura {

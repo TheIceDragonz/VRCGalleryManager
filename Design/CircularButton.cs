@@ -294,6 +294,7 @@ namespace VRCGalleryManager.Design
 
         public CircularButton()
         {
+            SetStyle(ControlStyles.Selectable, false);
             FlatStyle = FlatStyle.Flat;
             FlatAppearance.BorderSize = 0;
             Size = new Size(100, 100);

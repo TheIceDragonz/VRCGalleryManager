@@ -31,9 +31,9 @@ namespace VRCGalleryManager.Forms.UIComponents
 
             string resourceName = type switch
             {
-                "open" => nameof(Resources.backward_svgrepo_com),
+                "open" => nameof(Resources.open_in_browser_svgrepo_com),
                 "delete" => nameof(Resources.delete_svgrepo_com),
-                "picflowupload" => nameof(Resources.arrow_download_svgrepo_com),
+                "picflowupload" => nameof(Resources.note_add_svgrepo_com),
                 _ => null
             };
 

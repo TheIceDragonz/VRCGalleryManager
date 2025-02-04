@@ -319,6 +319,7 @@ namespace VRCGalleryManager.Design
 
         public RoundedButton()
         {
+            SetStyle(ControlStyles.Selectable, false);
             FlatStyle = FlatStyle.Flat;
             FlatAppearance.BorderSize = 0;
             Size = new Size(150, 40);

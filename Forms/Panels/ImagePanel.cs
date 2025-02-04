@@ -86,15 +86,17 @@ namespace VRCGalleryManager.Forms.Panels
         static public async void AddImagePanel(FlowLayoutPanel mainPanel, ApiRequest apiRequest, string imageId, Action<string> UpdateCounter)
         {
             Size size = new Size(150, 150);
+            int value = 10;
+
             if (mainPanel.Name.Contains("prints")) size = new Size(190, 150);
             if (mainPanel.Name.Contains("gallery")) size = new Size(250, 150);
-
-            int value = 10;
             if (mainPanel.Name.Contains("icons")) value = 100; //Max Rounded
 
             string imageFull = $"https://api.vrchat.cloud/api/1/file/{imageId}/1/file";
             string image256 = $"https://api.vrchat.cloud/api/1/image/{imageId}/1/256";
             string finalaviImage = await HttpImage.GetFinalUrlAsync(image256);
+
+            var selectedColor = Color.FromArgb(106, 227, 249);
 
             //* IMAGE Static PANEL
             RoundedPictureBox pictureBox = new RoundedPictureBox
@@ -114,30 +116,65 @@ namespace VRCGalleryManager.Forms.Panels
 
             if (mainPanel.Name.Contains("icons"))
             {
-                if (Settings.UserIconImage.Contains(imageId)) pictureBox.BorderColor = Color.FromArgb(106, 227, 249);
+                pictureBox.Cursor = Cursors.Hand;
+                pictureBox.MouseEnter += (s, e) => pictureBox.BorderColor = (pictureBox.BorderColor != selectedColor) ? Color.FromArgb(255, 255, 255) : selectedColor;
+                pictureBox.MouseLeave += (s, e) => pictureBox.BorderColor = (pictureBox.BorderColor != selectedColor) ? Color.FromArgb(24, 27, 31) : selectedColor;
+
+                if (Settings.UserIconImage.Contains(imageId))
+                {
+                    pictureBox.BorderColor = selectedColor;
+                    pictureBox.Cursor = Cursors.Default;
+                }
 
                 pictureBox.Click += async (sender, e) =>
                 {
                     await apiRequest.SetProfileIcon(imageFull);
 
-                    foreach (var pb in pictureIconList) pb.BorderColor = Color.FromArgb(24, 27, 31);
-                    pictureBox.BorderColor = Color.FromArgb(106, 227, 249);
+                    Settings.UserBannerImage = imageFull;
+                    (Application.OpenForms["MainPanel"] as MainPanel)?.ProfileUpdateIcon(imageFull);
 
-                    NotificationManager.ShowNotification("Profile Icon", "Profile Icon Updated", NotificationType.Success);
+                    foreach (var pb in pictureIconList)
+                    {
+                        pb.BorderColor = Color.FromArgb(24, 27, 31);
+                        pb.Cursor = Cursors.Hand;
+                    }
+
+                    pictureBox.BorderColor = Color.FromArgb(106, 227, 249);
+                    pictureBox.Cursor = Cursors.Default;
+
+                    NotificationManager.ShowNotification("Icon Changed Successful", "Profile Updated", NotificationType.Success);
                 };
                 pictureIconList.Add(pictureBox);
             }
             if (mainPanel.Name.Contains("gallery"))
             {
-                if (Settings.UserBannerImage.Contains(imageId)) pictureBox.BorderColor = Color.FromArgb(106, 227, 249);
+                pictureBox.Cursor = Cursors.Hand;
+                pictureBox.MouseEnter += (s, e) => pictureBox.BorderColor = (pictureBox.BorderColor != selectedColor) ? Color.FromArgb(255, 255, 255) : selectedColor;
+                pictureBox.MouseLeave += (s, e) => pictureBox.BorderColor = (pictureBox.BorderColor != selectedColor) ? Color.FromArgb(24, 27, 31) : selectedColor;
+
+                if (Settings.UserBannerImage.Contains(imageId))
+                {
+                    pictureBox.BorderColor = selectedColor;
+                    pictureBox.Cursor = Cursors.Default;
+                }
+
                 pictureBox.Click += async (sender, e) =>
                 {
                     await apiRequest.SetProfilePicture(imageFull);
 
-                    foreach (var pb in pictureGalleryList) pb.BorderColor = Color.FromArgb(24, 27, 31);
-                    pictureBox.BorderColor = Color.FromArgb(106, 227, 249);
+                    Settings.UserBannerImage = imageFull;
+                    (Application.OpenForms["MainPanel"] as MainPanel)?.ProfileUpdateBanner(imageFull);
 
-                    NotificationManager.ShowNotification("Profile Picture", "Profile Picture Updated", NotificationType.Success);
+                    foreach (var pb in pictureGalleryList)
+                    {
+                        pb.BorderColor = Color.FromArgb(24, 27, 31);
+                        pb.Cursor = Cursors.Hand;
+                    }
+
+                    pictureBox.BorderColor = Color.FromArgb(106, 227, 249);
+                    pictureBox.Cursor = Cursors.Default;
+
+                    NotificationManager.ShowNotification("Picture Changed Successful", "Profile Updated", NotificationType.Success);
                 };
                 pictureGalleryList.Add(pictureBox);
             }
