@@ -11,70 +11,82 @@ namespace VRCGalleryManager.Design
         private int borderSize = 0;
         private int borderRadius = 15;
         private Color borderColor = Color.PaleVioletRed;
+        private readonly int rightExtension = 17; // Parametro privato fisso a 17
 
         [Category("VRCGalleryManager")]
         public int BorderSize
         {
-            get { return borderSize; }
+            get => borderSize;
             set
             {
-                borderSize = value;
-                Invalidate();
+                if (borderSize != value)
+                {
+                    borderSize = value;
+                    Invalidate();
+                }
             }
         }
 
         [Category("VRCGalleryManager")]
         public int BorderRadius
         {
-            get { return borderRadius; }
+            get => borderRadius;
             set
             {
-                borderRadius = value;
-                Invalidate();
+                if (borderRadius != value)
+                {
+                    borderRadius = value;
+                    Invalidate();
+                }
             }
         }
 
         [Category("VRCGalleryManager")]
         public Color BorderColor
         {
-            get { return borderColor; }
+            get => borderColor;
             set
             {
-                borderColor = value;
-                Invalidate();
+                if (borderColor != value)
+                {
+                    borderColor = value;
+                    Invalidate();
+                }
             }
         }
 
         [Category("VRCGalleryManager")]
         public Color BackgroundColor
         {
-            get { return BackColor; }
-            set { BackColor = value; }
+            get => BackColor;
+            set => BackColor = value;
         }
 
         public RoundedPanel()
         {
             Size = new Size(150, 150);
             BackColor = Color.MediumSlateBlue;
-            this.Resize += RoundedPanel_Resize;
+            DoubleBuffered = true;
         }
 
-        private void RoundedPanel_Resize(object sender, EventArgs e)
+        protected override void OnResize(EventArgs e)
         {
+            base.OnResize(e);
+            Region = null;
             Invalidate();
         }
 
         protected override void OnPaint(PaintEventArgs pevent)
         {
             base.OnPaint(pevent);
+            pevent.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
 
-            Rectangle rectSurface = ClientRectangle;
+            // Calcola eventuale estensione a destra solo se AutoScroll è attivo e il contenuto supera l'altezza del pannello.
+            int extraWidth = (AutoScroll && (DisplayRectangle.Height > ClientSize.Height)) ? rightExtension : 0;
+            Rectangle rectSurface = new Rectangle(0, 0, ClientRectangle.Width + extraWidth, ClientRectangle.Height);
             Rectangle rectBorder = Rectangle.Inflate(rectSurface, -borderSize, -borderSize);
             int smoothSize = borderSize > 0 ? borderSize : 2;
-
-            int effectiveRadius = borderRadius;
-            if (effectiveRadius > Height)
-                effectiveRadius = Height;
+            int effectiveRadius = Math.Min(borderRadius, Math.Min(rectSurface.Width, rectSurface.Height) / 2);
 
             if (effectiveRadius > 2)
             {
@@ -83,26 +95,21 @@ namespace VRCGalleryManager.Design
                 using (Pen penSurface = new Pen(Parent?.BackColor ?? Color.Transparent, smoothSize))
                 using (Pen penBorder = new Pen(borderColor, borderSize))
                 {
-                    pevent.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-
                     Region = new Region(pathSurface);
-
                     pevent.Graphics.DrawPath(penSurface, pathSurface);
-
                     if (borderSize >= 1)
                         pevent.Graphics.DrawPath(penBorder, pathBorder);
                 }
             }
             else
             {
-                pevent.Graphics.SmoothingMode = SmoothingMode.None;
                 Region = new Region(rectSurface);
                 if (borderSize >= 1)
                 {
                     using (Pen penBorder = new Pen(borderColor, borderSize))
                     {
                         penBorder.Alignment = PenAlignment.Inset;
-                        pevent.Graphics.DrawRectangle(penBorder, 0, 0, Width - 1, Height - 1);
+                        pevent.Graphics.DrawRectangle(penBorder, 0, 0, rectSurface.Width - 1, rectSurface.Height - 1);
                     }
                 }
             }
@@ -119,25 +126,6 @@ namespace VRCGalleryManager.Design
             path.AddArc(rect.X, rect.Bottom - curveSize, curveSize, curveSize, 90, 90);
             path.CloseFigure();
             return path;
-        }
-
-        protected override void OnHandleCreated(EventArgs e)
-        {
-            base.OnHandleCreated(e);
-            if (Parent != null)
-                Parent.BackColorChanged += Container_BackColorChanged;
-        }
-
-        private void Container_BackColorChanged(object sender, EventArgs e)
-        {
-            Invalidate();
-        }
-
-        protected override void OnResize(EventArgs e)
-        {
-            base.OnResize(e);
-            Region = null;
-            Invalidate();
         }
     }
 }

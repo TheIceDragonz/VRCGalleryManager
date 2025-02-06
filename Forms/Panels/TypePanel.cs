@@ -24,7 +24,7 @@ namespace VRCGalleryManager.Forms.Panels
                 BackColor = Color.FromArgb(24, 27, 31),
                 Padding = new Padding(5),
                 Height = 100,
-                BorderRadius = 5,
+                BorderRadius = 15,
                 Margin = new Padding(5)
             };
 
