@@ -12,12 +12,14 @@ namespace VRCGalleryManager.Core
     {
         private VRCAuth Auth;
         private FilesApi filesApi;
+        private PrintsApi printsApi;
         private UsersApi usersApi;
 
         public ApiRequest(VRCAuth Auth)
         {
             this.Auth = Auth;
             filesApi = new FilesApi(Auth.ApiClient, Auth.ApiClient, Auth.Config);
+            printsApi = new PrintsApi(Auth.ApiClient, Auth.ApiClient, Auth.Config);
             usersApi = new UsersApi(Auth.ApiClient, Auth.ApiClient, Auth.Config);
         }
 
@@ -41,11 +43,23 @@ namespace VRCGalleryManager.Core
 
             try
             {
-                var images = filesApi.GetFiles(tag, null, 64);
-
-                foreach (var image in images)
+                if (!tag.Contains("print"))
                 {
-                    apiData.JsonImage.Add(image.ToJson());
+                    var images = filesApi.GetFiles(tag, null, 64);
+
+                    foreach (var image in images)
+                    {
+                        apiData.JsonImage.Add(image.ToJson());
+                    }
+                }
+                else
+                {
+                    var images = await printsApi.GetPrintsAsync(Settings.UserId, 100);
+
+                    foreach (var image in images)
+                    {
+                        apiData.JsonImage.Add(image.ToJson());
+                    }
                 }
             }
             catch (ApiException ex)
@@ -168,6 +182,23 @@ namespace VRCGalleryManager.Core
 
             return apiData;
         }
+
+        public async Task<ApiData> DeleteApiDataPrint(string id)
+        {
+            ApiData apiData = new ApiData();
+
+            try
+            {
+                await printsApi.DeletePrintAsync(id);
+            }
+            catch (ApiException ex)
+            {
+                Console.WriteLine($"Errore: {ex.Message}");
+            }
+
+            return apiData;
+        }
+
 
         public async Task SetProfileIcon(string urlImage)
         {

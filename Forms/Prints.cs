@@ -45,9 +45,10 @@ namespace VRCGalleryManager.Forms
             {
                 JObject jsonObject = JObject.Parse(json);
 
-                string id = jsonObject["id"]?.ToString();
+                string printid = jsonObject["id"]?.ToString();
+                string fileid = jsonObject["files"]?["fileId"]?.ToString();
 
-                ImagePanel.AddImagePanel(printsPanel, apiRequest, id, UpdateCounter);
+                ImagePanel.AddImagePanel(printsPanel, apiRequest, printid, fileid, UpdateCounter);
             }
 
             UpdateCounter("");
