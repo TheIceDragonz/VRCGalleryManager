@@ -177,6 +177,7 @@ namespace VRCGalleryManager.Forms
             // 
             // Gallery
             // 
+            AllowDrop = true;
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(5, 5, 5);
@@ -190,6 +191,8 @@ namespace VRCGalleryManager.Forms
             FormBorderStyle = FormBorderStyle.None;
             Name = "Gallery";
             Text = "Gallery";
+            DragDrop += File_DragDrop;
+            DragEnter += File_DragEnter;
             limitPanel.ResumeLayout(false);
             ResumeLayout(false);
             PerformLayout();

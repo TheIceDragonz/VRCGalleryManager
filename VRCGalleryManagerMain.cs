@@ -74,8 +74,8 @@ namespace VRCGalleryManager
         {
             BigBannerIcon(false);
 
-            profileIcon.LoadAsync(await HttpImage.GetFinalUrlAsync(Settings.UserIconImage));
-            profileBanner.LoadAsync(await HttpImage.GetFinalUrlAsync(Settings.UserBannerImage));
+            profileIcon.LoadAsync(await httpImage.GetFinalUrlAsync(Settings.UserIconImage));
+            profileBanner.LoadAsync(await httpImage.GetFinalUrlAsync(Settings.UserBannerImage));
             var badgeBoxes = new[] { badgeBox3, badgeBox2, badgeBox1 };
             foreach (var (badge, box) in Settings.Badges.Zip(badgeBoxes, (badge, box) => (badge, box)))
             {
@@ -91,11 +91,11 @@ namespace VRCGalleryManager
         }
         public async Task ProfileUpdateIcon(string IconImage)
         {
-            profileIcon.LoadAsync(await HttpImage.GetFinalUrlAsync(IconImage));
+            profileIcon.LoadAsync(await httpImage.GetFinalUrlAsync(IconImage));
         }
         public async Task ProfileUpdateBanner(string BannerImage)
         {
-            profileBanner.LoadAsync(await HttpImage.GetFinalUrlAsync(BannerImage));
+            profileBanner.LoadAsync(await httpImage.GetFinalUrlAsync(BannerImage));
         }
         public void ProfileImageRemover()
         {

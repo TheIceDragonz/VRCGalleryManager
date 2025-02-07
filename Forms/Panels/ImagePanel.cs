@@ -30,7 +30,7 @@ namespace VRCGalleryManager.Forms.Panels
                 ? $"https://api.vrchat.cloud/api/1/file/{imageId}/1/file"
                 : $"https://api.vrchat.cloud/api/1/image/{imageId}/1/256";
 
-            string finalaviImage = await HttpImage.GetFinalUrlAsync(image);
+            string finalaviImage = await httpImage.GetFinalUrlAsync(image);
 
             if (!finalaviImage.Contains("imageNotFound"))
             {
@@ -94,7 +94,7 @@ namespace VRCGalleryManager.Forms.Panels
 
             string imageFull = $"https://api.vrchat.cloud/api/1/file/{imageId}/1/file";
             string image256 = $"https://api.vrchat.cloud/api/1/image/{imageId}/1/256";
-            string finalaviImage = await HttpImage.GetFinalUrlAsync(image256);
+            string finalaviImage = await httpImage.GetFinalUrlAsync(image256);
 
             var selectedColor = Color.FromArgb(106, 227, 249);
 
@@ -223,7 +223,7 @@ namespace VRCGalleryManager.Forms.Panels
 
             string imageFull = $"https://api.vrchat.cloud/api/1/file/{imageId}/1/file";
             string image256 = $"https://api.vrchat.cloud/api/1/image/{imageId}/1/256";
-            string finalaviImage = await HttpImage.GetFinalUrlAsync(image256);
+            string finalaviImage = await httpImage.GetFinalUrlAsync(image256);
 
             //* IMAGE Static PANEL
             RoundedPictureBox pictureBox = new RoundedPictureBox

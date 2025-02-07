@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json.Linq;
 using VRCGalleryManager.Core;
 using VRCGalleryManager.Core.DTO;
+using VRCGalleryManager.Core.Helpers;
 using VRCGalleryManager.Forms.Panels;
 
 namespace VRCGalleryManager.Forms
@@ -58,7 +59,7 @@ namespace VRCGalleryManager.Forms
         {
             using (OpenFileDialog openFileDialog = new OpenFileDialog())
             {
-                openFileDialog.Filter = "Image Files|*.png;*.jpg;*.jpeg;*.webp";
+                ImageHelper.SetOpenFileDialogFilter(openFileDialog);
                 openFileDialog.Multiselect = false;
 
                 if (openFileDialog.ShowDialog() == DialogResult.OK)
@@ -69,11 +70,11 @@ namespace VRCGalleryManager.Forms
         }
         private async void UploadImage(string path)
         {
-            string selectedFilePath = path;
+            string resizedImage = ImageResizer.ResizeImage16x9(path);
 
             try
             {
-                ApiRequest.ApiData prints = await apiRequest.UploadPrint(selectedFilePath, textBoxNotePrint.Text);
+                ApiRequest.ApiData prints = await apiRequest.UploadPrint(resizedImage, textBoxNotePrint.Text);
                 //ImagePanel.AddImagePanel(printsPanel, apiRequest, prints.IdImageUploaded, UpdateCounter);
                 //UpdateCounter("Add");
 
@@ -98,6 +99,16 @@ namespace VRCGalleryManager.Forms
             limitCounterLabel.Text = $"{imageCount}/64 Prints";
             if (imageCount >= 64) limitPanel.Visible = true;
             else limitPanel.Visible = false;
+        }
+
+        private void File_DragEnter(object sender, DragEventArgs e)
+        {
+            e.Effect = ImageHelper.ProcessDragEnter(e);
+        }
+
+        private void File_DragDrop(object sender, DragEventArgs e)
+        {
+            ImageHelper.ProcessDragDrop(e, UploadImage);
         }
     }
 }

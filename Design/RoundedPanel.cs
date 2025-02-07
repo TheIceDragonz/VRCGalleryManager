@@ -11,7 +11,6 @@ namespace VRCGalleryManager.Design
         private int borderSize = 0;
         private int borderRadius = 15;
         private Color borderColor = Color.PaleVioletRed;
-        private readonly int rightExtension = 17; // Parametro privato fisso a 17
 
         [Category("VRCGalleryManager")]
         public int BorderSize
@@ -80,9 +79,7 @@ namespace VRCGalleryManager.Design
         {
             base.OnPaint(pevent);
             pevent.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-
-            // Calcola eventuale estensione a destra solo se AutoScroll è attivo e il contenuto supera l'altezza del pannello.
-            int extraWidth = (AutoScroll && (DisplayRectangle.Height > ClientSize.Height)) ? rightExtension : 0;
+            int extraWidth = (AutoScroll && (DisplayRectangle.Height > ClientSize.Height)) ? 17 : 0;
             Rectangle rectSurface = new Rectangle(0, 0, ClientRectangle.Width + extraWidth, ClientRectangle.Height);
             Rectangle rectBorder = Rectangle.Inflate(rectSurface, -borderSize, -borderSize);
             int smoothSize = borderSize > 0 ? borderSize : 2;

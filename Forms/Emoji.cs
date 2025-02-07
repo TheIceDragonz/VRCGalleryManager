@@ -1,6 +1,8 @@
 ﻿using Newtonsoft.Json.Linq;
+using System.Windows.Forms;
 using VRCGalleryManager.Core;
 using VRCGalleryManager.Core.DTO;
+using VRCGalleryManager.Core.Helpers;
 using VRCGalleryManager.Forms.Panels;
 
 namespace VRCGalleryManager.Forms
@@ -73,7 +75,7 @@ namespace VRCGalleryManager.Forms
             {
                 using (OpenFileDialog openFileDialog = new OpenFileDialog())
                 {
-                    openFileDialog.Filter = "Image Files|*.png;*.jpg;*.jpeg;*.webp";
+                    ImageHelper.SetOpenFileDialogFilter(openFileDialog);
                     openFileDialog.Multiselect = false;
 
                     if (openFileDialog.ShowDialog() == DialogResult.OK)
@@ -139,6 +141,23 @@ namespace VRCGalleryManager.Forms
             limitCounterLabel.Text = $"{imageCount}/9 Emoji";
             if (imageCount >= 9) limitPanel.Visible = true;
             else limitPanel.Visible = false;
+        }
+
+        private void File_DragEnter(object sender, DragEventArgs e)
+        {
+            e.Effect = ImageHelper.ProcessDragEnter(e);
+        }
+
+        private void File_DragDrop(object sender, DragEventArgs e)
+        {
+            if (!emojiOpenTypePanel.Text.Contains("Type"))
+            {
+                ImageHelper.ProcessDragDrop(e, UploadImage);
+            }
+            else
+            {
+                DialogMessage.ShowMissingTypeDialog(this);
+            }
         }
     }
 }

@@ -65,8 +65,6 @@ namespace VRCGalleryManager.Forms
             previewGif.SizeMode = PictureBoxSizeMode.StretchImage;
             previewGif.TabIndex = 0;
             previewGif.TabStop = false;
-            previewGif.DragDrop += pictureSS_DragDrop;
-            previewGif.DragEnter += pictureSS_DragEnter;
             // 
             // previewSS
             // 
@@ -261,6 +259,7 @@ namespace VRCGalleryManager.Forms
             // 
             // Create
             // 
+            AllowDrop = true;
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(5, 5, 5);
@@ -278,6 +277,8 @@ namespace VRCGalleryManager.Forms
             FormBorderStyle = FormBorderStyle.None;
             Name = "Create";
             Text = "Create";
+            DragDrop += File_DragDrop;
+            DragEnter += File_DragEnter;
             ((System.ComponentModel.ISupportInitialize)previewGif).EndInit();
             ((System.ComponentModel.ISupportInitialize)previewSS).EndInit();
             ((System.ComponentModel.ISupportInitialize)trackBarFPS).EndInit();

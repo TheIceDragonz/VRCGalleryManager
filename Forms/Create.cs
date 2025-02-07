@@ -24,9 +24,6 @@ namespace VRCGalleryManager.Forms
 
             InitializeComponent();
 
-            this.AllowDrop = true;
-            this.DragEnter += new DragEventHandler(pictureSS_DragEnter);
-            this.DragDrop += new DragEventHandler(pictureSS_DragDrop);
             converter = new GifToSpriteSheetConverter();
 
             TypePanel.LoadEmojiType(createOpenTypePanel, createTypePanel);
@@ -34,7 +31,7 @@ namespace VRCGalleryManager.Forms
             trackBarFPS.LabelText = trackBarFPS.Value.ToString();
         }
 
-        private void pictureSS_DragDrop(object sender, DragEventArgs e)
+        private void File_DragDrop(object sender, DragEventArgs e)
         {
             string[] files = e.Data.GetData(DataFormats.FileDrop) as string[];
             if (files == null || files.Length == 0) return;
@@ -59,8 +56,7 @@ namespace VRCGalleryManager.Forms
             }
         }
 
-
-        private void pictureSS_DragEnter(object sender, DragEventArgs e)
+        private void File_DragEnter(object sender, DragEventArgs e)
         {
             if (e.Data.GetDataPresent(DataFormats.FileDrop))
             {

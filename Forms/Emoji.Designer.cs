@@ -222,6 +222,7 @@ namespace VRCGalleryManager.Forms
             // 
             // Emoji
             // 
+            AllowDrop = true;
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(5, 5, 5);
@@ -237,6 +238,8 @@ namespace VRCGalleryManager.Forms
             FormBorderStyle = FormBorderStyle.None;
             Name = "Emoji";
             Text = "Emoji";
+            DragDrop += File_DragDrop;
+            DragEnter += File_DragEnter;
             limitPanel.ResumeLayout(false);
             ResumeLayout(false);
             PerformLayout();

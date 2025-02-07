@@ -85,10 +85,10 @@ namespace VRCGalleryManager.Design
                 svgResource = value;
                 if (!string.IsNullOrEmpty(svgResource))
                 {
-                    SvgContent = LoadSvgFromResources(svgResource); // Assign the selected resource to SvgContent
+                    SvgContent = LoadSvgFromResources(svgResource);
                 }
-                svgImage = null; // Reset the image to force re-rendering
-                Refresh(); // Ensure the control repaints itself
+                svgImage = null;
+                Refresh();
             }
         }
 
@@ -104,7 +104,7 @@ namespace VRCGalleryManager.Design
                 if (svgAlignment != value)
                 {
                     svgAlignment = value;
-                    Refresh(); // Force redraw to apply alignment changes
+                    Refresh();
                 }
             }
         }
@@ -118,8 +118,8 @@ namespace VRCGalleryManager.Design
                 if (svgColor != value)
                 {
                     svgColor = value;
-                    svgImage = null; // Reset SVG image to apply color changes
-                    Refresh(); // Force redraw
+                    svgImage = null;
+                    Refresh();
                 }
             }
         }
@@ -133,8 +133,8 @@ namespace VRCGalleryManager.Design
                 if (svgSize != value)
                 {
                     svgSize = value;
-                    svgImage = null; // Reset SVG image to apply size changes
-                    Refresh(); // Force redraw
+                    svgImage = null;
+                    Refresh();
                 }
             }
         }
@@ -148,7 +148,7 @@ namespace VRCGalleryManager.Design
                 if (svgPadding != value)
                 {
                     svgPadding = value;
-                    Refresh(); // Force redraw to apply padding changes
+                    Refresh();
                 }
             }
         }
@@ -162,7 +162,7 @@ namespace VRCGalleryManager.Design
                 if (svgOffset != value)
                 {
                     svgOffset = value;
-                    Refresh(); // Force redraw to apply offset changes
+                    Refresh();
                 }
             }
         }
@@ -377,7 +377,7 @@ namespace VRCGalleryManager.Design
             var resources = Properties.Resources.ResourceManager
                 .GetResourceSet(System.Globalization.CultureInfo.CurrentCulture, true, true)
                 .Cast<DictionaryEntry>()
-                .Where(r => r.Value is string || r.Value is byte[]) // Considera stringhe e binari
+                .Where(r => r.Value is string || r.Value is byte[])
                 .Select(r => r.Key.ToString())
                 .ToList();
 
