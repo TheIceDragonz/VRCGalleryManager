@@ -74,7 +74,7 @@ namespace VRCGalleryManager
             FormsPanel.BackColor = Color.FromArgb(5, 5, 5);
             FormsPanel.Location = new Point(182, 0);
             FormsPanel.Name = "FormsPanel";
-            FormsPanel.Size = new Size(850, 589);
+            FormsPanel.Size = new Size(833, 589);
             FormsPanel.TabIndex = 5;
             // 
             // SwitchPanel
@@ -431,7 +431,7 @@ namespace VRCGalleryManager
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(15, 17, 19);
-            ClientSize = new Size(1032, 589);
+            ClientSize = new Size(1015, 589);
             Controls.Add(badgeBox3);
             Controls.Add(badgeBox2);
             Controls.Add(badgeBox1);

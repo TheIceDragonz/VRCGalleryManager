@@ -8,22 +8,23 @@ namespace VRCGalleryManager.Core.Helpers
         {
             using var input = Image.FromFile(imagePath);
             int target = 1024;
+            if (input.Width <= target && input.Height <= target)
+            {
+                return imagePath;
+            }
             float ratio = (float)input.Width / input.Height;
             int newW = input.Width > input.Height ? target : (int)(target * ratio);
             int newH = input.Width > input.Height ? (int)(target / ratio) : target;
             var tempDir = Path.Combine(Path.GetTempPath(), "VRCGalleryManager");
             Directory.CreateDirectory(tempDir);
             var outPath = Path.Combine(tempDir, $"resized_{Guid.NewGuid()}.png");
-            using var bmp = new Bitmap(target, target, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+            using var bmp = new Bitmap(newW, newH, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
             using (var g = Graphics.FromImage(bmp))
             {
-                g.Clear(Color.Transparent);
                 g.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighQuality;
                 g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
                 g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
-                int offsetX = (target - newW) / 2;
-                int offsetY = (target - newH) / 2;
-                g.DrawImage(input, offsetX, offsetY, newW, newH);
+                g.DrawImage(input, 0, 0, newW, newH);
             }
             bmp.Save(outPath, System.Drawing.Imaging.ImageFormat.Png);
             return outPath;
