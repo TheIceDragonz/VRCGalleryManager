@@ -76,14 +76,11 @@ namespace VRCGalleryManager.Forms
                             {
                                 string sticker = match.Groups[1].Value;
                                 bool isNewSticker = false;
+                                lock (lockObj) isNewSticker = allStickers.Add(sticker);
 
-                                lock (lockObj)
-                                {
-                                    isNewSticker = allStickers.Add(sticker);
-                                }
                                 if (isNewSticker)
                                 {
-                                    picflowPanel.Invoke((Action)(() =>
+                                    picflowPanel.Invoke((() =>
                                     {
                                         ImagePanel.AddImagePanel(picflowPanel, apiRequest, sticker);
                                         limitCounterLabel.Text = $"{allStickers.Count} Stickers";

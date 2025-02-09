@@ -46,9 +46,9 @@ namespace VRCGalleryManager.Core
             else if (data.GetDataPresent(DataFormats.Text))
             {
                 string clipboardText = Clipboard.GetText();
-                if (await IsValidImageLinkAsync(clipboardText).ConfigureAwait(false))
+                if (await IsValidImageLinkAsync(clipboardText))
                 {
-                    string savedPath = await SaveImageFromUrlAsync(clipboardText).ConfigureAwait(false);
+                    string savedPath = await SaveImageFromUrlAsync(clipboardText);
                     if (!string.IsNullOrEmpty(savedPath))
                     {
                         uploadImage(savedPath);
@@ -112,7 +112,7 @@ namespace VRCGalleryManager.Core
                 using (HttpClient client = new HttpClient())
                 {
                     var request = new HttpRequestMessage(HttpMethod.Head, url);
-                    HttpResponseMessage response = await client.SendAsync(request).ConfigureAwait(false);
+                    HttpResponseMessage response = await client.SendAsync(request);
                     if (response.IsSuccessStatusCode && response.Content.Headers.ContentType != null)
                     {
                         string mimeType = response.Content.Headers.ContentType.MediaType;
@@ -133,14 +133,14 @@ namespace VRCGalleryManager.Core
             {
                 using (HttpClient client = new HttpClient())
                 {
-                    HttpResponseMessage response = await client.GetAsync(url).ConfigureAwait(false);
+                    HttpResponseMessage response = await client.GetAsync(url);
                     if (response.IsSuccessStatusCode && response.Content.Headers.ContentType != null)
                     {
                         string mimeType = response.Content.Headers.ContentType.MediaType;
                         if (mimeType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
                         {
                             string filePath = GetTempFilePath("Downloaded-Image");
-                            using (Stream stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
+                            using (Stream stream = await response.Content.ReadAsStreamAsync())
                             using (Image image = Image.FromStream(stream))
                             {
                                 image.Save(filePath, System.Drawing.Imaging.ImageFormat.Png);
