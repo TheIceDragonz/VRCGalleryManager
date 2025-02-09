@@ -1,4 +1,5 @@
-﻿using VRCGalleryManager.Core;
+﻿using System.Windows.Forms;
+using VRCGalleryManager.Core;
 using VRCGalleryManager.Core.DTO;
 using VRCGalleryManager.Forms.Panels;
 
@@ -10,6 +11,7 @@ namespace VRCGalleryManager.Forms
         private static string ANIMATION_STYLE = "";
 
         private readonly GifToSpriteSheetConverter converter;
+        SpriteSheetViewer viewer;
 
         private ApiRequest apiRequest;
 
@@ -131,6 +133,7 @@ namespace VRCGalleryManager.Forms
         private void trackBarFPS_ValueChanged(object sender, EventArgs e)
         {
             trackBarFPS.LabelText = trackBarFPS.Value.ToString();
+            if (viewer != null) viewer.UpdateFPS(trackBarFPS.Value);
         }
 
         private void createOpenTypePanel_Click(object sender, EventArgs e)
@@ -152,6 +155,8 @@ namespace VRCGalleryManager.Forms
                 previewSS.Image = spriteSheet;
                 imageframes = frameCount;
 
+                VRChatPreview();
+
                 NotificationManager.ShowNotification(
                     "GIF processed and sprite sheet generated successfully!",
                     "Paste Success",
@@ -169,6 +174,16 @@ namespace VRCGalleryManager.Forms
             finally
             {
                 pasteButton.Enabled = true;
+            }
+        }
+
+        private async void VRChatPreview()
+        {
+            if (spriteSheet != null)
+            {
+                viewer = new SpriteSheetViewer(previewVRChat);
+                await viewer.LoadSpriteSheetAsync(spriteSheet, imageframes, trackBarFPS.Value);
+                viewer.StartAnimation();
             }
         }
     }
