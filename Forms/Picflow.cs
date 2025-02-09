@@ -11,7 +11,7 @@ namespace VRCGalleryManager.Forms
     {
         private ApiRequest apiRequest;
 
-        private int imageCount;
+        HashSet<string> allStickers = new();
 
         public Picflow(VRCAuth auth)
         {
@@ -31,46 +31,32 @@ namespace VRCGalleryManager.Forms
         {
             _refreshButton.Enabled = false;
 
-            picflowPanel.Controls.Clear();
-            limitCounterLabel.Text = $"0 Stickers";
-
-            var mediaItems = await ExtractAllStickersAsync();
-
-            imageCount = mediaItems.Count();
-
-            foreach (var id in mediaItems)
-            {
-                ImagePanel.AddImagePanel(picflowPanel, apiRequest, id);
-            }
-
-            limitCounterLabel.Text = $"{imageCount} Stickers";
-
+            await ExtractAllStickersAsync();
             await AnimateClearTextAsync();
 
             _refreshButton.Enabled = true;
         }
 
-        private async Task<HashSet<string>> ExtractAllStickersAsync()
+        private async Task ExtractAllStickersAsync()
         {
-            string vrchatLogPath = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData).Replace("Local", "LocalLow"),
-                "VRChat", "VRChat");
+            picflowPanel.Controls.Clear();
+            allStickers = new HashSet<string>();
+            object lockObj = new object();
+
+            string vrchatLogPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData).Replace("Local", "LocalLow"), "VRChat", "VRChat");
 
             string[] logFiles = Directory.GetFiles(vrchatLogPath, "output_log_*.txt");
 
             if (logFiles.Length == 0)
             {
                 await AnimateTextAsync("No data found");
-                return new HashSet<string>();
             }
             else
             {
-                await AnimateTextAsync($"Found data from VRChat | Wait for the process...");
+                await AnimateTextAsync("Found data from VRChat | Wait for the process...");
             }
 
-            ConcurrentBag<string> allStickers = new();
-
-            Regex stickerRegex = new(@"\[Always\] \[StickersManager\] User .*? spawned sticker (file_[a-f0-9\-]+)", RegexOptions.Compiled);
+            Regex stickerRegex = new Regex(@"\[Always\] \[StickersManager\] User .*? spawned sticker (file_[a-f0-9\-]+)", RegexOptions.Compiled);
 
             var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount };
 
@@ -89,18 +75,29 @@ namespace VRCGalleryManager.Forms
                             if (match.Success)
                             {
                                 string sticker = match.Groups[1].Value;
-                                allStickers.Add(sticker);
+                                bool isNewSticker = false;
+
+                                lock (lockObj)
+                                {
+                                    isNewSticker = allStickers.Add(sticker);
+                                }
+                                if (isNewSticker)
+                                {
+                                    picflowPanel.Invoke((Action)(() =>
+                                    {
+                                        ImagePanel.AddImagePanel(picflowPanel, apiRequest, sticker);
+                                        limitCounterLabel.Text = $"{allStickers.Count} Stickers";
+                                    }));
+                                }
                             }
                         }
                     }
                 }
                 catch (IOException ex)
                 {
-                    Console.WriteLine($"Error opening the file {logFile}: {ex.Message}");
+                    Console.WriteLine($"Errore nell'aprire il file {logFile}: {ex.Message}");
                 }
             });
-
-            return allStickers.ToHashSet();
         }
 
         private async Task AnimateTextAsync(string text)

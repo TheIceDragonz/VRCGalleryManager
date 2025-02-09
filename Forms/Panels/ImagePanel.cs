@@ -290,24 +290,24 @@ namespace VRCGalleryManager.Forms.Panels
             string image256 = $"https://api.vrchat.cloud/api/1/image/{imageId}/1/256";
             string finalaviImage = await HttpImage.GetFinalUrlAsync(image256);
 
-            //* IMAGE Static PANEL
-            RoundedPictureBox pictureBox = new RoundedPictureBox
-            {
-                Size = size,
-                Dock = DockStyle.Top,
-                BackColor = Color.FromArgb(24, 27, 31),
-                SizeMode = PictureBoxSizeMode.StretchImage,
-                BorderRadiusBottomLeft = 10,
-                BorderRadiusBottomRight = 10,
-                BorderRadiusTopLeft = 10,
-                BorderRadiusTopRight = 10,
-                BorderColor = Color.FromArgb(24, 27, 31),
-                BorderSize = 5,
-                Padding = new Padding(5)
-            };
-
             if (!finalaviImage.Contains("imageNotFound"))
             {
+                //* IMAGE Static PANEL
+                RoundedPictureBox pictureBox = new RoundedPictureBox
+                {
+                    Size = size,
+                    Dock = DockStyle.Top,
+                    BackColor = Color.FromArgb(24, 27, 31),
+                    SizeMode = PictureBoxSizeMode.StretchImage,
+                    BorderRadiusBottomLeft = 10,
+                    BorderRadiusBottomRight = 10,
+                    BorderRadiusTopLeft = 10,
+                    BorderRadiusTopRight = 10,
+                    BorderColor = Color.FromArgb(24, 27, 31),
+                    BorderSize = 5,
+                    Padding = new Padding(5)
+                };
+
                 if (pictureBox.Controls["btn_open"] == null)
                 {
                     CircularButton btn_open = CircularButtonTools.CreateButton("open", (sender, e) =>
@@ -352,9 +352,9 @@ namespace VRCGalleryManager.Forms.Panels
                     btn_picflowupload.Location = new Point(pictureBox.Size.Width - 35, pictureBox.Size.Height - 35);
                     pictureBox.Controls.Add(btn_picflowupload);
                 }
-            }
 
-            mainPanel.Controls.Add(pictureBox);
+                mainPanel.Controls.Add(pictureBox);
+            }
         }
     }
 }
