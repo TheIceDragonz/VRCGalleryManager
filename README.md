@@ -27,7 +27,7 @@ VRCGalleryManager requires a **VRChat Plus** subscription to manage your photo g
 ## Installation
 To install **VRCGalleryManager**, download and run the latest version of the installer:
 
-[VRCGalleryManager.msi](https://github.com/alvr-org/ALVR/releases/latest)
+- [VRCGalleryManager.msi](https://github.com/alvr-org/ALVR/releases/latest)
 
 ## Installation Steps
 
