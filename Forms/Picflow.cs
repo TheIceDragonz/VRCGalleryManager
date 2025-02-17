@@ -32,7 +32,6 @@ namespace VRCGalleryManager.Forms
             _refreshButton.Enabled = false;
 
             await ExtractAllStickersAsync();
-            await AnimateClearTextAsync();
 
             _refreshButton.Enabled = true;
         }
@@ -50,13 +49,14 @@ namespace VRCGalleryManager.Forms
             if (logFiles.Length == 0)
             {
                 await AnimateTextAsync("No data found");
+                return;
             }
             else
             {
                 await AnimateTextAsync("Found data from VRChat | Wait for the process...");
             }
 
-            Regex stickerRegex = new Regex(@"\[Always\] \[StickersManager\] User .*? spawned sticker (file_[a-f0-9\-]+)", RegexOptions.Compiled);
+            Regex stickerRegex = new Regex(@"\[StickersManager\] User .*? spawned sticker (file_[a-f0-9\-]+)", RegexOptions.Compiled);
 
             var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount };
 
@@ -95,6 +95,14 @@ namespace VRCGalleryManager.Forms
                     Console.WriteLine($"Errore nell'aprire il file {logFile}: {ex.Message}");
                 }
             });
+
+            if (allStickers.Count == 0)
+            {
+                await AnimateTextAsync("No stickers found");
+                return;
+            }
+
+            await AnimateClearTextAsync();
         }
 
         private async Task AnimateTextAsync(string text)
