@@ -3,6 +3,7 @@
 /bin/Debug/*
 /obj/Debug/*
 /obj/Release/*
+/obj/publish/*
 
 /obj/project.nuget.cache
 /obj/VRCGalleryManager.csproj.nuget.dgspec.json
