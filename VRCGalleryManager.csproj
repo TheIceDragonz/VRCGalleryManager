@@ -9,6 +9,12 @@
     <SupportedOSPlatformVersion>7.0</SupportedOSPlatformVersion>
     <ApplicationIcon>Icon.ico</ApplicationIcon>
     <Configurations>Debug;Release;Publish</Configurations>
+    <Copyright>TheIceDragonz</Copyright>
+    <Description>Simple Tool for your VRChat gallery</Description>
+    <PackageProjectUrl>https://github.com/TheIceDragonz/VRCGalleryManager</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/TheIceDragonz/VRCGalleryManager</RepositoryUrl>
+    <PackageIcon></PackageIcon>
+    <PackageReleaseNotes></PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>
@@ -68,6 +74,10 @@
     <None Update="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <None Update="Resources\VRCGM.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
     </None>
   </ItemGroup>
 
