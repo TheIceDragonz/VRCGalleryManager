@@ -282,7 +282,8 @@ namespace VRCGalleryManager.Forms.Panels
             mainPanel.Controls.Add(pictureBox);
         }
 
-        static public async void AddImagePanel(FlowLayoutPanel mainPanel, ApiRequest apiRequest, string imageId)
+        //PicFlow
+        static public async void AddImagePanel(FlowLayoutPanel mainPanel, ApiRequest apiRequest, string userId, string username, string imageId)
         {
             Size size = new Size(150, 150);
 
@@ -307,6 +308,20 @@ namespace VRCGalleryManager.Forms.Panels
                     BorderSize = 5,
                     Padding = new Padding(5)
                 };
+
+                RoundedLabel authorLabel = new RoundedLabel
+                {
+                    Text = username,
+                    ForeColor = Color.White,
+                    Font = new Font("Arial", 8, FontStyle.Bold),
+                    AutoSize = true,
+                    Location = new Point(5, 5),
+                    BackColor = Color.FromArgb(24, 27, 31),
+                    BorderSize = 0,
+                };
+                authorLabel.Click += (s, e) => Process.Start(new ProcessStartInfo($"https://vrchat.com/home/user/{userId}") { UseShellExecute = true });
+                authorLabel.Cursor = Cursors.Hand;
+                pictureBox.Controls.Add(authorLabel);
 
                 if (pictureBox.Controls["btn_open"] == null)
                 {

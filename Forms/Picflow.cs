@@ -56,7 +56,7 @@ namespace VRCGalleryManager.Forms
                 await AnimateTextAsync("Found data from VRChat | Wait for the process...");
             }
 
-            Regex stickerRegex = new Regex(@"\[StickersManager\] User .*? spawned sticker (file_[a-f0-9\-]+)", RegexOptions.Compiled);
+            Regex stickerRegex = new Regex(@"\[StickersManager\] User (?<userId>.*?) \((?<username>.*?)\) spawned sticker (?<sticker>file_[a-f0-9\-]+)", RegexOptions.Compiled);
 
             var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount };
 
@@ -74,17 +74,23 @@ namespace VRCGalleryManager.Forms
                         {
                             if (match.Success)
                             {
-                                string sticker = match.Groups[1].Value;
+                                string userId = match.Groups["userId"].Value;
+                                string username = match.Groups["username"].Value;
+                                string sticker = match.Groups["sticker"].Value;
+
                                 bool isNewSticker = false;
-                                lock (lockObj) isNewSticker = allStickers.Add(sticker);
+                                lock (lockObj)
+                                {
+                                    isNewSticker = allStickers.Add(sticker);
+                                }
 
                                 if (isNewSticker)
                                 {
-                                    picflowPanel.Invoke((() =>
+                                    picflowPanel.Invoke(() =>
                                     {
-                                        ImagePanel.AddImagePanel(picflowPanel, apiRequest, sticker);
+                                        ImagePanel.AddImagePanel(picflowPanel, apiRequest, userId, username, sticker);
                                         limitCounterLabel.Text = $"{allStickers.Count} Stickers";
-                                    }));
+                                    });
                                 }
                             }
                         }
