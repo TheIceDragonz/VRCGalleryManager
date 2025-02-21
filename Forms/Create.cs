@@ -54,7 +54,7 @@ namespace VRCGalleryManager.Forms
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                NotificationManager.ShowNotification(ex.Message, "Error", NotificationType.Error);
             }
         }
 
@@ -82,7 +82,7 @@ namespace VRCGalleryManager.Forms
                         try
                         {
                             converter.SaveSpriteSheet(saveDialog.FileName);
-                            MessageBox.Show("Sprite sheet saved successfully.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            NotificationManager.ShowNotification("Sprite sheet saved successfully.", "Success", NotificationType.Error);
                         }
                         catch (Exception ex)
                         {
@@ -93,7 +93,7 @@ namespace VRCGalleryManager.Forms
             }
             else
             {
-                MessageBox.Show("No sprite sheet available to save.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                NotificationManager.ShowNotification("No sprite sheet available to save.", "Error", NotificationType.Error);
             }
         }
 
@@ -115,7 +115,7 @@ namespace VRCGalleryManager.Forms
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show(ex.Message, "Error during file upload", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        NotificationManager.ShowNotification(ex.Message, "Error during file upload", NotificationType.Error);
                     }
                 }
                 else
@@ -157,11 +157,7 @@ namespace VRCGalleryManager.Forms
 
                 VRChatPreview();
 
-                NotificationManager.ShowNotification(
-                    "GIF processed and sprite sheet generated successfully!",
-                    "Paste Success",
-                    NotificationType.Success
-                );
+                NotificationManager.ShowNotification("GIF processed and sprite sheet generated successfully!", "Paste Success", NotificationType.Success);
             }
             catch (Exception ex)
             {

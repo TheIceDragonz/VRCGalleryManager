@@ -84,6 +84,7 @@ namespace VRCGalleryManager.Forms
                 _password.Text = "";
                 _vrcLoginLabel.Text = "VRChat Login";
                 _vrcLoginLabel.ForeColor = Color.Azure;
+                viewPassword.Enabled = true;
                 ToggleLoginFields(true);
                 UpdateLoginButtonUI(false);
                 _mainPanel.ProfileImageRemover();
@@ -105,6 +106,7 @@ namespace VRCGalleryManager.Forms
                     UserIconImage = currentUser.UserIcon;
                     UserBannerImage = !string.IsNullOrEmpty(currentUser.ProfilePicOverrideThumbnail) ? currentUser.ProfilePicOverrideThumbnail : currentUser.CurrentAvatarThumbnailImageUrl;
                     Badges.Clear();
+                    viewPassword.Enabled = false;
                     foreach (var badge in currentUser.Badges)
                     {
                         Badges.Add(badge.ToJson());
@@ -342,6 +344,15 @@ namespace VRCGalleryManager.Forms
             formatted = $"{size:0.##} {units[unitIndex]}";
         }
 
-        
+        private void viewPassword_MouseDown(object sender, MouseEventArgs e)
+        {
+            _password.UseSystemPasswordChar = false;
+        }
+
+        private void viewPassword_MouseUp(object sender, MouseEventArgs e)
+        {
+            _password.UseSystemPasswordChar = true;
+        }
+
     }
 }
