@@ -2,6 +2,7 @@
 using VRChat.API.Api;
 using VRChat.API.Client;
 using VRChat.API.Model;
+using VRCGalleryManager.Core.Helpers;
 
 namespace VRCGalleryManager.Core
 {
@@ -96,15 +97,18 @@ namespace VRCGalleryManager.Core
         {
             var cookies = ApiClient.CookieContainer.GetAllCookies();
             string cookieString = string.Join(";", cookies.Select(c => $"{c.Name}={c.Value}"));
+            string encryptedCookies = CryptAuth.Encrypt(cookieString);
             Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "VRCGalleryManager"));
-            System.IO.File.WriteAllText(tokenFilePath, cookieString);
+            System.IO.File.WriteAllText(tokenFilePath, encryptedCookies);
         }
+
 
         public void LoadCookies()
         {
             try
             {
-                string cookieString = System.IO.File.ReadAllText(tokenFilePath);
+                string encryptedCookieString = System.IO.File.ReadAllText(tokenFilePath);
+                string cookieString = CryptAuth.Decrypt(encryptedCookieString);
                 Config.DefaultHeaders.Add("Cookie", cookieString);
                 AuthApi = new AuthenticationApi(ApiClient, ApiClient, Config);
                 CookieLoaded = true;
