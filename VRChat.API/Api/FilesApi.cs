@@ -20,6 +20,7 @@ using System.Net.Http.Headers;
 using System.Net.Mime;
 using System.Text;
 using VRCGalleryManager.Core.DTO;
+using VRCGalleryManager.Core.Helpers;
 using VRChat.API.Client;
 using VRChat.API.Model;
 using File = VRChat.API.Model.File;
@@ -848,7 +849,7 @@ namespace VRChat.API.Api
         {
             var requestUrl = "https://api.vrchat.cloud/api/1";
             string tokenFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "VRCGalleryManager", "authToken.txt");
-            string cookieString = System.IO.File.ReadAllText(tokenFilePath);
+            string cookieString = CryptAuth.Decrypt(System.IO.File.ReadAllText(tokenFilePath));
 
             using (var client = new HttpClient())
             {
@@ -961,7 +962,7 @@ namespace VRChat.API.Api
             var requestUrl = "https://api.vrchat.cloud/api/1/file/image";
 
             string tokenFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "VRCGalleryManager", "authToken.txt");
-            string cookieString = System.IO.File.ReadAllText(tokenFilePath);
+            string cookieString = CryptAuth.Decrypt(System.IO.File.ReadAllText(tokenFilePath));
 
             // Open the image file in read-only mode
             using (var fileStream = System.IO.File.OpenRead(filePath))

@@ -102,13 +102,11 @@ namespace VRCGalleryManager.Core
             System.IO.File.WriteAllText(tokenFilePath, encryptedCookies);
         }
 
-
         public void LoadCookies()
         {
             try
             {
-                string encryptedCookieString = System.IO.File.ReadAllText(tokenFilePath);
-                string cookieString = CryptAuth.Decrypt(encryptedCookieString);
+                string cookieString = CryptAuth.Decrypt(System.IO.File.ReadAllText(tokenFilePath));
                 Config.DefaultHeaders.Add("Cookie", cookieString);
                 AuthApi = new AuthenticationApi(ApiClient, ApiClient, Config);
                 CookieLoaded = true;
