@@ -328,6 +328,13 @@ namespace VRCGalleryManager.Design
             Resize += Button_Resize;
         }
 
+        protected override void OnHandleDestroyed(EventArgs e)
+        {
+            if (Parent != null)
+                Parent.BackColorChanged -= Container_BackColorChanged;
+            base.OnHandleDestroyed(e);
+        }
+
         private GraphicsPath GetFigurePath(Rectangle rect, float radius)
         {
             GraphicsPath path = new GraphicsPath();

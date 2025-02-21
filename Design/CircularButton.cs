@@ -313,5 +313,12 @@ namespace VRCGalleryManager.Design
         {
             Invalidate();
         }
+
+        protected override void OnHandleDestroyed(EventArgs e)
+        {
+            if (Parent != null)
+                Parent.BackColorChanged -= Container_BackColorChanged;
+            base.OnHandleDestroyed(e);
+        }
     }
 }

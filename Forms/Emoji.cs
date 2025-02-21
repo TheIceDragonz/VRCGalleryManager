@@ -30,8 +30,6 @@ namespace VRCGalleryManager.Forms
             apiRequest = new ApiRequest(auth);
 
             this.Shown += (s, e) => { if (emojiPanel.Controls.Count == 0) EmojiList(); };
-
-            TypePanel.LoadEmojiType(emojiOpenTypePanel, emojiTypePanel);
         }
 
         private void _refreshButton_Click(object sender, EventArgs e)
@@ -119,6 +117,15 @@ namespace VRCGalleryManager.Forms
 
         private void emojiOpenTypePanel_Click(object sender, EventArgs e)
         {
+            if (emojiTypePanel.Visible)
+            {
+                TypePanel.ClearEmojiType(emojiTypePanel);
+            }
+            else
+            {
+                TypePanel.LoadEmojiType(emojiOpenTypePanel, emojiTypePanel);
+            }
+
             emojiTypePanel.Visible = !emojiTypePanel.Visible;
         }
 

@@ -6,72 +6,136 @@ namespace VRCGalleryManager.Forms.Panels
 {
     public class TypePanel
     {
-        static public void LoadEmojiType(Button buttonTypePanel, Panel typePanel)
+        private class EmojiPanelTag
         {
-            EmojiType emojiType = new EmojiType();
+            public Button ButtonTypePanel { get; set; }
+            public Panel TypePanel { get; set; }
+            public TypeWithImage TypeWithImage { get; set; }
+        }
 
-            foreach (var typeWithImage in emojiType.TypesWithImages)
+        private static void Control_MouseEnter(object sender, EventArgs e)
+        {
+            if (sender is Control c)
             {
-                AddEmojiTypePanel(buttonTypePanel, typePanel, typeWithImage);
+                Panel panel = c as Panel ?? c.Parent as Panel;
+                if (panel != null)
+                    panel.BackColor = System.Drawing.Color.FromArgb(34, 37, 41);
             }
         }
 
-        static private void AddEmojiTypePanel(Button buttonTypePanel, Panel typePanel, TypeWithImage typeWithImage)
+        private static void Control_MouseLeave(object sender, EventArgs e)
+        {
+            if (sender is Control c)
+            {
+                Panel panel = c as Panel ?? c.Parent as Panel;
+                if (panel != null)
+                    panel.BackColor = System.Drawing.Color.FromArgb(24, 27, 31);
+            }
+        }
+
+        private static void Control_Click(object sender, EventArgs e)
+        {
+            if (sender is Control c)
+            {
+                Panel panel = c as Panel ?? c.Parent as Panel;
+                if (panel != null && panel.Tag is EmojiPanelTag tag)
+                {
+                    tag.ButtonTypePanel.Text = tag.TypeWithImage.Type;
+                    ClearEmojiType(tag.TypePanel);
+                    tag.TypePanel.Visible = false;
+                }
+            }
+        }
+
+        public static void LoadEmojiType(Button buttonTypePanel, Panel typePanel)
+        {
+            typePanel.SuspendLayout();
+            EmojiType emojiType = new EmojiType();
+            foreach (var typeWithImage in emojiType.TypesWithImages)
+                AddEmojiTypePanel(buttonTypePanel, typePanel, typeWithImage);
+            typePanel.ResumeLayout();
+        }
+
+        public static void ClearEmojiType(Panel typePanel)
+        {
+            foreach (Control ctrl in typePanel.Controls)
+                DisposeControl(ctrl);
+            typePanel.Controls.Clear();
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+            GC.Collect();
+        }
+
+        private static void DisposeControl(Control ctrl)
+        {
+            ctrl.MouseEnter -= Control_MouseEnter;
+            ctrl.MouseLeave -= Control_MouseLeave;
+            ctrl.Click -= Control_Click;
+            foreach (Control child in ctrl.Controls)
+                DisposeControl(child);
+            if (ctrl is PictureBox pb && pb.Image != null)
+            {
+                pb.Image.Dispose();
+                pb.Image = null;
+            }
+            ctrl.Tag = null;
+            ctrl.Dispose();
+        }
+
+        private static void AddEmojiTypePanel(Button buttonTypePanel, Panel typePanel, TypeWithImage typeWithImage)
         {
             RoundedPanel panel = new RoundedPanel
             {
-                Dock = DockStyle.Top,
-                BackColor = Color.FromArgb(24, 27, 31),
-                Padding = new Padding(5),
+                Dock = System.Windows.Forms.DockStyle.Top,
+                BackColor = System.Drawing.Color.FromArgb(24, 27, 31),
+                Padding = new System.Windows.Forms.Padding(5),
                 Height = 100,
                 BorderRadius = 15,
-                Margin = new Padding(5)
+                Margin = new System.Windows.Forms.Padding(5)
             };
 
             RoundedPictureBox pictureBox = new RoundedPictureBox
             {
                 Width = 90,
-                Dock = DockStyle.Left,
-                BackColor = Color.FromArgb(24, 27, 31),
-                SizeMode = PictureBoxSizeMode.StretchImage,
+                Dock = System.Windows.Forms.DockStyle.Left,
+                BackColor = System.Drawing.Color.FromArgb(24, 27, 31),
+                SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage,
                 BorderRadiusBottomLeft = 10,
                 BorderRadiusBottomRight = 10,
                 BorderRadiusTopLeft = 10,
                 BorderRadiusTopRight = 10,
+                Image = (Image)typeWithImage.Image.Clone()
             };
-            pictureBox.Image = typeWithImage.Image;
             panel.Controls.Add(pictureBox);
 
-            Label labelName = new Label
+            System.Windows.Forms.Label labelName = new System.Windows.Forms.Label
             {
-                Dock = DockStyle.Right,
-                TextAlign = ContentAlignment.MiddleCenter,
-                Font = new Font("Arial", 12, FontStyle.Bold),
-                ForeColor = Color.White,
-                Text = typeWithImage.Type,
+                Dock = System.Windows.Forms.DockStyle.Right,
+                TextAlign = System.Drawing.ContentAlignment.MiddleCenter,
+                Font = new System.Drawing.Font("Arial", 12, System.Drawing.FontStyle.Bold),
+                ForeColor = System.Drawing.Color.White,
+                Text = typeWithImage.Type
             };
             panel.Controls.Add(labelName);
 
-            EventHandler eventEnter = (sender, e) => panel.BackColor = Color.FromArgb(34, 37, 41);
-            EventHandler eventLeave = (sender, e) => panel.BackColor = Color.FromArgb(24, 27, 31);
-
-            panel.MouseEnter += eventEnter;
-            pictureBox.MouseEnter += eventEnter;
-            labelName.MouseEnter += eventEnter;
-
-            panel.MouseLeave += eventLeave;
-            pictureBox.MouseLeave += eventLeave;
-            labelName.MouseLeave += eventLeave;
-
-            EventHandler eventClick = (sender, e) =>
+            panel.Tag = new EmojiPanelTag
             {
-                buttonTypePanel.Text = typeWithImage.Type;
-                typePanel.Visible = false;
+                ButtonTypePanel = buttonTypePanel,
+                TypePanel = typePanel,
+                TypeWithImage = typeWithImage
             };
 
-            panel.Click += eventClick;
-            pictureBox.Click += eventClick;
-            labelName.Click += eventClick;
+            panel.MouseEnter += Control_MouseEnter;
+            pictureBox.MouseEnter += Control_MouseEnter;
+            labelName.MouseEnter += Control_MouseEnter;
+
+            panel.MouseLeave += Control_MouseLeave;
+            pictureBox.MouseLeave += Control_MouseLeave;
+            labelName.MouseLeave += Control_MouseLeave;
+
+            panel.Click += Control_Click;
+            pictureBox.Click += Control_Click;
+            labelName.Click += Control_Click;
 
             typePanel.Controls.Add(panel);
         }

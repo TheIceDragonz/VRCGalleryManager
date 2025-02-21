@@ -28,8 +28,6 @@ namespace VRCGalleryManager.Forms
 
             converter = new GifToSpriteSheetConverter();
 
-            TypePanel.LoadEmojiType(createOpenTypePanel, createTypePanel);
-
             trackBarFPS.LabelText = trackBarFPS.Value.ToString();
         }
 
@@ -138,6 +136,14 @@ namespace VRCGalleryManager.Forms
 
         private void createOpenTypePanel_Click(object sender, EventArgs e)
         {
+            if(createTypePanel.Visible)
+            {
+                TypePanel.ClearEmojiType(createTypePanel);
+            }
+            else
+            {
+                TypePanel.LoadEmojiType(createOpenTypePanel, createTypePanel);
+            }
             createTypePanel.Visible = !createTypePanel.Visible;
         }
 
