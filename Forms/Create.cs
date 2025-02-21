@@ -163,7 +163,7 @@ namespace VRCGalleryManager.Forms
 
                 VRChatPreview();
 
-                NotificationManager.ShowNotification("GIF processed and sprite sheet generated successfully!", "Paste Success", NotificationType.Success);
+                NotificationManager.ShowNotification("GIF processed and sprite sheet generated successfully!", "Paste Success", NotificationType.Info);
             }
             catch (Exception ex)
             {

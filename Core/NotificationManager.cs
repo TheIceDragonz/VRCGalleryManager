@@ -14,11 +14,31 @@ namespace VRCGalleryManager.Core
         {
             Form mainForm = Application.OpenForms["MainPanel"];
 
+            // Seleziona i colori in base al tipo di notifica
+            Color borderColor;
+            Color textColor;
+            switch (type)
+            {
+                case NotificationType.Success:
+                    borderColor = Color.LightGreen;
+                    textColor = Color.LightGreen;
+                    break;
+                case NotificationType.Info:
+                    borderColor = Color.LightBlue;
+                    textColor = Color.LightBlue;
+                    break;
+                case NotificationType.Error:
+                default:
+                    borderColor = Color.LightCoral;
+                    textColor = Color.LightCoral;
+                    break;
+            }
+
             RoundedPanel notificationPanel = new RoundedPanel
             {
                 BorderRadius = 10,
                 BorderSize = 3,
-                BorderColor = type == NotificationType.Success ? Color.LightGreen : Color.LightCoral,
+                BorderColor = borderColor,
                 Size = new Size(PanelWidth, PanelHeight),
                 BackColor = Color.FromArgb(5, 5, 5),
                 Location = new Point(-PanelWidth, mainForm.ClientSize.Height - (PanelHeight + Spacing)),
@@ -29,7 +49,7 @@ namespace VRCGalleryManager.Core
             {
                 Text = title,
                 Font = new Font("Arial", 12, FontStyle.Bold),
-                ForeColor = type == NotificationType.Success ? Color.LightGreen : Color.LightCoral,
+                ForeColor = textColor,
                 AutoSize = true,
                 Location = new Point(10, 10)
             };
@@ -39,7 +59,7 @@ namespace VRCGalleryManager.Core
             {
                 Text = message,
                 Font = new Font("Arial", 10),
-                ForeColor = type == NotificationType.Success ? Color.LightGreen : Color.LightCoral,
+                ForeColor = textColor,
                 AutoSize = true,
                 MaximumSize = new Size(PanelWidth - 20, 0),
                 Location = new Point(10, 40)
@@ -73,6 +93,7 @@ namespace VRCGalleryManager.Core
             };
             closeTimer.Start();
         }
+
         private static void RemoveNotification(RoundedPanel notificationPanel)
         {
             Timer slideOutTimer = new Timer { Interval = 5 };
@@ -112,6 +133,7 @@ namespace VRCGalleryManager.Core
     public enum NotificationType
     {
         Success,
+        Info,
         Error
     }
 }

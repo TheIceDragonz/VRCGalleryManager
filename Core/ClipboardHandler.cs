@@ -73,7 +73,7 @@ namespace VRCGalleryManager.Core
                 {
                     string filePath = GetTempFilePath("Pasted-Image");
                     image.Save(filePath, System.Drawing.Imaging.ImageFormat.Png);
-                    NotificationManager.ShowNotification("Image pasted and saved successfully!", "Paste Image", NotificationType.Success);
+                    NotificationManager.ShowNotification("Image pasted and saved successfully!", "Paste Image", NotificationType.Info);
                     return filePath;
                 }
                 else
@@ -145,7 +145,7 @@ namespace VRCGalleryManager.Core
                             {
                                 image.Save(filePath, System.Drawing.Imaging.ImageFormat.Png);
                             }
-                            NotificationManager.ShowNotification("Image downloaded and saved successfully!", "Download Image", NotificationType.Success);
+                            NotificationManager.ShowNotification("Image downloaded and saved successfully!", "Download Image", NotificationType.Info);
                             return filePath;
                         }
                     }

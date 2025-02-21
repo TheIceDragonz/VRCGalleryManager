@@ -124,14 +124,14 @@ namespace VRCGalleryManager.Forms
                         _vrcLoginLabel.Text = "VRChat Login (You need VRChat Plus to use this program.)";
                         _vrcLoginLabel.ForeColor = Color.Yellow;
 
-                        NotificationManager.ShowNotification("You need VRChat Plus to use this program.", "VRChat Plus Required", NotificationType.Error);
+                        NotificationManager.ShowNotification("You need VRChat Plus to use this program.", "VRChat Plus Required", NotificationType.Info);
                     }
                 }
                 catch (Exception ex)
                 {
                     if (ex.Message.ToLower().Contains("expired"))
                     {
-                        NotificationManager.ShowNotification("Token expired. Please log in again.", "Token Expired", NotificationType.Error);
+                        NotificationManager.ShowNotification("Token expired. Please log in again.", "Token Expired", NotificationType.Info);
                         Logout();
                     }
                     else
@@ -175,44 +175,8 @@ namespace VRCGalleryManager.Forms
 
         private async void _checkUpdate_Click(object sender, EventArgs e)
         {
-            try
-            {
-                using (var client = new HttpClient())
-                {
-                    client.DefaultRequestHeaders.UserAgent.ParseAdd("VRCGalleryManager");
-                    string apiUrl = "https://api.github.com/repos/TheIceDragonz/VRCGalleryManager/releases/latest";
-                    string jsonResponse = await client.GetStringAsync(apiUrl);
-                    using (JsonDocument doc = JsonDocument.Parse(jsonResponse))
-                    {
-                        JsonElement root = doc.RootElement;
-                        string latestVersion = root.GetProperty("tag_name").GetString();
-                        string localVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString();
-                        if (!string.Equals(localVersion, latestVersion, StringComparison.OrdinalIgnoreCase))
-                        {
-                            DialogResult result = MessageBox.Show(
-                                $"A new version ({latestVersion}) is available.\nYou are currently using version {localVersion}.\n\nDo you want to open the releases page?",
-                                "Update Available",
-                                MessageBoxButtons.YesNo,
-                                MessageBoxIcon.Information);
-                            if (result == DialogResult.Yes)
-                            {
-                                Process.Start(new ProcessStartInfo("https://github.com/TheIceDragonz/VRCGalleryManager/releases")
-                                {
-                                    UseShellExecute = true
-                                });
-                            }
-                        }
-                        else
-                        {
-                            NotificationManager.ShowNotification("You are using the latest version.", "No Update", NotificationType.Error);
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                NotificationManager.ShowNotification("Error checking for updates:\n" + ex.Message, "Error", NotificationType.Error);
-            }
+            var updater = new UpdateManager();
+            await updater.CheckForUpdatesAsync();
         }
 
         private void _openCacheFolder_Click(object sender, EventArgs e)
