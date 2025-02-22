@@ -183,6 +183,18 @@ namespace VRCGalleryManager.Forms
         {
             if (spriteSheet != null)
             {
+                if (viewer != null)
+                {
+                    viewer.StopAnimation();
+                    viewer = null;
+                }
+
+                if (previewVRChat.Image != null)
+                {
+                    previewVRChat.Image.Dispose();
+                    previewVRChat.Image = null;
+                }
+
                 viewer = new SpriteSheetViewer(previewVRChat);
                 await viewer.LoadSpriteSheetAsync(spriteSheet, imageframes, trackBarFPS.Value);
                 viewer.StartAnimation();
