@@ -29,6 +29,25 @@ namespace VRCGalleryManager.Forms.UIComponents
                 Anchor = AnchorStyles.Bottom | AnchorStyles.Right
             };
 
+            CustomToolTip toolTip = new()
+            {
+                ToolTipBackColor = Color.FromArgb(7, 36, 43),
+                ToolTipForeColor = Color.FromArgb(106, 227, 249),
+                BorderSize = 1,
+                BorderRadius = 5,
+                BorderColor = Color.FromArgb(5, 55, 66)
+            };
+
+            toolTip.SetToolTip(button, type switch
+            {
+                "open" => "Open in browser",
+                "delete" => "Delete",
+                "picflowupload" => "Upload",
+                _ => null
+            });
+
+            button.MouseLeave += (sender, args) => toolTip.Hide(button);
+
             string resourceName = type switch
             {
                 "open" => nameof(Resources.open_in_browser_svgrepo_com),
