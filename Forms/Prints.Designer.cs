@@ -204,6 +204,7 @@ namespace VRCGalleryManager.Forms
             // Prints
             // 
             AllowDrop = true;
+            AutoScaleDimensions = new SizeF(96F, 96F);
             AutoScaleMode = AutoScaleMode.Dpi;
             BackColor = Color.FromArgb(5, 5, 5);
             ClientSize = new Size(796, 587);

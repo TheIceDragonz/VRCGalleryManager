@@ -338,6 +338,7 @@ namespace VRCGalleryManager.Forms
             // Create
             // 
             AllowDrop = true;
+            AutoScaleDimensions = new SizeF(96F, 96F);
             AutoScaleMode = AutoScaleMode.Dpi;
             BackColor = Color.FromArgb(5, 5, 5);
             ClientSize = new Size(735, 559);

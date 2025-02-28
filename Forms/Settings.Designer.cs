@@ -180,7 +180,7 @@ namespace VRCGalleryManager.Forms
             _password.Location = new Point(111, 10);
             _password.Margin = new Padding(4, 3, 4, 3);
             _password.Name = "_password";
-            _password.Size = new Size(698, 16);
+            _password.Size = new Size(698, 20);
             _password.TabIndex = 5;
             _password.UseSystemPasswordChar = true;
             // 
@@ -195,7 +195,7 @@ namespace VRCGalleryManager.Forms
             label6.Location = new Point(19, 10);
             label6.Margin = new Padding(4, 0, 4, 0);
             label6.Name = "label6";
-            label6.Size = new Size(69, 15);
+            label6.Size = new Size(86, 20);
             label6.TabIndex = 14;
             label6.Text = "Password:";
             label6.TextAlign = ContentAlignment.MiddleLeft;
@@ -227,7 +227,7 @@ namespace VRCGalleryManager.Forms
             _username.Location = new Point(111, 10);
             _username.Margin = new Padding(4, 3, 4, 3);
             _username.Name = "_username";
-            _username.Size = new Size(725, 16);
+            _username.Size = new Size(725, 20);
             _username.TabIndex = 5;
             // 
             // label7
@@ -240,7 +240,7 @@ namespace VRCGalleryManager.Forms
             label7.Location = new Point(17, 10);
             label7.Margin = new Padding(4, 0, 4, 0);
             label7.Name = "label7";
-            label7.Size = new Size(71, 15);
+            label7.Size = new Size(86, 20);
             label7.TabIndex = 14;
             label7.Text = "Username:";
             label7.TextAlign = ContentAlignment.MiddleLeft;
@@ -426,6 +426,8 @@ namespace VRCGalleryManager.Forms
             // 
             // Settings
             // 
+            AutoScaleDimensions = new SizeF(120F, 120F);
+            AutoScaleDimensions = new SizeF(96F, 96F);
             AutoScaleMode = AutoScaleMode.Dpi;
             AutoScroll = true;
             BackColor = Color.FromArgb(5, 5, 5);

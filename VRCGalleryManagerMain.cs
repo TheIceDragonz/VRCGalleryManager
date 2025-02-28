@@ -155,7 +155,7 @@ namespace VRCGalleryManager
         //Banner Icon Animation
         public void BigBannerIcon(bool active)
         {
-            int targetHeight = active ? 150 : 55;
+            int targetHeight = active ? 150 : 45;
 
             int totalDuration = 300;
             int interval = 10;
@@ -184,5 +184,6 @@ namespace VRCGalleryManager
             timer.Start();
         }
 
+        
     }
 }

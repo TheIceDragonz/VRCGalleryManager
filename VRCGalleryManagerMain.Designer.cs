@@ -428,6 +428,7 @@ namespace VRCGalleryManager
             // 
             // MainPanel
             // 
+            AutoScaleDimensions = new SizeF(96F, 96F);
             AutoScaleMode = AutoScaleMode.Dpi;
             BackColor = Color.FromArgb(15, 17, 19);
             ClientSize = new Size(1015, 589);
