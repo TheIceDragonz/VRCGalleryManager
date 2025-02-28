@@ -428,8 +428,7 @@ namespace VRCGalleryManager
             // 
             // MainPanel
             // 
-            AutoScaleDimensions = new SizeF(7F, 15F);
-            AutoScaleMode = AutoScaleMode.Font;
+            AutoScaleMode = AutoScaleMode.Dpi;
             BackColor = Color.FromArgb(15, 17, 19);
             ClientSize = new Size(1015, 589);
             Controls.Add(badgeBox3);

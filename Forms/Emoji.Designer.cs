@@ -223,8 +223,7 @@ namespace VRCGalleryManager.Forms
             // Emoji
             // 
             AllowDrop = true;
-            AutoScaleDimensions = new SizeF(7F, 15F);
-            AutoScaleMode = AutoScaleMode.Font;
+            AutoScaleMode = AutoScaleMode.Dpi;
             BackColor = Color.FromArgb(5, 5, 5);
             ClientSize = new Size(785, 587);
             Controls.Add(pasteButton);

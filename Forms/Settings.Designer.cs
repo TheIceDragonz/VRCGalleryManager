@@ -426,8 +426,7 @@ namespace VRCGalleryManager.Forms
             // 
             // Settings
             // 
-            AutoScaleDimensions = new SizeF(7F, 15F);
-            AutoScaleMode = AutoScaleMode.Font;
+            AutoScaleMode = AutoScaleMode.Dpi;
             AutoScroll = true;
             BackColor = Color.FromArgb(5, 5, 5);
             ClientSize = new Size(873, 621);

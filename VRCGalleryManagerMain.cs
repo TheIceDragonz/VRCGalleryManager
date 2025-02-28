@@ -28,9 +28,6 @@ namespace VRCGalleryManager
 
             bannerIcon.Height = 150;
 
-            //this.AutoScaleMode = AutoScaleMode.Dpi;
-            //this.Scale(new SizeF(Screen.PrimaryScreen.Bounds.Width / 1920f, Screen.PrimaryScreen.Bounds.Height / 1080f));
-
             Auth = VRCAuth.Instance();
             Auth.LoadCookies();
 
@@ -158,10 +155,7 @@ namespace VRCGalleryManager
         //Banner Icon Animation
         public void BigBannerIcon(bool active)
         {
-            int targetWidth = 157;
-            int targetHeight = active ? 150 : 45;
-
-            bannerIcon.Width = targetWidth;
+            int targetHeight = active ? 150 : 55;
 
             int totalDuration = 300;
             int interval = 10;
@@ -189,5 +183,6 @@ namespace VRCGalleryManager
             };
             timer.Start();
         }
+
     }
 }

@@ -204,8 +204,7 @@ namespace VRCGalleryManager.Forms
             // Prints
             // 
             AllowDrop = true;
-            AutoScaleDimensions = new SizeF(7F, 15F);
-            AutoScaleMode = AutoScaleMode.Font;
+            AutoScaleMode = AutoScaleMode.Dpi;
             BackColor = Color.FromArgb(5, 5, 5);
             ClientSize = new Size(796, 587);
             Controls.Add(textBoxNotePrint);
