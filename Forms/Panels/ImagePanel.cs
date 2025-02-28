@@ -4,6 +4,7 @@ using VRCGalleryManager.Core;
 using VRCGalleryManager.Core.DTO;
 using VRCGalleryManager.Design;
 using VRCGalleryManager.Forms.UIComponents;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
 
 namespace VRCGalleryManager.Forms.Panels
 {
@@ -218,7 +219,7 @@ namespace VRCGalleryManager.Forms.Panels
         }
 
         //Prints
-        static public async void AddImagePanel(FlowLayoutPanel mainPanel, ApiRequest apiRequest, string printid, string imageId, Action<string> UpdateCounter)
+        static public async void AddPrintsPanel(FlowLayoutPanel mainPanel, ApiRequest apiRequest, string printid, string userId, string username, string imageId, Action<string> UpdateCounter)
         {
             Size size = new Size(190, 150);
 
@@ -243,6 +244,20 @@ namespace VRCGalleryManager.Forms.Panels
                 BorderSize = 5,
                 Padding = new Padding(5)
             };
+
+            RoundedLabel authorLabel = new RoundedLabel
+            {
+                Text = username,
+                ForeColor = Color.White,
+                Font = new Font("Arial", 8, FontStyle.Bold),
+                AutoSize = true,
+                Location = new Point(5, 5),
+                BackColor = Color.FromArgb(24, 27, 31),
+                BorderSize = 0,
+            };
+            authorLabel.Click += (s, e) => Process.Start(new ProcessStartInfo($"https://vrchat.com/home/user/{userId}") { UseShellExecute = true });
+            authorLabel.Cursor = Cursors.Hand;
+            pictureBox.Controls.Add(authorLabel);
 
             if (!finalaviImage.Contains("imageNotFound"))
             {

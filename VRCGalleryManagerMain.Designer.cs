@@ -61,7 +61,7 @@ namespace VRCGalleryManager
             bannerIcon.Image = Properties.Resources.VRCGM;
             bannerIcon.ImageLocation = "";
             bannerIcon.Location = new Point(15, 15);
-            bannerIcon.Margin = new Padding(12, 12, 12, 12);
+            bannerIcon.Margin = new Padding(12);
             bannerIcon.Name = "bannerIcon";
             bannerIcon.Size = new Size(196, 56);
             bannerIcon.SizeMode = PictureBoxSizeMode.Zoom;
@@ -73,7 +73,7 @@ namespace VRCGalleryManager
             FormsPanel.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             FormsPanel.BackColor = Color.FromArgb(5, 5, 5);
             FormsPanel.Location = new Point(228, 0);
-            FormsPanel.Margin = new Padding(4, 4, 4, 4);
+            FormsPanel.Margin = new Padding(4);
             FormsPanel.Name = "FormsPanel";
             FormsPanel.Size = new Size(1041, 736);
             FormsPanel.TabIndex = 5;
@@ -95,9 +95,9 @@ namespace VRCGalleryManager
             SwitchPanel.Controls.Add(_switchPhotos);
             SwitchPanel.Controls.Add(_switchIcons);
             SwitchPanel.Location = new Point(15, 212);
-            SwitchPanel.Margin = new Padding(6, 6, 6, 6);
+            SwitchPanel.Margin = new Padding(6);
             SwitchPanel.Name = "SwitchPanel";
-            SwitchPanel.Padding = new Padding(6, 6, 6, 6);
+            SwitchPanel.Padding = new Padding(6);
             SwitchPanel.Size = new Size(196, 509);
             SwitchPanel.TabIndex = 6;
             // 
@@ -115,7 +115,7 @@ namespace VRCGalleryManager
             _switchPicflow.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
             _switchPicflow.ForeColor = Color.FromArgb(106, 227, 249);
             _switchPicflow.Location = new Point(6, 353);
-            _switchPicflow.Margin = new Padding(4, 4, 4, 4);
+            _switchPicflow.Margin = new Padding(4);
             _switchPicflow.Name = "_switchPicflow";
             _switchPicflow.Size = new Size(184, 50);
             _switchPicflow.SvgAlignment = ContentAlignment.MiddleLeft;
@@ -145,7 +145,7 @@ namespace VRCGalleryManager
             _switchCreate.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
             _switchCreate.ForeColor = Color.FromArgb(106, 227, 249);
             _switchCreate.Location = new Point(6, 403);
-            _switchCreate.Margin = new Padding(4, 4, 4, 4);
+            _switchCreate.Margin = new Padding(4);
             _switchCreate.Name = "_switchCreate";
             _switchCreate.Size = new Size(184, 50);
             _switchCreate.SvgAlignment = ContentAlignment.MiddleLeft;
@@ -175,7 +175,7 @@ namespace VRCGalleryManager
             _switchPrints.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
             _switchPrints.ForeColor = Color.FromArgb(106, 227, 249);
             _switchPrints.Location = new Point(6, 206);
-            _switchPrints.Margin = new Padding(4, 4, 4, 4);
+            _switchPrints.Margin = new Padding(4);
             _switchPrints.Name = "_switchPrints";
             _switchPrints.Size = new Size(184, 50);
             _switchPrints.SvgAlignment = ContentAlignment.MiddleLeft;
@@ -204,7 +204,7 @@ namespace VRCGalleryManager
             _switchSettings.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
             _switchSettings.ForeColor = Color.FromArgb(106, 227, 249);
             _switchSettings.Location = new Point(6, 453);
-            _switchSettings.Margin = new Padding(4, 4, 4, 4);
+            _switchSettings.Margin = new Padding(4);
             _switchSettings.Name = "_switchSettings";
             _switchSettings.Size = new Size(184, 50);
             _switchSettings.SvgAlignment = ContentAlignment.MiddleLeft;
@@ -234,7 +234,7 @@ namespace VRCGalleryManager
             _switchSticker.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
             _switchSticker.ForeColor = Color.FromArgb(106, 227, 249);
             _switchSticker.Location = new Point(6, 156);
-            _switchSticker.Margin = new Padding(4, 4, 4, 4);
+            _switchSticker.Margin = new Padding(4);
             _switchSticker.Name = "_switchSticker";
             _switchSticker.Size = new Size(184, 50);
             _switchSticker.SvgAlignment = ContentAlignment.MiddleLeft;
@@ -264,7 +264,7 @@ namespace VRCGalleryManager
             _switchEmoji.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
             _switchEmoji.ForeColor = Color.FromArgb(106, 227, 249);
             _switchEmoji.Location = new Point(6, 106);
-            _switchEmoji.Margin = new Padding(4, 4, 4, 4);
+            _switchEmoji.Margin = new Padding(4);
             _switchEmoji.Name = "_switchEmoji";
             _switchEmoji.Size = new Size(184, 50);
             _switchEmoji.SvgAlignment = ContentAlignment.MiddleLeft;
@@ -294,7 +294,7 @@ namespace VRCGalleryManager
             _switchPhotos.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
             _switchPhotos.ForeColor = Color.FromArgb(106, 227, 249);
             _switchPhotos.Location = new Point(6, 56);
-            _switchPhotos.Margin = new Padding(4, 4, 4, 4);
+            _switchPhotos.Margin = new Padding(4);
             _switchPhotos.Name = "_switchPhotos";
             _switchPhotos.Size = new Size(184, 50);
             _switchPhotos.SvgAlignment = ContentAlignment.MiddleLeft;
@@ -324,7 +324,7 @@ namespace VRCGalleryManager
             _switchIcons.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
             _switchIcons.ForeColor = Color.FromArgb(106, 227, 249);
             _switchIcons.Location = new Point(6, 6);
-            _switchIcons.Margin = new Padding(4, 4, 4, 4);
+            _switchIcons.Margin = new Padding(4);
             _switchIcons.Name = "_switchIcons";
             _switchIcons.Size = new Size(184, 50);
             _switchIcons.SvgAlignment = ContentAlignment.MiddleLeft;
@@ -352,7 +352,7 @@ namespace VRCGalleryManager
             profileBanner.BorderSize = 0;
             profileBanner.ImageLocation = "";
             profileBanner.Location = new Point(15, 79);
-            profileBanner.Margin = new Padding(4, 4, 4, 4);
+            profileBanner.Margin = new Padding(4);
             profileBanner.Name = "profileBanner";
             profileBanner.Size = new Size(196, 111);
             profileBanner.SizeMode = PictureBoxSizeMode.StretchImage;
@@ -372,7 +372,7 @@ namespace VRCGalleryManager
             profileIcon.BorderSize = 0;
             profileIcon.ImageLocation = "";
             profileIcon.Location = new Point(15, 131);
-            profileIcon.Margin = new Padding(4, 4, 4, 4);
+            profileIcon.Margin = new Padding(4);
             profileIcon.Name = "profileIcon";
             profileIcon.Size = new Size(69, 69);
             profileIcon.SizeMode = PictureBoxSizeMode.StretchImage;
@@ -392,7 +392,7 @@ namespace VRCGalleryManager
             badgeBox1.BorderRadiusTopRight = 0;
             badgeBox1.BorderSize = 0;
             badgeBox1.Location = new Point(91, 165);
-            badgeBox1.Margin = new Padding(4, 4, 4, 4);
+            badgeBox1.Margin = new Padding(4);
             badgeBox1.Name = "badgeBox1";
             badgeBox1.Padding = new Padding(2);
             badgeBox1.Size = new Size(38, 38);
@@ -413,7 +413,7 @@ namespace VRCGalleryManager
             badgeBox2.BorderRadiusTopRight = 0;
             badgeBox2.BorderSize = 0;
             badgeBox2.Location = new Point(136, 165);
-            badgeBox2.Margin = new Padding(4, 4, 4, 4);
+            badgeBox2.Margin = new Padding(4);
             badgeBox2.Name = "badgeBox2";
             badgeBox2.Padding = new Padding(2);
             badgeBox2.Size = new Size(38, 38);
@@ -434,7 +434,7 @@ namespace VRCGalleryManager
             badgeBox3.BorderRadiusTopRight = 0;
             badgeBox3.BorderSize = 0;
             badgeBox3.Location = new Point(181, 165);
-            badgeBox3.Margin = new Padding(4, 4, 4, 4);
+            badgeBox3.Margin = new Padding(4);
             badgeBox3.Name = "badgeBox3";
             badgeBox3.Padding = new Padding(2);
             badgeBox3.Size = new Size(38, 38);
@@ -459,7 +459,7 @@ namespace VRCGalleryManager
             Controls.Add(FormsPanel);
             Controls.Add(bannerIcon);
             Icon = (Icon)resources.GetObject("$this.Icon");
-            Margin = new Padding(4, 4, 4, 4);
+            Margin = new Padding(4);
             MinimumSize = new Size(933, 676);
             Name = "MainPanel";
             Text = "VRCGalleryManager";
