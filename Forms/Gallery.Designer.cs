@@ -46,9 +46,10 @@ namespace VRCGalleryManager.Forms
             galleryPanel.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             galleryPanel.AutoScroll = true;
             galleryPanel.BackColor = Color.FromArgb(5, 5, 5);
-            galleryPanel.Location = new Point(12, 45);
+            galleryPanel.Location = new Point(15, 56);
+            galleryPanel.Margin = new Padding(4, 4, 4, 4);
             galleryPanel.Name = "galleryPanel";
-            galleryPanel.Size = new Size(778, 446);
+            galleryPanel.Size = new Size(972, 558);
             galleryPanel.TabIndex = 2;
             // 
             // _refreshButton
@@ -63,9 +64,10 @@ namespace VRCGalleryManager.Forms
             _refreshButton.FlatStyle = FlatStyle.Flat;
             _refreshButton.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
             _refreshButton.ForeColor = Color.FromArgb(106, 227, 249);
-            _refreshButton.Location = new Point(674, 10);
+            _refreshButton.Location = new Point(842, 12);
+            _refreshButton.Margin = new Padding(4, 4, 4, 4);
             _refreshButton.Name = "_refreshButton";
-            _refreshButton.Size = new Size(116, 29);
+            _refreshButton.Size = new Size(145, 36);
             _refreshButton.SvgAlignment = ContentAlignment.MiddleCenter;
             _refreshButton.SvgColor = Color.Black;
             _refreshButton.SvgContent = null;
@@ -91,9 +93,10 @@ namespace VRCGalleryManager.Forms
             uploadButton.FlatStyle = FlatStyle.Flat;
             uploadButton.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
             uploadButton.ForeColor = Color.FromArgb(106, 227, 249);
-            uploadButton.Location = new Point(12, 497);
+            uploadButton.Location = new Point(15, 621);
+            uploadButton.Margin = new Padding(4, 4, 4, 4);
             uploadButton.Name = "uploadButton";
-            uploadButton.Size = new Size(732, 40);
+            uploadButton.Size = new Size(915, 50);
             uploadButton.SvgAlignment = ContentAlignment.MiddleCenter;
             uploadButton.SvgColor = Color.Black;
             uploadButton.SvgContent = null;
@@ -115,9 +118,10 @@ namespace VRCGalleryManager.Forms
             limitPanel.BorderRadius = 10;
             limitPanel.BorderSize = 2;
             limitPanel.Controls.Add(limitLabel);
-            limitPanel.Location = new Point(12, 10);
+            limitPanel.Location = new Point(15, 12);
+            limitPanel.Margin = new Padding(4, 4, 4, 4);
             limitPanel.Name = "limitPanel";
-            limitPanel.Size = new Size(284, 29);
+            limitPanel.Size = new Size(355, 36);
             limitPanel.TabIndex = 5;
             limitPanel.Visible = false;
             // 
@@ -128,8 +132,9 @@ namespace VRCGalleryManager.Forms
             limitLabel.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
             limitLabel.ForeColor = Color.FromArgb(255, 128, 128);
             limitLabel.Location = new Point(0, 0);
+            limitLabel.Margin = new Padding(4, 0, 4, 0);
             limitLabel.Name = "limitLabel";
-            limitLabel.Size = new Size(284, 29);
+            limitLabel.Size = new Size(355, 36);
             limitLabel.TabIndex = 0;
             limitLabel.Text = "You have reached your photos limit!";
             limitLabel.TextAlign = ContentAlignment.MiddleCenter;
@@ -137,13 +142,13 @@ namespace VRCGalleryManager.Forms
             // limitCounterLabel
             // 
             limitCounterLabel.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            limitCounterLabel.AutoSize = true;
             limitCounterLabel.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
             limitCounterLabel.ForeColor = Color.White;
-            limitCounterLabel.Location = new Point(594, 17);
+            limitCounterLabel.Location = new Point(584, 20);
+            limitCounterLabel.Margin = new Padding(4, 0, 4, 0);
             limitCounterLabel.Name = "limitCounterLabel";
             limitCounterLabel.RightToLeft = RightToLeft.No;
-            limitCounterLabel.Size = new Size(74, 15);
+            limitCounterLabel.Size = new Size(250, 20);
             limitCounterLabel.TabIndex = 6;
             limitCounterLabel.Text = "0/64 Photos";
             limitCounterLabel.TextAlign = ContentAlignment.MiddleRight;
@@ -160,9 +165,10 @@ namespace VRCGalleryManager.Forms
             pasteButton.FlatStyle = FlatStyle.Flat;
             pasteButton.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
             pasteButton.ForeColor = Color.FromArgb(106, 227, 249);
-            pasteButton.Location = new Point(750, 497);
+            pasteButton.Location = new Point(938, 621);
+            pasteButton.Margin = new Padding(4, 4, 4, 4);
             pasteButton.Name = "pasteButton";
-            pasteButton.Size = new Size(40, 40);
+            pasteButton.Size = new Size(50, 50);
             pasteButton.SvgAlignment = ContentAlignment.MiddleCenter;
             pasteButton.SvgColor = Color.FromArgb(106, 227, 249);
             pasteButton.SvgContent = resources.GetString("pasteButton.SvgContent");
@@ -178,10 +184,10 @@ namespace VRCGalleryManager.Forms
             // Gallery
             // 
             AllowDrop = true;
-            AutoScaleDimensions = new SizeF(96F, 96F);
+            AutoScaleDimensions = new SizeF(120F, 120F);
             AutoScaleMode = AutoScaleMode.Dpi;
             BackColor = Color.FromArgb(5, 5, 5);
-            ClientSize = new Size(802, 549);
+            ClientSize = new Size(1002, 686);
             Controls.Add(pasteButton);
             Controls.Add(limitCounterLabel);
             Controls.Add(limitPanel);
@@ -189,13 +195,13 @@ namespace VRCGalleryManager.Forms
             Controls.Add(_refreshButton);
             Controls.Add(galleryPanel);
             FormBorderStyle = FormBorderStyle.None;
+            Margin = new Padding(4, 4, 4, 4);
             Name = "Gallery";
             Text = "Gallery";
             DragDrop += File_DragDrop;
             DragEnter += File_DragEnter;
             limitPanel.ResumeLayout(false);
             ResumeLayout(false);
-            PerformLayout();
         }
 
         #endregion

@@ -43,9 +43,10 @@ namespace VRCGalleryManager.Forms
             picflowPanel.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             picflowPanel.AutoScroll = true;
             picflowPanel.BackColor = Color.FromArgb(5, 5, 5);
-            picflowPanel.Location = new Point(12, 45);
+            picflowPanel.Location = new Point(15, 56);
+            picflowPanel.Margin = new Padding(4, 4, 4, 4);
             picflowPanel.Name = "picflowPanel";
-            picflowPanel.Size = new Size(778, 492);
+            picflowPanel.Size = new Size(972, 615);
             picflowPanel.TabIndex = 2;
             // 
             // _refreshButton
@@ -60,9 +61,10 @@ namespace VRCGalleryManager.Forms
             _refreshButton.FlatStyle = FlatStyle.Flat;
             _refreshButton.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
             _refreshButton.ForeColor = Color.FromArgb(106, 227, 249);
-            _refreshButton.Location = new Point(674, 10);
+            _refreshButton.Location = new Point(842, 12);
+            _refreshButton.Margin = new Padding(4, 4, 4, 4);
             _refreshButton.Name = "_refreshButton";
-            _refreshButton.Size = new Size(116, 29);
+            _refreshButton.Size = new Size(145, 36);
             _refreshButton.SvgAlignment = ContentAlignment.MiddleCenter;
             _refreshButton.SvgColor = Color.Black;
             _refreshButton.SvgContent = null;
@@ -81,9 +83,10 @@ namespace VRCGalleryManager.Forms
             limitCounterLabel.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             limitCounterLabel.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
             limitCounterLabel.ForeColor = Color.White;
-            limitCounterLabel.Location = new Point(442, 17);
+            limitCounterLabel.Location = new Point(552, 21);
+            limitCounterLabel.Margin = new Padding(4, 0, 4, 0);
             limitCounterLabel.Name = "limitCounterLabel";
-            limitCounterLabel.Size = new Size(139, 15);
+            limitCounterLabel.Size = new Size(174, 19);
             limitCounterLabel.TabIndex = 6;
             limitCounterLabel.Text = "0";
             limitCounterLabel.TextAlign = ContentAlignment.MiddleRight;
@@ -92,9 +95,10 @@ namespace VRCGalleryManager.Forms
             // 
             logLabel.AutoSize = true;
             logLabel.ForeColor = Color.FromArgb(106, 227, 249);
-            logLabel.Location = new Point(145, 14);
+            logLabel.Location = new Point(181, 18);
+            logLabel.Margin = new Padding(4, 0, 4, 0);
             logLabel.Name = "logLabel";
-            logLabel.Size = new Size(192, 15);
+            logLabel.Size = new Size(240, 20);
             logLabel.TabIndex = 7;
             logLabel.Text = "$\"Found {logFiles.Length} log files\"";
             // 
@@ -110,9 +114,10 @@ namespace VRCGalleryManager.Forms
             streamPicFlow.CheckColor = Color.FromArgb(106, 227, 249);
             streamPicFlow.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
             streamPicFlow.ForeColor = Color.White;
-            streamPicFlow.Location = new Point(12, 13);
+            streamPicFlow.Location = new Point(15, 16);
+            streamPicFlow.Margin = new Padding(4, 4, 4, 4);
             streamPicFlow.Name = "streamPicFlow";
-            streamPicFlow.Size = new Size(117, 19);
+            streamPicFlow.Size = new Size(145, 24);
             streamPicFlow.TabIndex = 8;
             streamPicFlow.Text = "Stream PicFlow";
             streamPicFlow.UseVisualStyleBackColor = false;
@@ -130,9 +135,10 @@ namespace VRCGalleryManager.Forms
             _clearButton.FlatStyle = FlatStyle.Flat;
             _clearButton.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
             _clearButton.ForeColor = Color.FromArgb(106, 227, 249);
-            _clearButton.Location = new Point(587, 10);
+            _clearButton.Location = new Point(734, 12);
+            _clearButton.Margin = new Padding(4, 4, 4, 4);
             _clearButton.Name = "_clearButton";
-            _clearButton.Size = new Size(81, 29);
+            _clearButton.Size = new Size(101, 36);
             _clearButton.SvgAlignment = ContentAlignment.MiddleCenter;
             _clearButton.SvgColor = Color.Black;
             _clearButton.SvgContent = null;
@@ -148,10 +154,10 @@ namespace VRCGalleryManager.Forms
             // 
             // Picflow
             // 
-            AutoScaleDimensions = new SizeF(96F, 96F);
+            AutoScaleDimensions = new SizeF(120F, 120F);
             AutoScaleMode = AutoScaleMode.Dpi;
             BackColor = Color.FromArgb(5, 5, 5);
-            ClientSize = new Size(802, 549);
+            ClientSize = new Size(1002, 686);
             Controls.Add(_clearButton);
             Controls.Add(streamPicFlow);
             Controls.Add(logLabel);
@@ -159,6 +165,7 @@ namespace VRCGalleryManager.Forms
             Controls.Add(_refreshButton);
             Controls.Add(picflowPanel);
             FormBorderStyle = FormBorderStyle.None;
+            Margin = new Padding(4, 4, 4, 4);
             Name = "Picflow";
             Text = "picflow";
             ResumeLayout(false);
