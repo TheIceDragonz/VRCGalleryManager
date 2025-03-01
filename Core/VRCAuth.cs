@@ -19,13 +19,11 @@ namespace VRCGalleryManager.Core
 
         public static readonly string tokenFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "VRCGalleryManager", "authToken.txt");
 
-        public static Uri uriTarget = new Uri("https://vrchat.com");
-
         private VRCAuth()
         {
             Config = new Configuration();
             ApiClient = new ApiClient();
-            Config.UserAgent = "VRCGalleryManager/0.0.1 (Testing)";
+            Config.UserAgent = "VRCGalleryManager";
         }
 
         public static VRCAuth Instance()
@@ -38,7 +36,7 @@ namespace VRCGalleryManager.Core
         {
             Config.Username = usernameVRC;
             Config.Password = passwordVRC;
-            Config.UserAgent = "VRCGalleryManager/0.0.1 (Testing)";
+            Config.UserAgent = "VRCGalleryManager";
 
             AuthApi = new AuthenticationApi(ApiClient, ApiClient, Config);
 

@@ -1,11 +1,6 @@
-﻿using System;
-using System.Diagnostics;
-using System.IO;
-using System.Net.Http;
+﻿using System.Diagnostics;
 using System.Reflection;
 using System.Text.Json;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 using VRCGalleryManager.Core;
 
 namespace VRCGalleryManager
@@ -14,7 +9,7 @@ namespace VRCGalleryManager
     {
         private static readonly string apiUrl = "https://api.github.com/repos/TheIceDragonz/VRCGalleryManager/releases/latest";
 
-        public async Task CheckForUpdatesAsync()
+        public async Task CheckForUpdatesAsync(Button _checkUpdate)
         {
             try
             {
@@ -38,7 +33,9 @@ namespace VRCGalleryManager
 
                             if (result == DialogResult.Yes)
                             {
-                                await DownloadAndInstallUpdateAsync(client, root);
+                                _checkUpdate.Enabled = false;
+                                _checkUpdate.Text = "Updating (0%)";
+                                await DownloadAndInstallUpdateAsync(client, root, _checkUpdate);
                             }
                         }
                         else
@@ -52,9 +49,17 @@ namespace VRCGalleryManager
             {
                 NotificationManager.ShowNotification("Error checking for updates:\n" + ex.Message, "Error", NotificationType.Error);
             }
+            finally
+            {
+                if (!_checkUpdate.Enabled)
+                {
+                    _checkUpdate.Text = "Check Update";
+                    _checkUpdate.Enabled = true;
+                }
+            }
         }
 
-        private async Task DownloadAndInstallUpdateAsync(HttpClient client, JsonElement releaseJson)
+        private async Task DownloadAndInstallUpdateAsync(HttpClient client, JsonElement releaseJson, Button _checkUpdate)
         {
             string installerUrl = "";
             if (releaseJson.TryGetProperty("assets", out JsonElement assets))
@@ -71,11 +76,36 @@ namespace VRCGalleryManager
             }
             if (!string.IsNullOrEmpty(installerUrl))
             {
-                string tempFilePath = Path.Combine(Path.GetTempPath(), Path.GetFileName(installerUrl));
-                using (var installerStream = await client.GetStreamAsync(installerUrl))
-                using (var fileStream = new FileStream(tempFilePath, FileMode.Create, FileAccess.Write, FileShare.None))
+                string tempFolder = Path.Combine(Path.GetTempPath(), "VRCGalleryManager");
+                if (!Directory.Exists(tempFolder))
                 {
-                    await installerStream.CopyToAsync(fileStream);
+                    Directory.CreateDirectory(tempFolder);
+                }
+                string tempFilePath = Path.Combine(tempFolder, Path.GetFileName(installerUrl));
+                using (var response = await client.GetAsync(installerUrl, HttpCompletionOption.ResponseHeadersRead))
+                {
+                    response.EnsureSuccessStatusCode();
+                    var totalBytes = response.Content.Headers.ContentLength.HasValue ? response.Content.Headers.ContentLength.Value : -1L;
+                    using (var installerStream = await response.Content.ReadAsStreamAsync())
+                    using (var fileStream = new FileStream(tempFilePath, FileMode.Create, FileAccess.Write, FileShare.None))
+                    {
+                        var buffer = new byte[8192];
+                        long totalRead = 0;
+                        int bytesRead;
+                        while ((bytesRead = await installerStream.ReadAsync(buffer, 0, buffer.Length)) > 0)
+                        {
+                            await fileStream.WriteAsync(buffer, 0, bytesRead);
+                            totalRead += bytesRead;
+                            if (totalBytes > 0)
+                            {
+                                int progress = (int)((totalRead * 100) / totalBytes);
+                                _checkUpdate.Invoke(new Action(() =>
+                                {
+                                    _checkUpdate.Text = $"Updating ({progress}%)";
+                                }));
+                            }
+                        }
+                    }
                 }
                 Process.Start(new ProcessStartInfo(tempFilePath)
                 {

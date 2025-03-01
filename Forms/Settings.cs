@@ -176,7 +176,7 @@ namespace VRCGalleryManager.Forms
         private async void _checkUpdate_Click(object sender, EventArgs e)
         {
             var updater = new UpdateManager();
-            await updater.CheckForUpdatesAsync();
+            await updater.CheckForUpdatesAsync(_checkUpdate);
         }
 
         private void _openCacheFolder_Click(object sender, EventArgs e)
