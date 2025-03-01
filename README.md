@@ -1,15 +1,20 @@
 <div align="center">
-<img src="https://i.imgur.com/cQ4t6cy.png" alt="Logo">
+<img src="https://github.com/user-attachments/assets/b3503583-ac41-4202-b8ca-3d397580e296" alt="Logo">
 
 # VRCGalleryManager
 
 VRChatGalleryManager is a Windows Forms application that simplifies the management of stickers, gallery images, and animated GIFs for VRChat. The app offers comprehensive features for creating, uploading, and deleting these items, along with support for printing and an integrated GIF creator.
 
+<table>
+  <tr>
+    <td align="center"><img src="https://github.com/user-attachments/assets/55f4fede-d5cc-4187-aebe-cbd55f35d645" alt="login"></td>
+    <td align="center"><img src="https://github.com/user-attachments/assets/b76e480f-53ec-41fc-aa7f-c8a4b78a3da3" alt="2fa"></td>
+  </tr>
+</table>
+
 <div align="left">
-<img src="https://i.imgur.com/4QJkMDW.png" alt="Preview">
 
 ## Key Features
-
 - **Comprehensive management of stickers, gallery images, and GIFs**:
   - Create, upload, and delete stickers, gallery images, and animated GIFs.
   - Preview items before uploading them.
@@ -42,12 +47,10 @@ To install **VRCGalleryManager**, download and run the latest version of the ins
 2. Run the installer and follow the on-screen instructions.
 3. After installation, launch the app from the Start Menu or Desktop.
 
-<img src="https://i.imgur.com/rhLl8YY.png" alt="Preview">
+## Termini di Servizio di VRChat
 
-## VRCGalleryManager - Termini di Servizio di VRChat
-
-VRCGalleryManager è un'applicazione indipendente che utilizza esclusivamente l'API ufficiale di VRChat per offrire le sue funzionalità. Non modifica, altera o interferisce in alcun modo con il gioco, ma si limita a semplificare la gestione di immagini, sticker e GIF all'interno delle possibilità previste.
+VRCGalleryManager is an independent application that exclusively utilizes VRChat's official API to provide its features. It does not modify, alter, or interfere with the game in any way but simply streamlines the management of images, stickers, and GIFs within the permitted capabilities.
 
 ---
 
-##### VRCGalleryManager non è affiliato, sponsorizzato o approvato da VRChat Inc. Tutti i marchi e i contenuti relativi a VRChat sono di proprietà dei rispettivi titolari. VRChat © VRChat Inc.
+##### VRCGalleryManager is not affiliated, sponsored, or endorsed by VRChat Inc. All trademarks and content related to VRChat are the property of their respective owners. VRChat © VRChat Inc.
