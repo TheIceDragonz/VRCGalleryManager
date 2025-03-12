@@ -13,7 +13,28 @@ namespace VRCGalleryManager.Core
         public static void ShowNotification(string message, string title, NotificationType type)
         {
             Form mainForm = Application.OpenForms["MainPanel"];
+            if (mainForm == null)
+            {
+                Timer waitTimer = new Timer { Interval = 100 };
+                waitTimer.Tick += (s, e) =>
+                {
+                    Form mainFormDelayed = Application.OpenForms["MainPanel"];
+                    if (mainFormDelayed != null)
+                    {
+                        waitTimer.Stop();
+                        ShowNotificationInternal(mainFormDelayed, message, title, type);
+                    }
+                };
+                waitTimer.Start();
+            }
+            else
+            {
+                ShowNotificationInternal(mainForm, message, title, type);
+            }
+        }
 
+        private static void ShowNotificationInternal(Form mainForm, string message, string title, NotificationType type)
+        {
             // Seleziona i colori in base al tipo di notifica
             Color borderColor;
             Color textColor;
@@ -118,9 +139,12 @@ namespace VRCGalleryManager.Core
 
         private static void AdjustNotificationPositions()
         {
+            Form mainForm = Application.OpenForms["MainPanel"];
+            if (mainForm == null) return;
+
             lock (ActiveNotifications)
             {
-                int currentY = Application.OpenForms["MainPanel"].ClientSize.Height - (PanelHeight + Spacing);
+                int currentY = mainForm.ClientSize.Height - (PanelHeight + Spacing);
                 foreach (var panel in ActiveNotifications)
                 {
                     panel.Location = new Point(panel.Location.X, currentY);

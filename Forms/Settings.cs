@@ -131,13 +131,13 @@ namespace VRCGalleryManager.Forms
                 {
                     if (ex.Message.ToLower().Contains("expired"))
                     {
-                        NotificationManager.ShowNotification("Token expired. Please log in again.", "Token Expired", NotificationType.Info);
                         Logout();
+                        NotificationManager.ShowNotification("Token expired. Please log in again.", "Token Expired", NotificationType.Info);
                     }
                     else
                     {
-                        _vrcLogin.BackColor = Color.IndianRed;
-                        _vrcLoginLabel.Text = ex.Message;
+                        
+                        Logout();
                         NotificationManager.ShowNotification("Token error: " + ex.Message, "Authentication Error", NotificationType.Error);
                     }
                 }

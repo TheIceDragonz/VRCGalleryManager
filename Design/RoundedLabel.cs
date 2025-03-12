@@ -12,42 +12,42 @@ namespace VRCGalleryManager.Design
         private int borderRadiusBottomRight = 20;
         private Color borderColor = Color.PaleVioletRed;
 
-        [Category("RoundedLabel")]
+        [Category("VRCGalleryManager")]
         public int BorderSize
         {
             get { return borderSize; }
             set { borderSize = value; Invalidate(); }
         }
 
-        [Category("RoundedLabel")]
+        [Category("VRCGalleryManager")]
         public int BorderRadiusTopLeft
         {
             get { return borderRadiusTopLeft; }
             set { borderRadiusTopLeft = Math.Max(0, Math.Min(value, Math.Min(Width, Height) / 2)); Invalidate(); }
         }
 
-        [Category("RoundedLabel")]
+        [Category("VRCGalleryManager")]
         public int BorderRadiusTopRight
         {
             get { return borderRadiusTopRight; }
             set { borderRadiusTopRight = Math.Max(0, Math.Min(value, Math.Min(Width, Height) / 2)); Invalidate(); }
         }
 
-        [Category("RoundedLabel")]
+        [Category("VRCGalleryManager")]
         public int BorderRadiusBottomLeft
         {
             get { return borderRadiusBottomLeft; }
             set { borderRadiusBottomLeft = Math.Max(0, Math.Min(value, Math.Min(Width, Height) / 2)); Invalidate(); }
         }
 
-        [Category("RoundedLabel")]
+        [Category("VRCGalleryManager")]
         public int BorderRadiusBottomRight
         {
             get { return borderRadiusBottomRight; }
             set { borderRadiusBottomRight = Math.Max(0, Math.Min(value, Math.Min(Width, Height) / 2)); Invalidate(); }
         }
 
-        [Category("RoundedLabel")]
+        [Category("VRCGalleryManager")]
         public Color BorderColor
         {
             get { return borderColor; }
@@ -74,7 +74,6 @@ namespace VRCGalleryManager.Design
         {
             e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
             Rectangle rectClient = ClientRectangle;
-            // Utilizziamo l'intero rettangolo del controllo, senza padding.
             Rectangle rectBackground = rectClient;
             Rectangle rectBorder = Rectangle.Inflate(rectBackground, -borderSize, -borderSize);
 
