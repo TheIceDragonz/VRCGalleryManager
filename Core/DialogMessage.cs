@@ -1,5 +1,3 @@
-using VRCGalleryManager.Design;
-
 namespace VRCGalleryManager.Core
 {
     public static class DialogMessage
@@ -38,8 +36,44 @@ namespace VRCGalleryManager.Core
             return MessageBox.Show(
                 "Are you sure to delete this image?\n\n" +
                 "ID: " + dataID,
-               "Confirm Delete !!",
+                "Confirm Delete !!",
                 MessageBoxButtons.YesNo
+            );
+        }
+
+        public static void ShowMissingTypeDialog(Form parentForm)
+        {
+            NotificationManager.ShowNotification(
+                "Please select it before uploading.",
+                "Missing Type",
+                NotificationType.Error
+            );
+        }
+
+        public static void ShowMissingGif(Form parentForm)
+        {
+            NotificationManager.ShowNotification(
+                "GIF not found",
+                "Error",
+                NotificationType.Error
+            );
+        }
+
+        public static void ShowMissingSpriteSheet(Form parentForm)
+        {
+            NotificationManager.ShowNotification(
+                "Sprite sheet not found",
+                "Error",
+                NotificationType.Error
+            );
+        }
+
+        public static void ShowValidURL(Form parentForm)
+        {
+            NotificationManager.ShowNotification(
+                "Please enter a valid URL",
+                "Error",
+                NotificationType.Error
             );
         }
     }

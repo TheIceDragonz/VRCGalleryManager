@@ -1,9 +1,8 @@
 ﻿using System.Net;
-using VRCGalleryManager.Forms;
 
 namespace VRCGalleryManager.Core
 {
-    public static class httpImage
+    public static class HttpImage
     {
         public static async Task<HttpWebRequest> CreateWebRequestAsync(string url)
         {

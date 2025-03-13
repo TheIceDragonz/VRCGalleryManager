@@ -1,175 +1,201 @@
-﻿using System.Drawing.Imaging;
+﻿using System.Windows.Forms;
 using VRCGalleryManager.Core;
+using VRCGalleryManager.Core.DTO;
+using VRCGalleryManager.Forms.Panels;
 
 namespace VRCGalleryManager.Forms
 {
-    public partial class Create : Form
+    public partial class Create : ApiConnectedForm
     {
+        private static string MASK_TAG = "square";
+        private static string ANIMATION_STYLE = "";
+
+        private readonly GifToSpriteSheetConverter converter;
+        SpriteSheetViewer viewer;
+
+
         private string gifPath;
         private Bitmap spriteSheet;
 
-        public Create(VRCAuth Auth)
+        private int imageframes = 0;
+
+        public Create(VRCAuth auth)
         {
+            InitApiRequest(auth);
             InitializeComponent();
 
-            this.AllowDrop = true;
-            this.DragEnter += new DragEventHandler(pictureSS_DragEnter);
-            this.DragDrop += new DragEventHandler(pictureSS_DragDrop);
+            converter = new GifToSpriteSheetConverter();
+
+            trackBarFPS.LabelText = trackBarFPS.Value.ToString();
         }
 
-        private void pictureSS_DragDrop(object sender, DragEventArgs e)
+        private void File_DragDrop(object sender, DragEventArgs e)
         {
-            string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
-            gifPath = files[0];  // Salva il percorso della GIF
+            string[] files = e.Data.GetData(DataFormats.FileDrop) as string[];
+            if (files == null || files.Length == 0) return;
+
+            gifPath = files[0];
             previewGif.ImageLocation = gifPath;
 
-            if (gifPath != null)
+            try
             {
-                string tempOutputPath = Path.Combine(Path.GetTempPath(), gifPath + "spritesheet_temp.png");
-                ConvertGifToSpriteSheets(gifPath, tempOutputPath);
+                var (spriteSheetBitmap, frameCount) = converter.ConvertGifToSpriteSheet(gifPath);
+
+                spriteSheet = spriteSheetBitmap;
                 previewSS.Image = spriteSheet;
+
+                imageframes = frameCount;
+
                 buttonSave.Enabled = true;
+            }
+            catch (Exception ex)
+            {
+                NotificationManager.ShowNotification(ex.Message, "Error", NotificationType.Error);
             }
         }
 
-        private void pictureSS_DragEnter(object sender, DragEventArgs e)
+        private void File_DragEnter(object sender, DragEventArgs e)
         {
             if (e.Data.GetDataPresent(DataFormats.FileDrop))
             {
                 string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
-                if (Path.GetExtension(files[0]).ToLower() == ".gif")
-                {
-                    e.Effect = DragDropEffects.Copy;
-                }
-                else
-                {
-                    e.Effect = DragDropEffects.None;
-                }
+                e.Effect = Path.GetExtension(files[0]).ToLower() == ".gif" ? DragDropEffects.Copy : DragDropEffects.None;
             }
         }
 
-        private void ConvertGifToSpriteSheets(string gifPath, string tempOutputPath)
-        {
-            Image gifImage = Image.FromFile(gifPath);
-            FrameDimension dimension = new FrameDimension(gifImage.FrameDimensionsList[0]);
-            int frameCount = gifImage.GetFrameCount(dimension);
-
-            frameCounter.Text = "Frame: " + frameCount.ToString();
-            frameCounter.Visible = true;
-
-            int maxTextureSize = 1024;
-            int squareSize;
-            int cols, rows;
-
-            if (frameCount <= 16)
-            {
-                squareSize = 256; // Dimensione per 4x4 griglia
-                cols = rows = 4;
-            }
-            else
-            {
-                squareSize = 128; // Dimensione per 8x8 griglia
-                cols = rows = 8;
-            }
-
-            int spriteSheetWidth = cols * squareSize;
-            int spriteSheetHeight = rows * squareSize;
-
-            if (spriteSheetWidth > maxTextureSize || spriteSheetHeight > maxTextureSize)
-            {
-                int maxCols = maxTextureSize / squareSize;
-                int maxRows = maxTextureSize / squareSize;
-
-                cols = Math.Min(frameCount, maxCols * maxRows);
-                rows = (int)Math.Ceiling((double)frameCount / cols);
-
-                spriteSheetWidth = Math.Min(cols * squareSize, maxTextureSize);
-                spriteSheetHeight = Math.Min(rows * squareSize, maxTextureSize);
-
-                if (spriteSheetWidth > maxTextureSize || spriteSheetHeight > maxTextureSize)
-                {
-                    MessageBox.Show("Non è possibile adattare tutti i frame nella dimensione massima consentita.", "Errore", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return;
-                }
-            }
-
-            spriteSheet = new Bitmap(spriteSheetWidth, spriteSheetHeight);
-
-            using (Graphics g = Graphics.FromImage(spriteSheet))
-            {
-                g.Clear(Color.Transparent);
-
-                for (int i = 0; i < frameCount; i++)
-                {
-                    gifImage.SelectActiveFrame(dimension, i);
-
-                    // Ritaglia il frame in un quadrato
-                    Bitmap squareFrame = CropToSquare(gifImage, squareSize);
-
-                    int col = i % cols;
-                    int row = i / cols;
-
-                    g.DrawImage(squareFrame, col * squareSize, row * squareSize, squareSize, squareSize);
-                }
-            }
-        }
-
-        private Bitmap CropToSquare(Image img, int size)
-        {
-            int maxSize = Math.Max(img.Width, img.Height);
-
-            Bitmap squareImage = new Bitmap(size, size);
-
-            using (Graphics g = Graphics.FromImage(squareImage))
-            {
-                g.Clear(Color.Transparent);
-
-                Rectangle srcRect;
-                if (img.Width > img.Height)
-                {
-                    int offset = (img.Width - img.Height) / 2;
-                    srcRect = new Rectangle(offset, 0, img.Height, img.Height);
-                }
-                else
-                {
-                    int offset = (img.Height - img.Width) / 2;
-                    srcRect = new Rectangle(0, offset, img.Width, img.Width);
-                }
-
-                g.DrawImage(img, new Rectangle(0, 0, size, size), srcRect, GraphicsUnit.Pixel);
-            }
-
-            return squareImage;
-        }
-
-        private void buttonSave_Click(object sender, EventArgs e)
+        private void buttonLocalSave_Click(object sender, EventArgs e)
         {
             if (spriteSheet != null)
             {
                 using (SaveFileDialog saveDialog = new SaveFileDialog())
                 {
-                    string FileName = Path.GetFileNameWithoutExtension(gifPath);
-
-                    saveDialog.Title = "Salva la sprite sheet";
+                    saveDialog.Title = "Save Sprite Sheet";
                     saveDialog.Filter = "PNG Image|*.png";
-                    saveDialog.FileName = FileName + ".png";
+                    saveDialog.FileName = Path.GetFileNameWithoutExtension(gifPath) + ".png";
 
                     if (saveDialog.ShowDialog() == DialogResult.OK)
                     {
-                        string outputFilePath = saveDialog.FileName;
-
-                        if (Path.GetExtension(outputFilePath).ToLower() != ".png")
+                        try
                         {
-                            outputFilePath = Path.ChangeExtension(outputFilePath, ".png");
+                            converter.SaveSpriteSheet(saveDialog.FileName);
+                            NotificationManager.ShowNotification("Sprite sheet saved successfully.", "Success", NotificationType.Error);
                         }
-
-                        spriteSheet.Save(outputFilePath, ImageFormat.Png);
+                        catch (Exception ex)
+                        {
+                            NotificationManager.ShowNotification(ex.Message, "Error", NotificationType.Error);
+                        }
                     }
                 }
             }
             else
             {
-                MessageBox.Show("GIF not found", "Errore", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                NotificationManager.ShowNotification("No sprite sheet available to save.", "Error", NotificationType.Error);
+            }
+        }
+
+        private async void creatorUpload_Click(object sender, EventArgs e)
+        {
+            if (spriteSheet != null)
+            {
+                if (!createOpenTypePanel.Text.Contains("Type"))
+                {
+                    try
+                    {
+                        string image = converter.SaveTempSpriteSheet();
+
+                        ANIMATION_STYLE = createOpenTypePanel.Text.ToLower();
+
+                        ApiRequest.ApiData emoji = await apiRequest.UploadImage(image, MASK_TAG, TagType.EmojiAnimated, ANIMATION_STYLE, imageframes, trackBarFPS.Value);
+
+                        NotificationManager.ShowNotification("File uploaded successfully", "File upload", NotificationType.Success);
+                    }
+                    catch (Exception ex)
+                    {
+                        NotificationManager.ShowNotification(ex.Message, "Error during file upload", NotificationType.Error);
+                    }
+                }
+                else
+                {
+                    DialogMessage.ShowMissingTypeDialog(this);
+                }
+            }
+            else
+            {
+                DialogMessage.ShowMissingSpriteSheet(this);
+            }
+        }
+
+
+        private void trackBarFPS_ValueChanged(object sender, EventArgs e)
+        {
+            trackBarFPS.LabelText = trackBarFPS.Value.ToString();
+            if (viewer != null) viewer.UpdateFPS(trackBarFPS.Value);
+        }
+
+        private void createOpenTypePanel_Click(object sender, EventArgs e)
+        {
+            if(createTypePanel.Visible)
+            {
+                TypePanel.ClearEmojiType(createTypePanel);
+            }
+            else
+            {
+                TypePanel.LoadEmojiType(createOpenTypePanel, createTypePanel);
+            }
+            createTypePanel.Visible = !createTypePanel.Visible;
+        }
+
+        private async void pasteButton_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                pasteButton.Enabled = false;
+
+                (string gifPath, Bitmap spriteSheet, int frameCount) = await converter.ProcessGifFromClipboard();
+
+                this.gifPath = gifPath;
+                this.spriteSheet = spriteSheet;
+                previewGif.ImageLocation = gifPath;
+                previewSS.Image = spriteSheet;
+                imageframes = frameCount;
+
+                VRChatPreview();
+
+                NotificationManager.ShowNotification("GIF processed and sprite sheet generated successfully!", "Paste Success", NotificationType.Info);
+            }
+            catch (Exception ex)
+            {
+                NotificationManager.ShowNotification(
+                    ex.Message,
+                    "Error processing GIF",
+                    NotificationType.Error
+                );
+            }
+            finally
+            {
+                pasteButton.Enabled = true;
+            }
+        }
+
+        private async void VRChatPreview()
+        {
+            if (spriteSheet != null)
+            {
+                if (viewer != null)
+                {
+                    viewer.StopAnimation();
+                    viewer = null;
+                }
+
+                if (previewVRChat.Image != null)
+                {
+                    previewVRChat.Image.Dispose();
+                    previewVRChat.Image = null;
+                }
+
+                viewer = new SpriteSheetViewer(previewVRChat);
+                await viewer.LoadSpriteSheetAsync(spriteSheet, imageframes, trackBarFPS.Value);
+                viewer.StartAnimation();
             }
         }
     }

@@ -1,8 +1,5 @@
-﻿using System;
-using System.ComponentModel;
-using System.Drawing;
+﻿using System.ComponentModel;
 using System.Drawing.Drawing2D;
-using System.Windows.Forms;
 
 namespace VRCGalleryManager.Design
 {
@@ -32,7 +29,7 @@ namespace VRCGalleryManager.Design
             get { return borderRadiusTopLeft; }
             set
             {
-                borderRadiusTopLeft = value;
+                borderRadiusTopLeft = Math.Max(0, Math.Min(value, Math.Min(Width, Height) / 2));
                 Invalidate();
             }
         }
@@ -43,7 +40,7 @@ namespace VRCGalleryManager.Design
             get { return borderRadiusTopRight; }
             set
             {
-                borderRadiusTopRight = value;
+                borderRadiusTopRight = Math.Max(0, Math.Min(value, Math.Min(Width, Height) / 2));
                 Invalidate();
             }
         }
@@ -54,7 +51,7 @@ namespace VRCGalleryManager.Design
             get { return borderRadiusBottomLeft; }
             set
             {
-                borderRadiusBottomLeft = value;
+                borderRadiusBottomLeft = Math.Max(0, Math.Min(value, Math.Min(Width, Height) / 2));
                 Invalidate();
             }
         }
@@ -65,7 +62,7 @@ namespace VRCGalleryManager.Design
             get { return borderRadiusBottomRight; }
             set
             {
-                borderRadiusBottomRight = value;
+                borderRadiusBottomRight = Math.Max(0, Math.Min(value, Math.Min(Width, Height) / 2));
                 Invalidate();
             }
         }
@@ -88,16 +85,45 @@ namespace VRCGalleryManager.Design
             set { BackColor = value; }
         }
 
+        [Category("VRCGalleryManager")]
+        [DefaultValue(false)]
+        public bool UseMaxRoundness { get; set; }
+
+        public RoundedPictureBox()
+        {
+            Size = new Size(150, 150);
+            SizeMode = PictureBoxSizeMode.StretchImage;
+            BackColor = Color.MediumSlateBlue;
+            UseMaxRoundness = false;
+        }
+
         protected override void OnPaint(PaintEventArgs pevent)
         {
             base.OnPaint(pevent);
-
             Rectangle rectSurface = ClientRectangle;
-            Rectangle rectBorder = Rectangle.Inflate(rectSurface, -borderSize, -borderSize);
+            Rectangle rectBorder = Rectangle.Inflate(rectSurface, -borderSize + 2, -borderSize + 2);
+            if (rectBorder.Width <= 0 || rectBorder.Height <= 0)
+                return;
             int smoothSize = 2;
             if (borderSize > 0)
-                smoothSize = borderSize;
-
+                smoothSize = Math.Max(2, borderSize);
+            Rectangle rectContent = new Rectangle(
+                rectSurface.X + Padding.Left,
+                rectSurface.Y + Padding.Top,
+                rectSurface.Width - Padding.Horizontal,
+                rectSurface.Height - Padding.Vertical
+            );
+            if (Image != null)
+            {
+                using (GraphicsPath imagePath = GetFigurePath(rectSurface))
+                using (Region clipRegion = new Region(imagePath))
+                {
+                    pevent.Graphics.SetClip(clipRegion, CombineMode.Replace);
+                    pevent.Graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                    pevent.Graphics.DrawImage(Image, rectContent);
+                    pevent.Graphics.ResetClip();
+                }
+            }
             using (GraphicsPath pathSurface = GetFigurePath(rectSurface))
             using (GraphicsPath pathBorder = GetFigurePath(rectBorder))
             using (Pen penSurface = new Pen(Parent.BackColor, smoothSize))
@@ -106,27 +132,62 @@ namespace VRCGalleryManager.Design
                 pevent.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
                 Region = new Region(pathSurface);
                 pevent.Graphics.DrawPath(penSurface, pathSurface);
-
                 if (borderSize >= 1)
                     pevent.Graphics.DrawPath(penBorder, pathBorder);
             }
         }
 
-        public RoundedPictureBox()
-        {
-            Size = new Size(150, 150);
-            SizeMode = PictureBoxSizeMode.StretchImage;
-            BackColor = Color.MediumSlateBlue;
-        }
-
         private GraphicsPath GetFigurePath(Rectangle rect)
         {
             GraphicsPath path = new GraphicsPath();
+            if (UseMaxRoundness)
+            {
+                int maxRadius = Math.Min(rect.Width, rect.Height) / 2;
+                if (maxRadius > 0)
+                {
+                    path.StartFigure();
+                    path.AddArc(rect.X, rect.Y, maxRadius * 2, maxRadius * 2, 180, 90);
+                    path.AddArc(rect.Right - maxRadius * 2, rect.Y, maxRadius * 2, maxRadius * 2, 270, 90);
+                    path.AddArc(rect.Right - maxRadius * 2, rect.Bottom - maxRadius * 2, maxRadius * 2, maxRadius * 2, 0, 90);
+                    path.AddArc(rect.X, rect.Bottom - maxRadius * 2, maxRadius * 2, maxRadius * 2, 90, 90);
+                    path.CloseFigure();
+                }
+                else
+                {
+                    path.AddRectangle(rect);
+                }
+                return path;
+            }
+            int tl = Math.Min(borderRadiusTopLeft, Math.Min(rect.Width, rect.Height) / 2);
+            int tr = Math.Min(borderRadiusTopRight, Math.Min(rect.Width, rect.Height) / 2);
+            int br = Math.Min(borderRadiusBottomRight, Math.Min(rect.Width, rect.Height) / 2);
+            int bl = Math.Min(borderRadiusBottomLeft, Math.Min(rect.Width, rect.Height) / 2);
+            if (tl == 0 && tr == 0 && br == 0 && bl == 0)
+            {
+                path.AddRectangle(rect);
+                return path;
+            }
             path.StartFigure();
-            path.AddArc(rect.X, rect.Y, borderRadiusTopLeft * 2, borderRadiusTopLeft * 2, 180, 90);
-            path.AddArc(rect.Right - (borderRadiusTopRight * 2), rect.Y, borderRadiusTopRight * 2, borderRadiusTopRight * 2, 270, 90);
-            path.AddArc(rect.Right - (borderRadiusBottomRight * 2), rect.Bottom - (borderRadiusBottomRight * 2), borderRadiusBottomRight * 2, borderRadiusBottomRight * 2, 0, 90);
-            path.AddArc(rect.X, rect.Bottom - (borderRadiusBottomLeft * 2), borderRadiusBottomLeft * 2, borderRadiusBottomLeft * 2, 90, 90);
+            if (tl > 0)
+                path.AddArc(new Rectangle(rect.X, rect.Y, tl * 2, tl * 2), 180, 90);
+            else
+                path.AddLine(new Point(rect.X, rect.Y), new Point(rect.X, rect.Y));
+            path.AddLine(new Point(rect.X + tl, rect.Y), new Point(rect.Right - tr, rect.Y));
+            if (tr > 0)
+                path.AddArc(new Rectangle(rect.Right - tr * 2, rect.Y, tr * 2, tr * 2), 270, 90);
+            else
+                path.AddLine(new Point(rect.Right, rect.Y), new Point(rect.Right, rect.Y));
+            path.AddLine(new Point(rect.Right, rect.Y + tr), new Point(rect.Right, rect.Bottom - br));
+            if (br > 0)
+                path.AddArc(new Rectangle(rect.Right - br * 2, rect.Bottom - br * 2, br * 2, br * 2), 0, 90);
+            else
+                path.AddLine(new Point(rect.Right, rect.Bottom), new Point(rect.Right, rect.Bottom));
+            path.AddLine(new Point(rect.Right - br, rect.Bottom), new Point(rect.X + bl, rect.Bottom));
+            if (bl > 0)
+                path.AddArc(new Rectangle(rect.X, rect.Bottom - bl * 2, bl * 2, bl * 2), 90, 90);
+            else
+                path.AddLine(new Point(rect.X, rect.Bottom), new Point(rect.X, rect.Bottom));
+            path.AddLine(new Point(rect.X, rect.Bottom - bl), new Point(rect.X, rect.Y + tl));
             path.CloseFigure();
             return path;
         }
@@ -134,7 +195,7 @@ namespace VRCGalleryManager.Design
         protected override void OnHandleCreated(EventArgs e)
         {
             base.OnHandleCreated(e);
-            Parent.BackColorChanged += new EventHandler(Container_BackColorChanged);
+            Parent.BackColorChanged += Container_BackColorChanged;
         }
 
         private void Container_BackColorChanged(object sender, EventArgs e)
@@ -142,18 +203,11 @@ namespace VRCGalleryManager.Design
             Invalidate();
         }
 
-        protected override void OnResize(EventArgs e)
+        protected override void OnHandleDestroyed(EventArgs e)
         {
-            base.OnResize(e);
-
-            if (Width != Height)
-            {
-                int size = Math.Min(Width, Height);
-                this.Size = new Size(size, size);
-            }
-
-            Invalidate();
+            if (Parent != null)
+                Parent.BackColorChanged -= Container_BackColorChanged;
+            base.OnHandleDestroyed(e);
         }
-
     }
 }

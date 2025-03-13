@@ -6,12 +6,19 @@
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
-    <ApplicationIcon>256x256.ico</ApplicationIcon>
     <SupportedOSPlatformVersion>7.0</SupportedOSPlatformVersion>
+    <ApplicationIcon>Icon.ico</ApplicationIcon>
+    <Configurations>Debug;Release;Publish</Configurations>
+    <Copyright>TheIceDragonz</Copyright>
+    <Description>Simple Tool for your VRChat gallery</Description>
+    <PackageProjectUrl>https://github.com/TheIceDragonz/VRCGalleryManager</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/TheIceDragonz/VRCGalleryManager</RepositoryUrl>
+    <PackageIcon></PackageIcon>
+    <PackageReleaseNotes></PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="256x256.ico" />
+    <Content Include="Icon.ico" />
   </ItemGroup>
 
   <ItemGroup>
@@ -19,19 +26,40 @@
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="Polly" Version="7.2.3" />
     <PackageReference Include="RestSharp" Version="108.0.2" />
+    <PackageReference Include="Svg" Version="3.4.7" />
     <PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="Forms\Create.cs">
+    <Compile Update="Forms\Create.cs" />
+    <Compile Update="Forms\Gallery.cs" />
+    <Compile Update="Forms\Gallery.Designer.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Update="Forms\Panels\StickerPanel.cs" />
-    <Compile Update="Forms\Sticker.cs">
+    <Compile Update="Forms\Panels\TypePanel.cs" />
+    <Compile Update="Forms\Prints.cs" />
+    <Compile Update="Forms\Prints.Designer.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Update="Forms\Sticker.Designer.cs">
+    <Compile Update="Forms\Panels\iconsPanel.cs" />
+    <Compile Update="Forms\Icons.cs" />
+    <Compile Update="Forms\Icons.Designer.cs">
       <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="Forms\icons.cs" />
+    <Compile Update="Forms\icons.Designer.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="Forms\Picflow.cs" />
+    <Compile Update="Properties\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Update="Properties\Settings.Designer.cs">
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
   </ItemGroup>
 
@@ -40,6 +68,17 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <None Update="Resources\VRCGM.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
   </ItemGroup>
 
 </Project>

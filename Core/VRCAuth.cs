@@ -2,6 +2,7 @@
 using VRChat.API.Api;
 using VRChat.API.Client;
 using VRChat.API.Model;
+using VRCGalleryManager.Core.Helpers;
 
 namespace VRCGalleryManager.Core
 {
@@ -18,13 +19,11 @@ namespace VRCGalleryManager.Core
 
         public static readonly string tokenFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "VRCGalleryManager", "authToken.txt");
 
-        public static Uri uriTarget = new Uri("https://vrchat.com");
-
         private VRCAuth()
         {
             Config = new Configuration();
             ApiClient = new ApiClient();
-            Config.UserAgent = "VRCGalleryManager/0.0.1 (Testing)";
+            Config.UserAgent = "VRCGalleryManager";
         }
 
         public static VRCAuth Instance()
@@ -33,11 +32,11 @@ namespace VRCGalleryManager.Core
             return instance;
         }
 
-        public void VRCAuthentication(string usernameVRC, string passworldVRC)
+        public void VRCAuthentication(string usernameVRC, string passwordVRC)
         {
             Config.Username = usernameVRC;
-            Config.Password = passworldVRC;
-            Config.UserAgent = "VRCGalleryManager/0.0.1 (Testing)";
+            Config.Password = passwordVRC;
+            Config.UserAgent = "VRCGalleryManager";
 
             AuthApi = new AuthenticationApi(ApiClient, ApiClient, Config);
 
@@ -47,7 +46,7 @@ namespace VRCGalleryManager.Core
 
                 if (requiresEmail2FA(currentUserResp)) // If the API wants us to send an Email OTP code
                 {
-                    string imputAuth = Interaction.InputBox("Insert the 2FA Code", "2FA Authentication", "");
+                    string imputAuth = Interaction.InputBox("Insert the Email Code", "Email Authentication", "");
                     if (imputAuth != null)
                     {
                         AuthApi.Verify2FAEmailCode(new TwoFactorEmailCode(imputAuth));
@@ -55,13 +54,15 @@ namespace VRCGalleryManager.Core
                 }
                 else
                 {
-                    // requiresEmail2FA returned false, so we use secret-based 2fa verification
-                    // authApi.VerifyRecoveryCode(new TwoFactorAuthCode("12345678")); // To Use a Recovery Code
-
-                    //authApi.Verify2FA(new TwoFactorAuthCode("123456"));
+                    string imputAuth = Interaction.InputBox("Insert the 2FA Code", "2FA Authentication", "");
+                    if (imputAuth != null)
+                    {
+                        AuthApi.Verify2FA(new TwoFactorAuthCode(imputAuth));
+                    }
                 }
 
                 SaveCookies();
+                LoadCookies();
 
                 LoggedIn = true;
 
@@ -95,14 +96,16 @@ namespace VRCGalleryManager.Core
         {
             var cookies = ApiClient.CookieContainer.GetAllCookies();
             string cookieString = string.Join(";", cookies.Select(c => $"{c.Name}={c.Value}"));
-            System.IO.File.WriteAllText(tokenFilePath, cookieString);
+            string encryptedCookies = CryptAuth.Encrypt(cookieString);
+            Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "VRCGalleryManager"));
+            System.IO.File.WriteAllText(tokenFilePath, encryptedCookies);
         }
 
         public void LoadCookies()
         {
             try
             {
-                string cookieString = System.IO.File.ReadAllText(tokenFilePath);
+                string cookieString = CryptAuth.Decrypt(System.IO.File.ReadAllText(tokenFilePath));
                 Config.DefaultHeaders.Add("Cookie", cookieString);
                 AuthApi = new AuthenticationApi(ApiClient, ApiClient, Config);
                 CookieLoaded = true;
@@ -112,6 +115,20 @@ namespace VRCGalleryManager.Core
                 Console.WriteLine(ex);
                 CookieLoaded = false;
             }
+        }
+
+
+        public void Logout()
+        {
+            if (System.IO.File.Exists(tokenFilePath))
+            {
+                System.IO.File.Delete(tokenFilePath);
+            }
+            LoggedIn = false;
+            CookieLoaded = false;
+            // Clear the cookies
+            Config.DefaultHeaders.Clear();
+            ApiClient.ClearCookieContainer();
         }
     }
 }

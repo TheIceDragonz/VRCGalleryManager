@@ -1,63 +1,92 @@
-﻿using System;
-using System.Drawing;
-using System.IO;
-using System.Threading.Tasks;
-using System.Windows.Forms;
+﻿using Timer = System.Windows.Forms.Timer;
 
 namespace VRCGalleryManager.Core
 {
-    public static class SpriteSheetViewer
+    public class SpriteSheetViewer
     {
-        public static async Task SpriteSheet(string spriteSheetPath, string fps, string? delay, PictureBox pictureBox)
+        private Bitmap _spriteSheet;
+        private int _frameWidth;
+        private int _frameHeight;
+        private int _frameCount;
+        private int _currentFrame;
+        private readonly Timer _frameTimer;
+        private readonly PictureBox _pictureBox;
+
+        public SpriteSheetViewer(PictureBox pictureBox)
         {
-            if (string.IsNullOrEmpty(spriteSheetPath) || !File.Exists(spriteSheetPath) || Path.GetExtension(spriteSheetPath).ToLower() != ".png")
+            _pictureBox = pictureBox ?? throw new ArgumentNullException(nameof(pictureBox));
+            _frameTimer = new Timer();
+            _frameTimer.Tick += FrameTimer_Tick;
+        }
+
+        public async Task LoadSpriteSheetAsync(string spriteSheetUrl, int frameCount, int framesPerSecond)
+        {
+            using (HttpClient client = new HttpClient())
             {
-                throw new ArgumentException("Percorso non valido o file non supportato.");
-            }
-
-            int fpsInt = int.Parse(fps);
-            int? delayInt = int.Parse(delay);
-
-            Bitmap spriteSheet = new Bitmap(spriteSheetPath);
-
-            // Calcolo delle colonne e righe basato sugli FPS
-            int cols = fpsInt <= 16 ? 4 : 8; // 4x4 per <=16 FPS, 8x8 per >16 FPS
-            int rows = spriteSheet.Height / (spriteSheet.Width / cols);
-
-            int frameWidth = spriteSheet.Width / cols;
-            int frameHeight = spriteSheet.Height / rows;
-
-            int totalFrames = cols * rows;
-            int frameDelay = delayInt ?? (1000 / fpsInt);
-
-            await Task.Run(async () =>
-            {
-                int currentFrame = 0;
-                while (true)
+                var response = await client.GetAsync(spriteSheetUrl);
+                response.EnsureSuccessStatusCode();
+                using (var stream = await response.Content.ReadAsStreamAsync())
                 {
-                    int row = currentFrame / cols;
-                    int col = currentFrame % cols;
-
-                    Rectangle frameRect = new Rectangle(col * frameWidth, row * frameHeight, frameWidth, frameHeight);
-                    Bitmap frame = new Bitmap(frameWidth, frameHeight);
-
-                    using (Graphics g = Graphics.FromImage(frame))
-                    {
-                        g.DrawImage(spriteSheet, new Rectangle(0, 0, frameWidth, frameHeight), frameRect, GraphicsUnit.Pixel);
-                    }
-
-                    // Aggiorna la PictureBox
-                    pictureBox.Invoke(new Action(() =>
-                    {
-                        pictureBox.Image?.Dispose(); // Pulisce l'immagine precedente
-                        pictureBox.Image = frame;
-                    }));
-
-                    currentFrame = (currentFrame + 1) % totalFrames;
-
-                    await Task.Delay(frameDelay);
+                    var bitmap = new Bitmap(stream);
+                    InitializeSpriteSheet(bitmap, frameCount, framesPerSecond);
                 }
-            });
+            }
+        }
+
+        public async Task LoadSpriteSheetAsync(Bitmap spriteSheet, int frameCount, int framesPerSecond)
+        {
+            if (spriteSheet == null)
+                throw new ArgumentNullException(nameof(spriteSheet));
+            InitializeSpriteSheet(spriteSheet, frameCount, framesPerSecond);
+            await Task.CompletedTask;
+        }
+
+        private void InitializeSpriteSheet(Bitmap spriteSheet, int frameCount, int framesPerSecond)
+        {
+            _spriteSheet = spriteSheet;
+            if (_spriteSheet.Width != 1024 || _spriteSheet.Height != 1024)
+                throw new ArgumentException("La risoluzione dello sprite sheet deve essere 1024x1024.");
+            _frameCount = frameCount;
+            _currentFrame = 0;
+            int squareSize = frameCount <= 16 ? 256 : 128;
+            _frameWidth = squareSize;
+            _frameHeight = squareSize;
+            _frameTimer.Interval = 1000 / framesPerSecond;
+            _pictureBox.Image = new Bitmap(_frameWidth, _frameHeight);
+        }
+
+        public void StartAnimation()
+        {
+            if (_spriteSheet == null)
+                throw new InvalidOperationException("Sprite sheet non caricato.");
+            _frameTimer.Start();
+        }
+
+        public void StopAnimation()
+        {
+            _frameTimer.Stop();
+        }
+
+        public void UpdateFPS(int framesPerSecond)
+        {
+            _frameTimer.Interval = 1000 / framesPerSecond;
+        }
+
+        private void FrameTimer_Tick(object sender, EventArgs e)
+        {
+            if (_spriteSheet == null || _frameCount <= 0)
+                return;
+            int cols = _spriteSheet.Width / _frameWidth;
+            int x = (_currentFrame % cols) * _frameWidth;
+            int y = (_currentFrame / cols) * _frameHeight;
+            Rectangle srcRect = new Rectangle(x, y, _frameWidth, _frameHeight);
+            using (Graphics g = Graphics.FromImage(_pictureBox.Image))
+            {
+                g.Clear(Color.Transparent);
+                g.DrawImage(_spriteSheet, new Rectangle(0, 0, _frameWidth, _frameHeight), srcRect, GraphicsUnit.Pixel);
+            }
+            _pictureBox.Refresh();
+            _currentFrame = (_currentFrame + 1) % _frameCount;
         }
     }
 }

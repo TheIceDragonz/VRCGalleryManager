@@ -1,10 +1,10 @@
-﻿using VRCGalleryManager.Forms;
-using System.Diagnostics;
+﻿using System.Diagnostics;
+using VRCGalleryManager.Core.DTO;
 using VRChat.API.Api;
 using VRChat.API.Client;
 using VRChat.API.Model;
-using File = VRChat.API.Model.File;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+using VRCGalleryManager.Forms;
+using System.Data;
 
 namespace VRCGalleryManager.Core
 {
@@ -12,16 +12,21 @@ namespace VRCGalleryManager.Core
     {
         private VRCAuth Auth;
         private FilesApi filesApi;
+        private PrintsApi printsApi;
+        private UsersApi usersApi;
 
         public ApiRequest(VRCAuth Auth)
         {
             this.Auth = Auth;
             filesApi = new FilesApi(Auth.ApiClient, Auth.ApiClient, Auth.Config);
+            printsApi = new PrintsApi(Auth.ApiClient, Auth.ApiClient, Auth.Config);
+            usersApi = new UsersApi(Auth.ApiClient, Auth.ApiClient, Auth.Config);
         }
 
         public class ApiData
         {
-            public List<string> IdImage { get; set; } = new List<string>();
+            public List<string> JsonImage { get; set; } = new List<string>();
+
             public string CountImages { get; set; } = new string("");
             public string Tags { get; set; } = new string("");
             public string AnimationStyle { get; set; } = new string("");
@@ -29,32 +34,32 @@ namespace VRCGalleryManager.Core
             public string FramesOverTime { get; set; } = new string("");
             public string LoopStyle { get; set; } = new string("");
             public string MaskTag { get; set; } = new string("");
-
             public string IdImageUploaded { get; set; } = new string("");
         }
 
         public async Task<ApiData> GetApiData(string tag)
         {
             ApiData apiData = new ApiData();
-             
+
             try
             {
-                var images = filesApi.GetFiles(tag);
-
-                foreach (var image in images)
+                if (!tag.Contains("print"))
                 {
-                    apiData.IdImage.Add(image.Id);
+                    var images = filesApi.GetFiles(tag, null, 64);
 
-                    apiData.CountImages = images.Count.ToString();
-                    apiData.Tags = image.Tags.Count > 0 ? string.Join(",", image.Tags) : "";
-                    apiData.AnimationStyle = image.AnimationStyle;
-                    if (apiData.Tags.Contains("animated"))
+                    foreach (var image in images)
                     {
-                        apiData.Frames = image.Frames.ToString();
-                        apiData.FramesOverTime = image.FramesOverTime.ToString();
-                        apiData.LoopStyle = image.LoopStyle;
+                        apiData.JsonImage.Add(image.ToJson());
                     }
-                    apiData.MaskTag = image.MaskTag;
+                }
+                else
+                {
+                    var images = await printsApi.GetPrintsAsync(Settings.UserId, 100);
+
+                    foreach (var image in images)
+                    {
+                        apiData.JsonImage.Add(image.ToJson());
+                    }
                 }
             }
             catch (ApiException ex)
@@ -91,6 +96,77 @@ namespace VRCGalleryManager.Core
 
             return apiData;
         }
+
+        public async Task<ApiData> UploadImage(string path, string maskType, TagType tag)
+        {
+            ApiData apiData = new ApiData();
+
+            //var response = await filesApi.UploadImageAsync(path, maskType, tag);
+            //
+            ImageUploadPayload imageUploadPayload = new ImageUploadPayload(path);
+
+            imageUploadPayload.MaskTag = maskType;
+            imageUploadPayload.Tag = tag;
+
+            var response = await filesApi.UploadImageAsync(imageUploadPayload);
+
+            apiData.IdImageUploaded = response.Data.Id;
+
+            return apiData;
+        }
+
+        public async Task<ApiData> UploadPrint(string path, string note)
+        {
+            ApiData apiData = new ApiData();
+
+            //var response = await filesApi.UploadImageAsync(path, maskType, tag);
+            //
+            ImageUploadPayload imageUploadPayload = new ImageUploadPayload(path);
+            imageUploadPayload.FileType = FileType.Print;
+            imageUploadPayload.Note = note;
+
+            var response = await filesApi.UploadImageAsync(imageUploadPayload);
+
+            apiData.IdImageUploaded = response.Data.Id;
+
+            return apiData;
+        }
+
+        public async Task<ApiData> UploadImage(string path, string maskTag, TagType tag, string animationStyle)
+        {
+            ApiData apiData = new ApiData();
+
+            ImageUploadPayload imageUploadPayload = new ImageUploadPayload(path);
+
+            imageUploadPayload.MaskTag = maskTag;
+            imageUploadPayload.Tag = tag;
+            imageUploadPayload.AnimationStyle = animationStyle;
+
+            var response = await filesApi.UploadImageAsync(imageUploadPayload);
+
+            apiData.IdImageUploaded = response.Data.Id;
+
+            return apiData;
+        }
+        public async Task<ApiData> UploadImage(string path, string maskTag, TagType tag, string animationStyle, int frames, int framesOverTime)
+        {
+            ApiData apiData = new ApiData();
+
+            ImageUploadPayload imageUploadPayload = new ImageUploadPayload(path);
+
+            imageUploadPayload.MaskTag = maskTag;
+            imageUploadPayload.Tag = tag;
+            imageUploadPayload.AnimationStyle = animationStyle;
+            imageUploadPayload.Frames = frames;
+            imageUploadPayload.FramesOverTime = framesOverTime;
+
+            var response = await filesApi.UploadImageAsync(imageUploadPayload);
+
+            apiData.IdImageUploaded = response.Data.Id;
+
+            return apiData;
+        }
+
         public async Task<ApiData> DeleteApiData(string id)
         {
             ApiData apiData = new ApiData();
@@ -105,6 +181,46 @@ namespace VRCGalleryManager.Core
             }
 
             return apiData;
+        }
+
+        public async Task<ApiData> DeleteApiDataPrint(string id)
+        {
+            ApiData apiData = new ApiData();
+
+            try
+            {
+                await printsApi.DeletePrintAsync(id);
+            }
+            catch (ApiException ex)
+            {
+                Console.WriteLine($"Errore: {ex.Message}");
+            }
+
+            return apiData;
+        }
+
+
+        public async Task SetProfileIcon(string urlImage)
+        {
+            try
+            {
+                await usersApi.UpdateUserAsync(Settings.UserId, new  UpdateUserRequest { UserIcon = urlImage });
+            }
+            catch (ApiException ex)
+            {
+                Console.WriteLine($"Errore: {ex.Message}");
+            }
+        }
+        public async Task SetProfilePicture(string urlImage)
+        {
+            try
+            {
+                await usersApi.UpdateUserAsync(Settings.UserId, new UpdateUserRequest { ProfilePicOverride = urlImage });
+            }
+            catch (ApiException ex)
+            {
+                Console.WriteLine($"Errore: {ex.Message}");
+            }
         }
     }
 }
