@@ -6,10 +6,8 @@ using VRCGalleryManager.Forms.Panels;
 
 namespace VRCGalleryManager.Forms
 {
-    public partial class Sticker : Form
+    public partial class Sticker : ApiConnectedForm
     {
-        private ApiRequest apiRequest;
-
         private List<string> stickerJson = new List<string>();
         private int imageCount;
 
@@ -19,9 +17,7 @@ namespace VRCGalleryManager.Forms
         public Sticker(VRCAuth auth)
         {
             InitializeComponent();
-
-            apiRequest = new ApiRequest(auth);
-
+            InitApiRequest(auth);
             this.Shown += (s, e) => { if (stickerPanel.Controls.Count == 0) StickerList(); };
         }
 

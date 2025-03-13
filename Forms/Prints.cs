@@ -6,10 +6,8 @@ using VRCGalleryManager.Forms.Panels;
 
 namespace VRCGalleryManager.Forms
 {
-    public partial class Prints : Form
+    public partial class Prints : ApiConnectedForm
     {
-        private ApiRequest apiRequest;
-
         private List<string> printsJson = new List<string>();
         private int imageCount;
 
@@ -18,9 +16,7 @@ namespace VRCGalleryManager.Forms
         public Prints(VRCAuth auth)
         {
             InitializeComponent();
-
-            apiRequest = new ApiRequest(auth);
-
+            InitApiRequest(auth);
             this.Shown += (s, e) => { if (printsPanel.Controls.Count == 0) PrintsList(); };
         }
 

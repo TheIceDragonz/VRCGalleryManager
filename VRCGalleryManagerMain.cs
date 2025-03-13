@@ -11,7 +11,7 @@ namespace VRCGalleryManager
     {
         private static Mutex mutex;
 
-        private readonly Form[] _forms;
+        private readonly ApiConnectedForm[] _forms;
 
         private VRCAuth Auth;
         public MainPanel()
@@ -31,7 +31,7 @@ namespace VRCGalleryManager
             Auth = VRCAuth.Instance();
             Auth.LoadCookies();
 
-            _forms = new Form[]
+            _forms = new ApiConnectedForm[]
             {
                 new Icons(Auth),
                 new Gallery(Auth),
@@ -60,6 +60,9 @@ namespace VRCGalleryManager
 
             ApplyRecolorBar();
         }
+
+
+
         private void ApplyRecolorBar()
         {
             Color c = Color.FromArgb(15, 17, 19);

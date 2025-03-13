@@ -7,9 +7,8 @@ using VRCGalleryManager.Forms.Panels;
 
 namespace VRCGalleryManager.Forms
 {
-    public partial class Emoji : Form
+    public partial class Emoji : ApiConnectedForm
     {
-        private ApiRequest apiRequest;
 
         private List<string> emojiJson = new List<string>();
         private int imageCount;
@@ -26,9 +25,7 @@ namespace VRCGalleryManager.Forms
         public Emoji(VRCAuth auth)
         {
             InitializeComponent();
-
-            apiRequest = new ApiRequest(auth);
-
+            InitApiRequest(auth);
             this.Shown += (s, e) => { if (emojiPanel.Controls.Count == 0) EmojiList(); };
         }
 

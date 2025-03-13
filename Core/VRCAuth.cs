@@ -62,6 +62,7 @@ namespace VRCGalleryManager.Core
                 }
 
                 SaveCookies();
+                LoadCookies();
 
                 LoggedIn = true;
 
@@ -114,6 +115,20 @@ namespace VRCGalleryManager.Core
                 Console.WriteLine(ex);
                 CookieLoaded = false;
             }
+        }
+
+
+        public void Logout()
+        {
+            if (System.IO.File.Exists(tokenFilePath))
+            {
+                System.IO.File.Delete(tokenFilePath);
+            }
+            LoggedIn = false;
+            CookieLoaded = false;
+            // Clear the cookies
+            Config.DefaultHeaders.Clear();
+            ApiClient.ClearCookieContainer();
         }
     }
 }

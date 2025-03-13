@@ -5,7 +5,7 @@ using VRCGalleryManager.Forms.Panels;
 
 namespace VRCGalleryManager.Forms
 {
-    public partial class Create : Form
+    public partial class Create : ApiConnectedForm
     {
         private static string MASK_TAG = "square";
         private static string ANIMATION_STYLE = "";
@@ -13,7 +13,6 @@ namespace VRCGalleryManager.Forms
         private readonly GifToSpriteSheetConverter converter;
         SpriteSheetViewer viewer;
 
-        private ApiRequest apiRequest;
 
         private string gifPath;
         private Bitmap spriteSheet;
@@ -22,8 +21,7 @@ namespace VRCGalleryManager.Forms
 
         public Create(VRCAuth auth)
         {
-            apiRequest = new ApiRequest(auth);
-
+            InitApiRequest(auth);
             InitializeComponent();
 
             converter = new GifToSpriteSheetConverter();

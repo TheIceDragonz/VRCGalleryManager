@@ -8,9 +8,8 @@ using VRCGalleryManager.Forms.Panels;
 
 namespace VRCGalleryManager.Forms
 {
-    public partial class Picflow : Form
+    public partial class Picflow : ApiConnectedForm
     {
-        private readonly ApiRequest apiRequest;
         private CancellationTokenSource? streamingCancellationTokenSource;
         private Task? streamingTask;
         private readonly HashSet<string> allStickers = new();
@@ -20,7 +19,7 @@ namespace VRCGalleryManager.Forms
         public Picflow(VRCAuth auth)
         {
             InitializeComponent();
-            apiRequest = new ApiRequest(auth);
+            InitApiRequest(auth);
             uiContext = SynchronizationContext.Current ?? new SynchronizationContext();
             this.Shown += (s, e) => { if (picflowPanel.Controls.Count == 0) PicflowList(); };
         }

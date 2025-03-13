@@ -6,10 +6,8 @@ using VRCGalleryManager.Forms.Panels;
 
 namespace VRCGalleryManager.Forms
 {
-    public partial class Icons : Form
+    public partial class Icons : ApiConnectedForm
     {
-        private ApiRequest apiRequest;
-
         private List<string> iconsJson = new List<string>();
         private int imageCount;
 
@@ -19,10 +17,8 @@ namespace VRCGalleryManager.Forms
         public Icons(VRCAuth auth)
         {
             InitializeComponent();
-
-            apiRequest = new ApiRequest(auth);
-
             this.Shown += (s, e) => { if (iconsPanel.Controls.Count == 0) IconsList(); };
+            InitApiRequest(auth);
         }
 
         private void _refreshButton_Click(object sender, EventArgs e)

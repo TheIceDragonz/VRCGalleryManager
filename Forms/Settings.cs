@@ -8,7 +8,7 @@ using File = System.IO.File;
 
 namespace VRCGalleryManager.Forms
 {
-    public partial class Settings : Form
+    public partial class Settings : ApiConnectedForm
     {
         private VRCAuth Auth;
         private MainPanel _mainPanel;
@@ -66,10 +66,6 @@ namespace VRCGalleryManager.Forms
             try
             {
                 Auth.AuthApi.Logout();
-                if (File.Exists(VRCAuth.tokenFilePath))
-                {
-                    File.Delete(VRCAuth.tokenFilePath);
-                }
                 _mainPanel.SetFeatureControlsEnabled(false);
             }
             catch (Exception ex)
@@ -78,8 +74,7 @@ namespace VRCGalleryManager.Forms
             }
             finally
             {
-                Auth.LoggedIn = false;
-                Auth.CookieLoaded = false;
+                Auth.Logout();
                 _username.Text = "";
                 _password.Text = "";
                 _vrcLoginLabel.Text = "VRChat Login";

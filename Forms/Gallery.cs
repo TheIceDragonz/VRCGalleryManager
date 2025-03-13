@@ -6,10 +6,8 @@ using VRCGalleryManager.Forms.Panels;
 
 namespace VRCGalleryManager.Forms
 {
-    public partial class Gallery : Form
+    public partial class Gallery : ApiConnectedForm
     {
-        private ApiRequest apiRequest;
-
         private List<string> galleryJson = new List<string>();
         private int imageCount;
 
@@ -20,7 +18,7 @@ namespace VRCGalleryManager.Forms
         {
             InitializeComponent();
 
-            apiRequest = new ApiRequest(auth);
+            InitApiRequest(auth);
 
             this.Shown += (s, e) => { if (galleryPanel.Controls.Count == 0) GalleryList(); };
         }

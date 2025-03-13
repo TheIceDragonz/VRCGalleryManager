@@ -38,33 +38,6 @@ namespace VRChat.API.Api
     public partial class PrintsApi : IPrintsApi
     {
         private ExceptionFactory _exceptionFactory = (name, response) => null;
-
-        public PrintsApi() : this((string)null) { }
-
-        public PrintsApi(string basePath)
-        {
-            this.Configuration = VRChat.API.Client.Configuration.MergeConfigurations(
-                VRChat.API.Client.GlobalConfiguration.Instance,
-                new VRChat.API.Client.Configuration { BasePath = basePath }
-            );
-            this.Client = new VRChat.API.Client.ApiClient(this.Configuration.BasePath);
-            this.AsynchronousClient = new VRChat.API.Client.ApiClient(this.Configuration.BasePath);
-            this.ExceptionFactory = VRChat.API.Client.Configuration.DefaultExceptionFactory;
-        }
-
-        public PrintsApi(VRChat.API.Client.Configuration configuration)
-        {
-            if (configuration == null) throw new ArgumentNullException("configuration");
-
-            this.Configuration = VRChat.API.Client.Configuration.MergeConfigurations(
-                VRChat.API.Client.GlobalConfiguration.Instance,
-                configuration
-            );
-            this.Client = new VRChat.API.Client.ApiClient(this.Configuration.BasePath);
-            this.AsynchronousClient = new VRChat.API.Client.ApiClient(this.Configuration.BasePath);
-            this.ExceptionFactory = VRChat.API.Client.Configuration.DefaultExceptionFactory;
-        }
-
         public PrintsApi(VRChat.API.Client.ISynchronousClient client, VRChat.API.Client.IAsynchronousClient asyncClient, VRChat.API.Client.IReadableConfiguration configuration)
         {
             if (client == null) throw new ArgumentNullException("client");
