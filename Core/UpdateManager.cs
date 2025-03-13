@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Reflection;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using VRCGalleryManager.Core;
 
 namespace VRCGalleryManager
@@ -20,8 +21,21 @@ namespace VRCGalleryManager
                     using (JsonDocument doc = JsonDocument.Parse(jsonResponse))
                     {
                         JsonElement root = doc.RootElement;
-                        string latestVersion = root.GetProperty("tag_name").GetString();
-                        string localVersion = FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).FileVersion;
+                        string? latestVersion = root.GetProperty("tag_name").GetString();
+                        string? localVersion = Assembly.GetExecutingAssembly()?.GetCustomAttribute<System.Reflection.AssemblyFileVersionAttribute>()?.Version;
+
+                        if(localVersion == null)
+                        {
+                            NotificationManager.ShowNotification("Error checking for updates:\nCould not determine local version.", "Error", NotificationType.Error);
+                            return;
+                        }
+
+                        if (latestVersion == null) {
+                            NotificationManager.ShowNotification("Error checking for updates:\nCould not determine latest version.", "Error", NotificationType.Error);
+                            return;
+                        }
+
+                        latestVersion = Regex.Replace(latestVersion, @"[^\d\.]", "");
 
                         if (!string.Equals(localVersion, latestVersion, StringComparison.OrdinalIgnoreCase))
                         {
