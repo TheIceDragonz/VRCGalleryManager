@@ -21,7 +21,7 @@ namespace VRCGalleryManager
                     {
                         JsonElement root = doc.RootElement;
                         string latestVersion = root.GetProperty("tag_name").GetString();
-                        string localVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString();
+                        string localVersion = FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).FileVersion;
 
                         if (!string.Equals(localVersion, latestVersion, StringComparison.OrdinalIgnoreCase))
                         {
