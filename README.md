@@ -47,7 +47,7 @@ To install **VRCGalleryManager**, download and run the latest version of the ins
 2. Run the installer and follow the on-screen instructions.
 3. After installation, launch the app from the Start Menu or Desktop.
 
-## Termini di Servizio di VRChat
+## VRChat Terms of Service
 
 VRCGalleryManager is an independent application that exclusively utilizes VRChat's official API to provide its features. It does not modify, alter, or interfere with the game in any way but simply streamlines the management of images, stickers, and GIFs within the permitted capabilities.
 
