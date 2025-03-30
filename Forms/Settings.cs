@@ -104,9 +104,8 @@ namespace VRCGalleryManager.Forms
                     viewPassword.Enabled = false;
                     foreach (var badge in currentUser.Badges)
                     {
-                        Badges.Add(badge.ToJson());
-
-                        if (badge.BadgeName == "Supporter") VRCPlus = true;
+                        if (badge.Showcased) Badges.Add(badge.ToJson());
+                        if (badge.BadgeId == "bdg_754f9935-0f97-49d8-b857-95afb9b673fa") VRCPlus = true;
                     }
                     await _mainPanel.ProfileImage();
 
