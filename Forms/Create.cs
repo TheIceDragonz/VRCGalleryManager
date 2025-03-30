@@ -46,6 +46,8 @@ namespace VRCGalleryManager.Forms
 
                 imageframes = frameCount;
 
+                VRChatPreview();
+
                 buttonSave.Enabled = true;
             }
             catch (Exception ex)
