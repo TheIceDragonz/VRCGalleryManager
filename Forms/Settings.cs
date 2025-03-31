@@ -130,7 +130,7 @@ namespace VRCGalleryManager.Forms
                     }
                     else
                     {
-                        
+
                         Logout();
                         NotificationManager.ShowNotification("Token error: " + ex.Message, "Authentication Error", NotificationType.Error);
                     }
@@ -312,5 +312,24 @@ namespace VRCGalleryManager.Forms
             _password.UseSystemPasswordChar = true;
         }
 
+        private void _username_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (Auth.LoggedIn || Auth.CookieLoaded) return;
+
+            if (e.KeyCode == Keys.Enter)
+            {
+                LoginButton_Click(sender, e);
+            }
+        }
+
+        private void _password_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (Auth.LoggedIn || Auth.CookieLoaded) return;
+
+            if (e.KeyCode == Keys.Enter)
+            {
+                LoginButton_Click(sender, e);
+            }
+        }
     }
 }
