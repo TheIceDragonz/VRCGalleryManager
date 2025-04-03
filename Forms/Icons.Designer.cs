@@ -89,6 +89,7 @@ namespace VRCGalleryManager.Forms
             uploadButton.BorderColor = Color.FromArgb(5, 55, 66);
             uploadButton.BorderRadius = 10;
             uploadButton.BorderSize = 2;
+            uploadButton.Enabled = false;
             uploadButton.FlatAppearance.BorderSize = 0;
             uploadButton.FlatStyle = FlatStyle.Flat;
             uploadButton.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
@@ -160,6 +161,7 @@ namespace VRCGalleryManager.Forms
             pasteButton.BorderColor = Color.FromArgb(5, 55, 66);
             pasteButton.BorderRadius = 10;
             pasteButton.BorderSize = 2;
+            pasteButton.Enabled = false;
             pasteButton.FlatAppearance.BorderSize = 0;
             pasteButton.FlatStyle = FlatStyle.Flat;
             pasteButton.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);

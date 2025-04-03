@@ -2,6 +2,7 @@
 using System.Collections;
 using System.ComponentModel;
 using System.Drawing.Drawing2D;
+using System.Threading.Tasks;
 
 namespace VRCGalleryManager.Design
 {
@@ -66,15 +67,16 @@ namespace VRCGalleryManager.Design
                 {
                     _ = UpdateSvgContentAsync(svgResource);
                 }
-                svgImage = null; // Reset the image to force re-rendering
-                Refresh(); // Ensure the control repaints itself
+                svgImage = null;
+                Refresh();
             }
         }
+
         private async Task UpdateSvgContentAsync(string resourceName)
         {
             SvgContent = await LoadSvgFromResourcesAsync(resourceName);
-            svgImage = null; // Reset the image to force re-rendering
-            Refresh(); // Ensure the control repaints itself
+            svgImage = null;
+            Refresh();
         }
 
         [Browsable(false)]
@@ -89,7 +91,7 @@ namespace VRCGalleryManager.Design
                 if (svgAlignment != value)
                 {
                     svgAlignment = value;
-                    Refresh(); // Force redraw to apply alignment changes
+                    Refresh();
                 }
             }
         }
@@ -103,8 +105,8 @@ namespace VRCGalleryManager.Design
                 if (svgColor != value)
                 {
                     svgColor = value;
-                    svgImage = null; // Reset SVG image to apply color changes
-                    Refresh(); // Force redraw
+                    svgImage = null;
+                    Refresh();
                 }
             }
         }
@@ -118,8 +120,8 @@ namespace VRCGalleryManager.Design
                 if (svgSize != value)
                 {
                     svgSize = value;
-                    svgImage = null; // Reset SVG image to apply size changes
-                    Refresh(); // Force redraw
+                    svgImage = null;
+                    Refresh();
                 }
             }
         }
@@ -133,7 +135,7 @@ namespace VRCGalleryManager.Design
                 if (svgPadding != value)
                 {
                     svgPadding = value;
-                    Refresh(); // Force redraw to apply padding changes
+                    Refresh();
                 }
             }
         }
@@ -147,10 +149,11 @@ namespace VRCGalleryManager.Design
                 if (svgOffset != value)
                 {
                     svgOffset = value;
-                    Refresh(); // Force redraw to apply offset changes
+                    Refresh();
                 }
             }
         }
+
         protected override void OnPaint(PaintEventArgs pevent)
         {
             base.OnPaint(pevent);
@@ -176,27 +179,29 @@ namespace VRCGalleryManager.Design
                     pevent.Graphics.DrawPath(penBorder, pathBorder);
                 }
             }
-            // Draw SVG image
+
             if (!string.IsNullOrEmpty(SvgContent))
             {
                 try
                 {
+                    Color effectiveSvgColor = this.Enabled ? SvgColor : Color.Black;
+
                     if (svgImage == null)
                     {
                         using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(SvgContent)))
                         {
                             var svgDoc = SvgDocument.Open<SvgDocument>(stream);
-                            if (SvgColor != Color.Empty)
+                            if (effectiveSvgColor != Color.Empty)
                             {
                                 foreach (var element in svgDoc.Descendants())
                                 {
                                     if (element.Fill != null)
                                     {
-                                        element.Fill = new SvgColourServer(SvgColor);
+                                        element.Fill = new SvgColourServer(effectiveSvgColor);
                                     }
                                 }
                             }
-                            svgImage = svgDoc.Draw(SvgSize.Width, SvgSize.Height); // Use SvgSize to scale the SVG
+                            svgImage = svgDoc.Draw(SvgSize.Width, SvgSize.Height);
                         }
                     }
 
@@ -204,16 +209,13 @@ namespace VRCGalleryManager.Design
                     {
                         Rectangle imageRect = GetAlignedRectangle(SvgSize, ClientRectangle, SvgAlignment);
 
-                        // Apply padding
                         imageRect.X += SvgPadding.Left;
                         imageRect.Y += SvgPadding.Top;
                         imageRect.Width -= (SvgPadding.Left + SvgPadding.Right);
                         imageRect.Height -= (SvgPadding.Top + SvgPadding.Bottom);
 
-                        // Apply offset
                         imageRect.Offset(SvgOffset);
 
-                        // Draw the image
                         pevent.Graphics.DrawImage(svgImage, imageRect);
                     }
                 }
@@ -258,7 +260,6 @@ namespace VRCGalleryManager.Design
                 return null;
             });
         }
-
 
         private Rectangle GetAlignedRectangle(Size imageSize, Rectangle container, ContentAlignment alignment)
         {
@@ -319,6 +320,13 @@ namespace VRCGalleryManager.Design
             if (Parent != null)
                 Parent.BackColorChanged -= Container_BackColorChanged;
             base.OnHandleDestroyed(e);
+        }
+
+        protected override void OnEnabledChanged(EventArgs e)
+        {
+            base.OnEnabledChanged(e);
+            svgImage = null;
+            Invalidate();
         }
     }
 }

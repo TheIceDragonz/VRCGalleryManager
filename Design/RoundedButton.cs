@@ -201,7 +201,6 @@ namespace VRCGalleryManager.Design
 
         protected override void OnPaint(PaintEventArgs pevent)
         {
-            // Clear the entire drawing area
             base.OnPaint(pevent);
 
             Rectangle rectSurface = ClientRectangle;
@@ -210,8 +209,7 @@ namespace VRCGalleryManager.Design
             if (borderSize > 0)
                 smoothSize = borderSize;
 
-            // Draw rounded button background and border
-            if (BorderRadius > 2) //Rounded button
+            if (BorderRadius > 2)
             {
                 using (GraphicsPath pathSurface = GetFigurePath(rectSurface, BorderRadius))
                 using (GraphicsPath pathBorder = GetFigurePath(rectBorder, BorderRadius - borderSize))
@@ -228,7 +226,7 @@ namespace VRCGalleryManager.Design
                         pevent.Graphics.DrawPath(penBorder, pathBorder);
                 }
             }
-            else //Normal button
+            else
             {
                 pevent.Graphics.SmoothingMode = SmoothingMode.None;
                 Region = new Region(rectSurface);
@@ -242,27 +240,28 @@ namespace VRCGalleryManager.Design
                 }
             }
 
-            // Draw SVG image
             if (!string.IsNullOrEmpty(SvgContent))
             {
                 try
                 {
+                    Color effectiveSvgColor = this.Enabled ? SvgColor : Color.Black;
+
                     if (svgImage == null)
                     {
                         using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(SvgContent)))
                         {
                             var svgDoc = SvgDocument.Open<SvgDocument>(stream);
-                            if (SvgColor != Color.Empty)
+                            if (effectiveSvgColor != Color.Empty)
                             {
                                 foreach (var element in svgDoc.Descendants())
                                 {
                                     if (element.Fill != null)
                                     {
-                                        element.Fill = new SvgColourServer(SvgColor);
+                                        element.Fill = new SvgColourServer(effectiveSvgColor);
                                     }
                                 }
                             }
-                            svgImage = svgDoc.Draw(SvgSize.Width, SvgSize.Height); // Use SvgSize to scale the SVG
+                            svgImage = svgDoc.Draw(SvgSize.Width, SvgSize.Height);
                         }
                     }
 
@@ -270,16 +269,13 @@ namespace VRCGalleryManager.Design
                     {
                         Rectangle imageRect = GetAlignedRectangle(SvgSize, ClientRectangle, SvgAlignment);
 
-                        // Apply padding
                         imageRect.X += SvgPadding.Left;
                         imageRect.Y += SvgPadding.Top;
                         imageRect.Width -= (SvgPadding.Left + SvgPadding.Right);
                         imageRect.Height -= (SvgPadding.Top + SvgPadding.Bottom);
 
-                        // Apply offset
                         imageRect.Offset(SvgOffset);
 
-                        // Draw the image
                         pevent.Graphics.DrawImage(svgImage, imageRect);
                     }
                 }
@@ -289,7 +285,6 @@ namespace VRCGalleryManager.Design
                 }
             }
         }
-
 
         private Rectangle GetAlignedRectangle(Size imageSize, Rectangle container, ContentAlignment alignment)
         {
@@ -328,11 +323,25 @@ namespace VRCGalleryManager.Design
             Resize += Button_Resize;
         }
 
+        protected override void OnHandleCreated(EventArgs e)
+        {
+            base.OnHandleCreated(e);
+            Parent.BackColorChanged += Container_BackColorChanged;
+            Cursor = Cursors.Hand;
+        }
+
         protected override void OnHandleDestroyed(EventArgs e)
         {
             if (Parent != null)
                 Parent.BackColorChanged -= Container_BackColorChanged;
             base.OnHandleDestroyed(e);
+        }
+
+        protected override void OnEnabledChanged(EventArgs e)
+        {
+            base.OnEnabledChanged(e);
+            svgImage = null;
+            Invalidate();
         }
 
         private GraphicsPath GetFigurePath(Rectangle rect, float radius)
@@ -346,13 +355,6 @@ namespace VRCGalleryManager.Design
             path.AddArc(rect.X, rect.Bottom - curveSize, curveSize, curveSize, 90, 90);
             path.CloseFigure();
             return path;
-        }
-
-        protected override void OnHandleCreated(EventArgs e)
-        {
-            base.OnHandleCreated(e);
-            Parent.BackColorChanged += Container_BackColorChanged;
-            Cursor = Cursors.Hand;
         }
 
         private void Container_BackColorChanged(object sender, EventArgs e)
