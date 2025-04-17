@@ -13,6 +13,8 @@ namespace VRCGalleryManager.Forms
         private VRCAuth Auth;
         private MainPanel _mainPanel;
 
+        UpdateManager updater = new UpdateManager();
+
         public static string UserId = "";
         public static string UserIconImage = "";
         public static string UserBannerImage = "";
@@ -28,6 +30,8 @@ namespace VRCGalleryManager.Forms
             _mainPanel = mainPanel;
 
             CheckToken();
+
+            CheckUpdate();
         }
 
         protected override void OnVisibleChanged(EventArgs e)
@@ -167,10 +171,19 @@ namespace VRCGalleryManager.Forms
             });
         }
 
-        private async void _checkUpdate_Click(object sender, EventArgs e)
+        private async void _newUpdate_Click(object sender, EventArgs e)
         {
-            var updater = new UpdateManager();
-            await updater.CheckForUpdatesAsync(_checkUpdate);
+            await updater.CheckForUpdatesAsync(_newUpdate);
+        }
+
+        private async void CheckUpdate()
+        {
+            bool hasUpdate = await updater.IsUpdateAvailableAsync();
+            _newUpdate.Visible = hasUpdate;
+            if (hasUpdate)
+            {
+                NotificationManager.ShowNotification("New update available!", "Update", NotificationType.Info);
+            }
         }
 
         private void _openCacheFolder_Click(object sender, EventArgs e)

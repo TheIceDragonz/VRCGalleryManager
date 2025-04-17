@@ -46,11 +46,13 @@ namespace VRCGalleryManager.Forms
             _clearAllCacheFiles = new RoundedButton();
             infoCacheLabel = new Label();
             _openGitHubPage = new RoundedButton();
-            _checkUpdate = new RoundedButton();
+            _newUpdate = new RoundedButton();
             _clearAllVRChatLogs = new RoundedButton();
+            panel2 = new Panel();
             _vrcLogin.SuspendLayout();
             panel1.SuspendLayout();
             panel5.SuspendLayout();
+            panel2.SuspendLayout();
             SuspendLayout();
             // 
             // _vrcLogin
@@ -68,16 +70,16 @@ namespace VRCGalleryManager.Forms
             _vrcLogin.Controls.Add(_vrcLoginLabel, 0, 0);
             _vrcLogin.Controls.Add(panel1, 0, 2);
             _vrcLogin.Controls.Add(panel5, 0, 1);
-            _vrcLogin.Location = new Point(9, 9);
+            _vrcLogin.Location = new Point(11, 11);
             _vrcLogin.Margin = new Padding(0);
             _vrcLogin.Name = "_vrcLogin";
-            _vrcLogin.Padding = new Padding(4);
+            _vrcLogin.Padding = new Padding(5);
             _vrcLogin.RowCount = 4;
-            _vrcLogin.RowStyles.Add(new RowStyle(SizeType.Absolute, 23F));
-            _vrcLogin.RowStyles.Add(new RowStyle(SizeType.Absolute, 35F));
-            _vrcLogin.RowStyles.Add(new RowStyle(SizeType.Absolute, 35F));
-            _vrcLogin.RowStyles.Add(new RowStyle(SizeType.Absolute, 35F));
-            _vrcLogin.Size = new Size(855, 136);
+            _vrcLogin.RowStyles.Add(new RowStyle(SizeType.Absolute, 29F));
+            _vrcLogin.RowStyles.Add(new RowStyle(SizeType.Absolute, 44F));
+            _vrcLogin.RowStyles.Add(new RowStyle(SizeType.Absolute, 44F));
+            _vrcLogin.RowStyles.Add(new RowStyle(SizeType.Absolute, 44F));
+            _vrcLogin.Size = new Size(985, 170);
             _vrcLogin.TabIndex = 7;
             // 
             // _loginButton
@@ -93,9 +95,10 @@ namespace VRCGalleryManager.Forms
             _loginButton.FlatStyle = FlatStyle.Flat;
             _loginButton.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
             _loginButton.ForeColor = Color.FromArgb(106, 227, 249);
-            _loginButton.Location = new Point(7, 100);
+            _loginButton.Location = new Point(9, 126);
+            _loginButton.Margin = new Padding(4);
             _loginButton.Name = "_loginButton";
-            _loginButton.Size = new Size(841, 29);
+            _loginButton.Size = new Size(967, 36);
             _loginButton.SvgAlignment = ContentAlignment.MiddleCenter;
             _loginButton.SvgColor = Color.Black;
             _loginButton.SvgContent = null;
@@ -116,10 +119,10 @@ namespace VRCGalleryManager.Forms
             _vrcLoginLabel.Font = new Font("Microsoft Sans Serif", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
             _vrcLoginLabel.ForeColor = Color.Azure;
             _vrcLoginLabel.ImageAlign = ContentAlignment.TopLeft;
-            _vrcLoginLabel.Location = new Point(8, 4);
-            _vrcLoginLabel.Margin = new Padding(4, 0, 4, 0);
+            _vrcLoginLabel.Location = new Point(10, 5);
+            _vrcLoginLabel.Margin = new Padding(5, 0, 5, 0);
             _vrcLoginLabel.Name = "_vrcLoginLabel";
-            _vrcLoginLabel.Size = new Size(839, 23);
+            _vrcLoginLabel.Size = new Size(965, 29);
             _vrcLoginLabel.TabIndex = 1;
             _vrcLoginLabel.Text = "VRChat Login";
             _vrcLoginLabel.TextAlign = ContentAlignment.MiddleLeft;
@@ -136,10 +139,10 @@ namespace VRCGalleryManager.Forms
             panel1.Controls.Add(_password);
             panel1.Controls.Add(label6);
             panel1.Dock = DockStyle.Fill;
-            panel1.Location = new Point(4, 62);
+            panel1.Location = new Point(5, 78);
             panel1.Margin = new Padding(0);
             panel1.Name = "panel1";
-            panel1.Size = new Size(847, 35);
+            panel1.Size = new Size(975, 44);
             panel1.TabIndex = 5;
             // 
             // viewPassword
@@ -153,9 +156,10 @@ namespace VRCGalleryManager.Forms
             viewPassword.FlatAppearance.BorderSize = 0;
             viewPassword.FlatStyle = FlatStyle.Flat;
             viewPassword.ForeColor = Color.White;
-            viewPassword.Location = new Point(816, 5);
+            viewPassword.Location = new Point(941, 6);
+            viewPassword.Margin = new Padding(4);
             viewPassword.Name = "viewPassword";
-            viewPassword.Size = new Size(25, 25);
+            viewPassword.Size = new Size(31, 31);
             viewPassword.SvgAlignment = ContentAlignment.MiddleCenter;
             viewPassword.SvgColor = Color.FromArgb(106, 227, 249);
             viewPassword.SvgContent = resources.GetString("viewPassword.SvgContent");
@@ -177,10 +181,10 @@ namespace VRCGalleryManager.Forms
             _password.Cursor = Cursors.IBeam;
             _password.Font = new Font("Segoe UI Semibold", 9F, FontStyle.Bold);
             _password.ForeColor = Color.FromArgb(106, 227, 249);
-            _password.Location = new Point(111, 10);
-            _password.Margin = new Padding(4, 3, 4, 3);
+            _password.Location = new Point(139, 12);
+            _password.Margin = new Padding(5, 4, 5, 4);
             _password.Name = "_password";
-            _password.Size = new Size(698, 20);
+            _password.Size = new Size(801, 20);
             _password.TabIndex = 5;
             _password.UseSystemPasswordChar = true;
             // 
@@ -192,8 +196,8 @@ namespace VRCGalleryManager.Forms
             label6.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
             label6.ForeColor = Color.FromArgb(106, 227, 249);
             label6.ImageAlign = ContentAlignment.TopLeft;
-            label6.Location = new Point(19, 10);
-            label6.Margin = new Padding(4, 0, 4, 0);
+            label6.Location = new Point(24, 12);
+            label6.Margin = new Padding(5, 0, 5, 0);
             label6.Name = "label6";
             label6.Size = new Size(86, 20);
             label6.TabIndex = 14;
@@ -210,10 +214,10 @@ namespace VRCGalleryManager.Forms
             panel5.Controls.Add(_username);
             panel5.Controls.Add(label7);
             panel5.Dock = DockStyle.Fill;
-            panel5.Location = new Point(4, 27);
+            panel5.Location = new Point(5, 34);
             panel5.Margin = new Padding(0);
             panel5.Name = "panel5";
-            panel5.Size = new Size(847, 35);
+            panel5.Size = new Size(975, 44);
             panel5.TabIndex = 6;
             // 
             // _username
@@ -224,10 +228,10 @@ namespace VRCGalleryManager.Forms
             _username.Cursor = Cursors.IBeam;
             _username.Font = new Font("Segoe UI Semibold", 9F, FontStyle.Bold);
             _username.ForeColor = Color.FromArgb(106, 227, 249);
-            _username.Location = new Point(111, 10);
-            _username.Margin = new Padding(4, 3, 4, 3);
+            _username.Location = new Point(139, 12);
+            _username.Margin = new Padding(5, 4, 5, 4);
             _username.Name = "_username";
-            _username.Size = new Size(725, 20);
+            _username.Size = new Size(801, 20);
             _username.TabIndex = 5;
             // 
             // label7
@@ -237,8 +241,8 @@ namespace VRCGalleryManager.Forms
             label7.BackColor = Color.FromArgb(7, 36, 43);
             label7.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
             label7.ForeColor = Color.FromArgb(106, 227, 249);
-            label7.Location = new Point(17, 10);
-            label7.Margin = new Padding(4, 0, 4, 0);
+            label7.Location = new Point(21, 12);
+            label7.Margin = new Padding(5, 0, 5, 0);
             label7.Name = "label7";
             label7.Size = new Size(86, 20);
             label7.TabIndex = 14;
@@ -257,9 +261,10 @@ namespace VRCGalleryManager.Forms
             _openTempFile.FlatStyle = FlatStyle.Flat;
             _openTempFile.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
             _openTempFile.ForeColor = Color.FromArgb(106, 227, 249);
-            _openTempFile.Location = new Point(72, 330);
+            _openTempFile.Location = new Point(90, 343);
+            _openTempFile.Margin = new Padding(4);
             _openTempFile.Name = "_openTempFile";
-            _openTempFile.Size = new Size(730, 40);
+            _openTempFile.Size = new Size(843, 50);
             _openTempFile.SvgAlignment = ContentAlignment.MiddleCenter;
             _openTempFile.SvgColor = Color.Black;
             _openTempFile.SvgContent = null;
@@ -285,9 +290,10 @@ namespace VRCGalleryManager.Forms
             _openVrchatLogs.FlatStyle = FlatStyle.Flat;
             _openVrchatLogs.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
             _openVrchatLogs.ForeColor = Color.FromArgb(106, 227, 249);
-            _openVrchatLogs.Location = new Point(72, 284);
+            _openVrchatLogs.Location = new Point(90, 286);
+            _openVrchatLogs.Margin = new Padding(4);
             _openVrchatLogs.Name = "_openVrchatLogs";
-            _openVrchatLogs.Size = new Size(730, 40);
+            _openVrchatLogs.Size = new Size(843, 50);
             _openVrchatLogs.SvgAlignment = ContentAlignment.MiddleCenter;
             _openVrchatLogs.SvgColor = Color.Black;
             _openVrchatLogs.SvgContent = null;
@@ -313,9 +319,10 @@ namespace VRCGalleryManager.Forms
             _clearAllCacheFiles.FlatStyle = FlatStyle.Flat;
             _clearAllCacheFiles.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
             _clearAllCacheFiles.ForeColor = Color.FromArgb(255, 128, 128);
-            _clearAllCacheFiles.Location = new Point(72, 422);
+            _clearAllCacheFiles.Location = new Point(90, 459);
+            _clearAllCacheFiles.Margin = new Padding(4);
             _clearAllCacheFiles.Name = "_clearAllCacheFiles";
-            _clearAllCacheFiles.Size = new Size(730, 40);
+            _clearAllCacheFiles.Size = new Size(843, 50);
             _clearAllCacheFiles.SvgAlignment = ContentAlignment.MiddleCenter;
             _clearAllCacheFiles.SvgColor = Color.Black;
             _clearAllCacheFiles.SvgContent = null;
@@ -334,27 +341,29 @@ namespace VRCGalleryManager.Forms
             infoCacheLabel.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             infoCacheLabel.BackColor = Color.FromArgb(14, 16, 19);
             infoCacheLabel.ForeColor = Color.FromArgb(106, 227, 249);
-            infoCacheLabel.Location = new Point(72, 475);
+            infoCacheLabel.Location = new Point(90, 525);
+            infoCacheLabel.Margin = new Padding(4, 0, 4, 0);
             infoCacheLabel.Name = "infoCacheLabel";
-            infoCacheLabel.Size = new Size(730, 81);
+            infoCacheLabel.Size = new Size(843, 115);
             infoCacheLabel.TabIndex = 11;
             infoCacheLabel.Text = "Info\r";
             // 
             // _openGitHubPage
             // 
-            _openGitHubPage.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             _openGitHubPage.BackColor = Color.FromArgb(7, 36, 43);
             _openGitHubPage.BackgroundColor = Color.FromArgb(7, 36, 43);
             _openGitHubPage.BorderColor = Color.FromArgb(5, 55, 66);
             _openGitHubPage.BorderRadius = 10;
             _openGitHubPage.BorderSize = 2;
+            _openGitHubPage.Dock = DockStyle.Fill;
             _openGitHubPage.FlatAppearance.BorderSize = 0;
             _openGitHubPage.FlatStyle = FlatStyle.Flat;
             _openGitHubPage.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
             _openGitHubPage.ForeColor = Color.FromArgb(106, 227, 249);
-            _openGitHubPage.Location = new Point(72, 170);
+            _openGitHubPage.Location = new Point(0, 0);
+            _openGitHubPage.Margin = new Padding(4);
             _openGitHubPage.Name = "_openGitHubPage";
-            _openGitHubPage.Size = new Size(730, 40);
+            _openGitHubPage.Size = new Size(654, 45);
             _openGitHubPage.SvgAlignment = ContentAlignment.MiddleCenter;
             _openGitHubPage.SvgColor = Color.Black;
             _openGitHubPage.SvgContent = null;
@@ -368,33 +377,35 @@ namespace VRCGalleryManager.Forms
             _openGitHubPage.UseVisualStyleBackColor = false;
             _openGitHubPage.Click += _openGitHubPage_Click;
             // 
-            // _checkUpdate
+            // _newUpdate
             // 
-            _checkUpdate.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            _checkUpdate.BackColor = Color.FromArgb(7, 36, 43);
-            _checkUpdate.BackgroundColor = Color.FromArgb(7, 36, 43);
-            _checkUpdate.BorderColor = Color.FromArgb(5, 55, 66);
-            _checkUpdate.BorderRadius = 10;
-            _checkUpdate.BorderSize = 2;
-            _checkUpdate.FlatAppearance.BorderSize = 0;
-            _checkUpdate.FlatStyle = FlatStyle.Flat;
-            _checkUpdate.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
-            _checkUpdate.ForeColor = Color.FromArgb(255, 255, 128);
-            _checkUpdate.Location = new Point(72, 216);
-            _checkUpdate.Name = "_checkUpdate";
-            _checkUpdate.Size = new Size(730, 40);
-            _checkUpdate.SvgAlignment = ContentAlignment.MiddleCenter;
-            _checkUpdate.SvgColor = Color.Black;
-            _checkUpdate.SvgContent = null;
-            _checkUpdate.SvgOffset = new Point(0, 0);
-            _checkUpdate.SvgPadding = new Padding(0);
-            _checkUpdate.SvgResource = null;
-            _checkUpdate.SvgSize = new Size(50, 50);
-            _checkUpdate.TabIndex = 13;
-            _checkUpdate.Text = "Check Update";
-            _checkUpdate.TextColor = Color.FromArgb(255, 255, 128);
-            _checkUpdate.UseVisualStyleBackColor = false;
-            _checkUpdate.Click += _checkUpdate_Click;
+            _newUpdate.BackColor = Color.FromArgb(7, 36, 43);
+            _newUpdate.BackgroundColor = Color.FromArgb(7, 36, 43);
+            _newUpdate.BorderColor = Color.FromArgb(5, 55, 66);
+            _newUpdate.BorderRadius = 10;
+            _newUpdate.BorderSize = 2;
+            _newUpdate.Dock = DockStyle.Right;
+            _newUpdate.FlatAppearance.BorderSize = 0;
+            _newUpdate.FlatStyle = FlatStyle.Flat;
+            _newUpdate.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
+            _newUpdate.ForeColor = Color.FromArgb(255, 255, 128);
+            _newUpdate.Location = new Point(654, 0);
+            _newUpdate.Margin = new Padding(4);
+            _newUpdate.Name = "_newUpdate";
+            _newUpdate.Size = new Size(189, 45);
+            _newUpdate.SvgAlignment = ContentAlignment.MiddleCenter;
+            _newUpdate.SvgColor = Color.Black;
+            _newUpdate.SvgContent = null;
+            _newUpdate.SvgOffset = new Point(0, 0);
+            _newUpdate.SvgPadding = new Padding(0);
+            _newUpdate.SvgResource = null;
+            _newUpdate.SvgSize = new Size(50, 50);
+            _newUpdate.TabIndex = 13;
+            _newUpdate.Text = "New Update";
+            _newUpdate.TextColor = Color.FromArgb(255, 255, 128);
+            _newUpdate.UseVisualStyleBackColor = false;
+            _newUpdate.Visible = false;
+            _newUpdate.Click += _newUpdate_Click;
             // 
             // _clearAllVRChatLogs
             // 
@@ -408,9 +419,10 @@ namespace VRCGalleryManager.Forms
             _clearAllVRChatLogs.FlatStyle = FlatStyle.Flat;
             _clearAllVRChatLogs.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
             _clearAllVRChatLogs.ForeColor = Color.FromArgb(255, 128, 128);
-            _clearAllVRChatLogs.Location = new Point(72, 376);
+            _clearAllVRChatLogs.Location = new Point(90, 401);
+            _clearAllVRChatLogs.Margin = new Padding(4);
             _clearAllVRChatLogs.Name = "_clearAllVRChatLogs";
-            _clearAllVRChatLogs.Size = new Size(730, 40);
+            _clearAllVRChatLogs.Size = new Size(843, 50);
             _clearAllVRChatLogs.SvgAlignment = ContentAlignment.MiddleCenter;
             _clearAllVRChatLogs.SvgColor = Color.Black;
             _clearAllVRChatLogs.SvgContent = null;
@@ -424,24 +436,32 @@ namespace VRCGalleryManager.Forms
             _clearAllVRChatLogs.UseVisualStyleBackColor = false;
             _clearAllVRChatLogs.Click += _clearAllVRChatLogs_Click;
             // 
+            // panel2
+            // 
+            panel2.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            panel2.Controls.Add(_openGitHubPage);
+            panel2.Controls.Add(_newUpdate);
+            panel2.Location = new Point(90, 208);
+            panel2.Name = "panel2";
+            panel2.Size = new Size(843, 45);
+            panel2.TabIndex = 15;
+            // 
             // Settings
             // 
             AutoScaleDimensions = new SizeF(120F, 120F);
-            AutoScaleDimensions = new SizeF(96F, 96F);
             AutoScaleMode = AutoScaleMode.Dpi;
             AutoScroll = true;
             BackColor = Color.FromArgb(5, 5, 5);
-            ClientSize = new Size(873, 621);
+            ClientSize = new Size(1028, 823);
+            Controls.Add(panel2);
             Controls.Add(_clearAllVRChatLogs);
-            Controls.Add(_checkUpdate);
-            Controls.Add(_openGitHubPage);
             Controls.Add(infoCacheLabel);
             Controls.Add(_clearAllCacheFiles);
             Controls.Add(_openVrchatLogs);
             Controls.Add(_openTempFile);
             Controls.Add(_vrcLogin);
             FormBorderStyle = FormBorderStyle.None;
-            Margin = new Padding(4, 3, 4, 3);
+            Margin = new Padding(5, 4, 5, 4);
             Name = "Settings";
             StartPosition = FormStartPosition.CenterScreen;
             Text = "AssetBundle";
@@ -450,6 +470,7 @@ namespace VRCGalleryManager.Forms
             panel1.PerformLayout();
             panel5.ResumeLayout(false);
             panel5.PerformLayout();
+            panel2.ResumeLayout(false);
             ResumeLayout(false);
         }
 
@@ -468,8 +489,9 @@ namespace VRCGalleryManager.Forms
         private RoundedButton _clearAllCacheFiles;
         private Label infoCacheLabel;
         private RoundedButton _openGitHubPage;
-        private RoundedButton _checkUpdate;
+        private RoundedButton _newUpdate;
         private RoundedButton _clearAllVRChatLogs;
         private RoundedButton viewPassword;
+        private Panel panel2;
     }
 }
