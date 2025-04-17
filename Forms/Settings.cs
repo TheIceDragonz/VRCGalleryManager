@@ -13,6 +13,8 @@ namespace VRCGalleryManager.Forms
         private VRCAuth Auth;
         private MainPanel _mainPanel;
 
+        UpdateManager updater = new UpdateManager();
+
         public static string UserId = "";
         public static string UserIconImage = "";
         public static string UserBannerImage = "";
@@ -28,6 +30,8 @@ namespace VRCGalleryManager.Forms
             _mainPanel = mainPanel;
 
             CheckToken();
+
+            CheckUpdate();
         }
 
         protected override void OnVisibleChanged(EventArgs e)
@@ -104,9 +108,8 @@ namespace VRCGalleryManager.Forms
                     viewPassword.Enabled = false;
                     foreach (var badge in currentUser.Badges)
                     {
-                        Badges.Add(badge.ToJson());
-
-                        if (badge.BadgeName == "Supporter") VRCPlus = true;
+                        if (badge.Showcased) Badges.Add(badge.ToJson());
+                        if (badge.BadgeId == "bdg_754f9935-0f97-49d8-b857-95afb9b673fa") VRCPlus = true;
                     }
                     await _mainPanel.ProfileImage();
 
@@ -131,7 +134,7 @@ namespace VRCGalleryManager.Forms
                     }
                     else
                     {
-                        
+
                         Logout();
                         NotificationManager.ShowNotification("Token error: " + ex.Message, "Authentication Error", NotificationType.Error);
                     }
@@ -168,10 +171,19 @@ namespace VRCGalleryManager.Forms
             });
         }
 
-        private async void _checkUpdate_Click(object sender, EventArgs e)
+        private async void _newUpdate_Click(object sender, EventArgs e)
         {
-            var updater = new UpdateManager();
-            await updater.CheckForUpdatesAsync(_checkUpdate);
+            await updater.CheckForUpdatesAsync(_newUpdate);
+        }
+
+        private async void CheckUpdate()
+        {
+            bool hasUpdate = await updater.IsUpdateAvailableAsync();
+            _newUpdate.Visible = hasUpdate;
+            if (hasUpdate)
+            {
+                NotificationManager.ShowNotification("New update available!", "Update", NotificationType.Info);
+            }
         }
 
         private void _openCacheFolder_Click(object sender, EventArgs e)
@@ -313,5 +325,24 @@ namespace VRCGalleryManager.Forms
             _password.UseSystemPasswordChar = true;
         }
 
+        private void _username_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (Auth.LoggedIn || Auth.CookieLoaded) return;
+
+            if (e.KeyCode == Keys.Enter)
+            {
+                LoginButton_Click(sender, e);
+            }
+        }
+
+        private void _password_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (Auth.LoggedIn || Auth.CookieLoaded) return;
+
+            if (e.KeyCode == Keys.Enter)
+            {
+                LoginButton_Click(sender, e);
+            }
+        }
     }
 }
