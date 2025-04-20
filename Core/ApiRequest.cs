@@ -54,7 +54,8 @@ namespace VRCGalleryManager.Core
                 }
                 else
                 {
-                    var images = await printsApi.GetPrintsAsync(Settings.UserId, 100);
+                    var images = await printsApi.GetUserPrintsAsync(Settings.UserId, 100, 0);
+                    
 
                     foreach (var image in images)
                     {
