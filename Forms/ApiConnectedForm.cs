@@ -15,6 +15,5 @@ namespace VRCGalleryManager.Forms
         {
             apiRequest = new ApiRequest(auth);
         }
-
     }
 }

@@ -90,7 +90,7 @@ namespace VRCGalleryManager.Forms.Panels
             int value = 10;
 
             if (mainPanel.Name.Contains("prints")) size = new Size(190, 150);
-            if (mainPanel.Name.Contains("gallery")) size = new Size(250, 150);
+            if (mainPanel.Name.Contains("photos")) size = new Size(250, 150);
             if (mainPanel.Name.Contains("icons")) value = 100; //Max Rounded
 
             string imageFull = $"https://api.vrchat.cloud/api/1/file/{imageId}/1/file";

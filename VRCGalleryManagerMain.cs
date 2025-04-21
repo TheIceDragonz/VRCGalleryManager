@@ -34,13 +34,14 @@ namespace VRCGalleryManager
             _forms = new ApiConnectedForm[]
             {
                 new Icons(Auth),
-                new Gallery(Auth),
+                new Photos(Auth),
                 new Emoji(Auth),
                 new Sticker(Auth),
                 new Prints(Auth),
 
                 new Picflow(Auth),
                 new Create(Auth),
+                new Gallery(Auth),
                 new Settings(Auth, this)
             };
             foreach (var form in _forms)
@@ -51,7 +52,7 @@ namespace VRCGalleryManager
                 form.Hide();
             }
 
-            ShowForm(7);
+            ShowForm(8);
 
             if (Auth.LoggedIn || Auth.CookieLoaded)
             {
@@ -127,7 +128,8 @@ namespace VRCGalleryManager
 
             _switchPicflow.BorderColor = index == 5 ? Color.FromArgb(255, 255, 255) : Color.FromArgb(5, 55, 66);
             _switchCreate.BorderColor = index == 6 ? Color.FromArgb(255, 255, 255) : Color.FromArgb(5, 55, 66);
-            _switchSettings.BorderColor = index == 7 ? Color.FromArgb(255, 255, 255) : Color.FromArgb(5, 55, 66);
+            _switchGallery.BorderColor = index == 7 ? Color.FromArgb(255, 255, 255) : Color.FromArgb(5, 55, 66);
+            _switchSettings.BorderColor = index == 8 ? Color.FromArgb(255, 255, 255) : Color.FromArgb(5, 55, 66);
         }
 
         private void _switchIcons_Click(object sender, EventArgs e) => ShowForm(0);
@@ -138,7 +140,8 @@ namespace VRCGalleryManager
 
         private void _switchPicflow_Click(object sender, EventArgs e) => ShowForm(5);
         private void _switchCreate_Click(object sender, EventArgs e) => ShowForm(6);
-        private void _switchSettings_Click(object sender, EventArgs e) => ShowForm(7);
+        private void _switchGallery_Click(object sender, EventArgs e) => ShowForm(7);
+        private void _switchSettings_Click(object sender, EventArgs e) => ShowForm(8);
 
         public void SetFeatureControlsEnabled(bool enabled)
         {
@@ -186,7 +189,5 @@ namespace VRCGalleryManager
             };
             timer.Start();
         }
-
-        
     }
 }

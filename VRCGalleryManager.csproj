@@ -17,8 +17,8 @@
     <PackageReleaseNotes></PackageReleaseNotes>
     <StartupObject></StartupObject>
     <GeneratedAssemblyInfoFile>AssemblyInfo.cs</GeneratedAssemblyInfoFile>
-    <AssemblyVersion>1.0.1</AssemblyVersion>
-    <FileVersion>1.0.1</FileVersion>
+    <AssemblyVersion>1.0.2</AssemblyVersion>
+    <FileVersion>1.0.2</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -27,6 +27,7 @@
 
   <ItemGroup>
     <PackageReference Include="JsonSubTypes" Version="1.9.0" />
+    <PackageReference Include="Microsoft-WindowsAPICodePack-Shell" Version="1.1.5" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="Polly" Version="7.2.3" />
     <PackageReference Include="RestSharp" Version="108.0.2" />
@@ -36,6 +37,12 @@
 
   <ItemGroup>
     <Compile Update="Forms\Create.cs" />
+    <Compile Update="Forms\Photos.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="Forms\Photos.Designer.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Update="Forms\Gallery.cs" />
     <Compile Update="Forms\Gallery.Designer.cs">
       <SubType>Form</SubType>
