@@ -96,21 +96,30 @@ namespace VRCGalleryManager.Core
                 Location = new Point(5, 5),
                 BackColor = Color.FromArgb(24, 27, 31),
                 BorderSize = 0,
-                Cursor = Cursors.Hand,
                 BorderColor = Color.FromArgb(5, 55, 66),
             };
 
-            usersName.MouseEnter += (sender, e) => {
-                usersName.BorderSize = 2;
-            };
-            usersName.MouseLeave += (sender, e) => { 
-                usersName.BorderSize = 0;
-            };
-
-            usersName.Click += async (s, e) =>
+            if (!string.IsNullOrEmpty(player.Id))
             {
-                Process.Start("explorer.exe", "https://vrchat.com/home/user/" + player.Id);
-            };
+                usersName.Cursor = Cursors.Hand;
+                usersName.MouseEnter += (sender, e) => {
+                    usersName.BorderSize = 2;
+                };
+                usersName.MouseLeave += (sender, e) => {
+                    usersName.BorderSize = 0;
+                };
+
+                usersName.Click += async (s, e) =>
+                {
+                    Process.Start("explorer.exe", "https://vrchat.com/home/user/" + player.Id);
+                };
+            }
+            else
+            {
+                usersName.BackColor = Color.FromArgb(16, 18, 20);
+                usersName.ForeColor = Color.FromArgb(100, 100, 100);
+            }
+
 
             return (usersName, isfriend);
         }

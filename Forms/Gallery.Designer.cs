@@ -39,6 +39,7 @@ namespace VRCGalleryManager.Forms
             userInfoPanel = new Panel();
             worldImage = new RoundedPictureBox();
             worldNameLabel = new Label();
+            changeFolder = new RoundedButton();
             BackPanel.SuspendLayout();
             galleryInfoPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)worldImage).BeginInit();
@@ -175,6 +176,34 @@ namespace VRCGalleryManager.Forms
             worldNameLabel.Text = "world name";
             worldNameLabel.TextAlign = ContentAlignment.MiddleCenter;
             // 
+            // changeFolder
+            // 
+            changeFolder.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            changeFolder.BackColor = Color.FromArgb(7, 36, 43);
+            changeFolder.BackgroundColor = Color.FromArgb(7, 36, 43);
+            changeFolder.BorderColor = Color.FromArgb(5, 55, 66);
+            changeFolder.BorderRadius = 10;
+            changeFolder.BorderSize = 2;
+            changeFolder.FlatAppearance.BorderSize = 0;
+            changeFolder.FlatStyle = FlatStyle.Flat;
+            changeFolder.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
+            changeFolder.ForeColor = Color.FromArgb(106, 227, 249);
+            changeFolder.Location = new Point(1045, 13);
+            changeFolder.Margin = new Padding(4);
+            changeFolder.Name = "changeFolder";
+            changeFolder.Size = new Size(35, 35);
+            changeFolder.SvgAlignment = ContentAlignment.MiddleCenter;
+            changeFolder.SvgColor = Color.FromArgb(106, 227, 249);
+            changeFolder.SvgContent = resources.GetString("changeFolder.SvgContent");
+            changeFolder.SvgOffset = new Point(0, 0);
+            changeFolder.SvgPadding = new Padding(0);
+            changeFolder.SvgResource = "folder_svgrepo_com";
+            changeFolder.SvgSize = new Size(15, 15);
+            changeFolder.TabIndex = 6;
+            changeFolder.TextColor = Color.FromArgb(106, 227, 249);
+            changeFolder.UseVisualStyleBackColor = false;
+            changeFolder.Click += changeFolder_Click;
+            // 
             // Gallery
             // 
             AllowDrop = true;
@@ -182,6 +211,7 @@ namespace VRCGalleryManager.Forms
             AutoScaleMode = AutoScaleMode.Dpi;
             BackColor = Color.FromArgb(5, 5, 5);
             ClientSize = new Size(1248, 858);
+            Controls.Add(changeFolder);
             Controls.Add(BackPanel);
             Controls.Add(folderBack);
             Controls.Add(_refreshButton);
@@ -204,5 +234,6 @@ namespace VRCGalleryManager.Forms
         private RoundedPictureBox worldImage;
         private Label worldNameLabel;
         private Panel userInfoPanel;
+        private RoundedButton changeFolder;
     }
 }

@@ -8,7 +8,7 @@ namespace VRCGalleryManager.Forms
 {
     public partial class Gallery : ApiConnectedForm
     {
-        private readonly string currentRootFolder;
+        private string currentRootFolder;
         private bool isInFolderView;
         private CancellationTokenSource _cts;
 
@@ -19,36 +19,20 @@ namespace VRCGalleryManager.Forms
             InitializeComponent();
             InitApiRequest(auth);
 
-            currentRootFolder = LoadPictureOutputFolder();
-            if (string.IsNullOrEmpty(currentRootFolder))
+            this.Shown += (s, e) =>
             {
-                MessageBox.Show("Unable to read 'picture_output_folder' from config.json.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                Enabled = false;
-                return;
-            }
+                var getpath = Config.Get("PathGallery");
+                if (!string.IsNullOrEmpty(getpath))
+                {
+                    currentRootFolder = getpath;
+                }
+
+                if (string.IsNullOrEmpty(currentRootFolder)) FolderImage();
+            };
 
             Shown += Gallery_Shown;
             _refreshButton.Click += _refreshButton_Click;
             folderBack.Click += folderBack_Click;
-        }
-
-        private string LoadPictureOutputFolder()
-        {
-            try
-            {
-                string appData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData).Replace("Local", "LocalLow");
-                string configPath = Path.Combine(appData, "VRChat", "VRChat", "config.json");
-                if (File.Exists(configPath))
-                {
-                    var json = JObject.Parse(File.ReadAllText(configPath));
-                    string picDir = (string)json["picture_output_folder"];
-                    if (!string.IsNullOrEmpty(picDir) && Directory.Exists(picDir))
-                        return picDir;
-                }
-            }
-            catch { }
-
-            return null;
         }
 
         private async void Gallery_Shown(object sender, EventArgs e)
@@ -83,8 +67,8 @@ namespace VRCGalleryManager.Forms
 
             if (!Directory.Exists(currentRootFolder))
             {
-                MessageBox.Show($"Directory not found: {currentRootFolder}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                _refreshButton.Enabled = true;
+                _refreshButton.Enabled = false;
+                folderBack.Visible = false;
                 return;
             }
 
@@ -295,6 +279,28 @@ namespace VRCGalleryManager.Forms
             if (vrcxData == null) return;
             if (string.IsNullOrEmpty(vrcxData.World.Id)) return;
             Process.Start("explorer.exe", "https://vrchat.com/home/world/" + vrcxData.World.Id);
+        }
+
+        private void changeFolder_Click(object sender, EventArgs e)
+        {
+            FolderImage();
+        }
+
+        private async void FolderImage()
+        {
+            using (var dialog = new FolderBrowserDialog())
+            {
+                dialog.Description = "Select VRChat Images Folder";
+                dialog.ShowNewFolderButton = true;
+                dialog.RootFolder = Environment.SpecialFolder.MyPictures;
+
+                if (dialog.ShowDialog() != DialogResult.OK)
+                    return;
+
+                Config.Set("PathGallery", dialog.SelectedPath);
+                currentRootFolder = dialog.SelectedPath;
+            }
+            await RefreshGalleryAsync();
         }
     }
 }
