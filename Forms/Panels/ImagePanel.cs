@@ -4,7 +4,6 @@ using VRCGalleryManager.Core;
 using VRCGalleryManager.Core.DTO;
 using VRCGalleryManager.Design;
 using VRCGalleryManager.Forms.UIComponents;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
 
 namespace VRCGalleryManager.Forms.Panels
 {
@@ -82,7 +81,7 @@ namespace VRCGalleryManager.Forms.Panels
         }
 
         private static List<RoundedPictureBox> pictureIconList = new List<RoundedPictureBox>();
-        private static List<RoundedPictureBox> pictureGalleryList = new List<RoundedPictureBox>();
+        private static List<RoundedPictureBox> picturePhotosList = new List<RoundedPictureBox>();
 
         static public async void AddImagePanel(FlowLayoutPanel mainPanel, ApiRequest apiRequest, string imageId, Action<string> UpdateCounter)
         {
@@ -147,7 +146,7 @@ namespace VRCGalleryManager.Forms.Panels
                 };
                 pictureIconList.Add(pictureBox);
             }
-            if (mainPanel.Name.Contains("gallery"))
+            if (mainPanel.Name.Contains("photos"))
             {
                 pictureBox.Cursor = Cursors.Hand;
                 pictureBox.MouseEnter += (s, e) => pictureBox.BorderColor = (pictureBox.BorderColor != selectedColor) ? Color.FromArgb(255, 255, 255) : selectedColor;
@@ -166,7 +165,7 @@ namespace VRCGalleryManager.Forms.Panels
                     Settings.UserBannerImage = imageFull;
                     (Application.OpenForms["MainPanel"] as MainPanel)?.ProfileUpdateBanner(imageFull);
 
-                    foreach (var pb in pictureGalleryList)
+                    foreach (var pb in picturePhotosList)
                     {
                         pb.BorderColor = Color.FromArgb(24, 27, 31);
                         pb.Cursor = Cursors.Hand;
@@ -177,7 +176,7 @@ namespace VRCGalleryManager.Forms.Panels
 
                     NotificationManager.ShowNotification("Picture Changed Successful", "Profile Updated", NotificationType.Success);
                 };
-                pictureGalleryList.Add(pictureBox);
+                picturePhotosList.Add(pictureBox);
             }
 
             if (!finalaviImage.Contains("imageNotFound"))

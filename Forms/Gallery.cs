@@ -1,14 +1,8 @@
-﻿using System;
-using System.Drawing;
-using System.IO;
-using System.Linq;
-using System.Diagnostics;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using Microsoft.WindowsAPICodePack.Shell;
+﻿using Microsoft.WindowsAPICodePack.Shell;
 using Newtonsoft.Json.Linq;
+using System.Diagnostics;
 using VRCGalleryManager.Core;
+using VRCGalleryManager.Design;
 
 namespace VRCGalleryManager.Forms
 {
@@ -17,6 +11,8 @@ namespace VRCGalleryManager.Forms
         private readonly string currentRootFolder;
         private bool isInFolderView;
         private CancellationTokenSource _cts;
+
+        MetaDataImageReader.VrcxData vrcxData;
 
         public Gallery(VRCAuth auth)
         {
@@ -145,34 +141,39 @@ namespace VRCGalleryManager.Forms
             isInFolderView = showBack;
         }
 
-        private Panel CreateFolderPanel(string path)
+        private RoundedPanel CreateFolderPanel(string path)
         {
-            var panel = new Panel
+            var panel = new RoundedPanel
             {
-                Size = new Size(200, 200),
+                Size = new Size(200, 150),
                 Margin = new Padding(10),
                 BackColor = Color.FromArgb(24, 27, 31),
                 Cursor = Cursors.Hand,
-                Tag = path
+                Tag = path,
+                BorderRadius = 15,
+                Padding = new Padding(7)
             };
 
-            var firstImage = GetImageFiles(path).FirstOrDefault();
+            var firstImage = GetImageFiles(path).LastOrDefault();
             var thumb = LoadThumbnail(firstImage) ?? Properties.Resources.VRCGM;
 
-            var pictureBox = new PictureBox
+            var pictureBox = new RoundedPictureBox
             {
-                Size = new Size(180, 140),
-                Location = new Point(10, 5),
-                SizeMode = PictureBoxSizeMode.Zoom,
+                Dock = DockStyle.Fill,
+                SizeMode = PictureBoxSizeMode.CenterImage,
                 Cursor = Cursors.Hand,
-                Image = thumb
+                Image = thumb,
+                BorderRadiusBottomLeft = 10,
+                BorderRadiusBottomRight = 10,
+                BorderRadiusTopLeft = 10,
+                BorderRadiusTopRight = 10
             };
 
             var label = new Label
             {
                 Text = Path.GetFileName(path),
                 Dock = DockStyle.Bottom,
-                Height = 40,
+                Height = 30,
                 TextAlign = ContentAlignment.MiddleCenter,
                 ForeColor = Color.White,
                 Cursor = Cursors.Hand
@@ -206,6 +207,7 @@ namespace VRCGalleryManager.Forms
                 Cursor = Cursors.Hand,
                 Image = LoadThumbnail(file)
             };
+
             pb.DoubleClick += (s, e) =>
             {
                 var psi = new ProcessStartInfo
@@ -215,6 +217,26 @@ namespace VRCGalleryManager.Forms
                 };
                 Process.Start(psi);
             };
+
+            pb.Click += async (s, e) =>
+            {
+                vrcxData = MetaDataImageReader.ExtractVrcxData(file);
+                if (vrcxData != null)
+                {
+                    MetaDataImageReader.ApiWorldInfo(vrcxData, apiRequest, worldImage, worldNameLabel);
+
+                    var players = vrcxData.Players;
+                    var labels = new RoundedLabel[players.Count];
+
+                    userInfoPanel.Controls.Clear();
+                    for (int i = 0; i < players.Count; i++)
+                    {
+                        labels[i] = MetaDataImageReader.UsersInfo(players[i]);
+                        userInfoPanel.Controls.Add(labels[i]);
+                    }
+                }
+            };
+
             return pb;
         }
 
@@ -235,7 +257,7 @@ namespace VRCGalleryManager.Forms
 
         private IEnumerable<string> GetImageFiles(string dir)
         {
-            return Directory.EnumerateFiles(dir).Where(f => new[] { ".jpg", ".jpeg", ".png"}.Contains(Path.GetExtension(f).ToLower()));
+            return Directory.EnumerateFiles(dir).Where(f => new[] { ".jpg", ".jpeg", ".png" }.Contains(Path.GetExtension(f).ToLower()));
         }
 
         private void ClearGalleryPanel()
@@ -254,6 +276,13 @@ namespace VRCGalleryManager.Forms
             }
             galleryPanel.Controls.Clear();
             galleryPanel.ResumeLayout();
+        }
+
+        private void worldImage_Click(object sender, EventArgs e)
+        {
+            if (vrcxData == null) return;
+            if (string.IsNullOrEmpty(vrcxData.World.Id)) return;
+            Process.Start("explorer.exe", "https://vrchat.com/home/world/" + vrcxData.World.Id);
         }
     }
 }

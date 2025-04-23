@@ -62,8 +62,6 @@ namespace VRCGalleryManager
             ApplyRecolorBar();
         }
 
-
-
         private void ApplyRecolorBar()
         {
             Color c = Color.FromArgb(15, 17, 19);

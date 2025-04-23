@@ -34,17 +34,25 @@ namespace VRCGalleryManager.Forms
             galleryPanel = new FlowLayoutPanel();
             _refreshButton = new RoundedButton();
             folderBack = new RoundedButton();
+            BackPanel = new Panel();
+            galleryInfoPanel = new Panel();
+            userInfoPanel = new Panel();
+            worldImage = new RoundedPictureBox();
+            worldNameLabel = new Label();
+            BackPanel.SuspendLayout();
+            galleryInfoPanel.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)worldImage).BeginInit();
             SuspendLayout();
             // 
             // galleryPanel
             // 
-            galleryPanel.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             galleryPanel.AutoScroll = true;
             galleryPanel.BackColor = Color.FromArgb(5, 5, 5);
-            galleryPanel.Location = new Point(15, 56);
+            galleryPanel.Dock = DockStyle.Fill;
+            galleryPanel.Location = new Point(0, 0);
             galleryPanel.Margin = new Padding(4);
             galleryPanel.Name = "galleryPanel";
-            galleryPanel.Size = new Size(972, 617);
+            galleryPanel.Size = new Size(895, 792);
             galleryPanel.TabIndex = 2;
             // 
             // _refreshButton
@@ -59,7 +67,7 @@ namespace VRCGalleryManager.Forms
             _refreshButton.FlatStyle = FlatStyle.Flat;
             _refreshButton.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
             _refreshButton.ForeColor = Color.FromArgb(106, 227, 249);
-            _refreshButton.Location = new Point(842, 12);
+            _refreshButton.Location = new Point(1088, 12);
             _refreshButton.Margin = new Padding(4);
             _refreshButton.Name = "_refreshButton";
             _refreshButton.Size = new Size(145, 36);
@@ -103,20 +111,86 @@ namespace VRCGalleryManager.Forms
             folderBack.UseVisualStyleBackColor = false;
             folderBack.Click += folderBack_Click;
             // 
+            // BackPanel
+            // 
+            BackPanel.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            BackPanel.Controls.Add(galleryPanel);
+            BackPanel.Controls.Add(galleryInfoPanel);
+            BackPanel.Location = new Point(12, 54);
+            BackPanel.Name = "BackPanel";
+            BackPanel.Size = new Size(1221, 792);
+            BackPanel.TabIndex = 5;
+            // 
+            // galleryInfoPanel
+            // 
+            galleryInfoPanel.Controls.Add(userInfoPanel);
+            galleryInfoPanel.Controls.Add(worldImage);
+            galleryInfoPanel.Controls.Add(worldNameLabel);
+            galleryInfoPanel.Dock = DockStyle.Right;
+            galleryInfoPanel.Location = new Point(895, 0);
+            galleryInfoPanel.Name = "galleryInfoPanel";
+            galleryInfoPanel.Padding = new Padding(10);
+            galleryInfoPanel.Size = new Size(326, 792);
+            galleryInfoPanel.TabIndex = 0;
+            // 
+            // userInfoPanel
+            // 
+            userInfoPanel.AutoScroll = true;
+            userInfoPanel.Dock = DockStyle.Fill;
+            userInfoPanel.Location = new Point(10, 273);
+            userInfoPanel.Name = "userInfoPanel";
+            userInfoPanel.Padding = new Padding(10);
+            userInfoPanel.Size = new Size(306, 509);
+            userInfoPanel.TabIndex = 3;
+            // 
+            // worldImage
+            // 
+            worldImage.BackColor = Color.FromArgb(7, 36, 43);
+            worldImage.BackgroundColor = Color.FromArgb(7, 36, 43);
+            worldImage.BorderColor = Color.PaleVioletRed;
+            worldImage.BorderRadiusBottomLeft = 20;
+            worldImage.BorderRadiusBottomRight = 20;
+            worldImage.BorderRadiusTopLeft = 20;
+            worldImage.BorderRadiusTopRight = 20;
+            worldImage.BorderSize = 0;
+            worldImage.Dock = DockStyle.Top;
+            worldImage.Location = new Point(10, 60);
+            worldImage.Name = "worldImage";
+            worldImage.Size = new Size(306, 213);
+            worldImage.SizeMode = PictureBoxSizeMode.StretchImage;
+            worldImage.TabIndex = 1;
+            worldImage.TabStop = false;
+            worldImage.Click += worldImage_Click;
+            // 
+            // worldNameLabel
+            // 
+            worldNameLabel.Dock = DockStyle.Top;
+            worldNameLabel.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            worldNameLabel.ForeColor = Color.White;
+            worldNameLabel.Location = new Point(10, 10);
+            worldNameLabel.Name = "worldNameLabel";
+            worldNameLabel.Size = new Size(306, 50);
+            worldNameLabel.TabIndex = 2;
+            worldNameLabel.Text = "world name";
+            worldNameLabel.TextAlign = ContentAlignment.MiddleCenter;
+            // 
             // Gallery
             // 
             AllowDrop = true;
             AutoScaleDimensions = new SizeF(120F, 120F);
             AutoScaleMode = AutoScaleMode.Dpi;
             BackColor = Color.FromArgb(5, 5, 5);
-            ClientSize = new Size(1002, 686);
+            ClientSize = new Size(1248, 858);
+            Controls.Add(BackPanel);
             Controls.Add(folderBack);
             Controls.Add(_refreshButton);
-            Controls.Add(galleryPanel);
             FormBorderStyle = FormBorderStyle.None;
             Margin = new Padding(4);
             Name = "Gallery";
             Text = "Gallery";
+            BackPanel.ResumeLayout(false);
+            galleryInfoPanel.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)worldImage).EndInit();
             ResumeLayout(false);
         }
 
@@ -124,5 +198,10 @@ namespace VRCGalleryManager.Forms
         private FlowLayoutPanel galleryPanel;
         private RoundedButton _refreshButton;
         private RoundedButton folderBack;
+        private Panel BackPanel;
+        private Panel galleryInfoPanel;
+        private RoundedPictureBox worldImage;
+        private Label worldNameLabel;
+        private Panel userInfoPanel;
     }
 }

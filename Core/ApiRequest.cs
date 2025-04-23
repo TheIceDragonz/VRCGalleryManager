@@ -14,6 +14,7 @@ namespace VRCGalleryManager.Core
         private FilesApi filesApi;
         private PrintsApi printsApi;
         private UsersApi usersApi;
+        private WorldsApi worldApi;
 
         public ApiRequest(VRCAuth Auth)
         {
@@ -21,6 +22,7 @@ namespace VRCGalleryManager.Core
             filesApi = new FilesApi(Auth.ApiClient, Auth.ApiClient, Auth.Config);
             printsApi = new PrintsApi(Auth.ApiClient, Auth.ApiClient, Auth.Config);
             usersApi = new UsersApi(Auth.ApiClient, Auth.ApiClient, Auth.Config);
+            worldApi = new WorldsApi(Auth.ApiClient, Auth.ApiClient, Auth.Config);
         }
 
         public class ApiData
@@ -35,6 +37,17 @@ namespace VRCGalleryManager.Core
             public string LoopStyle { get; set; } = new string("");
             public string MaskTag { get; set; } = new string("");
             public string IdImageUploaded { get; set; } = new string("");
+        }
+
+        public class ApiDataWorld
+        {
+            public string Id { get; set; } = new string("");
+            public string Name { get; set; } = new string("");
+            public string Description { get; set; } = new string("");
+            public string Author { get; set; } = new string("");
+            public string AuthorId { get; set; } = new string("");
+            public string ImageUrl { get; set; } = new string("");
+            public string ThumbnailUrl { get; set; } = new string("");
         }
 
         public async Task<ApiData> GetApiData(string tag)
@@ -221,6 +234,29 @@ namespace VRCGalleryManager.Core
             catch (ApiException ex)
             {
                 Console.WriteLine($"Errore: {ex.Message}");
+            }
+        }
+
+        public async Task<ApiDataWorld> GetWorldInfo(string worldId)
+        {
+            ApiDataWorld apiDataWorld = new ApiDataWorld();
+
+            try
+            {
+                var world = await worldApi.GetWorldAsync(worldId);
+                apiDataWorld.Id = world.Id;
+                apiDataWorld.Name = world.Name;
+                apiDataWorld.Description = world.Description;
+                apiDataWorld.AuthorId = world.AuthorId;
+                apiDataWorld.ImageUrl = world.ImageUrl;
+                apiDataWorld.ThumbnailUrl = world.ThumbnailImageUrl;
+
+                return apiDataWorld;
+            }
+            catch (ApiException ex)
+            {
+                Console.WriteLine($"Errore: {ex.Message}");
+                return null;
             }
         }
     }
