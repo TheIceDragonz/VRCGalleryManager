@@ -233,9 +233,14 @@ namespace VRCGalleryManager.Forms
                     userInfoPanel.Controls.Clear();
                     for (int i = 0; i < players.Count; i++)
                     {
-                        labels[i] = MetaDataImageReader.UsersInfo(players[i]);
+                        (RoundedLabel label, bool isFriend) = MetaDataImageReader.UsersInfo(players[i]);
+                        labels[i] = label;
+
                         userInfoPanel.Controls.Add(labels[i]);
+
+                        if (!isFriend) userInfoPanel.Controls.SetChildIndex(labels[i], 0);
                     }
+
                     galleryInfoPanel.Visible = true;
                 }
                 else

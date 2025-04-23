@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Text.Json;
 using VRCGalleryManager.Design;
+using VRCGalleryManager.Forms;
 
 namespace VRCGalleryManager.Core
 {
@@ -79,15 +80,18 @@ namespace VRCGalleryManager.Core
             }
         }
 
-        public static RoundedLabel UsersInfo(PlayerInfo player)
+        public static (RoundedLabel, bool) UsersInfo(PlayerInfo player)
         {
+            bool isfriend = IsFriend(player.Id).Result;
+            Color userColor = isfriend ? Color.Orange : Color.White;
+
             RoundedLabel usersName = new RoundedLabel
             {
                 Text = player.DisplayName,
                 Dock = DockStyle.Top,
                 Height = 30,
                 TextAlign = ContentAlignment.MiddleCenter,
-                ForeColor = Color.White,
+                ForeColor = userColor,
                 Font = new Font("Arial", 8, FontStyle.Bold),
                 Location = new Point(5, 5),
                 BackColor = Color.FromArgb(24, 27, 31),
@@ -108,8 +112,16 @@ namespace VRCGalleryManager.Core
                 Process.Start("explorer.exe", "https://vrchat.com/home/user/" + player.Id);
             };
 
-            return usersName;
+            return (usersName, isfriend);
         }
 
+        private static Task<bool> IsFriend(string userId)
+        {
+            if (Settings.Friends.Contains(userId))
+            {
+                return Task.FromResult(true);
+            }
+            return Task.FromResult(false);
+        }
     }
 }

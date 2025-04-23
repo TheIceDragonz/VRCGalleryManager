@@ -19,6 +19,7 @@ namespace VRCGalleryManager.Forms
         public static string UserIconImage = "";
         public static string UserBannerImage = "";
         public static List<string> Badges = new List<string>();
+        public static List<string> Friends = new List<string>();
 
         public bool VRCPlus = false;
 
@@ -98,7 +99,11 @@ namespace VRCGalleryManager.Forms
                 {
                     ToggleLoginFields(false);
                     UpdateLoginButtonUI(true);
+
                     CurrentUser currentUser = Auth.AuthApi.GetCurrentUser();
+
+                    Friends.AddRange(currentUser.Friends.ToList());
+
                     _username.Text = currentUser.DisplayName;
                     _password.Text = "password";
                     UserId = currentUser.Id;
