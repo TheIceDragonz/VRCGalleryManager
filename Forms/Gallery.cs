@@ -64,6 +64,8 @@ namespace VRCGalleryManager.Forms
 
         private async void folderBack_Click(object sender, EventArgs e)
         {
+            galleryInfoPanel.Visible = false;
+
             if (isInFolderView)
             {
                 isInFolderView = false;
@@ -234,6 +236,11 @@ namespace VRCGalleryManager.Forms
                         labels[i] = MetaDataImageReader.UsersInfo(players[i]);
                         userInfoPanel.Controls.Add(labels[i]);
                     }
+                    galleryInfoPanel.Visible = true;
+                }
+                else
+                {
+                    galleryInfoPanel.Visible = false;
                 }
             };
 

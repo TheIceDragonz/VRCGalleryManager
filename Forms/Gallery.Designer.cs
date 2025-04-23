@@ -52,7 +52,7 @@ namespace VRCGalleryManager.Forms
             galleryPanel.Location = new Point(0, 0);
             galleryPanel.Margin = new Padding(4);
             galleryPanel.Name = "galleryPanel";
-            galleryPanel.Size = new Size(895, 792);
+            galleryPanel.Size = new Size(896, 792);
             galleryPanel.TabIndex = 2;
             // 
             // _refreshButton
@@ -104,8 +104,8 @@ namespace VRCGalleryManager.Forms
             folderBack.SvgContent = resources.GetString("folderBack.SvgContent");
             folderBack.SvgOffset = new Point(0, 0);
             folderBack.SvgPadding = new Padding(0);
-            folderBack.SvgResource = "open_in_browser_svgrepo_com";
-            folderBack.SvgSize = new Size(20, 20);
+            folderBack.SvgResource = "back_arrow_svgrepo_com";
+            folderBack.SvgSize = new Size(15, 15);
             folderBack.TabIndex = 4;
             folderBack.TextColor = Color.FromArgb(106, 227, 249);
             folderBack.UseVisualStyleBackColor = false;
@@ -127,11 +127,12 @@ namespace VRCGalleryManager.Forms
             galleryInfoPanel.Controls.Add(worldImage);
             galleryInfoPanel.Controls.Add(worldNameLabel);
             galleryInfoPanel.Dock = DockStyle.Right;
-            galleryInfoPanel.Location = new Point(895, 0);
+            galleryInfoPanel.Location = new Point(896, 0);
             galleryInfoPanel.Name = "galleryInfoPanel";
             galleryInfoPanel.Padding = new Padding(10);
-            galleryInfoPanel.Size = new Size(326, 792);
+            galleryInfoPanel.Size = new Size(325, 792);
             galleryInfoPanel.TabIndex = 0;
+            galleryInfoPanel.Visible = false;
             // 
             // userInfoPanel
             // 
@@ -140,7 +141,7 @@ namespace VRCGalleryManager.Forms
             userInfoPanel.Location = new Point(10, 273);
             userInfoPanel.Name = "userInfoPanel";
             userInfoPanel.Padding = new Padding(10);
-            userInfoPanel.Size = new Size(306, 509);
+            userInfoPanel.Size = new Size(305, 509);
             userInfoPanel.TabIndex = 3;
             // 
             // worldImage
@@ -156,7 +157,7 @@ namespace VRCGalleryManager.Forms
             worldImage.Dock = DockStyle.Top;
             worldImage.Location = new Point(10, 60);
             worldImage.Name = "worldImage";
-            worldImage.Size = new Size(306, 213);
+            worldImage.Size = new Size(305, 213);
             worldImage.SizeMode = PictureBoxSizeMode.StretchImage;
             worldImage.TabIndex = 1;
             worldImage.TabStop = false;
@@ -169,7 +170,7 @@ namespace VRCGalleryManager.Forms
             worldNameLabel.ForeColor = Color.White;
             worldNameLabel.Location = new Point(10, 10);
             worldNameLabel.Name = "worldNameLabel";
-            worldNameLabel.Size = new Size(306, 50);
+            worldNameLabel.Size = new Size(305, 50);
             worldNameLabel.TabIndex = 2;
             worldNameLabel.Text = "world name";
             worldNameLabel.TextAlign = ContentAlignment.MiddleCenter;
