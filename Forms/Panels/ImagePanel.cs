@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Linq;
 using System.Net;
 using VRCGalleryManager.Core;
 using VRCGalleryManager.Core.DTO;
@@ -380,6 +381,11 @@ namespace VRCGalleryManager.Forms.Panels
                     });
                     btn_picflowupload.Location = new Point(pictureBox.Size.Width - 35, pictureBox.Size.Height - 35);
                     pictureBox.Controls.Add(btn_picflowupload);
+                }
+
+                if (Settings.Friends.Contains(userId))
+                {
+                    authorLabel.ForeColor = Color.Orange;
                 }
 
                 mainPanel.Controls.Add(pictureBox);
