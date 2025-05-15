@@ -1,4 +1,5 @@
-﻿using System.Drawing.Imaging;
+﻿using System.Drawing.Drawing2D;
+using System.Drawing.Imaging;
 
 namespace VRCGalleryManager.Core.Helpers
 {
@@ -7,23 +8,32 @@ namespace VRCGalleryManager.Core.Helpers
         public static string ResizeImage1024x1024(string imagePath)
         {
             using var input = Image.FromFile(imagePath);
-            int target = 1024;
-            if (input.Width == input.Height)
+            const int target = 1024;
+            int origW = input.Width;
+            int origH = input.Height;
+            if (origW < target && origH < target)
             {
                 return imagePath;
             }
-            int newSize = Math.Max(input.Width, input.Height);
+            float scale = Math.Min((float)target / origW, (float)target / origH);
+            int resizedW = (int)(origW * scale);
+            int resizedH = (int)(origH * scale);
             var tempDir = Path.Combine(Path.GetTempPath(), "VRCGalleryManager");
             Directory.CreateDirectory(tempDir);
             var outPath = Path.Combine(tempDir, $"resized_{Guid.NewGuid()}.png");
-            using var bmp = new Bitmap(newSize, newSize, PixelFormat.Format32bppArgb);
+            using var bmp = new Bitmap(target, target, PixelFormat.Format32bppArgb);
             using (var g = Graphics.FromImage(bmp))
             {
                 g.Clear(Color.Transparent);
-                int offsetX = (newSize - input.Width) / 2;
-                int offsetY = (newSize - input.Height) / 2;
-                g.DrawImage(input, offsetX, offsetY, input.Width, input.Height);
+                g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                g.CompositingQuality = CompositingQuality.HighQuality;
+                g.SmoothingMode = SmoothingMode.HighQuality;
+                int offsetX = (target - resizedW) / 2;
+                int offsetY = (target - resizedH) / 2;
+
+                g.DrawImage(input, offsetX, offsetY, resizedW, resizedH);
             }
+
             bmp.Save(outPath, ImageFormat.Png);
             return outPath;
         }
