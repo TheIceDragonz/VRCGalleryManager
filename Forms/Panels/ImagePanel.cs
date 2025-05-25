@@ -294,6 +294,11 @@ namespace VRCGalleryManager.Forms.Panels
                 pictureBox.Controls.Add(btn_delete);
             }
 
+            if (Settings.Friends.Contains(userId))
+            {
+                authorLabel.ForeColor = Color.Orange;
+            }
+
             mainPanel.Controls.Add(pictureBox);
         }
 

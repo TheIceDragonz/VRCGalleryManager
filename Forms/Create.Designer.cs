@@ -129,7 +129,7 @@ namespace VRCGalleryManager.Forms
             trackBarFPS.LabelOffset = new Point(0, 0);
             trackBarFPS.LabelText = "0";
             trackBarFPS.LabelTextColor = Color.FromArgb(106, 227, 249);
-            trackBarFPS.Location = new Point(167, 415);
+            trackBarFPS.Location = new Point(167, 445);
             trackBarFPS.Margin = new Padding(4);
             trackBarFPS.Maximum = 64;
             trackBarFPS.Minimum = 1;
@@ -147,7 +147,7 @@ namespace VRCGalleryManager.Forms
             labelFPS.Anchor = AnchorStyles.Top;
             labelFPS.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
             labelFPS.ForeColor = Color.White;
-            labelFPS.Location = new Point(167, 404);
+            labelFPS.Location = new Point(167, 434);
             labelFPS.Margin = new Padding(4, 0, 4, 0);
             labelFPS.Name = "labelFPS";
             labelFPS.Size = new Size(658, 19);
@@ -254,10 +254,10 @@ namespace VRCGalleryManager.Forms
             previewVRChat.BorderRadiusTopLeft = 10;
             previewVRChat.BorderRadiusTopRight = 10;
             previewVRChat.BorderSize = 0;
-            previewVRChat.Location = new Point(334, 64);
+            previewVRChat.Location = new Point(320, 68);
             previewVRChat.Margin = new Padding(4);
             previewVRChat.Name = "previewVRChat";
-            previewVRChat.Size = new Size(325, 325);
+            previewVRChat.Size = new Size(350, 350);
             previewVRChat.SizeMode = PictureBoxSizeMode.StretchImage;
             previewVRChat.TabIndex = 11;
             previewVRChat.TabStop = false;
