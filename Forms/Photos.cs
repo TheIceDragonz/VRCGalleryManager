@@ -6,45 +6,47 @@ using VRCGalleryManager.Forms.Panels;
 
 namespace VRCGalleryManager.Forms
 {
-    public partial class Icons : ApiConnectedForm
+    public partial class Photos : ApiConnectedForm
     {
-        private List<string> iconsJson = new List<string>();
+        private List<string> photosJson = new List<string>();
         private int imageCount;
 
-        private static string ICONS_TAG = "icon";
-        private static string ICONS_MASK_TYPE = "square";
+        private static string PHOTOS_TAG = "gallery";
+        private static string PHOTOS_MASK_TYPE = "square";
 
-        public Icons(VRCAuth auth)
+        public Photos(VRCAuth auth)
         {
             InitializeComponent();
-            this.Shown += (s, e) => { if (iconsPanel.Controls.Count == 0) IconsList(); };
+
             InitApiRequest(auth);
+
+            this.Shown += (s, e) => { if (photosPanel.Controls.Count == 0) PhotosList(); };
         }
 
         private void _refreshButton_Click(object sender, EventArgs e)
         {
-            IconsList();
+            PhotosList();
         }
 
-        private async void IconsList()
+        private async void PhotosList()
         {
             _refreshButton.Enabled = false;
 
-            iconsPanel.Controls.Clear();
-            iconsJson.Clear();
+            photosPanel.Controls.Clear();
+            photosJson.Clear();
 
-            ApiRequest.ApiData icons = await apiRequest.GetApiData(ICONS_TAG);
+            ApiRequest.ApiData photos = await apiRequest.GetApiData(PHOTOS_TAG);
 
-            iconsJson = icons.JsonImage;
-            imageCount = icons.JsonImage.Count;
+            photosJson = photos.JsonImage;
+            imageCount = photos.JsonImage.Count;
 
-            foreach (string json in iconsJson)
+            foreach (string json in photosJson)
             {
                 JObject jsonObject = JObject.Parse(json);
 
                 string id = jsonObject["id"]?.ToString();
 
-                ImagePanel.AddImagePanel(iconsPanel, apiRequest, id, UpdateCounter);
+                ImagePanel.AddImagePanel(photosPanel, apiRequest, id, UpdateCounter);
             }
 
             UpdateCounter("");
@@ -52,7 +54,7 @@ namespace VRCGalleryManager.Forms
             _refreshButton.Enabled = true;
         }
 
-        private async void uploadIcons_Click(object sender, EventArgs e)
+        private async void uploadPhotos_Click(object sender, EventArgs e)
         {
             using (OpenFileDialog openFileDialog = new OpenFileDialog())
             {
@@ -65,19 +67,18 @@ namespace VRCGalleryManager.Forms
                 }
             }
         }
-
         private async void UploadImage(string path)
         {
-            string resizedImage = ImageResizer.ResizeImage1x1(path);
+            string resizedImage = ImageResizer.ResizeImage16x9(path);
 
             try
             {
-                ApiRequest.ApiData icons = await apiRequest.UploadImage(resizedImage, ICONS_MASK_TYPE, TagType.Icon);
+                ApiRequest.ApiData photos = await apiRequest.UploadImage(resizedImage, PHOTOS_MASK_TYPE, TagType.Gallery);
 
-                ImagePanel.AddImagePanel(iconsPanel, apiRequest, icons.IdImageUploaded, UpdateCounter);
+                ImagePanel.AddImagePanel(photosPanel, apiRequest, photos.IdImageUploaded, UpdateCounter);
                 UpdateCounter("Add");
 
-                NotificationManager.ShowNotification("Icons uploaded successfully", "Icons uploaded", NotificationType.Success);
+                NotificationManager.ShowNotification("Photos uploaded successfully", "Photos uploaded", NotificationType.Success);
             }
             catch (Exception ex)
             {
@@ -89,11 +90,12 @@ namespace VRCGalleryManager.Forms
         {
             ClipboardHandler.ClipboardDataImageOrLink(pasteButton, UploadImage);
         }
+
         private void UpdateCounter(string action)
         {
             if (action == "Add") imageCount += 1;
             else if (action == "Remove") imageCount -= 1;
-            limitCounterLabel.Text = $"{imageCount}/64 Icons";
+            limitCounterLabel.Text = $"{imageCount}/64 Photos";
             if (imageCount >= 64)
             {
                 pasteButton.Enabled = false;

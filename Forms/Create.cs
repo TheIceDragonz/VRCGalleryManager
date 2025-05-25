@@ -35,14 +35,12 @@ namespace VRCGalleryManager.Forms
             if (files == null || files.Length == 0) return;
 
             gifPath = files[0];
-            previewGif.ImageLocation = gifPath;
 
             try
             {
                 var (spriteSheetBitmap, frameCount) = converter.ConvertGifToSpriteSheet(gifPath);
 
                 spriteSheet = spriteSheetBitmap;
-                previewSS.Image = spriteSheet;
 
                 imageframes = frameCount;
 
@@ -157,8 +155,6 @@ namespace VRCGalleryManager.Forms
 
                 this.gifPath = gifPath;
                 this.spriteSheet = spriteSheet;
-                previewGif.ImageLocation = gifPath;
-                previewSS.Image = spriteSheet;
                 imageframes = frameCount;
 
                 VRChatPreview();

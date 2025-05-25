@@ -33,23 +33,27 @@ namespace VRCGalleryManager.Forms
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Gallery));
             galleryPanel = new FlowLayoutPanel();
             _refreshButton = new RoundedButton();
-            uploadButton = new RoundedButton();
-            limitPanel = new RoundedPanel();
-            limitLabel = new Label();
-            limitCounterLabel = new Label();
-            pasteButton = new RoundedButton();
-            limitPanel.SuspendLayout();
+            folderBack = new RoundedButton();
+            BackPanel = new Panel();
+            galleryInfoPanel = new Panel();
+            userInfoPanel = new Panel();
+            worldImage = new RoundedPictureBox();
+            worldNameLabel = new Label();
+            changeFolder = new RoundedButton();
+            BackPanel.SuspendLayout();
+            galleryInfoPanel.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)worldImage).BeginInit();
             SuspendLayout();
             // 
             // galleryPanel
             // 
-            galleryPanel.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             galleryPanel.AutoScroll = true;
             galleryPanel.BackColor = Color.FromArgb(5, 5, 5);
-            galleryPanel.Location = new Point(15, 56);
+            galleryPanel.Dock = DockStyle.Fill;
+            galleryPanel.Location = new Point(0, 0);
             galleryPanel.Margin = new Padding(4);
             galleryPanel.Name = "galleryPanel";
-            galleryPanel.Size = new Size(972, 558);
+            galleryPanel.Size = new Size(896, 792);
             galleryPanel.TabIndex = 2;
             // 
             // _refreshButton
@@ -64,7 +68,7 @@ namespace VRCGalleryManager.Forms
             _refreshButton.FlatStyle = FlatStyle.Flat;
             _refreshButton.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
             _refreshButton.ForeColor = Color.FromArgb(106, 227, 249);
-            _refreshButton.Location = new Point(842, 12);
+            _refreshButton.Location = new Point(1088, 12);
             _refreshButton.Margin = new Padding(4);
             _refreshButton.Name = "_refreshButton";
             _refreshButton.Size = new Size(145, 36);
@@ -81,107 +85,124 @@ namespace VRCGalleryManager.Forms
             _refreshButton.UseVisualStyleBackColor = false;
             _refreshButton.Click += _refreshButton_Click;
             // 
-            // uploadButton
+            // folderBack
             // 
-            uploadButton.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            uploadButton.BackColor = Color.FromArgb(7, 36, 43);
-            uploadButton.BackgroundColor = Color.FromArgb(7, 36, 43);
-            uploadButton.BorderColor = Color.FromArgb(5, 55, 66);
-            uploadButton.BorderRadius = 10;
-            uploadButton.BorderSize = 2;
-            uploadButton.Enabled = false;
-            uploadButton.FlatAppearance.BorderSize = 0;
-            uploadButton.FlatStyle = FlatStyle.Flat;
-            uploadButton.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
-            uploadButton.ForeColor = Color.FromArgb(106, 227, 249);
-            uploadButton.Location = new Point(15, 621);
-            uploadButton.Margin = new Padding(4);
-            uploadButton.Name = "uploadButton";
-            uploadButton.Size = new Size(915, 50);
-            uploadButton.SvgAlignment = ContentAlignment.MiddleCenter;
-            uploadButton.SvgColor = Color.Black;
-            uploadButton.SvgContent = null;
-            uploadButton.SvgOffset = new Point(0, 0);
-            uploadButton.SvgPadding = new Padding(0);
-            uploadButton.SvgResource = null;
-            uploadButton.SvgSize = new Size(50, 50);
-            uploadButton.TabIndex = 4;
-            uploadButton.Text = "Upload";
-            uploadButton.TextColor = Color.FromArgb(106, 227, 249);
-            uploadButton.UseVisualStyleBackColor = false;
-            uploadButton.Click += uploadGallery_Click;
+            folderBack.BackColor = Color.FromArgb(7, 36, 43);
+            folderBack.BackgroundColor = Color.FromArgb(7, 36, 43);
+            folderBack.BorderColor = Color.FromArgb(5, 55, 66);
+            folderBack.BorderRadius = 10;
+            folderBack.BorderSize = 2;
+            folderBack.FlatAppearance.BorderSize = 0;
+            folderBack.FlatStyle = FlatStyle.Flat;
+            folderBack.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
+            folderBack.ForeColor = Color.FromArgb(106, 227, 249);
+            folderBack.Location = new Point(15, 12);
+            folderBack.Margin = new Padding(4);
+            folderBack.Name = "folderBack";
+            folderBack.Size = new Size(52, 35);
+            folderBack.SvgAlignment = ContentAlignment.MiddleCenter;
+            folderBack.SvgColor = Color.FromArgb(106, 227, 249);
+            folderBack.SvgContent = resources.GetString("folderBack.SvgContent");
+            folderBack.SvgOffset = new Point(0, 0);
+            folderBack.SvgPadding = new Padding(0);
+            folderBack.SvgResource = "back_arrow_svgrepo_com";
+            folderBack.SvgSize = new Size(15, 15);
+            folderBack.TabIndex = 4;
+            folderBack.TextColor = Color.FromArgb(106, 227, 249);
+            folderBack.UseVisualStyleBackColor = false;
+            folderBack.Click += folderBack_Click;
             // 
-            // limitPanel
+            // BackPanel
             // 
-            limitPanel.BackColor = Color.FromArgb(7, 36, 43);
-            limitPanel.BackgroundColor = Color.FromArgb(7, 36, 43);
-            limitPanel.BorderColor = Color.FromArgb(255, 128, 128);
-            limitPanel.BorderRadius = 10;
-            limitPanel.BorderSize = 2;
-            limitPanel.Controls.Add(limitLabel);
-            limitPanel.Location = new Point(15, 12);
-            limitPanel.Margin = new Padding(4);
-            limitPanel.Name = "limitPanel";
-            limitPanel.Size = new Size(355, 36);
-            limitPanel.TabIndex = 5;
-            limitPanel.Visible = false;
+            BackPanel.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            BackPanel.Controls.Add(galleryPanel);
+            BackPanel.Controls.Add(galleryInfoPanel);
+            BackPanel.Location = new Point(12, 54);
+            BackPanel.Name = "BackPanel";
+            BackPanel.Size = new Size(1221, 792);
+            BackPanel.TabIndex = 5;
             // 
-            // limitLabel
+            // galleryInfoPanel
             // 
-            limitLabel.BackColor = Color.Transparent;
-            limitLabel.Dock = DockStyle.Fill;
-            limitLabel.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            limitLabel.ForeColor = Color.FromArgb(255, 128, 128);
-            limitLabel.Location = new Point(0, 0);
-            limitLabel.Margin = new Padding(4, 0, 4, 0);
-            limitLabel.Name = "limitLabel";
-            limitLabel.Size = new Size(355, 36);
-            limitLabel.TabIndex = 0;
-            limitLabel.Text = "You have reached your photos limit!";
-            limitLabel.TextAlign = ContentAlignment.MiddleCenter;
+            galleryInfoPanel.Controls.Add(userInfoPanel);
+            galleryInfoPanel.Controls.Add(worldImage);
+            galleryInfoPanel.Controls.Add(worldNameLabel);
+            galleryInfoPanel.Dock = DockStyle.Right;
+            galleryInfoPanel.Location = new Point(896, 0);
+            galleryInfoPanel.Name = "galleryInfoPanel";
+            galleryInfoPanel.Padding = new Padding(10);
+            galleryInfoPanel.Size = new Size(325, 792);
+            galleryInfoPanel.TabIndex = 0;
+            galleryInfoPanel.Visible = false;
             // 
-            // limitCounterLabel
+            // userInfoPanel
             // 
-            limitCounterLabel.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            limitCounterLabel.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            limitCounterLabel.ForeColor = Color.White;
-            limitCounterLabel.Location = new Point(584, 20);
-            limitCounterLabel.Margin = new Padding(4, 0, 4, 0);
-            limitCounterLabel.Name = "limitCounterLabel";
-            limitCounterLabel.RightToLeft = RightToLeft.No;
-            limitCounterLabel.Size = new Size(250, 20);
-            limitCounterLabel.TabIndex = 6;
-            limitCounterLabel.Text = "0/64 Photos";
-            limitCounterLabel.TextAlign = ContentAlignment.MiddleRight;
+            userInfoPanel.AutoScroll = true;
+            userInfoPanel.Dock = DockStyle.Fill;
+            userInfoPanel.Location = new Point(10, 273);
+            userInfoPanel.Name = "userInfoPanel";
+            userInfoPanel.Padding = new Padding(10);
+            userInfoPanel.Size = new Size(305, 509);
+            userInfoPanel.TabIndex = 3;
             // 
-            // pasteButton
+            // worldImage
             // 
-            pasteButton.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            pasteButton.BackColor = Color.FromArgb(7, 36, 43);
-            pasteButton.BackgroundColor = Color.FromArgb(7, 36, 43);
-            pasteButton.BorderColor = Color.FromArgb(5, 55, 66);
-            pasteButton.BorderRadius = 10;
-            pasteButton.BorderSize = 2;
-            pasteButton.Enabled = false;
-            pasteButton.FlatAppearance.BorderSize = 0;
-            pasteButton.FlatStyle = FlatStyle.Flat;
-            pasteButton.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
-            pasteButton.ForeColor = Color.FromArgb(106, 227, 249);
-            pasteButton.Location = new Point(938, 621);
-            pasteButton.Margin = new Padding(4);
-            pasteButton.Name = "pasteButton";
-            pasteButton.Size = new Size(50, 50);
-            pasteButton.SvgAlignment = ContentAlignment.MiddleCenter;
-            pasteButton.SvgColor = Color.FromArgb(106, 227, 249);
-            pasteButton.SvgContent = resources.GetString("pasteButton.SvgContent");
-            pasteButton.SvgOffset = new Point(0, 0);
-            pasteButton.SvgPadding = new Padding(0);
-            pasteButton.SvgResource = "backward_svgrepo_com";
-            pasteButton.SvgSize = new Size(25, 25);
-            pasteButton.TabIndex = 8;
-            pasteButton.TextColor = Color.FromArgb(106, 227, 249);
-            pasteButton.UseVisualStyleBackColor = false;
-            pasteButton.Click += pasteButton_Click;
+            worldImage.BackColor = Color.FromArgb(7, 36, 43);
+            worldImage.BackgroundColor = Color.FromArgb(7, 36, 43);
+            worldImage.BorderColor = Color.PaleVioletRed;
+            worldImage.BorderRadiusBottomLeft = 20;
+            worldImage.BorderRadiusBottomRight = 20;
+            worldImage.BorderRadiusTopLeft = 20;
+            worldImage.BorderRadiusTopRight = 20;
+            worldImage.BorderSize = 0;
+            worldImage.Dock = DockStyle.Top;
+            worldImage.Location = new Point(10, 60);
+            worldImage.Name = "worldImage";
+            worldImage.Size = new Size(305, 213);
+            worldImage.SizeMode = PictureBoxSizeMode.StretchImage;
+            worldImage.TabIndex = 1;
+            worldImage.TabStop = false;
+            worldImage.Click += worldImage_Click;
+            // 
+            // worldNameLabel
+            // 
+            worldNameLabel.Dock = DockStyle.Top;
+            worldNameLabel.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            worldNameLabel.ForeColor = Color.White;
+            worldNameLabel.Location = new Point(10, 10);
+            worldNameLabel.Name = "worldNameLabel";
+            worldNameLabel.Size = new Size(305, 50);
+            worldNameLabel.TabIndex = 2;
+            worldNameLabel.Text = "world name";
+            worldNameLabel.TextAlign = ContentAlignment.MiddleCenter;
+            // 
+            // changeFolder
+            // 
+            changeFolder.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            changeFolder.BackColor = Color.FromArgb(7, 36, 43);
+            changeFolder.BackgroundColor = Color.FromArgb(7, 36, 43);
+            changeFolder.BorderColor = Color.FromArgb(5, 55, 66);
+            changeFolder.BorderRadius = 10;
+            changeFolder.BorderSize = 2;
+            changeFolder.FlatAppearance.BorderSize = 0;
+            changeFolder.FlatStyle = FlatStyle.Flat;
+            changeFolder.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
+            changeFolder.ForeColor = Color.FromArgb(106, 227, 249);
+            changeFolder.Location = new Point(1045, 13);
+            changeFolder.Margin = new Padding(4);
+            changeFolder.Name = "changeFolder";
+            changeFolder.Size = new Size(35, 35);
+            changeFolder.SvgAlignment = ContentAlignment.MiddleCenter;
+            changeFolder.SvgColor = Color.FromArgb(106, 227, 249);
+            changeFolder.SvgContent = resources.GetString("changeFolder.SvgContent");
+            changeFolder.SvgOffset = new Point(0, 0);
+            changeFolder.SvgPadding = new Padding(0);
+            changeFolder.SvgResource = "folder_svgrepo_com";
+            changeFolder.SvgSize = new Size(15, 15);
+            changeFolder.TabIndex = 6;
+            changeFolder.TextColor = Color.FromArgb(106, 227, 249);
+            changeFolder.UseVisualStyleBackColor = false;
+            changeFolder.Click += changeFolder_Click;
             // 
             // Gallery
             // 
@@ -189,30 +210,30 @@ namespace VRCGalleryManager.Forms
             AutoScaleDimensions = new SizeF(120F, 120F);
             AutoScaleMode = AutoScaleMode.Dpi;
             BackColor = Color.FromArgb(5, 5, 5);
-            ClientSize = new Size(1002, 686);
-            Controls.Add(pasteButton);
-            Controls.Add(limitCounterLabel);
-            Controls.Add(limitPanel);
-            Controls.Add(uploadButton);
+            ClientSize = new Size(1248, 858);
+            Controls.Add(changeFolder);
+            Controls.Add(BackPanel);
+            Controls.Add(folderBack);
             Controls.Add(_refreshButton);
-            Controls.Add(galleryPanel);
             FormBorderStyle = FormBorderStyle.None;
             Margin = new Padding(4);
             Name = "Gallery";
             Text = "Gallery";
-            DragDrop += File_DragDrop;
-            DragEnter += File_DragEnter;
-            limitPanel.ResumeLayout(false);
+            BackPanel.ResumeLayout(false);
+            galleryInfoPanel.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)worldImage).EndInit();
             ResumeLayout(false);
         }
 
         #endregion
         private FlowLayoutPanel galleryPanel;
         private RoundedButton _refreshButton;
-        private RoundedButton uploadButton;
-        private RoundedPanel limitPanel;
-        private Label limitLabel;
-        private Label limitCounterLabel;
-        private RoundedButton pasteButton;
+        private RoundedButton folderBack;
+        private Panel BackPanel;
+        private Panel galleryInfoPanel;
+        private RoundedPictureBox worldImage;
+        private Label worldNameLabel;
+        private Panel userInfoPanel;
+        private RoundedButton changeFolder;
     }
 }

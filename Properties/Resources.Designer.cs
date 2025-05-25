@@ -93,6 +93,16 @@ namespace VRCGalleryManager.Properties {
         /// <summary>
         ///   Cerca una risorsa localizzata di tipo System.Byte[].
         /// </summary>
+        internal static byte[] back_arrow_svgrepo_com {
+            get {
+                object obj = ResourceManager.GetObject("back_arrow_svgrepo_com", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Cerca una risorsa localizzata di tipo System.Byte[].
+        /// </summary>
         internal static byte[] backward_svgrepo_com {
             get {
                 object obj = ResourceManager.GetObject("backward_svgrepo_com", resourceCulture);
@@ -176,6 +186,16 @@ namespace VRCGalleryManager.Properties {
         internal static byte[] eye_svgrepo_com {
             get {
                 object obj = ResourceManager.GetObject("eye_svgrepo_com", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Cerca una risorsa localizzata di tipo System.Byte[].
+        /// </summary>
+        internal static byte[] folder_svgrepo_com {
+            get {
+                object obj = ResourceManager.GetObject("folder_svgrepo_com", resourceCulture);
                 return ((byte[])(obj));
             }
         }

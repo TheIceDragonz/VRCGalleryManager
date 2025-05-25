@@ -67,7 +67,7 @@ namespace VRCGalleryManager.Forms
         }
         private async void UploadImage(string path)
         {
-            string resizedImage = ImageResizer.ResizeImage1024x1024(path);
+            string resizedImage = ImageResizer.ResizeImage1x1(path);
 
             try
             {

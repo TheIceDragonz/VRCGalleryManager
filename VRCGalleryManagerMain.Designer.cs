@@ -37,11 +37,12 @@ namespace VRCGalleryManager
             _switchPicflow = new RoundedButton();
             _switchCreate = new RoundedButton();
             _switchPrints = new RoundedButton();
-            _switchSettings = new RoundedButton();
             _switchSticker = new RoundedButton();
             _switchEmoji = new RoundedButton();
             _switchPhotos = new RoundedButton();
             _switchIcons = new RoundedButton();
+            _switchGallery = new RoundedButton();
+            _switchSettings = new RoundedButton();
             profileBanner = new RoundedPictureBox();
             profileIcon = new RoundedPictureBox();
             badgeBox1 = new RoundedPictureBox();
@@ -75,7 +76,7 @@ namespace VRCGalleryManager
             FormsPanel.Location = new Point(228, 0);
             FormsPanel.Margin = new Padding(4);
             FormsPanel.Name = "FormsPanel";
-            FormsPanel.Size = new Size(1041, 736);
+            FormsPanel.Size = new Size(1070, 703);
             FormsPanel.TabIndex = 5;
             // 
             // SwitchPanel
@@ -89,16 +90,17 @@ namespace VRCGalleryManager
             SwitchPanel.Controls.Add(_switchPicflow);
             SwitchPanel.Controls.Add(_switchCreate);
             SwitchPanel.Controls.Add(_switchPrints);
-            SwitchPanel.Controls.Add(_switchSettings);
             SwitchPanel.Controls.Add(_switchSticker);
             SwitchPanel.Controls.Add(_switchEmoji);
             SwitchPanel.Controls.Add(_switchPhotos);
             SwitchPanel.Controls.Add(_switchIcons);
+            SwitchPanel.Controls.Add(_switchGallery);
+            SwitchPanel.Controls.Add(_switchSettings);
             SwitchPanel.Location = new Point(15, 212);
             SwitchPanel.Margin = new Padding(6);
             SwitchPanel.Name = "SwitchPanel";
             SwitchPanel.Padding = new Padding(6);
-            SwitchPanel.Size = new Size(196, 509);
+            SwitchPanel.Size = new Size(196, 476);
             SwitchPanel.TabIndex = 6;
             // 
             // _switchPicflow
@@ -114,7 +116,7 @@ namespace VRCGalleryManager
             _switchPicflow.FlatStyle = FlatStyle.Flat;
             _switchPicflow.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
             _switchPicflow.ForeColor = Color.FromArgb(106, 227, 249);
-            _switchPicflow.Location = new Point(6, 353);
+            _switchPicflow.Location = new Point(6, 270);
             _switchPicflow.Margin = new Padding(4);
             _switchPicflow.Name = "_switchPicflow";
             _switchPicflow.Size = new Size(184, 50);
@@ -144,7 +146,7 @@ namespace VRCGalleryManager
             _switchCreate.FlatStyle = FlatStyle.Flat;
             _switchCreate.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
             _switchCreate.ForeColor = Color.FromArgb(106, 227, 249);
-            _switchCreate.Location = new Point(6, 403);
+            _switchCreate.Location = new Point(6, 320);
             _switchCreate.Margin = new Padding(4);
             _switchCreate.Name = "_switchCreate";
             _switchCreate.Size = new Size(184, 50);
@@ -190,35 +192,6 @@ namespace VRCGalleryManager
             _switchPrints.TextColor = Color.FromArgb(106, 227, 249);
             _switchPrints.UseVisualStyleBackColor = false;
             _switchPrints.Click += _switchPrints_Click;
-            // 
-            // _switchSettings
-            // 
-            _switchSettings.BackColor = Color.FromArgb(7, 36, 43);
-            _switchSettings.BackgroundColor = Color.FromArgb(7, 36, 43);
-            _switchSettings.BorderColor = Color.FromArgb(5, 55, 66);
-            _switchSettings.BorderRadius = 10;
-            _switchSettings.BorderSize = 2;
-            _switchSettings.Dock = DockStyle.Bottom;
-            _switchSettings.FlatAppearance.BorderSize = 0;
-            _switchSettings.FlatStyle = FlatStyle.Flat;
-            _switchSettings.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
-            _switchSettings.ForeColor = Color.FromArgb(106, 227, 249);
-            _switchSettings.Location = new Point(6, 453);
-            _switchSettings.Margin = new Padding(4);
-            _switchSettings.Name = "_switchSettings";
-            _switchSettings.Size = new Size(184, 50);
-            _switchSettings.SvgAlignment = ContentAlignment.MiddleLeft;
-            _switchSettings.SvgColor = Color.FromArgb(106, 227, 249);
-            _switchSettings.SvgContent = resources.GetString("_switchSettings.SvgContent");
-            _switchSettings.SvgOffset = new Point(10, 0);
-            _switchSettings.SvgPadding = new Padding(0);
-            _switchSettings.SvgResource = "settings_svgrepo_com";
-            _switchSettings.SvgSize = new Size(25, 25);
-            _switchSettings.TabIndex = 7;
-            _switchSettings.Text = "Settings";
-            _switchSettings.TextColor = Color.FromArgb(106, 227, 249);
-            _switchSettings.UseVisualStyleBackColor = false;
-            _switchSettings.Click += _switchSettings_Click;
             // 
             // _switchSticker
             // 
@@ -340,6 +313,64 @@ namespace VRCGalleryManager
             _switchIcons.UseVisualStyleBackColor = false;
             _switchIcons.Click += _switchIcons_Click;
             // 
+            // _switchGallery
+            // 
+            _switchGallery.BackColor = Color.FromArgb(7, 36, 43);
+            _switchGallery.BackgroundColor = Color.FromArgb(7, 36, 43);
+            _switchGallery.BorderColor = Color.FromArgb(5, 55, 66);
+            _switchGallery.BorderRadius = 10;
+            _switchGallery.BorderSize = 2;
+            _switchGallery.Dock = DockStyle.Bottom;
+            _switchGallery.FlatAppearance.BorderSize = 0;
+            _switchGallery.FlatStyle = FlatStyle.Flat;
+            _switchGallery.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
+            _switchGallery.ForeColor = Color.FromArgb(106, 227, 249);
+            _switchGallery.Location = new Point(6, 370);
+            _switchGallery.Margin = new Padding(4);
+            _switchGallery.Name = "_switchGallery";
+            _switchGallery.Size = new Size(184, 50);
+            _switchGallery.SvgAlignment = ContentAlignment.MiddleLeft;
+            _switchGallery.SvgColor = Color.FromArgb(106, 227, 249);
+            _switchGallery.SvgContent = resources.GetString("_switchGallery.SvgContent");
+            _switchGallery.SvgOffset = new Point(10, 0);
+            _switchGallery.SvgPadding = new Padding(0);
+            _switchGallery.SvgResource = "folder_svgrepo_com";
+            _switchGallery.SvgSize = new Size(25, 25);
+            _switchGallery.TabIndex = 9;
+            _switchGallery.Text = "Gallery";
+            _switchGallery.TextColor = Color.FromArgb(106, 227, 249);
+            _switchGallery.UseVisualStyleBackColor = false;
+            _switchGallery.Click += _switchGallery_Click;
+            // 
+            // _switchSettings
+            // 
+            _switchSettings.BackColor = Color.FromArgb(7, 36, 43);
+            _switchSettings.BackgroundColor = Color.FromArgb(7, 36, 43);
+            _switchSettings.BorderColor = Color.FromArgb(5, 55, 66);
+            _switchSettings.BorderRadius = 10;
+            _switchSettings.BorderSize = 2;
+            _switchSettings.Dock = DockStyle.Bottom;
+            _switchSettings.FlatAppearance.BorderSize = 0;
+            _switchSettings.FlatStyle = FlatStyle.Flat;
+            _switchSettings.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
+            _switchSettings.ForeColor = Color.FromArgb(106, 227, 249);
+            _switchSettings.Location = new Point(6, 420);
+            _switchSettings.Margin = new Padding(4);
+            _switchSettings.Name = "_switchSettings";
+            _switchSettings.Size = new Size(184, 50);
+            _switchSettings.SvgAlignment = ContentAlignment.MiddleLeft;
+            _switchSettings.SvgColor = Color.FromArgb(106, 227, 249);
+            _switchSettings.SvgContent = resources.GetString("_switchSettings.SvgContent");
+            _switchSettings.SvgOffset = new Point(10, 0);
+            _switchSettings.SvgPadding = new Padding(0);
+            _switchSettings.SvgResource = "settings_svgrepo_com";
+            _switchSettings.SvgSize = new Size(25, 25);
+            _switchSettings.TabIndex = 7;
+            _switchSettings.Text = "Settings";
+            _switchSettings.TextColor = Color.FromArgb(106, 227, 249);
+            _switchSettings.UseVisualStyleBackColor = false;
+            _switchSettings.Click += _switchSettings_Click;
+            // 
             // profileBanner
             // 
             profileBanner.BackColor = Color.FromArgb(7, 36, 43);
@@ -449,7 +480,7 @@ namespace VRCGalleryManager
             AutoScaleDimensions = new SizeF(120F, 120F);
             AutoScaleMode = AutoScaleMode.Dpi;
             BackColor = Color.FromArgb(15, 17, 19);
-            ClientSize = new Size(1269, 736);
+            ClientSize = new Size(1298, 703);
             Controls.Add(badgeBox3);
             Controls.Add(badgeBox2);
             Controls.Add(badgeBox1);
@@ -460,7 +491,7 @@ namespace VRCGalleryManager
             Controls.Add(bannerIcon);
             Icon = (Icon)resources.GetObject("$this.Icon");
             Margin = new Padding(4);
-            MinimumSize = new Size(933, 676);
+            MinimumSize = new Size(933, 750);
             Name = "MainPanel";
             Text = "VRCGalleryManager";
             ((System.ComponentModel.ISupportInitialize)bannerIcon).EndInit();
@@ -492,5 +523,6 @@ namespace VRCGalleryManager
         private RoundedPictureBox badgeBox2;
         private RoundedPictureBox badgeBox3;
         private RoundedButton _switchPicflow;
+        private RoundedButton _switchGallery;
     }
 }

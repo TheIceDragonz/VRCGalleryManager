@@ -271,4 +271,10 @@
   <data name="eye_svgrepo_com" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\svg\eye-svgrepo-com.svg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
+  <data name="back_arrow_svgrepo_com" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\svg\back-arrow-svgrepo-com.svg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="folder_svgrepo_com" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\svg\folder-svgrepo-com.svg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
 </root>

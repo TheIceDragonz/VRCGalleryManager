@@ -32,8 +32,6 @@ namespace VRCGalleryManager.Forms
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Create));
-            previewGif = new RoundedPictureBox();
-            previewSS = new RoundedPictureBox();
             buttonSave = new RoundedButton();
             uploadButton = new RoundedButton();
             titleGifCreator = new Label();
@@ -43,55 +41,12 @@ namespace VRCGalleryManager.Forms
             createOpenTypePanel = new RoundedButton();
             pasteButton = new RoundedButton();
             panel1 = new Panel();
-            label3 = new Label();
-            label2 = new Label();
             previewVRChat = new RoundedPictureBox();
             label1 = new Label();
-            ((System.ComponentModel.ISupportInitialize)previewGif).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)previewSS).BeginInit();
             ((System.ComponentModel.ISupportInitialize)trackBarFPS).BeginInit();
             panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)previewVRChat).BeginInit();
             SuspendLayout();
-            // 
-            // previewGif
-            // 
-            previewGif.Anchor = AnchorStyles.Top;
-            previewGif.BackColor = Color.FromArgb(7, 36, 43);
-            previewGif.BackgroundColor = Color.FromArgb(7, 36, 43);
-            previewGif.BorderColor = Color.PaleVioletRed;
-            previewGif.BorderRadiusBottomLeft = 10;
-            previewGif.BorderRadiusBottomRight = 10;
-            previewGif.BorderRadiusTopLeft = 10;
-            previewGif.BorderRadiusTopRight = 10;
-            previewGif.BorderSize = 0;
-            previewGif.ImageLocation = "";
-            previewGif.Location = new Point(167, 60);
-            previewGif.Margin = new Padding(4, 4, 4, 4);
-            previewGif.Name = "previewGif";
-            previewGif.Size = new Size(325, 325);
-            previewGif.SizeMode = PictureBoxSizeMode.StretchImage;
-            previewGif.TabIndex = 0;
-            previewGif.TabStop = false;
-            // 
-            // previewSS
-            // 
-            previewSS.Anchor = AnchorStyles.Top;
-            previewSS.BackColor = Color.FromArgb(7, 36, 43);
-            previewSS.BackgroundColor = Color.FromArgb(7, 36, 43);
-            previewSS.BorderColor = Color.PaleVioletRed;
-            previewSS.BorderRadiusBottomLeft = 10;
-            previewSS.BorderRadiusBottomRight = 10;
-            previewSS.BorderRadiusTopLeft = 10;
-            previewSS.BorderRadiusTopRight = 10;
-            previewSS.BorderSize = 0;
-            previewSS.Location = new Point(500, 60);
-            previewSS.Margin = new Padding(4, 4, 4, 4);
-            previewSS.Name = "previewSS";
-            previewSS.Size = new Size(325, 325);
-            previewSS.SizeMode = PictureBoxSizeMode.StretchImage;
-            previewSS.TabIndex = 1;
-            previewSS.TabStop = false;
             // 
             // buttonSave
             // 
@@ -106,7 +61,7 @@ namespace VRCGalleryManager.Forms
             buttonSave.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
             buttonSave.ForeColor = Color.FromArgb(106, 227, 249);
             buttonSave.Location = new Point(719, 634);
-            buttonSave.Margin = new Padding(4, 4, 4, 4);
+            buttonSave.Margin = new Padding(4);
             buttonSave.Name = "buttonSave";
             buttonSave.Size = new Size(145, 50);
             buttonSave.SvgAlignment = ContentAlignment.MiddleCenter;
@@ -135,7 +90,7 @@ namespace VRCGalleryManager.Forms
             uploadButton.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
             uploadButton.ForeColor = Color.FromArgb(106, 227, 249);
             uploadButton.Location = new Point(15, 634);
-            uploadButton.Margin = new Padding(4, 4, 4, 4);
+            uploadButton.Margin = new Padding(4);
             uploadButton.Name = "uploadButton";
             uploadButton.Size = new Size(639, 50);
             uploadButton.SvgAlignment = ContentAlignment.MiddleCenter;
@@ -174,8 +129,8 @@ namespace VRCGalleryManager.Forms
             trackBarFPS.LabelOffset = new Point(0, 0);
             trackBarFPS.LabelText = "0";
             trackBarFPS.LabelTextColor = Color.FromArgb(106, 227, 249);
-            trackBarFPS.Location = new Point(167, 415);
-            trackBarFPS.Margin = new Padding(4, 4, 4, 4);
+            trackBarFPS.Location = new Point(167, 445);
+            trackBarFPS.Margin = new Padding(4);
             trackBarFPS.Maximum = 64;
             trackBarFPS.Minimum = 1;
             trackBarFPS.Name = "trackBarFPS";
@@ -192,7 +147,7 @@ namespace VRCGalleryManager.Forms
             labelFPS.Anchor = AnchorStyles.Top;
             labelFPS.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
             labelFPS.ForeColor = Color.White;
-            labelFPS.Location = new Point(167, 404);
+            labelFPS.Location = new Point(167, 434);
             labelFPS.Margin = new Padding(4, 0, 4, 0);
             labelFPS.Name = "labelFPS";
             labelFPS.Size = new Size(658, 19);
@@ -210,9 +165,9 @@ namespace VRCGalleryManager.Forms
             createTypePanel.BorderRadius = 9;
             createTypePanel.BorderSize = 0;
             createTypePanel.Location = new Point(694, 15);
-            createTypePanel.Margin = new Padding(4, 4, 4, 4);
+            createTypePanel.Margin = new Padding(4);
             createTypePanel.Name = "createTypePanel";
-            createTypePanel.Padding = new Padding(6, 6, 6, 6);
+            createTypePanel.Padding = new Padding(6);
             createTypePanel.Size = new Size(322, 611);
             createTypePanel.TabIndex = 12;
             createTypePanel.Visible = false;
@@ -230,7 +185,7 @@ namespace VRCGalleryManager.Forms
             createOpenTypePanel.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
             createOpenTypePanel.ForeColor = Color.FromArgb(106, 227, 249);
             createOpenTypePanel.Location = new Point(872, 634);
-            createOpenTypePanel.Margin = new Padding(4, 4, 4, 4);
+            createOpenTypePanel.Margin = new Padding(4);
             createOpenTypePanel.Name = "createOpenTypePanel";
             createOpenTypePanel.Size = new Size(145, 50);
             createOpenTypePanel.SvgAlignment = ContentAlignment.MiddleCenter;
@@ -259,7 +214,7 @@ namespace VRCGalleryManager.Forms
             pasteButton.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
             pasteButton.ForeColor = Color.FromArgb(106, 227, 249);
             pasteButton.Location = new Point(662, 634);
-            pasteButton.Margin = new Padding(4, 4, 4, 4);
+            pasteButton.Margin = new Padding(4);
             pasteButton.Name = "pasteButton";
             pasteButton.Size = new Size(50, 50);
             pasteButton.SvgAlignment = ContentAlignment.MiddleCenter;
@@ -278,45 +233,15 @@ namespace VRCGalleryManager.Forms
             // 
             panel1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             panel1.AutoScroll = true;
-            panel1.Controls.Add(label3);
-            panel1.Controls.Add(label2);
             panel1.Controls.Add(previewVRChat);
             panel1.Controls.Add(label1);
             panel1.Controls.Add(labelFPS);
-            panel1.Controls.Add(previewSS);
-            panel1.Controls.Add(previewGif);
             panel1.Controls.Add(trackBarFPS);
             panel1.Location = new Point(15, 50);
-            panel1.Margin = new Padding(4, 4, 4, 4);
+            panel1.Margin = new Padding(4);
             panel1.Name = "panel1";
             panel1.Size = new Size(1002, 576);
             panel1.TabIndex = 14;
-            // 
-            // label3
-            // 
-            label3.Anchor = AnchorStyles.Top;
-            label3.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            label3.ForeColor = Color.White;
-            label3.Location = new Point(500, 38);
-            label3.Margin = new Padding(4, 0, 4, 0);
-            label3.Name = "label3";
-            label3.Size = new Size(325, 19);
-            label3.TabIndex = 14;
-            label3.Text = "SpriteSheet Preview";
-            label3.TextAlign = ContentAlignment.TopCenter;
-            // 
-            // label2
-            // 
-            label2.Anchor = AnchorStyles.Top;
-            label2.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            label2.ForeColor = Color.White;
-            label2.Location = new Point(167, 38);
-            label2.Margin = new Padding(4, 0, 4, 0);
-            label2.Name = "label2";
-            label2.Size = new Size(325, 19);
-            label2.TabIndex = 13;
-            label2.Text = "Gif Preview";
-            label2.TextAlign = ContentAlignment.TopCenter;
             // 
             // previewVRChat
             // 
@@ -329,10 +254,10 @@ namespace VRCGalleryManager.Forms
             previewVRChat.BorderRadiusTopLeft = 10;
             previewVRChat.BorderRadiusTopRight = 10;
             previewVRChat.BorderSize = 0;
-            previewVRChat.Location = new Point(334, 501);
-            previewVRChat.Margin = new Padding(4, 4, 4, 4);
+            previewVRChat.Location = new Point(320, 68);
+            previewVRChat.Margin = new Padding(4);
             previewVRChat.Name = "previewVRChat";
-            previewVRChat.Size = new Size(325, 325);
+            previewVRChat.Size = new Size(350, 350);
             previewVRChat.SizeMode = PictureBoxSizeMode.StretchImage;
             previewVRChat.TabIndex = 11;
             previewVRChat.TabStop = false;
@@ -342,7 +267,7 @@ namespace VRCGalleryManager.Forms
             label1.Anchor = AnchorStyles.Top;
             label1.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
             label1.ForeColor = Color.White;
-            label1.Location = new Point(334, 479);
+            label1.Location = new Point(334, 42);
             label1.Margin = new Padding(4, 0, 4, 0);
             label1.Name = "label1";
             label1.Size = new Size(325, 19);
@@ -365,13 +290,11 @@ namespace VRCGalleryManager.Forms
             Controls.Add(buttonSave);
             Controls.Add(panel1);
             FormBorderStyle = FormBorderStyle.None;
-            Margin = new Padding(4, 4, 4, 4);
+            Margin = new Padding(4);
             Name = "Create";
             Text = "Create";
             DragDrop += File_DragDrop;
             DragEnter += File_DragEnter;
-            ((System.ComponentModel.ISupportInitialize)previewGif).EndInit();
-            ((System.ComponentModel.ISupportInitialize)previewSS).EndInit();
             ((System.ComponentModel.ISupportInitialize)trackBarFPS).EndInit();
             panel1.ResumeLayout(false);
             panel1.PerformLayout();
@@ -380,9 +303,6 @@ namespace VRCGalleryManager.Forms
         }
 
         #endregion
-
-        private RoundedPictureBox previewGif;
-        private RoundedPictureBox previewSS;
         private Design.RoundedButton buttonSave;
         private RoundedButton uploadButton;
         private Label titleGifCreator;
@@ -394,7 +314,5 @@ namespace VRCGalleryManager.Forms
         private Panel panel1;
         private RoundedPictureBox previewVRChat;
         private Label label1;
-        private Label label3;
-        private Label label2;
     }
 }

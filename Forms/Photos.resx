@@ -117,23 +117,11 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="folderBack.SvgContent" xml:space="preserve">
-    <value>&lt;?xml version="1.0" encoding="iso-8859-1"?&gt;
-&lt;!-- Uploaded to: SVG Repo, www.svgrepo.com, Generator: SVG Repo Mixer Tools --&gt;
-&lt;!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"&gt;
-&lt;svg fill="#000000" version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" 
-	 width="800px" height="800px" viewBox="0 0 45.58 45.58" xml:space="preserve"
-	&gt;
-&lt;g&gt;
-	&lt;path d="M45.506,33.532c-1.741-7.42-7.161-17.758-23.554-19.942V7.047c0-1.364-0.826-2.593-2.087-3.113
-		c-1.261-0.521-2.712-0.229-3.675,0.737L1.305,19.63c-1.739,1.748-1.74,4.572-0.001,6.32L16.19,40.909
-		c0.961,0.966,2.415,1.258,3.676,0.737c1.261-0.521,2.087-1.75,2.087-3.113v-6.331c5.593,0.007,13.656,0.743,19.392,4.313
-		c0.953,0.594,2.168,0.555,3.08-0.101C45.335,35.762,45.763,34.624,45.506,33.532z"/&gt;
-&lt;/g&gt;
-&lt;/svg&gt;</value>
-  </data>
-  <data name="changeFolder.SvgContent" xml:space="preserve">
+  <data name="pasteButton.SvgContent" xml:space="preserve">
     <value>&lt;?xml version="1.0" encoding="utf-8"?&gt;&lt;!-- Uploaded to: SVG Repo, www.svgrepo.com, Generator: SVG Repo Mixer Tools --&gt;
-&lt;svg width="800px" height="800px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"&gt;&lt;path d="M2 7c0-1.4 0-2.1.272-2.635a2.5 2.5 0 0 1 1.093-1.093C3.9 3 4.6 3 6 3h1.431c.94 0 1.409 0 1.835.13a3 3 0 0 1 1.033.552c.345.283.605.674 1.126 1.455L12 6h6c1.4 0 2.1 0 2.635.272a2.5 2.5 0 0 1 1.092 1.093C22 7.9 22 8.6 22 10v5c0 1.4 0 2.1-.273 2.635a2.5 2.5 0 0 1-1.092 1.092C20.1 19 19.4 19 18 19H6c-1.4 0-2.1 0-2.635-.273a2.5 2.5 0 0 1-1.093-1.092C2 17.1 2 16.4 2 15V7z" fill="#000000"/&gt;&lt;/svg&gt;</value>
+&lt;svg width="800px" height="800px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"&gt;
+&lt;path d="M16.5 6.5L10.75 6.5C8.40279 6.5 6.5 8.40279 6.5 10.75L6.5 16.5H5.25C3.45508 16.5 2 15.0449 2 13.25V5.25C2 3.45507 3.45508 2 5.25 2H13.25C15.0449 2 16.5 3.45507 16.5 5.25V6.5Z" fill="#212121"/&gt;
+&lt;path d="M22 18.75C22 20.5449 20.5449 22 18.75 22L10.75 22C8.95508 22 7.5 20.5449 7.5 18.75L7.5 10.75C7.5 8.95507 8.95508 7.5 10.75 7.5L18.75 7.5C20.5449 7.5 22 8.95507 22 10.75L22 18.75ZM18.75 20.5C19.7165 20.5 20.5 19.7165 20.5 18.75L20.5 10.75C20.5 9.7835 19.7165 9 18.75 9L10.75 9C9.7835 9 9 9.7835 9 10.75L9 18.75C9 19.7165 9.7835 20.5 10.75 20.5L18.75 20.5Z" fill="#212121"/&gt;
+&lt;/svg&gt;</value>
   </data>
 </root>

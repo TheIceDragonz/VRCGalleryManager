@@ -1,123 +1,306 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Microsoft.WindowsAPICodePack.Shell;
+using Newtonsoft.Json.Linq;
+using System.Diagnostics;
 using VRCGalleryManager.Core;
-using VRCGalleryManager.Core.DTO;
-using VRCGalleryManager.Core.Helpers;
-using VRCGalleryManager.Forms.Panels;
+using VRCGalleryManager.Design;
 
 namespace VRCGalleryManager.Forms
 {
     public partial class Gallery : ApiConnectedForm
     {
-        private List<string> galleryJson = new List<string>();
-        private int imageCount;
+        private string currentRootFolder;
+        private bool isInFolderView;
+        private CancellationTokenSource _cts;
 
-        private static string GALLERY_TAG = "gallery";
-        private static string GALLERY_MASK_TYPE = "square";
+        MetaDataImageReader.VrcxData vrcxData;
 
         public Gallery(VRCAuth auth)
         {
             InitializeComponent();
-
             InitApiRequest(auth);
 
-            this.Shown += (s, e) => { if (galleryPanel.Controls.Count == 0) GalleryList(); };
+            this.Shown += (s, e) =>
+            {
+                var getpath = Config.Get("PathGallery");
+                if (!string.IsNullOrEmpty(getpath))
+                {
+                    currentRootFolder = getpath;
+                }
+
+                if (string.IsNullOrEmpty(currentRootFolder)) FolderImage();
+            };
+
+            Shown += Gallery_Shown;
+            _refreshButton.Click += _refreshButton_Click;
+            folderBack.Click += folderBack_Click;
         }
 
-        private void _refreshButton_Click(object sender, EventArgs e)
+        private async void Gallery_Shown(object sender, EventArgs e)
         {
-            GalleryList();
+            if (galleryPanel.Controls.Count == 0)
+                await RefreshGalleryAsync();
         }
 
-        private async void GalleryList()
+        private async void _refreshButton_Click(object sender, EventArgs e)
         {
+            await RefreshGalleryAsync();
+        }
+
+        private async void folderBack_Click(object sender, EventArgs e)
+        {
+            galleryInfoPanel.Visible = false;
+
+            if (isInFolderView)
+            {
+                isInFolderView = false;
+                await RefreshGalleryAsync();
+            }
+        }
+
+        private async Task RefreshGalleryAsync()
+        {
+            _cts?.Cancel();
+            _cts = new CancellationTokenSource();
+            var token = _cts.Token;
+
             _refreshButton.Enabled = false;
 
-            galleryPanel.Controls.Clear();
-            galleryJson.Clear();
-
-            ApiRequest.ApiData gallery = await apiRequest.GetApiData(GALLERY_TAG);
-
-            galleryJson = gallery.JsonImage;
-            imageCount = gallery.JsonImage.Count;
-
-            foreach (string json in galleryJson)
+            if (!Directory.Exists(currentRootFolder))
             {
-                JObject jsonObject = JObject.Parse(json);
-
-                string id = jsonObject["id"]?.ToString();
-
-                ImagePanel.AddImagePanel(galleryPanel, apiRequest, id, UpdateCounter);
+                _refreshButton.Enabled = false;
+                folderBack.Visible = false;
+                return;
             }
 
-            UpdateCounter("");
+            try
+            {
+                if (isInFolderView && galleryPanel.Tag is string folderTag)
+                    await ShowImagesAsync(folderTag, token);
+                else
+                    await ShowFoldersAsync(token);
+            }
+            catch (OperationCanceledException)
+            {
+                // cancellation requested
+            }
 
             _refreshButton.Enabled = true;
         }
 
-        private async void uploadGallery_Click(object sender, EventArgs e)
+        private async Task ShowFoldersAsync(CancellationToken token)
         {
-            using (OpenFileDialog openFileDialog = new OpenFileDialog())
+            PrepareGallery(showBack: false);
+            var dirs = Directory.GetDirectories(currentRootFolder);
+            foreach (var dir in dirs)
             {
-                ImageHelper.SetOpenFileDialogFilter(openFileDialog);
-                openFileDialog.Multiselect = false;
-
-                if (openFileDialog.ShowDialog() == DialogResult.OK)
-                {
-                    UploadImage(openFileDialog.FileName);
-                }
+                token.ThrowIfCancellationRequested();
+                var panel = await Task.Run(() => CreateFolderPanel(dir), token);
+                if (token.IsCancellationRequested) break;
+                galleryPanel.Controls.Add(panel);
             }
         }
-        private async void UploadImage(string path)
-        {
-            string resizedImage = ImageResizer.ResizeImage16x9(path);
 
+        private async Task ShowImagesAsync(string folderPath, CancellationToken token)
+        {
+            PrepareGallery(showBack: true);
+            galleryPanel.Tag = folderPath;
+            var files = GetImageFiles(folderPath);
+            foreach (var file in files)
+            {
+                token.ThrowIfCancellationRequested();
+                var box = await Task.Run(() => CreateImageBox(file), token);
+                if (token.IsCancellationRequested) break;
+                galleryPanel.Controls.Add(box);
+            }
+        }
+
+        private void PrepareGallery(bool showBack)
+        {
+            if (InvokeRequired)
+            {
+                Invoke(new Action<bool>(PrepareGallery), showBack);
+                return;
+            }
+
+            ClearGalleryPanel();
+            folderBack.Visible = showBack;
+            isInFolderView = showBack;
+        }
+
+        private RoundedPanel CreateFolderPanel(string path)
+        {
+            var panel = new RoundedPanel
+            {
+                Size = new Size(200, 150),
+                Margin = new Padding(10),
+                BackColor = Color.FromArgb(24, 27, 31),
+                Cursor = Cursors.Hand,
+                Tag = path,
+                BorderRadius = 15,
+                Padding = new Padding(7)
+            };
+
+            var firstImage = GetImageFiles(path).LastOrDefault();
+            var thumb = LoadThumbnail(firstImage) ?? Properties.Resources.VRCGM;
+
+            var pictureBox = new RoundedPictureBox
+            {
+                Dock = DockStyle.Fill,
+                SizeMode = PictureBoxSizeMode.CenterImage,
+                Cursor = Cursors.Hand,
+                Image = thumb,
+                BorderRadiusBottomLeft = 10,
+                BorderRadiusBottomRight = 10,
+                BorderRadiusTopLeft = 10,
+                BorderRadiusTopRight = 10
+            };
+
+            var label = new Label
+            {
+                Text = Path.GetFileName(path),
+                Dock = DockStyle.Bottom,
+                Height = 30,
+                TextAlign = ContentAlignment.MiddleCenter,
+                ForeColor = Color.White,
+                Cursor = Cursors.Hand
+            };
+
+            void OpenFolder(object s, EventArgs e)
+            {
+                _cts?.Cancel();
+                _cts = new CancellationTokenSource();
+                isInFolderView = true;
+                galleryPanel.Tag = path;
+                _ = ShowImagesAsync(path, _cts.Token);
+            }
+
+            pictureBox.Click += OpenFolder;
+            label.Click += OpenFolder;
+            panel.Click += OpenFolder;
+
+            panel.Controls.Add(pictureBox);
+            panel.Controls.Add(label);
+            return panel;
+        }
+
+        private PictureBox CreateImageBox(string file)
+        {
+            var pb = new PictureBox
+            {
+                Size = new Size(150, 150),
+                SizeMode = PictureBoxSizeMode.Zoom,
+                Margin = new Padding(10),
+                Cursor = Cursors.Hand,
+                Image = LoadThumbnail(file)
+            };
+
+            pb.DoubleClick += (s, e) =>
+            {
+                var psi = new ProcessStartInfo
+                {
+                    FileName = file,
+                    UseShellExecute = true
+                };
+                Process.Start(psi);
+            };
+
+            pb.Click += async (s, e) =>
+            {
+                vrcxData = MetaDataImageReader.ExtractVrcxData(file);
+                if (vrcxData != null)
+                {
+                    MetaDataImageReader.ApiWorldInfo(vrcxData, apiRequest, worldImage, worldNameLabel);
+
+                    var players = vrcxData.Players;
+                    var labels = new RoundedLabel[players.Count];
+
+                    userInfoPanel.Controls.Clear();
+                    for (int i = 0; i < players.Count; i++)
+                    {
+                        (RoundedLabel label, bool isFriend) = MetaDataImageReader.UsersInfo(players[i]);
+                        labels[i] = label;
+
+                        userInfoPanel.Controls.Add(labels[i]);
+
+                        if (!isFriend) userInfoPanel.Controls.SetChildIndex(labels[i], 0);
+                    }
+
+                    galleryInfoPanel.Visible = true;
+                }
+                else
+                {
+                    galleryInfoPanel.Visible = false;
+                }
+            };
+
+            return pb;
+        }
+
+        private Image LoadThumbnail(string path)
+        {
+            if (string.IsNullOrEmpty(path) || !File.Exists(path)) return null;
             try
             {
-                ApiRequest.ApiData gallery = await apiRequest.UploadImage(resizedImage, GALLERY_MASK_TYPE, TagType.Gallery);
-
-                ImagePanel.AddImagePanel(galleryPanel, apiRequest, gallery.IdImageUploaded, UpdateCounter);
-                UpdateCounter("Add");
-
-                NotificationManager.ShowNotification("Photos uploaded successfully", "Photos uploaded", NotificationType.Success);
+                var shellFile = ShellFile.FromFilePath(path);
+                using var bmp = shellFile.Thumbnail.LargeBitmap;
+                return new Bitmap(bmp);
             }
-            catch (Exception ex)
+            catch
             {
-                NotificationManager.ShowNotification(ex.Message, "Error during file upload", NotificationType.Error);
+                return null;
             }
         }
 
-        private void pasteButton_Click(object sender, EventArgs e)
+        private IEnumerable<string> GetImageFiles(string dir)
         {
-            ClipboardHandler.ClipboardDataImageOrLink(pasteButton, UploadImage);
+            return Directory.EnumerateFiles(dir).Where(f => new[] { ".jpg", ".jpeg", ".png" }.Contains(Path.GetExtension(f).ToLower()));
         }
 
-        private void UpdateCounter(string action)
+        private void ClearGalleryPanel()
         {
-            if (action == "Add") imageCount += 1;
-            else if (action == "Remove") imageCount -= 1;
-            limitCounterLabel.Text = $"{imageCount}/64 Photos";
-            if (imageCount >= 64)
+            if (InvokeRequired)
             {
-                pasteButton.Enabled = false;
-                uploadButton.Enabled = false;
-                limitPanel.Visible = true;
+                Invoke(new Action(ClearGalleryPanel));
+                return;
             }
-            else
+            galleryPanel.SuspendLayout();
+            var controls = galleryPanel.Controls.Cast<Control>().ToArray();
+            foreach (var ctl in controls)
             {
-                pasteButton.Enabled = true;
-                uploadButton.Enabled = true;
-                limitPanel.Visible = false;
+                if (ctl is PictureBox pb) pb.Image?.Dispose();
+                ctl.Dispose();
             }
+            galleryPanel.Controls.Clear();
+            galleryPanel.ResumeLayout();
         }
 
-        private void File_DragEnter(object sender, DragEventArgs e)
+        private void worldImage_Click(object sender, EventArgs e)
         {
-            e.Effect = ImageHelper.ProcessDragEnter(e);
+            if (vrcxData == null) return;
+            if (string.IsNullOrEmpty(vrcxData.World.Id)) return;
+            Process.Start("explorer.exe", "https://vrchat.com/home/world/" + vrcxData.World.Id);
         }
 
-        private void File_DragDrop(object sender, DragEventArgs e)
+        private void changeFolder_Click(object sender, EventArgs e)
         {
-            ImageHelper.ProcessDragDrop(e, UploadImage);
+            FolderImage();
+        }
+
+        private async void FolderImage()
+        {
+            using (var dialog = new FolderBrowserDialog())
+            {
+                dialog.Description = "Select VRChat Images Folder";
+                dialog.ShowNewFolderButton = true;
+                dialog.RootFolder = Environment.SpecialFolder.MyPictures;
+
+                if (dialog.ShowDialog() != DialogResult.OK)
+                    return;
+
+                Config.Set("PathGallery", dialog.SelectedPath);
+                currentRootFolder = dialog.SelectedPath;
+            }
+            await RefreshGalleryAsync();
         }
     }
 }

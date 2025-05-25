@@ -1,10 +1,10 @@
 ﻿using System.Diagnostics;
+using System.Linq;
 using System.Net;
 using VRCGalleryManager.Core;
 using VRCGalleryManager.Core.DTO;
 using VRCGalleryManager.Design;
 using VRCGalleryManager.Forms.UIComponents;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
 
 namespace VRCGalleryManager.Forms.Panels
 {
@@ -82,7 +82,7 @@ namespace VRCGalleryManager.Forms.Panels
         }
 
         private static List<RoundedPictureBox> pictureIconList = new List<RoundedPictureBox>();
-        private static List<RoundedPictureBox> pictureGalleryList = new List<RoundedPictureBox>();
+        private static List<RoundedPictureBox> picturePhotosList = new List<RoundedPictureBox>();
 
         static public async void AddImagePanel(FlowLayoutPanel mainPanel, ApiRequest apiRequest, string imageId, Action<string> UpdateCounter)
         {
@@ -90,7 +90,7 @@ namespace VRCGalleryManager.Forms.Panels
             int value = 10;
 
             if (mainPanel.Name.Contains("prints")) size = new Size(190, 150);
-            if (mainPanel.Name.Contains("gallery")) size = new Size(250, 150);
+            if (mainPanel.Name.Contains("photos")) size = new Size(250, 150);
             if (mainPanel.Name.Contains("icons")) value = 100; //Max Rounded
 
             string imageFull = $"https://api.vrchat.cloud/api/1/file/{imageId}/1/file";
@@ -147,7 +147,7 @@ namespace VRCGalleryManager.Forms.Panels
                 };
                 pictureIconList.Add(pictureBox);
             }
-            if (mainPanel.Name.Contains("gallery"))
+            if (mainPanel.Name.Contains("photos"))
             {
                 pictureBox.Cursor = Cursors.Hand;
                 pictureBox.MouseEnter += (s, e) => pictureBox.BorderColor = (pictureBox.BorderColor != selectedColor) ? Color.FromArgb(255, 255, 255) : selectedColor;
@@ -166,7 +166,7 @@ namespace VRCGalleryManager.Forms.Panels
                     Settings.UserBannerImage = imageFull;
                     (Application.OpenForms["MainPanel"] as MainPanel)?.ProfileUpdateBanner(imageFull);
 
-                    foreach (var pb in pictureGalleryList)
+                    foreach (var pb in picturePhotosList)
                     {
                         pb.BorderColor = Color.FromArgb(24, 27, 31);
                         pb.Cursor = Cursors.Hand;
@@ -177,7 +177,7 @@ namespace VRCGalleryManager.Forms.Panels
 
                     NotificationManager.ShowNotification("Picture Changed Successful", "Profile Updated", NotificationType.Success);
                 };
-                pictureGalleryList.Add(pictureBox);
+                picturePhotosList.Add(pictureBox);
             }
 
             if (!finalaviImage.Contains("imageNotFound"))
@@ -294,6 +294,11 @@ namespace VRCGalleryManager.Forms.Panels
                 pictureBox.Controls.Add(btn_delete);
             }
 
+            if (Settings.Friends.Contains(userId))
+            {
+                authorLabel.ForeColor = Color.Orange;
+            }
+
             mainPanel.Controls.Add(pictureBox);
         }
 
@@ -381,6 +386,11 @@ namespace VRCGalleryManager.Forms.Panels
                     });
                     btn_picflowupload.Location = new Point(pictureBox.Size.Width - 35, pictureBox.Size.Height - 35);
                     pictureBox.Controls.Add(btn_picflowupload);
+                }
+
+                if (Settings.Friends.Contains(userId))
+                {
+                    authorLabel.ForeColor = Color.Orange;
                 }
 
                 mainPanel.Controls.Add(pictureBox);
