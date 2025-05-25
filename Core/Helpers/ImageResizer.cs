@@ -5,35 +5,34 @@ namespace VRCGalleryManager.Core.Helpers
 {
     public class ImageResizer
     {
-        public static string ResizeImage1024x1024(string imagePath)
+        public static string ResizeImage1x1(string imagePath)
         {
-            using var input = Image.FromFile(imagePath);
-            const int target = 1024;
-            int origW = input.Width;
-            int origH = input.Height;
-            if (origW < target && origH < target)
-            {
-                return imagePath;
-            }
-            float scale = Math.Min((float)target / origW, (float)target / origH);
+            const int maxSize = 2048;
+            using var original = Image.FromFile(imagePath);
+            int origW = original.Width;
+            int origH = original.Height;
+            int maxDim = Math.Max(origW, origH);
+            float scale = maxDim > maxSize
+                ? (float)maxSize / maxDim
+                : 1f;
             int resizedW = (int)(origW * scale);
             int resizedH = (int)(origH * scale);
-            var tempDir = Path.Combine(Path.GetTempPath(), "VRCGalleryManager");
-            Directory.CreateDirectory(tempDir);
-            var outPath = Path.Combine(tempDir, $"resized_{Guid.NewGuid()}.png");
-            using var bmp = new Bitmap(target, target, PixelFormat.Format32bppArgb);
+            int side = Math.Max(resizedW, resizedH);
+            using var bmp = new Bitmap(side, side, PixelFormat.Format32bppArgb);
             using (var g = Graphics.FromImage(bmp))
             {
                 g.Clear(Color.Transparent);
+                g.CompositingMode = CompositingMode.SourceCopy;
                 g.InterpolationMode = InterpolationMode.HighQualityBicubic;
                 g.CompositingQuality = CompositingQuality.HighQuality;
                 g.SmoothingMode = SmoothingMode.HighQuality;
-                int offsetX = (target - resizedW) / 2;
-                int offsetY = (target - resizedH) / 2;
-
-                g.DrawImage(input, offsetX, offsetY, resizedW, resizedH);
+                int offsetX = (side - resizedW) / 2;
+                int offsetY = (side - resizedH) / 2;
+                g.DrawImage(original, offsetX, offsetY, resizedW, resizedH);
             }
-
+            var tempDir = Path.Combine(Path.GetTempPath(), "VRCGalleryManager");
+            Directory.CreateDirectory(tempDir);
+            string outPath = Path.Combine(tempDir, $"resized_{Guid.NewGuid():N}.png");
             bmp.Save(outPath, ImageFormat.Png);
             return outPath;
         }
