@@ -91,6 +91,8 @@ namespace VRCGalleryManager
         public async Task ProfileUpdateIcon(string IconImage)
         {
             profileIcon.LoadAsync(await HttpImage.GetFinalUrlAsync(IconImage));
+            profileIcon.Visible = true;
+            profileIcon.BringToFront();
         }
         public async Task ProfileUpdateBanner(string BannerImage)
         {
