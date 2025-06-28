@@ -92,9 +92,19 @@ namespace VRCGalleryManager.Forms
         {
             if (action == "Add") imageCount += 1;
             else if (action == "Remove") imageCount -= 1;
-            limitCounterLabel.Text = $"{imageCount}/9 Sticker";
-            if (imageCount >= 9) limitPanel.Visible = true;
-            else limitPanel.Visible = false;
+            limitCounterLabel.Text = $"{imageCount}/18 Sticker";
+            if (imageCount >= 18)
+            {
+                pasteButton.Enabled = false;
+                uploadButton.Enabled = false;
+                limitPanel.Visible = true;
+            }
+            else
+            {
+                pasteButton.Enabled = true;
+                uploadButton.Enabled = true;
+                limitPanel.Visible = false;
+            }
         }
 
         private void File_DragEnter(object sender, DragEventArgs e)

@@ -198,7 +198,7 @@ namespace VRCGalleryManager.Forms
             limitCounterLabel.Name = "limitCounterLabel";
             limitCounterLabel.Size = new Size(250, 20);
             limitCounterLabel.TabIndex = 7;
-            limitCounterLabel.Text = "0/9 Emoji";
+            limitCounterLabel.Text = "0/18 Emoji";
             limitCounterLabel.TextAlign = ContentAlignment.MiddleRight;
             // 
             // pasteButton

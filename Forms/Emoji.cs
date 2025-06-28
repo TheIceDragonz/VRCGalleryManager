@@ -142,8 +142,8 @@ namespace VRCGalleryManager.Forms
         {
             if (action == "Add") imageCount += 1;
             else if (action == "Remove") imageCount -= 1;
-            limitCounterLabel.Text = $"{imageCount}/9 Emoji";
-            if (imageCount >= 9)
+            limitCounterLabel.Text = $"{imageCount}/18 Emoji";
+            if (imageCount >= 18)
             {
                 pasteButton.Enabled = false;
                 uploadButton.Enabled = false;

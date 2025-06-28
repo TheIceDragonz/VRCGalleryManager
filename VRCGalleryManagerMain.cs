@@ -91,6 +91,8 @@ namespace VRCGalleryManager
         public async Task ProfileUpdateIcon(string IconImage)
         {
             profileIcon.LoadAsync(await HttpImage.GetFinalUrlAsync(IconImage));
+            profileIcon.Visible = true;
+            profileIcon.BringToFront();
         }
         public async Task ProfileUpdateBanner(string BannerImage)
         {
@@ -148,7 +150,7 @@ namespace VRCGalleryManager
             _switchEmoji.Enabled = enabled;
             _switchSticker.Enabled = enabled;
             _switchPrints.Enabled = enabled;
-            _switchPicflow.Enabled = enabled;
+            //_switchPicflow.Enabled = enabled;
             _switchCreate.Enabled = enabled;
         }
 
