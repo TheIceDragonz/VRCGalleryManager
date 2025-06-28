@@ -149,7 +149,7 @@ namespace VRCGalleryManager.Forms
             limitCounterLabel.Name = "limitCounterLabel";
             limitCounterLabel.Size = new Size(250, 20);
             limitCounterLabel.TabIndex = 6;
-            limitCounterLabel.Text = "0/9 Sticker";
+            limitCounterLabel.Text = "0/18 Sticker";
             limitCounterLabel.TextAlign = ContentAlignment.MiddleRight;
             // 
             // pasteButton
