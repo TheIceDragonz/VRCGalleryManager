@@ -31,6 +31,14 @@ VRChatGalleryManager is a Windows Forms application that simplifies the manageme
   - View a list of all stickers placed in VRChat worlds and load them as needed.
   - Enable live streaming to see new stickers as they are placed in real time.
 
+## **New Function [Gallery] + Image Data Reader "Only with [VRCX](https://github.com/vrcx-team/VRCX) Screenshot Helper"**
+<table>
+  <tr>
+    <td align="center"><img src="https://github.com/user-attachments/assets/1ad1fa1c-f179-4c21-91b3-603db7580946" alt="login"></td>
+    <td align="center"><img src="https://github.com/user-attachments/assets/99493b8a-5f87-46e9-9036-0f25376cfdaa" alt="2fa"></td>
+  </tr>
+</table>
+
 ## Requirements
 VRCGalleryManager requires a **VRChat Plus** subscription to manage your photo gallery, enabling additional features and improved gallery organization. Ensure your subscription is active before installing.
 
