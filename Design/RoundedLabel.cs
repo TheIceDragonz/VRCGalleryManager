@@ -95,16 +95,23 @@ namespace VRCGalleryManager.Design
         {
             GraphicsPath path = new GraphicsPath();
             int maxRadius = Math.Min(rect.Width, rect.Height) / 2;
+
             int tl = Math.Min(borderRadiusTopLeft, maxRadius);
             int tr = Math.Min(borderRadiusTopRight, maxRadius);
             int br = Math.Min(borderRadiusBottomRight, maxRadius);
             int bl = Math.Min(borderRadiusBottomLeft, maxRadius);
 
             path.StartFigure();
-            path.AddArc(rect.X, rect.Y, tl * 2, tl * 2, 180, 90);
-            path.AddArc(rect.Right - tr * 2, rect.Y, tr * 2, tr * 2, 270, 90);
-            path.AddArc(rect.Right - br * 2, rect.Bottom - br * 2, br * 2, br * 2, 0, 90);
-            path.AddArc(rect.X, rect.Bottom - bl * 2, bl * 2, bl * 2, 90, 90);
+
+            if (tl > 0) path.AddArc(rect.X, rect.Y, tl * 2, tl * 2, 180, 90);
+            else path.AddLine(rect.X, rect.Y, rect.X, rect.Y);
+            if (tr > 0) path.AddArc(rect.Right - tr * 2, rect.Y, tr * 2, tr * 2, 270, 90);
+            else path.AddLine(rect.Right, rect.Y, rect.Right, rect.Y);
+            if (br > 0) path.AddArc(rect.Right - br * 2, rect.Bottom - br * 2, br * 2, br * 2, 0, 90);
+            else path.AddLine(rect.Right, rect.Bottom, rect.Right, rect.Bottom);
+            if (bl > 0) path.AddArc(rect.X, rect.Bottom - bl * 2, bl * 2, bl * 2, 90, 90);
+            else path.AddLine(rect.X, rect.Bottom, rect.X, rect.Bottom);
+
             path.CloseFigure();
             return path;
         }
