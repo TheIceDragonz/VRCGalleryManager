@@ -5,6 +5,7 @@ using VRChat.API.Client;
 using VRChat.API.Model;
 using VRCGalleryManager.Forms;
 using System.Data;
+using System.Text.Json;
 
 namespace VRCGalleryManager.Core
 {
@@ -15,6 +16,7 @@ namespace VRCGalleryManager.Core
         private PrintsApi printsApi;
         private UsersApi usersApi;
         private WorldsApi worldApi;
+        private InventoryApi inventoryApi;
 
         public ApiRequest(VRCAuth Auth)
         {
@@ -23,6 +25,7 @@ namespace VRCGalleryManager.Core
             printsApi = new PrintsApi(Auth.ApiClient, Auth.ApiClient, Auth.Config);
             usersApi = new UsersApi(Auth.ApiClient, Auth.ApiClient, Auth.Config);
             worldApi = new WorldsApi(Auth.ApiClient, Auth.ApiClient, Auth.Config);
+            inventoryApi = new InventoryApi(Auth.ApiClient, Auth.ApiClient, Auth.Config);
         }
 
         public class ApiData
@@ -48,6 +51,41 @@ namespace VRCGalleryManager.Core
             public string AuthorId { get; set; } = new string("");
             public string ImageUrl { get; set; } = new string("");
             public string ThumbnailUrl { get; set; } = new string("");
+        }
+
+        public class ApiDataInventory
+        {
+            public List<string> Collections { get; set; } = new List<string>();
+            public DateTime CreatedAt { get; set; }
+            public string Description { get; set; } = "";
+            public DateTime? ExpiryDate { get; set; }
+            public List<string> Flags { get; set; } = new List<string>();
+            public string HolderId { get; set; } = "";
+            public string Id { get; set; } = "";
+            public string ImageUrl { get; set; } = "";
+            public bool IsArchived { get; set; }
+            public bool IsSeen { get; set; }
+            public string ItemType { get; set; } = "";
+            public string ItemTypeLabel { get; set; } = "";
+            public InventoryMetadata Metadata { get; set; } = new InventoryMetadata();
+            public string Name { get; set; } = "";
+            public List<string> Tags { get; set; } = new List<string>();
+            public string TemplateId { get; set; } = "";
+            public DateTime TemplateCreatedAt { get; set; }
+            public DateTime TemplateUpdatedAt { get; set; }
+            public DateTime UpdatedAt { get; set; }
+        }
+
+        public class InventoryMetadata
+        {
+            public string FileId { get; set; } = "";
+            public string ImageUrl { get; set; } = "";
+            public string MaskTag { get; set; } = "";
+            public bool Animated { get; set; }
+            public string AnimationStyle { get; set; }
+            public int Frames { get; set; }
+            public int FramesOverTime { get; set; }
+            public string? LoopStyle { get; set; }
         }
 
         public async Task<ApiData> GetApiData(string tag)
@@ -252,6 +290,48 @@ namespace VRCGalleryManager.Core
                 apiDataWorld.ThumbnailUrl = world.ThumbnailImageUrl;
 
                 return apiDataWorld;
+            }
+            catch (ApiException ex)
+            {
+                Console.WriteLine($"Errore: {ex.Message}");
+                return null;
+            }
+        }
+
+        public async Task<ApiDataInventory> GetInventoryInfo(string userId, string inventoryId)
+        {
+            ApiDataInventory apiInventory = new ApiDataInventory();
+
+            try
+            {
+                var inventory = await inventoryApi.GetUserInventoryItemAsync(userId, inventoryId);
+
+                apiInventory.Collections = inventory.Collections;
+                apiInventory.CreatedAt = inventory.CreatedAt;
+                apiInventory.Description = inventory.Description;
+                apiInventory.ExpiryDate = inventory.ExpiryDate;
+                apiInventory.Flags = inventory.Flags;
+                apiInventory.HolderId = inventory.HolderId;
+                apiInventory.Id = inventory.Id;
+                apiInventory.ImageUrl = inventory.ImageUrl;
+                apiInventory.IsArchived = inventory.IsArchived;
+                apiInventory.IsSeen = inventory.IsSeen;
+                apiInventory.ItemType = inventory.ItemType.ToString();
+                apiInventory.ItemTypeLabel = inventory.ItemTypeLabel;
+                apiInventory.Metadata = inventory.Metadata == null
+                                    ? new InventoryMetadata()
+                                    : JsonSerializer.Deserialize<InventoryMetadata>(
+                                      JsonSerializer.Serialize(inventory.Metadata),
+                                      new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
+                                      ) ?? new InventoryMetadata();
+                apiInventory.Name = inventory.Name;
+                apiInventory.Tags = inventory.Tags;
+                apiInventory.TemplateId = inventory.TemplateId;
+                apiInventory.TemplateCreatedAt = inventory.TemplateCreatedAt;
+                apiInventory.TemplateUpdatedAt = inventory.TemplateUpdatedAt;
+                apiInventory.UpdatedAt = inventory.UpdatedAt;
+
+                return apiInventory;
             }
             catch (ApiException ex)
             {

@@ -111,7 +111,6 @@ namespace VRCGalleryManager
             _switchPicflow.BorderRadius = 10;
             _switchPicflow.BorderSize = 2;
             _switchPicflow.Dock = DockStyle.Bottom;
-            _switchPicflow.Enabled = false;
             _switchPicflow.FlatAppearance.BorderSize = 0;
             _switchPicflow.FlatStyle = FlatStyle.Flat;
             _switchPicflow.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
