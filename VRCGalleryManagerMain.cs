@@ -150,7 +150,7 @@ namespace VRCGalleryManager
             _switchEmoji.Enabled = enabled;
             _switchSticker.Enabled = enabled;
             _switchPrints.Enabled = enabled;
-            //_switchPicflow.Enabled = enabled;
+            _switchPicflow.Enabled = enabled;
             _switchCreate.Enabled = enabled;
         }
 

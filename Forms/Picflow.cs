@@ -233,5 +233,18 @@ namespace VRCGalleryManager.Forms
             streamingCancellationTokenSource?.Cancel();
             base.OnFormClosing(e);
         }
+
+        private void infoPicflowButton_Click(object sender, EventArgs e)
+        {
+            infoPicFlowLabel.Visible = !infoPicFlowLabel.Visible;
+        }
+
+        private void infoPicFlowLabel_Click(object sender, EventArgs e)
+        {
+            string textToCopy = "--enable-sdk-log-levels";
+            Clipboard.SetText(textToCopy);
+            NotificationManager.ShowNotification("Text copied to clipboard!", "--enable-sdk-log-levels", NotificationType.Success);
+            infoPicFlowLabel.Visible = false;
+        }
     }
 }
