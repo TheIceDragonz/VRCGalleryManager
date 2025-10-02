@@ -10,7 +10,7 @@ namespace VRCGalleryManager.Forms
         private string currentRootFolder;
         private string currentFolder;
         private CancellationTokenSource _cts;
-        private MetaDataImageReader.VrcxData vrcxData;
+        MetaDataImageReader.VrcxData vrcxData;
 
         public Gallery(VRCAuth auth)
         {
@@ -22,8 +22,8 @@ namespace VRCGalleryManager.Forms
                 var getpath = Config.Get("PathGallery");
                 if (!string.IsNullOrEmpty(getpath))
                 {
-                    currentRootFolder = NormalizePath(getpath);
-                    currentFolder = currentRootFolder;
+                    currentRootFolder = getpath;
+                    currentFolder = getpath;
                 }
 
                 if (string.IsNullOrEmpty(currentRootFolder))
@@ -31,17 +31,23 @@ namespace VRCGalleryManager.Forms
             };
 
             Shown += Gallery_Shown;
-            _refreshButton.Click += async (s, e) => await RefreshGalleryAsync();
+
+            _refreshButton.Click -= _refreshButton_Click;
+            _refreshButton.Click += _refreshButton_Click;
+
+            folderBack.Click -= folderBack_Click;
             folderBack.Click += folderBack_Click;
         }
-
-        private string NormalizePath(string path) =>
-            Path.GetFullPath(path).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
 
         private async void Gallery_Shown(object sender, EventArgs e)
         {
             if (galleryPanel.Controls.Count == 0)
                 await RefreshGalleryAsync();
+        }
+
+        private async void _refreshButton_Click(object sender, EventArgs e)
+        {
+            await RefreshGalleryAsync();
         }
 
         private async void folderBack_Click(object sender, EventArgs e)
@@ -50,15 +56,21 @@ namespace VRCGalleryManager.Forms
 
             if (string.IsNullOrEmpty(currentFolder)) return;
 
-            if (currentFolder == currentRootFolder) return;
+            string normalizedRoot = Path.GetFullPath(currentRootFolder).TrimEnd(Path.DirectorySeparatorChar);
+            string normalizedCurrent = Path.GetFullPath(currentFolder).TrimEnd(Path.DirectorySeparatorChar);
+
+            // se sei già in root → non fare nulla
+            if (string.Equals(normalizedCurrent, normalizedRoot, StringComparison.OrdinalIgnoreCase))
+                return;
 
             var parent = Directory.GetParent(currentFolder);
             if (parent != null)
             {
-                currentFolder = NormalizePath(parent.FullName);
+                currentFolder = parent.FullName;
                 await RefreshGalleryAsync();
             }
         }
+
 
         private async Task RefreshGalleryAsync()
         {
@@ -70,8 +82,8 @@ namespace VRCGalleryManager.Forms
 
             if (string.IsNullOrEmpty(currentFolder) || !Directory.Exists(currentFolder))
             {
+                _refreshButton.Enabled = false;
                 folderBack.Visible = false;
-                _refreshButton.Enabled = true;
                 return;
             }
 
@@ -88,16 +100,22 @@ namespace VRCGalleryManager.Forms
         {
             PrepareGallery();
 
-            foreach (var dir in Directory.GetDirectories(folderPath))
+            var dirs = Directory.GetDirectories(folderPath);
+            foreach (var dir in dirs)
             {
                 token.ThrowIfCancellationRequested();
-                galleryPanel.Controls.Add(await Task.Run(() => CreateFolderPanel(dir), token));
+                var panel = await Task.Run(() => CreateFolderPanel(dir), token);
+                if (token.IsCancellationRequested) break;
+                galleryPanel.Controls.Add(panel);
             }
 
-            foreach (var file in GetImageFiles(folderPath))
+            var files = GetImageFiles(folderPath);
+            foreach (var file in files)
             {
                 token.ThrowIfCancellationRequested();
-                galleryPanel.Controls.Add(await Task.Run(() => CreateImageBox(file), token));
+                var box = await Task.Run(() => CreateImageBox(file), token);
+                if (token.IsCancellationRequested) break;
+                galleryPanel.Controls.Add(box);
             }
         }
 
@@ -110,8 +128,13 @@ namespace VRCGalleryManager.Forms
             }
 
             ClearGalleryPanel();
-            folderBack.Visible = currentFolder != currentRootFolder;
+
+            string normalizedRoot = Path.GetFullPath(currentRootFolder).TrimEnd(Path.DirectorySeparatorChar);
+            string normalizedCurrent = Path.GetFullPath(currentFolder).TrimEnd(Path.DirectorySeparatorChar);
+
+            folderBack.Visible = !string.Equals(normalizedCurrent, normalizedRoot, StringComparison.OrdinalIgnoreCase);
         }
+
 
         private RoundedPanel CreateFolderPanel(string path)
         {
@@ -125,7 +148,8 @@ namespace VRCGalleryManager.Forms
                 Padding = new Padding(7)
             };
 
-            var thumb = LoadThumbnail(GetImageFiles(path).LastOrDefault());
+            var firstImage = GetImageFiles(path).LastOrDefault();
+            var thumb = LoadThumbnail(firstImage);
 
             var pictureBox = new RoundedPictureBox
             {
@@ -136,25 +160,30 @@ namespace VRCGalleryManager.Forms
                 BorderRadiusBottomLeft = 10,
                 BorderRadiusBottomRight = 10,
                 BorderRadiusTopLeft = 10,
-                BorderRadiusTopRight = 10,
-                Visible = thumb != null
+                BorderRadiusTopRight = 10
             };
 
             var label = new Label
             {
                 Text = Path.GetFileName(path),
-                Dock = thumb == null ? DockStyle.Fill : DockStyle.Bottom,
+                Dock = DockStyle.Bottom,
                 Height = 30,
                 TextAlign = ContentAlignment.MiddleCenter,
                 ForeColor = Color.White,
                 Cursor = Cursors.Hand
             };
 
+            if (thumb == null)
+            {
+                pictureBox.Visible = false;
+                label.Dock = DockStyle.Fill;
+            }
+
             void OpenFolder(object s, EventArgs e)
             {
                 _cts?.Cancel();
                 _cts = new CancellationTokenSource();
-                currentFolder = NormalizePath(path);
+                currentFolder = path;
                 _ = RefreshGalleryAsync();
             }
 
@@ -178,24 +207,38 @@ namespace VRCGalleryManager.Forms
                 Image = LoadThumbnail(file)
             };
 
-            pb.DoubleClick += (s, e) => Process.Start(new ProcessStartInfo { FileName = file, UseShellExecute = true });
+            pb.DoubleClick += (s, e) =>
+            {
+                var psi = new ProcessStartInfo
+                {
+                    FileName = file,
+                    UseShellExecute = true
+                };
+                Process.Start(psi);
+            };
 
-            pb.Click += (s, e) =>
+            pb.Click += async (s, e) =>
             {
                 vrcxData = MetaDataImageReader.ExtractVrcxData(file);
                 if (vrcxData != null)
                 {
                     MetaDataImageReader.ApiWorldInfo(vrcxData, apiRequest, worldImage, worldNameLabel);
+                    var players = vrcxData.Players;
+                    var labels = new RoundedLabel[players.Count];
                     userInfoPanel.Controls.Clear();
-                    foreach (var player in vrcxData.Players)
+                    for (int i = 0; i < players.Count; i++)
                     {
-                        (RoundedLabel label, bool isFriend) = MetaDataImageReader.UsersInfo(player);
-                        userInfoPanel.Controls.Add(label);
-                        if (!isFriend) userInfoPanel.Controls.SetChildIndex(label, 0);
+                        (RoundedLabel label, bool isFriend) = MetaDataImageReader.UsersInfo(players[i]);
+                        labels[i] = label;
+                        userInfoPanel.Controls.Add(labels[i]);
+                        if (!isFriend) userInfoPanel.Controls.SetChildIndex(labels[i], 0);
                     }
                     galleryInfoPanel.Visible = true;
                 }
-                else galleryInfoPanel.Visible = false;
+                else
+                {
+                    galleryInfoPanel.Visible = false;
+                }
             };
 
             return pb;
@@ -213,9 +256,11 @@ namespace VRCGalleryManager.Forms
             catch { return null; }
         }
 
-        private IEnumerable<string> GetImageFiles(string dir) =>
-            Directory.EnumerateFiles(dir).Where(f =>
-                new[] { ".jpg", ".jpeg", ".png" }.Contains(Path.GetExtension(f).ToLower()));
+        private IEnumerable<string> GetImageFiles(string dir)
+        {
+            return Directory.EnumerateFiles(dir)
+                .Where(f => new[] { ".jpg", ".jpeg", ".png" }.Contains(Path.GetExtension(f).ToLower()));
+        }
 
         private void ClearGalleryPanel()
         {
@@ -224,37 +269,44 @@ namespace VRCGalleryManager.Forms
                 Invoke(new Action(ClearGalleryPanel));
                 return;
             }
-            foreach (Control ctl in galleryPanel.Controls)
+            galleryPanel.SuspendLayout();
+            var controls = galleryPanel.Controls.Cast<Control>().ToArray();
+            foreach (var ctl in controls)
             {
                 if (ctl is PictureBox pb) pb.Image?.Dispose();
                 ctl.Dispose();
             }
             galleryPanel.Controls.Clear();
+            galleryPanel.ResumeLayout();
         }
 
         private void worldImage_Click(object sender, EventArgs e)
         {
-            if (vrcxData == null || string.IsNullOrEmpty(vrcxData.World.Id)) return;
+            if (vrcxData == null) return;
+            if (string.IsNullOrEmpty(vrcxData.World.Id)) return;
             Process.Start("explorer.exe", "https://vrchat.com/home/world/" + vrcxData.World.Id);
         }
 
-        private void changeFolder_Click(object sender, EventArgs e) => FolderImage();
+        private void changeFolder_Click(object sender, EventArgs e)
+        {
+            FolderImage();
+        }
 
         private async void FolderImage()
         {
-            using var dialog = new FolderBrowserDialog
+            using (var dialog = new FolderBrowserDialog())
             {
-                Description = "Select VRChat Images Folder",
-                ShowNewFolderButton = true,
-                RootFolder = Environment.SpecialFolder.MyPictures
-            };
+                dialog.Description = "Select VRChat Images Folder";
+                dialog.ShowNewFolderButton = true;
+                dialog.RootFolder = Environment.SpecialFolder.MyPictures;
 
-            if (dialog.ShowDialog() != DialogResult.OK) return;
+                if (dialog.ShowDialog() != DialogResult.OK)
+                    return;
 
-            Config.Set("PathGallery", dialog.SelectedPath);
-            currentRootFolder = NormalizePath(dialog.SelectedPath);
-            currentFolder = currentRootFolder;
-
+                Config.Set("PathGallery", dialog.SelectedPath);
+                currentRootFolder = dialog.SelectedPath;
+                currentFolder = dialog.SelectedPath;
+            }
             await RefreshGalleryAsync();
         }
     }
