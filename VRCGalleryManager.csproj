@@ -17,8 +17,8 @@
     <PackageReleaseNotes></PackageReleaseNotes>
     <StartupObject></StartupObject>
     <GeneratedAssemblyInfoFile>AssemblyInfo.cs</GeneratedAssemblyInfoFile>
-    <AssemblyVersion>1.1.1</AssemblyVersion>
-    <FileVersion>1.1.1</FileVersion>
+    <AssemblyVersion>1.1.2</AssemblyVersion>
+    <FileVersion>1.1.2</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>
