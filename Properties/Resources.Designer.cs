@@ -253,6 +253,16 @@ namespace VRCGalleryManager.Properties {
         /// <summary>
         ///   Cerca una risorsa localizzata di tipo System.Byte[].
         /// </summary>
+        internal static byte[] info_svgrepo_com {
+            get {
+                object obj = ResourceManager.GetObject("info_svgrepo_com", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Cerca una risorsa localizzata di tipo System.Byte[].
+        /// </summary>
         internal static byte[] link_svgrepo_com {
             get {
                 object obj = ResourceManager.GetObject("link_svgrepo_com", resourceCulture);

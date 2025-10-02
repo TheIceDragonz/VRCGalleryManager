@@ -5,6 +5,7 @@ using System.Text.RegularExpressions;
 using VRCGalleryManager.Core;
 using VRCGalleryManager.Core.DTO;
 using VRCGalleryManager.Forms.Panels;
+using static VRCGalleryManager.Core.ApiRequest;
 
 namespace VRCGalleryManager.Forms
 {
@@ -12,8 +13,8 @@ namespace VRCGalleryManager.Forms
     {
         private CancellationTokenSource? streamingCancellationTokenSource;
         private Task? streamingTask;
-        private readonly HashSet<string> allStickers = new();
-        private static readonly Regex StickerRegex = new Regex(@"\[StickersManager\] User (?<userId>.*?) \((?<username>.*?)\) spawned sticker (?<sticker>file_[a-f0-9\-]+)", RegexOptions.Compiled);
+        private readonly HashSet<string> allItems = new();
+        private static readonly Regex StickerRegex = new Regex(@"user/(?<userId>usr_[a-f0-9\-]+)/inventory/(?<sticker>inv_[a-f0-9\-]+)", RegexOptions.Compiled);
         private readonly SynchronizationContext uiContext;
 
         public Picflow(VRCAuth auth)
@@ -26,77 +27,91 @@ namespace VRCGalleryManager.Forms
 
         private async void PicflowList()
         {
-            ClearStickers();
+            ClearItems();
             if (streamPicFlow.Checked)
             {
                 if (streamingTask == null || streamingTask.IsCompleted)
                 {
                     streamingCancellationTokenSource = new CancellationTokenSource();
-                    streamingTask = Task.Run(() => StreamStickersAsync(streamingCancellationTokenSource.Token));
+                    streamingTask = Task.Run(() => StreamItemsAsync(streamingCancellationTokenSource.Token));
                 }
             }
             else
             {
                 streamingCancellationTokenSource?.Cancel();
-                await ExtractNonStreamingStickersAsync();
+                await ExtractNonStreamingItemsAsync();
             }
         }
 
-        private async Task ExtractNonStreamingStickersAsync()
+        private async Task ExtractNonStreamingItemsAsync(CancellationToken ct = default)
         {
             uiContext.Post(_ =>
             {
                 picflowPanel.Controls.Clear();
-                limitCounterLabel.Text = "0 Stickers";
+                limitCounterLabel.Text = "0 Items";
             }, null);
 
-            string vrchatLogPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData).Replace("Local", "LocalLow"), "VRChat", "VRChat");
-            string[] logFiles = Directory.GetFiles(vrchatLogPath, "output_log_*.txt");
+            string userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            string vrchatLogPath = Path.Combine(userProfile, "AppData", "LocalLow", "VRChat", "VRChat");
 
-            if (logFiles.Length == 0)
+            if (!Directory.Exists(vrchatLogPath))
             {
-                await AnimateTextAsync("No data found");
+                await AnimateTextAsync("No data found").ConfigureAwait(false);
                 return;
             }
-            await AnimateTextAsync("Found data from VRChat | Processing...");
 
-            foreach (var logFile in logFiles.OrderByDescending(f => File.GetLastWriteTime(f)))
+            var logFiles = Directory.EnumerateFiles(vrchatLogPath, "output_log_*.txt")
+                                    .OrderByDescending(f => File.GetLastWriteTimeUtc(f));
+
+            if (!logFiles.Any())
             {
+                await AnimateTextAsync("No data found").ConfigureAwait(false);
+                return;
+            }
+
+            await AnimateTextAsync("Found data from VRChat | Processing...").ConfigureAwait(false);
+
+            foreach (var logFile in logFiles)
+            {
+                ct.ThrowIfCancellationRequested();
+
                 try
                 {
-                    using FileStream fileStream = new(logFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-                    using StreamReader reader = new(fileStream);
+                    using var fileStream = new FileStream(logFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                    using var reader = new StreamReader(fileStream);
+
                     string? line;
-                    var newStickers = new List<(string userId, string username, string sticker)>();
-                    while ((line = await reader.ReadLineAsync()) != null)
+                    var newItems = new List<(string userId, string sticker)>();
+
+                    int counter = 0;
+                    while ((line = await reader.ReadLineAsync().ConfigureAwait(false)) != null)
                     {
+                        ct.ThrowIfCancellationRequested();
+
                         var stickerData = ProcessLine(line);
-                        if (stickerData != null && allStickers.Add(stickerData.Value.sticker))
+                        if (stickerData != null && allItems.Add(stickerData.Value.sticker))
                         {
-                            newStickers.Add(stickerData.Value);
-                        }
-                    }
-                    if (newStickers.Count > 0)
-                    {
-                        uiContext.Post(_ =>
-                        {
-                            foreach (var (userId, username, sticker) in newStickers)
+                            var (userId, sticker) = stickerData.Value;
+
+                            uiContext.Post(_ =>
                             {
-                                ImagePanel.AddImagePanel(picflowPanel, apiRequest, userId, username, sticker);
-                            }
-                            limitCounterLabel.Text = $"{allStickers.Count} Stickers";
-                        }, null);
+                                ImagePanel.AddImagePanel(picflowPanel, apiRequest, userId, sticker);
+                                limitCounterLabel.Text = $"{allItems.Count} Items";
+                            }, null);
+                        }
                     }
                 }
                 catch (IOException ex)
                 {
-                    Debug.WriteLine($"Errore nell'aprire il file {logFile}: {ex.Message}");
+                    Debug.WriteLine($"Errore nell'aprire/leggere {logFile}: {ex.Message}");
                 }
             }
+
             await AnimateClearTextAsync();
         }
 
-        private async Task StreamStickersAsync(CancellationToken token)
+
+        private async Task StreamItemsAsync(CancellationToken token)
         {
             string vrchatLogPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData).Replace("Local", "LocalLow"), "VRChat", "VRChat");
             string[] logFiles = Directory.GetFiles(vrchatLogPath, "output_log_*.txt");
@@ -120,12 +135,12 @@ namespace VRCGalleryManager.Forms
                     if (line != null)
                     {
                         var stickerData = ProcessLine(line);
-                        if (stickerData != null && allStickers.Add(stickerData.Value.sticker))
+                        if (stickerData != null && allItems.Add(stickerData.Value.sticker))
                         {
                             picflowPanel.Invoke(() =>
                             {
-                                ImagePanel.AddImagePanel(picflowPanel, apiRequest, stickerData.Value.userId, stickerData.Value.username, stickerData.Value.sticker);
-                                limitCounterLabel.Text = $"{allStickers.Count} Stickers";
+                                ImagePanel.AddImagePanel(picflowPanel, apiRequest, stickerData.Value.userId, stickerData.Value.sticker);
+                                limitCounterLabel.Text = $"{allItems.Count} Items";
                             });
                         }
                     }
@@ -141,15 +156,14 @@ namespace VRCGalleryManager.Forms
             }
         }
 
-        private (string userId, string username, string sticker)? ProcessLine(string line)
+        private (string userId, string sticker)? ProcessLine(string line)
         {
             var match = StickerRegex.Match(line);
             if (match.Success)
             {
                 string userId = match.Groups["userId"].Value;
-                string username = match.Groups["username"].Value;
                 string sticker = match.Groups["sticker"].Value;
-                return (userId, username, sticker);
+                return (userId, sticker);
             }
             return null;
         }
@@ -163,14 +177,14 @@ namespace VRCGalleryManager.Forms
 
         private void _clearButton_Click(object sender, EventArgs e)
         {
-            ClearStickers();
+            ClearItems();
         }
 
-        private void ClearStickers()
+        private void ClearItems()
         {
             picflowPanel.Controls.Clear();
-            allStickers.Clear();
-            limitCounterLabel.Text = "0 Stickers";
+            allItems.Clear();
+            limitCounterLabel.Text = "0 Items";
         }
 
         private void streamPicFlow_CheckedChanged(object sender, EventArgs e)
@@ -179,7 +193,7 @@ namespace VRCGalleryManager.Forms
             {
                 _refreshButton.Enabled = false;
                 streamingCancellationTokenSource = new CancellationTokenSource();
-                streamingTask = Task.Run(() => StreamStickersAsync(streamingCancellationTokenSource.Token));
+                streamingTask = Task.Run(() => StreamItemsAsync(streamingCancellationTokenSource.Token));
             }
             else
             {
@@ -200,9 +214,16 @@ namespace VRCGalleryManager.Forms
 
         private async Task AnimateClearTextAsync()
         {
-            while (!string.IsNullOrEmpty(logLabel.Text))
+            while (true)
             {
-                uiContext.Post(_ => logLabel.Text = logLabel.Text.Substring(0, logLabel.Text.Length - 1), null);
+                string currentText = logLabel.Text;
+                if (string.IsNullOrEmpty(currentText))
+                    break;
+
+                int newLength = currentText.Length - 1;
+                if (newLength < 0) newLength = 0;
+
+                uiContext.Post(_ => logLabel.Text = currentText.Substring(0, newLength), null);
                 await Task.Delay(1);
             }
         }
@@ -211,6 +232,19 @@ namespace VRCGalleryManager.Forms
         {
             streamingCancellationTokenSource?.Cancel();
             base.OnFormClosing(e);
+        }
+
+        private void infoPicflowButton_Click(object sender, EventArgs e)
+        {
+            infoPicFlowLabel.Visible = !infoPicFlowLabel.Visible;
+        }
+
+        private void infoPicFlowLabel_Click(object sender, EventArgs e)
+        {
+            string textToCopy = "--enable-sdk-log-levels";
+            Clipboard.SetText(textToCopy);
+            NotificationManager.ShowNotification("Text copied to clipboard!", "--enable-sdk-log-levels", NotificationType.Success);
+            infoPicFlowLabel.Visible = false;
         }
     }
 }

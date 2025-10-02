@@ -1,5 +1,4 @@
 ﻿using Microsoft.WindowsAPICodePack.Shell;
-using Newtonsoft.Json.Linq;
 using System.Diagnostics;
 using VRCGalleryManager.Core;
 using VRCGalleryManager.Design;
@@ -9,9 +8,8 @@ namespace VRCGalleryManager.Forms
     public partial class Gallery : ApiConnectedForm
     {
         private string currentRootFolder;
-        private bool isInFolderView;
+        private string currentFolder;
         private CancellationTokenSource _cts;
-
         MetaDataImageReader.VrcxData vrcxData;
 
         public Gallery(VRCAuth auth)
@@ -25,13 +23,19 @@ namespace VRCGalleryManager.Forms
                 if (!string.IsNullOrEmpty(getpath))
                 {
                     currentRootFolder = getpath;
+                    currentFolder = getpath;
                 }
 
-                if (string.IsNullOrEmpty(currentRootFolder)) FolderImage();
+                if (string.IsNullOrEmpty(currentRootFolder))
+                    FolderImage();
             };
 
             Shown += Gallery_Shown;
+
+            _refreshButton.Click -= _refreshButton_Click;
             _refreshButton.Click += _refreshButton_Click;
+
+            folderBack.Click -= folderBack_Click;
             folderBack.Click += folderBack_Click;
         }
 
@@ -50,12 +54,23 @@ namespace VRCGalleryManager.Forms
         {
             galleryInfoPanel.Visible = false;
 
-            if (isInFolderView)
+            if (string.IsNullOrEmpty(currentFolder)) return;
+
+            string normalizedRoot = Path.GetFullPath(currentRootFolder).TrimEnd(Path.DirectorySeparatorChar);
+            string normalizedCurrent = Path.GetFullPath(currentFolder).TrimEnd(Path.DirectorySeparatorChar);
+
+            // se sei già in root → non fare nulla
+            if (string.Equals(normalizedCurrent, normalizedRoot, StringComparison.OrdinalIgnoreCase))
+                return;
+
+            var parent = Directory.GetParent(currentFolder);
+            if (parent != null)
             {
-                isInFolderView = false;
+                currentFolder = parent.FullName;
                 await RefreshGalleryAsync();
             }
         }
+
 
         private async Task RefreshGalleryAsync()
         {
@@ -65,7 +80,7 @@ namespace VRCGalleryManager.Forms
 
             _refreshButton.Enabled = false;
 
-            if (!Directory.Exists(currentRootFolder))
+            if (string.IsNullOrEmpty(currentFolder) || !Directory.Exists(currentFolder))
             {
                 _refreshButton.Enabled = false;
                 folderBack.Visible = false;
@@ -74,23 +89,18 @@ namespace VRCGalleryManager.Forms
 
             try
             {
-                if (isInFolderView && galleryPanel.Tag is string folderTag)
-                    await ShowImagesAsync(folderTag, token);
-                else
-                    await ShowFoldersAsync(token);
+                await ShowFoldersAndImagesAsync(currentFolder, token);
             }
-            catch (OperationCanceledException)
-            {
-                // cancellation requested
-            }
+            catch (OperationCanceledException) { }
 
             _refreshButton.Enabled = true;
         }
 
-        private async Task ShowFoldersAsync(CancellationToken token)
+        private async Task ShowFoldersAndImagesAsync(string folderPath, CancellationToken token)
         {
-            PrepareGallery(showBack: false);
-            var dirs = Directory.GetDirectories(currentRootFolder);
+            PrepareGallery();
+
+            var dirs = Directory.GetDirectories(folderPath);
             foreach (var dir in dirs)
             {
                 token.ThrowIfCancellationRequested();
@@ -98,12 +108,7 @@ namespace VRCGalleryManager.Forms
                 if (token.IsCancellationRequested) break;
                 galleryPanel.Controls.Add(panel);
             }
-        }
 
-        private async Task ShowImagesAsync(string folderPath, CancellationToken token)
-        {
-            PrepareGallery(showBack: true);
-            galleryPanel.Tag = folderPath;
             var files = GetImageFiles(folderPath);
             foreach (var file in files)
             {
@@ -114,18 +119,22 @@ namespace VRCGalleryManager.Forms
             }
         }
 
-        private void PrepareGallery(bool showBack)
+        private void PrepareGallery()
         {
             if (InvokeRequired)
             {
-                Invoke(new Action<bool>(PrepareGallery), showBack);
+                Invoke(new Action(PrepareGallery));
                 return;
             }
 
             ClearGalleryPanel();
-            folderBack.Visible = showBack;
-            isInFolderView = showBack;
+
+            string normalizedRoot = Path.GetFullPath(currentRootFolder).TrimEnd(Path.DirectorySeparatorChar);
+            string normalizedCurrent = Path.GetFullPath(currentFolder).TrimEnd(Path.DirectorySeparatorChar);
+
+            folderBack.Visible = !string.Equals(normalizedCurrent, normalizedRoot, StringComparison.OrdinalIgnoreCase);
         }
+
 
         private RoundedPanel CreateFolderPanel(string path)
         {
@@ -135,13 +144,12 @@ namespace VRCGalleryManager.Forms
                 Margin = new Padding(10),
                 BackColor = Color.FromArgb(24, 27, 31),
                 Cursor = Cursors.Hand,
-                Tag = path,
                 BorderRadius = 15,
                 Padding = new Padding(7)
             };
 
             var firstImage = GetImageFiles(path).LastOrDefault();
-            var thumb = LoadThumbnail(firstImage) ?? Properties.Resources.VRCGM;
+            var thumb = LoadThumbnail(firstImage);
 
             var pictureBox = new RoundedPictureBox
             {
@@ -165,13 +173,18 @@ namespace VRCGalleryManager.Forms
                 Cursor = Cursors.Hand
             };
 
+            if (thumb == null)
+            {
+                pictureBox.Visible = false;
+                label.Dock = DockStyle.Fill;
+            }
+
             void OpenFolder(object s, EventArgs e)
             {
                 _cts?.Cancel();
                 _cts = new CancellationTokenSource();
-                isInFolderView = true;
-                galleryPanel.Tag = path;
-                _ = ShowImagesAsync(path, _cts.Token);
+                currentFolder = path;
+                _ = RefreshGalleryAsync();
             }
 
             pictureBox.Click += OpenFolder;
@@ -210,21 +223,16 @@ namespace VRCGalleryManager.Forms
                 if (vrcxData != null)
                 {
                     MetaDataImageReader.ApiWorldInfo(vrcxData, apiRequest, worldImage, worldNameLabel);
-
                     var players = vrcxData.Players;
                     var labels = new RoundedLabel[players.Count];
-
                     userInfoPanel.Controls.Clear();
                     for (int i = 0; i < players.Count; i++)
                     {
                         (RoundedLabel label, bool isFriend) = MetaDataImageReader.UsersInfo(players[i]);
                         labels[i] = label;
-
                         userInfoPanel.Controls.Add(labels[i]);
-
                         if (!isFriend) userInfoPanel.Controls.SetChildIndex(labels[i], 0);
                     }
-
                     galleryInfoPanel.Visible = true;
                 }
                 else
@@ -245,15 +253,13 @@ namespace VRCGalleryManager.Forms
                 using var bmp = shellFile.Thumbnail.LargeBitmap;
                 return new Bitmap(bmp);
             }
-            catch
-            {
-                return null;
-            }
+            catch { return null; }
         }
 
         private IEnumerable<string> GetImageFiles(string dir)
         {
-            return Directory.EnumerateFiles(dir).Where(f => new[] { ".jpg", ".jpeg", ".png" }.Contains(Path.GetExtension(f).ToLower()));
+            return Directory.EnumerateFiles(dir)
+                .Where(f => new[] { ".jpg", ".jpeg", ".png" }.Contains(Path.GetExtension(f).ToLower()));
         }
 
         private void ClearGalleryPanel()
@@ -299,6 +305,7 @@ namespace VRCGalleryManager.Forms
 
                 Config.Set("PathGallery", dialog.SelectedPath);
                 currentRootFolder = dialog.SelectedPath;
+                currentFolder = dialog.SelectedPath;
             }
             await RefreshGalleryAsync();
         }

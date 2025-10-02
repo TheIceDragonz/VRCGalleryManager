@@ -1,10 +1,14 @@
 ﻿using System.Diagnostics;
 using System.Linq;
 using System.Net;
+using System.Windows.Automation.Text;
+using System.Windows.Controls;
+using System.Windows.Forms;
 using VRCGalleryManager.Core;
 using VRCGalleryManager.Core.DTO;
 using VRCGalleryManager.Design;
 using VRCGalleryManager.Forms.UIComponents;
+using static VRCGalleryManager.Core.ApiRequest;
 
 namespace VRCGalleryManager.Forms.Panels
 {
@@ -303,12 +307,17 @@ namespace VRCGalleryManager.Forms.Panels
         }
 
         //PicFlow
-        static public async void AddImagePanel(FlowLayoutPanel mainPanel, ApiRequest apiRequest, string userId, string username, string imageId)
+        static public async void AddImagePanel(FlowLayoutPanel mainPanel, ApiRequest apiRequest, string userId, string imageId)
         {
+            var invData = await apiRequest.GetInventoryInfo(userId, imageId);
+
+            if (invData == null) return;
+
             Size size = new Size(150, 150);
 
-            string imageFull = $"https://api.vrchat.cloud/api/1/file/{imageId}/1/file";
-            string image256 = $"https://api.vrchat.cloud/api/1/image/{imageId}/1/256";
+            string imageFull = $"https://api.vrchat.cloud/api/1/file/{invData.Metadata.FileId}/1/file";
+            string image256 = $"https://api.vrchat.cloud/api/1/image/{invData.Metadata.FileId}/1/256";
+
             string finalaviImage = await HttpImage.GetFinalUrlAsync(image256);
 
             if (!finalaviImage.Contains("imageNotFound"))
@@ -329,9 +338,20 @@ namespace VRCGalleryManager.Forms.Panels
                     Padding = new Padding(5)
                 };
 
+                if (invData.Metadata != null && invData.Metadata.Animated == true)
+                {
+                    SpriteSheetViewer viewer = new SpriteSheetViewer(pictureBox);
+                    await viewer.LoadSpriteSheetAsync(finalaviImage, invData.Metadata.Frames, invData.Metadata.FramesOverTime);
+                    viewer.StartAnimation();
+                }
+                else
+                {
+                    pictureBox.LoadAsync(finalaviImage);
+                }
+
                 RoundedLabel authorLabel = new RoundedLabel
                 {
-                    Text = username,
+                    Text = invData.Name,
                     ForeColor = Color.White,
                     Font = new Font("Arial", 8, FontStyle.Bold),
                     AutoSize = true,
@@ -343,7 +363,7 @@ namespace VRCGalleryManager.Forms.Panels
                 authorLabel.Cursor = Cursors.Hand;
                 pictureBox.Controls.Add(authorLabel);
 
-                if (pictureBox.Controls["btn_open"] == null)
+                if (pictureBox.Controls["btn_open"] == null && invData.Name.Contains("Custom"))
                 {
                     CircularButton btn_open = CircularButtonTools.CreateButton("open", (sender, e) =>
                     {
@@ -352,16 +372,14 @@ namespace VRCGalleryManager.Forms.Panels
 
                     btn_open.Location = new Point(pictureBox.Size.Width - 60, pictureBox.Size.Height - 35);
 
-                    pictureBox.LoadAsync(finalaviImage);
-
                     pictureBox.Controls.Add(btn_open);
                 }
 
-                if (pictureBox.Controls["btn_picflowupload"] == null)
+                if (pictureBox.Controls["btn_picflowupload"] == null && invData.Name.Contains("Custom"))
                 {
                     CircularButton btn_picflowupload = CircularButtonTools.CreateButton("picflowupload", async (sender, e) =>
                     {
-                        Debug.WriteLine("PicflowUpload: " + imageId);
+                        Debug.WriteLine("PicflowUpload: " + invData.Metadata.FileId);
 
                         try
                         {
@@ -376,8 +394,23 @@ namespace VRCGalleryManager.Forms.Panels
                                 client.DownloadFile(new Uri(imageFull), localImagePath);
                             }
 
-                            ApiRequest.ApiData sticker = await apiRequest.UploadImage(localImagePath, "sticker", TagType.Sticker);
-                            NotificationManager.ShowNotification("Sticker uploaded successfully", "Sticker uploaded", NotificationType.Success);
+                            if (invData.Name.Contains("Sticker"))
+                            {
+                                ApiRequest.ApiData sticker = await apiRequest.UploadImage(localImagePath, "sticker", TagType.Sticker);
+                                NotificationManager.ShowNotification("Sticker uploaded successfully", "Sticker uploaded", NotificationType.Success);
+                            }
+                            if (invData.Name.Contains("Emoji"))
+                            {
+                                if (invData.Metadata.Animated == true)
+                                {
+                                    ApiRequest.ApiData emoji = await apiRequest.UploadImage(localImagePath, invData.Metadata.MaskTag, TagType.EmojiAnimated, invData.Metadata.AnimationStyle, invData.Metadata.Frames, invData.Metadata.FramesOverTime);
+                                }
+                                else
+                                {
+                                    ApiRequest.ApiData emoji = await apiRequest.UploadImage(localImagePath, "emoji", TagType.Sticker);
+                                }
+                                NotificationManager.ShowNotification("Emoji uploaded successfully", "Emoji uploaded", NotificationType.Success);
+                            }
                         }
                         catch (Exception ex)
                         {
