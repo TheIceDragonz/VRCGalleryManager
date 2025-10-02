@@ -363,7 +363,7 @@ namespace VRCGalleryManager.Forms.Panels
                 authorLabel.Cursor = Cursors.Hand;
                 pictureBox.Controls.Add(authorLabel);
 
-                if (pictureBox.Controls["btn_open"] == null)
+                if (pictureBox.Controls["btn_open"] == null && invData.Name.Contains("Custom"))
                 {
                     CircularButton btn_open = CircularButtonTools.CreateButton("open", (sender, e) =>
                     {
@@ -375,7 +375,7 @@ namespace VRCGalleryManager.Forms.Panels
                     pictureBox.Controls.Add(btn_open);
                 }
 
-                if (pictureBox.Controls["btn_picflowupload"] == null)
+                if (pictureBox.Controls["btn_picflowupload"] == null && invData.Name.Contains("Custom"))
                 {
                     CircularButton btn_picflowupload = CircularButtonTools.CreateButton("picflowupload", async (sender, e) =>
                     {
