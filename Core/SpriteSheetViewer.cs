@@ -28,7 +28,6 @@ namespace VRCGalleryManager.Core
                 using (var stream = await response.Content.ReadAsStreamAsync())
                 {
                     using var bitmap = new Bitmap(stream);
-
                     InitializeSpriteSheet(new Bitmap(bitmap), frameCount, framesPerSecond);
                 }
             }
@@ -47,11 +46,11 @@ namespace VRCGalleryManager.Core
             _spriteSheet = spriteSheet;
 
             if (_spriteSheet.Width != _spriteSheet.Height)
-                throw new ArgumentException("Lo sprite sheet deve essere quadrato (256×256 o 1024×1024).");
+                throw new ArgumentException("Lo sprite sheet deve essere quadrato (256×256, 512×512 o 1024×1024).");
 
             int textureSize = _spriteSheet.Width;
-            if (textureSize != 256 && textureSize != 1024)
-                throw new ArgumentException("La risoluzione dello sprite sheet deve essere 256×256 o 1024×1024.");
+            if (textureSize != 256 && textureSize != 512 && textureSize != 1024)
+                throw new ArgumentException("La risoluzione dello sprite sheet deve essere 256×256, 512×512 o 1024×1024.");
 
             if (frameCount <= 1 || frameCount > 64)
                 throw new ArgumentException("frameCount deve essere tra 2 e 64.");

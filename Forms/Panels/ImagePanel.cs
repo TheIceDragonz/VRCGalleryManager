@@ -318,7 +318,11 @@ namespace VRCGalleryManager.Forms.Panels
             string imageFull = $"https://api.vrchat.cloud/api/1/file/{invData.Metadata.FileId}/1/file";
             string image256 = $"https://api.vrchat.cloud/api/1/image/{invData.Metadata.FileId}/1/256";
 
-            string finalaviImage = await HttpImage.GetFinalUrlAsync(image256);
+            string image = invData.Metadata.Animated
+                ? $"https://api.vrchat.cloud/api/1/image/{invData.Metadata.FileId}/1/512"
+                : $"https://api.vrchat.cloud/api/1/image/{invData.Metadata.FileId}/1/256";
+
+            string finalaviImage = await HttpImage.GetFinalUrlAsync(image);
 
             if (!finalaviImage.Contains("imageNotFound"))
             {
