@@ -359,7 +359,7 @@ namespace VRCGalleryManager.Forms
             _openGitHubPage.FlatAppearance.BorderSize = 0;
             _openGitHubPage.FlatStyle = FlatStyle.Flat;
             _openGitHubPage.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
-            _openGitHubPage.ForeColor = Color.FromArgb(106, 227, 249);
+            _openGitHubPage.ForeColor = Color.FromArgb(191, 255, 209);
             _openGitHubPage.Location = new Point(0, 0);
             _openGitHubPage.Margin = new Padding(4);
             _openGitHubPage.Name = "_openGitHubPage";
@@ -373,7 +373,7 @@ namespace VRCGalleryManager.Forms
             _openGitHubPage.SvgSize = new Size(50, 50);
             _openGitHubPage.TabIndex = 12;
             _openGitHubPage.Text = "GitHub Page";
-            _openGitHubPage.TextColor = Color.FromArgb(106, 227, 249);
+            _openGitHubPage.TextColor = Color.FromArgb(191, 255, 209);
             _openGitHubPage.UseVisualStyleBackColor = false;
             _openGitHubPage.Click += _openGitHubPage_Click;
             // 

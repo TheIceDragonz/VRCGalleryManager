@@ -300,7 +300,11 @@ namespace VRCGalleryManager.Forms.Panels
 
             if (Settings.Friends.Contains(userId))
             {
-                authorLabel.ForeColor = Color.Orange;
+                authorLabel.ForeColor = Settings.FriendColor;
+            }
+            if (Settings.UserId.Contains(userId))
+            {
+                authorLabel.ForeColor = Settings.MeColor;
             }
 
             mainPanel.Controls.Add(pictureBox);
@@ -427,7 +431,11 @@ namespace VRCGalleryManager.Forms.Panels
 
                 if (Settings.Friends.Contains(userId))
                 {
-                    authorLabel.ForeColor = Color.Orange;
+                    authorLabel.ForeColor = Settings.FriendColor;
+                }
+                if (Settings.UserId.Contains(userId))
+                {
+                    authorLabel.ForeColor = Settings.MeColor;
                 }
 
                 mainPanel.Controls.Add(pictureBox);

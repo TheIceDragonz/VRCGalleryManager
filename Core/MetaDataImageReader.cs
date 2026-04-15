@@ -86,8 +86,8 @@ namespace VRCGalleryManager.Core
             bool isme = IsMe(player.Id).Result;
 
             Color userColor;
-            if (isme) userColor = Color.FromArgb(106, 227, 249);
-            else if (isfriend) userColor = Color.Orange;
+            if (isme) userColor = Settings.MeColor;
+            else if (isfriend) userColor = Settings.FriendColor;
             else userColor = Color.White;
 
             RoundedLabel usersName = new RoundedLabel

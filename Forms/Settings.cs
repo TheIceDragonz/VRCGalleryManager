@@ -22,6 +22,9 @@ namespace VRCGalleryManager.Forms
         public static List<string> Badges = new List<string>();
         public static List<string> Friends = new List<string>();
 
+        public static Color FriendColor = Color.Orange;
+        public static Color MeColor = Color.FromArgb(106, 227, 249);
+
         public bool VRCPlus = false;
 
         public Settings(VRCAuth Auth, MainPanel mainPanel)
