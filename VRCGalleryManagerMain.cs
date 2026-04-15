@@ -1,5 +1,5 @@
 using Newtonsoft.Json.Linq;
-using System;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using VRCGalleryManager.Core;
 using VRCGalleryManager.Core.Helpers;
@@ -57,6 +57,7 @@ namespace VRCGalleryManager
             if (Auth.LoggedIn || Auth.CookieLoaded)
             {
                 _ = ProfileImage();
+                SetCurrentName();
             }
 
             ApplyRecolorBar();
@@ -67,6 +68,12 @@ namespace VRCGalleryManager
             Color c = Color.FromArgb(15, 17, 19);
             int color = ColorTranslator.ToWin32(c);
             DwmSetWindowAttribute(this.Handle, 35, ref color, sizeof(int));
+        }
+
+        public void SetCurrentName()
+        {
+            userNameLabel.Text = Settings.UserName;
+            userNameLabel.ForeColor = Settings.MeColor;
         }
 
         public async Task ProfileImage()
@@ -188,6 +195,15 @@ namespace VRCGalleryManager
                 bannerIcon.Height = (int)Math.Round(animHeight);
             };
             timer.Start();
+        }
+
+        private void userNameLabel_Click(object sender, EventArgs e)
+        {   
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = $"https://vrchat.com/home/user/{Settings.UserId}",
+                UseShellExecute = true
+            });
         }
     }
 }

@@ -1,4 +1,7 @@
-﻿namespace VRCGalleryManager.Core.DTO
+﻿using VRChat.API.Client;
+using VRChat.API.Model;
+
+namespace VRCGalleryManager.Core.DTO
 {
     public enum TagType
     {
@@ -19,16 +22,18 @@
     public class ImageUploadPayload
     {
         public FileType FileType { get; set; }
-        public string FilePath { get; set; }
-        public TagType? Tag { get; set; }
-        public string? MaskTag { get; set; }
-        public string? MaskType { get; set; }
-        public string? AnimationStyle { get; set; }
+        public FileParameter FilePath { get; set; }
+        public ImagePurpose Tag { get; set; }
+        public ImageMask MaskTag { get; set; }
+        public ImageMask MaskType { get; set; }
+        public ImageAnimationStyle AnimationStyle { get; set; }
         public int? Frames { get; set; }
         public int? FramesOverTime { get; set; }
         public string? Note { get; set; }
 
-        public ImageUploadPayload(string filePath)
+        public ImageLoopStyle ImageLoopStyle { get; set; }
+
+        public ImageUploadPayload(FileParameter filePath)
         {
             FilePath = filePath;
             FileType = FileType.NonPrint;

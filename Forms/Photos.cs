@@ -73,7 +73,7 @@ namespace VRCGalleryManager.Forms
 
             try
             {
-                ApiRequest.ApiData photos = await apiRequest.UploadImage(resizedImage, PHOTOS_MASK_TYPE, TagType.Gallery);
+                ApiRequest.ApiData photos = await apiRequest.UploadImage(resizedImage, PHOTOS_MASK_TYPE, TagType.Gallery, null, 0, 0);
 
                 ImagePanel.AddImagePanel(photosPanel, apiRequest, photos.IdImageUploaded, UpdateCounter);
                 UpdateCounter("Add");

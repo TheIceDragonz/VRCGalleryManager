@@ -80,10 +80,15 @@ namespace VRCGalleryManager.Core
             }
         }
 
-        public static (RoundedLabel, bool) UsersInfo(PlayerInfo player)
+        public static (RoundedLabel, bool, bool) UsersInfo(PlayerInfo player)
         {
             bool isfriend = IsFriend(player.Id).Result;
-            Color userColor = isfriend ? Color.Orange : Color.White;
+            bool isme = IsMe(player.Id).Result;
+
+            Color userColor;
+            if (isme) userColor = Settings.MeColor;
+            else if (isfriend) userColor = Settings.FriendColor;
+            else userColor = Color.White;
 
             RoundedLabel usersName = new RoundedLabel
             {
@@ -121,12 +126,21 @@ namespace VRCGalleryManager.Core
             }
 
 
-            return (usersName, isfriend);
+            return (usersName, isfriend, isme);
         }
 
         private static Task<bool> IsFriend(string userId)
         {
             if (Settings.Friends.Contains(userId))
+            {
+                return Task.FromResult(true);
+            }
+            return Task.FromResult(false);
+        }
+
+        private static Task<bool> IsMe(string userId)
+        {
+            if (Settings.UserId == userId)
             {
                 return Task.FromResult(true);
             }

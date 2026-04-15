@@ -1,4 +1,4 @@
-﻿using Microsoft.WindowsAPICodePack.Shell;
+using Microsoft.WindowsAPICodePack.Shell;
 using System.Diagnostics;
 using VRCGalleryManager.Core;
 using VRCGalleryManager.Design;
@@ -224,15 +224,17 @@ namespace VRCGalleryManager.Forms
                 {
                     MetaDataImageReader.ApiWorldInfo(vrcxData, apiRequest, worldImage, worldNameLabel);
                     var players = vrcxData.Players;
-                    var labels = new RoundedLabel[players.Count];
-                    userInfoPanel.Controls.Clear();
+                    var playerLabels = new List<(RoundedLabel label, int priority)>();
                     for (int i = 0; i < players.Count; i++)
                     {
-                        (RoundedLabel label, bool isFriend) = MetaDataImageReader.UsersInfo(players[i]);
-                        labels[i] = label;
-                        userInfoPanel.Controls.Add(labels[i]);
-                        if (!isFriend) userInfoPanel.Controls.SetChildIndex(labels[i], 0);
+                        (RoundedLabel label, bool isFriend, bool isMe) = MetaDataImageReader.UsersInfo(players[i]);
+                        int priority = isMe ? 0 : (isFriend ? 1 : 2);
+                        playerLabels.Add((label, priority));
                     }
+
+                    var sortedLabels = playerLabels.OrderByDescending(p => p.priority).Select(p => p.label).ToArray();
+                    userInfoPanel.Controls.Clear();
+                    userInfoPanel.Controls.AddRange(sortedLabels);
                     galleryInfoPanel.Visible = true;
                 }
                 else
