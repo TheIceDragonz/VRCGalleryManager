@@ -49,7 +49,7 @@ namespace VRCGalleryManager.Core
 
                 if (requiresEmail2FA(currentUserResp))
                 {
-                    string inputAuth = Interaction.InputBox("Inserisci il codice ricevuto via Email", "Email Authentication", "");
+                    string inputAuth = Interaction.InputBox("Enter the code received via email", "Email Authentication", "");
                     if (!string.IsNullOrEmpty(inputAuth))
                     {
                         var resp2fa = AuthApi.Verify2FAEmailCodeWithHttpInfo(new TwoFactorEmailCode(inputAuth));
@@ -59,7 +59,7 @@ namespace VRCGalleryManager.Core
 
                 else if (currentUserResp.RawContent != null && currentUserResp.RawContent.Contains("totp"))
                 {
-                    string inputAuth = Interaction.InputBox("Inserisci il codice 2FA (Authenticator)", "2FA Authentication", "");
+                    string inputAuth = Interaction.InputBox("Enter the 2FA code (Authenticator)", "2FA Authentication", "");
                     if (!string.IsNullOrEmpty(inputAuth))
                     {
                         var resp2fa = AuthApi.Verify2FAWithHttpInfo(new TwoFactorAuthCode(inputAuth));
@@ -71,12 +71,12 @@ namespace VRCGalleryManager.Core
 
                 LoggedIn = true;
                 CurrentUser currentUser = AuthApi.GetCurrentUser();
-                Console.WriteLine("Loggato come: {0}", currentUser.DisplayName);
+                Console.WriteLine("Logged in as: {0}", currentUser.DisplayName);
             }
             catch (ApiException ex)
             {
-                Console.WriteLine("Errore API: {0}", ex.Message);
-                MessageBox.Show("Credenziali errate o errore di connessione.");
+                Console.WriteLine("API Error: {0}", ex.Message);
+                MessageBox.Show("Invalid credentials or connection error.");
             }
         }
 
@@ -100,7 +100,7 @@ namespace VRCGalleryManager.Core
                                 string token = authPart.Trim().Substring(5);
                                 Config.ApiKey["auth"] = token;
                                 Config.AddApiKeyPrefix("auth", "auth");
-                                Console.WriteLine("Auth cookie estratto.");
+                                Console.WriteLine("Auth cookie extracted.");
                                 return;
                             }
                         }
@@ -127,12 +127,12 @@ namespace VRCGalleryManager.Core
                     System.IO.File.WriteAllText(tokenFilePath, encryptedToken);
 
                     CookieLoaded = true;
-                    Console.WriteLine("Token di sessione salvato correttamente.");
+                    Console.WriteLine("Session token saved successfully.");
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Errore salvataggio: {ex.Message}");
+                Console.WriteLine($"Save error: {ex.Message}");
             }
         }
 
@@ -165,7 +165,7 @@ namespace VRCGalleryManager.Core
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Errore caricamento: {ex.Message}");
+                Console.WriteLine($"Load error: {ex.Message}");
                 CookieLoaded = false;
             }
         }

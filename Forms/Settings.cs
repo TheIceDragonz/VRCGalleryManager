@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.Reflection;
 using System.Text.Json;
 using VRCGalleryManager.Core;
@@ -122,6 +122,7 @@ namespace VRCGalleryManager.Forms
                         if (badge.BadgeId == "bdg_754f9935-0f97-49d8-b857-95afb9b673fa") VRCPlus = true;
                     }
                     await _mainPanel.ProfileImage();
+                    await _mainPanel.SetCurrentName();
 
                     if (VRCPlus)
                     {

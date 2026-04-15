@@ -178,7 +178,6 @@ namespace VRCGalleryManager.Core
         {
             ApiData apiData = new ApiData();
 
-            // 1. Risolve CS1503: Crea il FileParameter dallo stream
             using var stream = System.IO.File.OpenRead(path);
             
             string extension = Path.GetExtension(path).ToLower();
@@ -192,7 +191,6 @@ namespace VRCGalleryManager.Core
             
             var fileParam = new FileParameter(Path.GetFileName(path), mimeType, stream);
 
-            // 2. Map TagType to ImagePurpose safely
             ImagePurpose vrcPurpose = tag switch
             {
                 TagType.Icon => ImagePurpose.Icon,
@@ -200,14 +198,12 @@ namespace VRCGalleryManager.Core
                 TagType.Emoji => ImagePurpose.Emoji,
                 TagType.EmojiAnimated => ImagePurpose.Emojianimated,
                 TagType.Sticker => ImagePurpose.Sticker,
-                TagType.Print => ImagePurpose.Gallery, // Prints use Gallery
+                TagType.Print => ImagePurpose.Gallery,
                 _ => ImagePurpose.Gallery
             };
 
-            // 3. Risolve CS0029: Parsing della stringa in Enum ImageMask
             ImageMask? vrcMask = Enum.TryParse<ImageMask>(maskTag, true, out var m) ? m : (ImageMask?)null;
 
-            // 4. Risolve CS0029: Parsing animation style
             ImageAnimationStyle? vrcAnim = Enum.TryParse<ImageAnimationStyle>(animationStyle, true, out var a) ? a : null;
 
             int? vrcFrames = frames > 0 ? frames : null;
@@ -215,14 +211,13 @@ namespace VRCGalleryManager.Core
 
             try
             {
-                // 5. Risolve CS7036: Fornisci TUTTI i parametri richiesti dalla nuova firma
                 var response = await filesApi.UploadImageAsync(
                     fileParam,
                     vrcPurpose,
                     vrcAnim,
                     vrcFrames,
                     vrcFramesOverTime,
-                    null, // loopStyle
+                    null,
                     vrcMask
                 );
                 apiData.IdImageUploaded = response.Id;
@@ -237,7 +232,6 @@ namespace VRCGalleryManager.Core
             ApiDataPrint apiData = new ApiDataPrint();
             try
             {
-                // Trasformiamo il path in FileParameter all'interno del metodo
                 using var stream = System.IO.File.OpenRead(path);
                 
                 string extension = Path.GetExtension(path).ToLower();
@@ -251,7 +245,6 @@ namespace VRCGalleryManager.Core
                 
                 var fileParam = new FileParameter(Path.GetFileName(path), mimeType, stream);
 
-                // Chiamiamo l'API corretta usando printsApi.UploadPrintAsync
                 var response = await printsApi.UploadPrintAsync(
                     fileParam,
                     DateTime.UtcNow,
@@ -273,8 +266,6 @@ namespace VRCGalleryManager.Core
 
             try
             {
-                // 1. Risolviamo CS1503: Il primo parametro deve essere un FileParameter
-                // Apriamo lo stream del file e creiamo l'oggetto necessario
                 using var stream = System.IO.File.OpenRead(path);
                 
                 string extension = Path.GetExtension(path).ToLower();
@@ -288,7 +279,6 @@ namespace VRCGalleryManager.Core
                 
                 var fileParam = new FileParameter(Path.GetFileName(path), mimeType, stream);
 
-                // 2. Map TagType to ImagePurpose safely
                 ImagePurpose vrcPurpose = tag switch
                 {
                     TagType.Icon => ImagePurpose.Icon,
@@ -296,28 +286,23 @@ namespace VRCGalleryManager.Core
                     TagType.Emoji => ImagePurpose.Emoji,
                     TagType.EmojiAnimated => ImagePurpose.Emojianimated,
                     TagType.Sticker => ImagePurpose.Sticker,
-                    TagType.Print => ImagePurpose.Gallery, // Prints use Gallery
+                    TagType.Print => ImagePurpose.Gallery,
                     _ => ImagePurpose.Gallery
                 };
 
-                // 3. Risolviamo CS0029: Convertiamo le stringhe in Enum (ImageMask e ImageAnimationStyle)
-                // Usiamo Enum.TryParse per sicurezza
                 ImageMask? vrcMask = Enum.TryParse<ImageMask>(maskTag, true, out var m) ? m : (ImageMask?)null;
                 ImageAnimationStyle? vrcAnim = Enum.TryParse<ImageAnimationStyle>(animationStyle, true, out var a) ? a : null;
 
-                // 4. Risolviamo CS7036: Chiamata con la nuova firma completa
-                // Parametri: FileParameter, ImagePurpose, AnimationStyle?, frames?, framesOverTime?, loopStyle?, mask?
                 var response = await filesApi.UploadImageAsync(
                     fileParam,
                     vrcPurpose,
                     vrcAnim,
-                    null, // frames (opzionale)
-                    null, // framesOverTime (opzionale)
-                    null, // loopStyle (opzionale)
+                    null,
+                    null,
+                    null,
                     vrcMask
                 );
 
-                // 5. Risolviamo CS1061: La risposta è direttamente l'oggetto File, non ha più .Data
                 apiData.IdImageUploaded = response.Id;
             }
             catch (ApiException ex)

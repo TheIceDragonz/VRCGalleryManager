@@ -57,7 +57,7 @@ namespace VRCGalleryManager
             if (Auth.LoggedIn || Auth.CookieLoaded)
             {
                 _ = ProfileImage();
-                SetCurrentName();
+                _ = SetCurrentName();
             }
 
             ApplyRecolorBar();
@@ -70,7 +70,7 @@ namespace VRCGalleryManager
             DwmSetWindowAttribute(this.Handle, 35, ref color, sizeof(int));
         }
 
-        public void SetCurrentName()
+        public async Task SetCurrentName()
         {
             userNameLabel.Text = Settings.UserName;
             userNameLabel.ForeColor = Settings.MeColor;
@@ -119,6 +119,7 @@ namespace VRCGalleryManager
             }
             profileIcon.Visible = false;
             profileBanner.Visible = false;
+            userNameLabel.Text = "";
         }
 
         private void ShowForm(int index)
