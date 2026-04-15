@@ -1,8 +1,8 @@
-﻿using Microsoft.VisualBasic;
+using Microsoft.VisualBasic;
+using VRCGalleryManager.Core.Helpers;
 using VRChat.API.Api;
 using VRChat.API.Client;
 using VRChat.API.Model;
-using VRCGalleryManager.Core.Helpers;
 
 namespace VRCGalleryManager.Core
 {
@@ -22,8 +22,13 @@ namespace VRCGalleryManager.Core
         private VRCAuth()
         {
             Config = new Configuration();
-            ApiClient = new ApiClient();
             Config.UserAgent = "VRCGalleryManager";
+
+            ApiClient = new ApiClient(Config.BasePath);
+
+            LoadCookies();
+
+            AuthApi = new AuthenticationApi(ApiClient, ApiClient, Config);
         }
 
         public static VRCAuth Instance()
@@ -36,87 +41,134 @@ namespace VRCGalleryManager.Core
         {
             Config.Username = usernameVRC;
             Config.Password = passwordVRC;
-            Config.UserAgent = "VRCGalleryManager";
-
-            AuthApi = new AuthenticationApi(ApiClient, ApiClient, Config);
 
             try
             {
                 ApiResponse<CurrentUser> currentUserResp = AuthApi.GetCurrentUserWithHttpInfo();
+                ExtractAuthCookie(currentUserResp);
 
-                if (requiresEmail2FA(currentUserResp)) // If the API wants us to send an Email OTP code
+                if (requiresEmail2FA(currentUserResp))
                 {
-                    string imputAuth = Interaction.InputBox("Insert the Email Code", "Email Authentication", "");
-                    if (imputAuth != null)
+                    string inputAuth = Interaction.InputBox("Inserisci il codice ricevuto via Email", "Email Authentication", "");
+                    if (!string.IsNullOrEmpty(inputAuth))
                     {
-                        AuthApi.Verify2FAEmailCode(new TwoFactorEmailCode(imputAuth));
+                        var resp2fa = AuthApi.Verify2FAEmailCodeWithHttpInfo(new TwoFactorEmailCode(inputAuth));
+                        ExtractAuthCookie(resp2fa);
                     }
                 }
-                else
+
+                else if (currentUserResp.RawContent != null && currentUserResp.RawContent.Contains("totp"))
                 {
-                    string imputAuth = Interaction.InputBox("Insert the 2FA Code", "2FA Authentication", "");
-                    if (imputAuth != null)
+                    string inputAuth = Interaction.InputBox("Inserisci il codice 2FA (Authenticator)", "2FA Authentication", "");
+                    if (!string.IsNullOrEmpty(inputAuth))
                     {
-                        AuthApi.Verify2FA(new TwoFactorAuthCode(imputAuth));
+                        var resp2fa = AuthApi.Verify2FAWithHttpInfo(new TwoFactorAuthCode(inputAuth));
+                        ExtractAuthCookie(resp2fa);
                     }
                 }
 
                 SaveCookies();
-                LoadCookies();
 
                 LoggedIn = true;
-
                 CurrentUser currentUser = AuthApi.GetCurrentUser();
-                Console.WriteLine("Logged in as {0}", currentUser.DisplayName, currentUser.DateJoined, currentUser.Id);
-
+                Console.WriteLine("Loggato come: {0}", currentUser.DisplayName);
             }
             catch (ApiException ex)
             {
-                // Catch any exceptions write to console, helps w debugging :D
-                Console.WriteLine("Exception when calling API: {0}", ex.Message);
-                Console.WriteLine("Status Code: {0}", ex.ErrorCode);
-                Console.WriteLine(ex.ToString());
-
-                MessageBox.Show("Incorrect Credentials");
+                Console.WriteLine("Errore API: {0}", ex.Message);
+                MessageBox.Show("Credenziali errate o errore di connessione.");
             }
+        }
 
-            // Function that determines if the api expects email2FA from an ApiResponse
-            bool requiresEmail2FA(ApiResponse<CurrentUser> resp)
+        private void ExtractAuthCookie<T>(ApiResponse<T> resp)
+        {
+            if (resp == null || resp.Headers == null) return;
+
+            foreach (var key in resp.Headers.Keys)
             {
-                // We can just use a super simple string.Contains() check
-                if (resp.RawContent.Contains("emailOtp"))
+                if (key.Equals("Set-Cookie", StringComparison.OrdinalIgnoreCase))
                 {
-                    return true;
+                    var cookies = resp.Headers[key];
+                    foreach (var cookieHeader in cookies)
+                    {
+                        if (cookieHeader.StartsWith("auth="))
+                        {
+                            var parts = cookieHeader.Split(';');
+                            var authPart = parts.FirstOrDefault(p => p.Trim().StartsWith("auth="));
+                            if (authPart != null)
+                            {
+                                string token = authPart.Trim().Substring(5);
+                                Config.ApiKey["auth"] = token;
+                                Config.AddApiKeyPrefix("auth", "auth");
+                                Console.WriteLine("Auth cookie estratto.");
+                                return;
+                            }
+                        }
+                    }
                 }
-                return false;
             }
+        }
+
+        private bool requiresEmail2FA(ApiResponse<CurrentUser> resp)
+        {
+            return resp.RawContent != null && resp.RawContent.Contains("emailOtp");
         }
 
         public void SaveCookies()
         {
-            var cookies = ApiClient.CookieContainer.GetAllCookies();
-            string cookieString = string.Join(";", cookies.Select(c => $"{c.Name}={c.Value}"));
-            string encryptedCookies = CryptAuth.Encrypt(cookieString);
-            Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "VRCGalleryManager"));
-            System.IO.File.WriteAllText(tokenFilePath, encryptedCookies);
+            try
+            {
+                if (Config.ApiKey.TryGetValue("auth", out string token))
+                {
+                    string folder = Path.GetDirectoryName(tokenFilePath);
+                    if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
+
+                    string encryptedToken = CryptAuth.Encrypt(token);
+                    System.IO.File.WriteAllText(tokenFilePath, encryptedToken);
+
+                    CookieLoaded = true;
+                    Console.WriteLine("Token di sessione salvato correttamente.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Errore salvataggio: {ex.Message}");
+            }
         }
 
         public void LoadCookies()
         {
             try
             {
-                string cookieString = CryptAuth.Decrypt(System.IO.File.ReadAllText(tokenFilePath));
-                Config.DefaultHeaders.Add("Cookie", cookieString);
-                AuthApi = new AuthenticationApi(ApiClient, ApiClient, Config);
-                CookieLoaded = true;
+                if (System.IO.File.Exists(tokenFilePath))
+                {
+                    string encrypted = System.IO.File.ReadAllText(tokenFilePath);
+                    string token = CryptAuth.Decrypt(encrypted);
+
+                    if (!string.IsNullOrEmpty(token))
+                    {
+                        if (Config.ApiKey.ContainsKey("auth"))
+                            Config.ApiKey["auth"] = token;
+                        else
+                            Config.AddApiKey("auth", token);
+
+                        if (Config.DefaultHeaders.ContainsKey("Cookie"))
+                            Config.DefaultHeaders["Cookie"] = $"auth={token}";
+                        else
+                            Config.DefaultHeaders.Add("Cookie", $"auth={token}");
+
+                        CookieLoaded = true;
+
+                        AuthApi = new AuthenticationApi(ApiClient, ApiClient, Config);
+                    }
+                }
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex);
+                Console.WriteLine($"Errore caricamento: {ex.Message}");
                 CookieLoaded = false;
             }
         }
-
 
         public void Logout()
         {
@@ -124,11 +176,15 @@ namespace VRCGalleryManager.Core
             {
                 System.IO.File.Delete(tokenFilePath);
             }
+
             LoggedIn = false;
             CookieLoaded = false;
-            // Clear the cookies
+
+            Config.ApiKey.Clear();
             Config.DefaultHeaders.Clear();
-            ApiClient.ClearCookieContainer();
+
+            ApiClient = new ApiClient(Config.BasePath);
+            AuthApi = new AuthenticationApi(ApiClient, ApiClient, Config);
         }
     }
 }

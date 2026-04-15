@@ -43,10 +43,10 @@ namespace VRCGalleryManager.Forms
 
                 string authorId = jsonObject["authorId"]?.ToString();
                 string authorName = jsonObject["authorName"]?.ToString();
-                string printid = jsonObject["id"]?.ToString();
-                string fileid = jsonObject["files"]?["fileId"]?.ToString();
+                string printId = jsonObject["id"]?.ToString();
+                string fileId = jsonObject["files"]?["fileId"]?.ToString();
 
-                ImagePanel.AddPrintsPanel(printsPanel, apiRequest, printid, authorId, authorName , fileid, UpdateCounter);
+                ImagePanel.AddPrintsPanel(printsPanel, apiRequest, printId, authorId, authorName , fileId, UpdateCounter);
             }
 
             UpdateCounter("");
@@ -73,11 +73,9 @@ namespace VRCGalleryManager.Forms
 
             try
             {
-                ApiRequest.ApiData prints = await apiRequest.UploadPrint(resizedImage, textBoxNotePrint.Text);
-                //ImagePanel.AddImagePanel(printsPanel, apiRequest, prints.IdImageUploaded, UpdateCounter);
-                //UpdateCounter("Add");
-
-                PrintsList();
+                ApiRequest.ApiDataPrint prints = await apiRequest.UploadPrint(resizedImage, textBoxNotePrint.Text);
+                ImagePanel.AddPrintsPanel(printsPanel, apiRequest, prints.IdImageUploaded, prints.AuthorId, prints.AuthorName, prints.FileId, UpdateCounter);
+                UpdateCounter("Add");
 
                 NotificationManager.ShowNotification("File uploaded successfully", "File upload", NotificationType.Success);
             }

@@ -14,7 +14,13 @@ namespace VRCGalleryManager.Forms
         private CancellationTokenSource? streamingCancellationTokenSource;
         private Task? streamingTask;
         private readonly HashSet<string> allItems = new();
-        private static readonly Regex StickerRegex = new Regex(@"user/(?<userId>usr_[a-f0-9\-]+)/inventory/(?<sticker>inv_[a-f0-9\-]+)", RegexOptions.Compiled);
+
+        // ✅ Regex aggiornata: cattura userId, username e stickerId
+        private static readonly Regex StickerRegex = new Regex(
+            @"User\s+(?<userId>usr_[a-f0-9\-]+)\s+\((?<username>[^)]+)\).*?sticker\s+(?<sticker>inv_[a-f0-9\-]+)",
+            RegexOptions.Compiled | RegexOptions.IgnoreCase
+        );
+
         private readonly SynchronizationContext uiContext;
 
         public Picflow(VRCAuth auth)
@@ -22,7 +28,11 @@ namespace VRCGalleryManager.Forms
             InitializeComponent();
             InitApiRequest(auth);
             uiContext = SynchronizationContext.Current ?? new SynchronizationContext();
-            this.Shown += (s, e) => { if (picflowPanel.Controls.Count == 0) PicflowList(); };
+            this.Shown += (s, e) =>
+            {
+                if (picflowPanel.Controls.Count == 0)
+                    PicflowList();
+            };
         }
 
         private async void PicflowList()
@@ -81,9 +91,6 @@ namespace VRCGalleryManager.Forms
                     using var reader = new StreamReader(fileStream);
 
                     string? line;
-                    var newItems = new List<(string userId, string sticker)>();
-
-                    int counter = 0;
                     while ((line = await reader.ReadLineAsync().ConfigureAwait(false)) != null)
                     {
                         ct.ThrowIfCancellationRequested();
@@ -91,11 +98,11 @@ namespace VRCGalleryManager.Forms
                         var stickerData = ProcessLine(line);
                         if (stickerData != null && allItems.Add(stickerData.Value.sticker))
                         {
-                            var (userId, sticker) = stickerData.Value;
+                            var (userId, username, sticker) = stickerData.Value;
 
                             uiContext.Post(_ =>
                             {
-                                ImagePanel.AddImagePanel(picflowPanel, apiRequest, userId, sticker);
+                                ImagePanel.AddImagePanel(picflowPanel, apiRequest, username, userId, sticker);
                                 limitCounterLabel.Text = $"{allItems.Count} Items";
                             }, null);
                         }
@@ -110,10 +117,12 @@ namespace VRCGalleryManager.Forms
             await AnimateClearTextAsync();
         }
 
-
         private async Task StreamItemsAsync(CancellationToken token)
         {
-            string vrchatLogPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData).Replace("Local", "LocalLow"), "VRChat", "VRChat");
+            string vrchatLogPath = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData).Replace("Local", "LocalLow"),
+                "VRChat", "VRChat");
+
             string[] logFiles = Directory.GetFiles(vrchatLogPath, "output_log_*.txt");
 
             if (logFiles.Length == 0)
@@ -137,9 +146,11 @@ namespace VRCGalleryManager.Forms
                         var stickerData = ProcessLine(line);
                         if (stickerData != null && allItems.Add(stickerData.Value.sticker))
                         {
+                            var (userId, username, sticker) = stickerData.Value;
+
                             picflowPanel.Invoke(() =>
                             {
-                                ImagePanel.AddImagePanel(picflowPanel, apiRequest, stickerData.Value.userId, stickerData.Value.sticker);
+                                ImagePanel.AddImagePanel(picflowPanel, apiRequest, username, userId, sticker);
                                 limitCounterLabel.Text = $"{allItems.Count} Items";
                             });
                         }
@@ -156,14 +167,16 @@ namespace VRCGalleryManager.Forms
             }
         }
 
-        private (string userId, string sticker)? ProcessLine(string line)
+        // ✅ Ora include anche "username"
+        private (string userId, string username, string sticker)? ProcessLine(string line)
         {
             var match = StickerRegex.Match(line);
             if (match.Success)
             {
                 string userId = match.Groups["userId"].Value;
+                string username = match.Groups["username"].Value;
                 string sticker = match.Groups["sticker"].Value;
-                return (userId, sticker);
+                return (userId, username, sticker);
             }
             return null;
         }

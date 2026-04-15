@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Linq;
 using VRCGalleryManager.Core;
 using VRCGalleryManager.Core.DTO;
 using VRCGalleryManager.Core.Helpers;
@@ -28,28 +28,37 @@ namespace VRCGalleryManager.Forms
 
         private async void StickerList()
         {
-            _refreshButton.Enabled = false;
-
-            stickerPanel.Controls.Clear();
-            stickerJson.Clear();
-
-            ApiRequest.ApiData sticker = await apiRequest.GetApiData(STICKER_TAG);
-
-            stickerJson = sticker.JsonImage;
-            imageCount = sticker.JsonImage.Count;
-
-            foreach (string json in stickerJson)
+            try
             {
-                JObject jsonObject = JObject.Parse(json);
+                _refreshButton.Enabled = false;
+                stickerPanel.Controls.Clear();
+                stickerJson.Clear();
 
-                string id = jsonObject["id"]?.ToString();
+                ApiRequest.ApiData sticker = await apiRequest.GetApiData(STICKER_TAG);
 
-                ImagePanel.AddImagePanel(stickerPanel, apiRequest, id, UpdateCounter);
+                if (sticker?.JsonImage != null)
+                {
+                    stickerJson = sticker.JsonImage;
+                    imageCount = sticker.JsonImage.Count;
+
+                    foreach (string json in stickerJson)
+                    {
+                        JObject jsonObject = JObject.Parse(json);
+                        string id = jsonObject["id"]?.ToString();
+                        string fileId = jsonObject["metadata"]?["fileId"]?.ToString();
+                        ImagePanel.AddImagePanel(stickerPanel, apiRequest, id, UpdateCounter, fileId);
+                    }
+                }
+                UpdateCounter("");
             }
-
-            UpdateCounter("");
-
-            _refreshButton.Enabled = true;
+            catch (Exception ex)
+            {
+                NotificationManager.ShowNotification("Errore nel caricamento sticker: " + ex.Message, "Errore API", NotificationType.Error);
+            }
+            finally
+            {
+                _refreshButton.Enabled = true;
+            }
         }
 
         private async void uploadSticker_Click(object sender, EventArgs e)
@@ -71,7 +80,7 @@ namespace VRCGalleryManager.Forms
 
             try
             {
-                ApiRequest.ApiData sticker = await apiRequest.UploadImage(resizedImage, STICKER_MASK_TYPE, TagType.Sticker);
+                ApiRequest.ApiData sticker = await apiRequest.UploadImage(resizedImage, STICKER_MASK_TYPE, TagType.Sticker, null, 0, 0);
 
                 ImagePanel.AddImagePanel(stickerPanel, apiRequest, sticker.IdImageUploaded, UpdateCounter);
                 UpdateCounter("Add");

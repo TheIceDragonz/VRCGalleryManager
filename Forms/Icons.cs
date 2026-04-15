@@ -72,7 +72,7 @@ namespace VRCGalleryManager.Forms
 
             try
             {
-                ApiRequest.ApiData icons = await apiRequest.UploadImage(resizedImage, ICONS_MASK_TYPE, TagType.Icon);
+                ApiRequest.ApiData icons = await apiRequest.UploadImage(resizedImage, ICONS_MASK_TYPE, TagType.Icon, null, 0, 0);
 
                 ImagePanel.AddImagePanel(iconsPanel, apiRequest, icons.IdImageUploaded, UpdateCounter);
                 UpdateCounter("Add");

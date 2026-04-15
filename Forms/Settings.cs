@@ -16,6 +16,7 @@ namespace VRCGalleryManager.Forms
         UpdateManager updater = new UpdateManager();
 
         public static string UserId = "";
+        public static string UserName = "";
         public static string UserIconImage = "";
         public static string UserBannerImage = "";
         public static List<string> Badges = new List<string>();
@@ -107,6 +108,7 @@ namespace VRCGalleryManager.Forms
                     _username.Text = currentUser.DisplayName;
                     _password.Text = "password";
                     UserId = currentUser.Id;
+                    UserName = currentUser.DisplayName;
                     UserIconImage = currentUser.UserIcon;
                     UserBannerImage = !string.IsNullOrEmpty(currentUser.ProfilePicOverrideThumbnail) ? currentUser.ProfilePicOverrideThumbnail : currentUser.CurrentAvatarThumbnailImageUrl;
                     Badges.Clear();

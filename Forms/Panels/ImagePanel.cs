@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Windows.Automation.Text;
@@ -88,17 +88,17 @@ namespace VRCGalleryManager.Forms.Panels
         private static List<RoundedPictureBox> pictureIconList = new List<RoundedPictureBox>();
         private static List<RoundedPictureBox> picturePhotosList = new List<RoundedPictureBox>();
 
-        static public async void AddImagePanel(FlowLayoutPanel mainPanel, ApiRequest apiRequest, string imageId, Action<string> UpdateCounter)
+        static public async void AddImagePanel(FlowLayoutPanel mainPanel, ApiRequest apiRequest, string imageId, Action<string> UpdateCounter, string fileId = null)
         {
             Size size = new Size(150, 150);
             int value = 10;
 
-            if (mainPanel.Name.Contains("prints")) size = new Size(190, 150);
             if (mainPanel.Name.Contains("photos")) size = new Size(250, 150);
             if (mainPanel.Name.Contains("icons")) value = 100; //Max Rounded
 
-            string imageFull = $"https://api.vrchat.cloud/api/1/file/{imageId}/1/file";
-            string image256 = $"https://api.vrchat.cloud/api/1/image/{imageId}/1/256";
+            string targetFileId = fileId ?? imageId;
+            string imageFull = $"https://api.vrchat.cloud/api/1/file/{targetFileId}/1/file";
+            string image256 = $"https://api.vrchat.cloud/api/1/image/{targetFileId}/1/256";
             string finalaviImage = await HttpImage.GetFinalUrlAsync(image256);
 
             var selectedColor = Color.FromArgb(106, 227, 249);
@@ -307,7 +307,7 @@ namespace VRCGalleryManager.Forms.Panels
         }
 
         //PicFlow
-        static public async void AddImagePanel(FlowLayoutPanel mainPanel, ApiRequest apiRequest, string userId, string imageId)
+        static public async void AddImagePanel(FlowLayoutPanel mainPanel, ApiRequest apiRequest, string userName, string userId, string imageId)
         {
             var invData = await apiRequest.GetInventoryInfo(userId, imageId);
 
@@ -355,7 +355,7 @@ namespace VRCGalleryManager.Forms.Panels
 
                 RoundedLabel authorLabel = new RoundedLabel
                 {
-                    Text = invData.Name,
+                    Text = userName,
                     ForeColor = Color.White,
                     Font = new Font("Arial", 8, FontStyle.Bold),
                     AutoSize = true,
@@ -400,7 +400,7 @@ namespace VRCGalleryManager.Forms.Panels
 
                             if (invData.Name.Contains("Sticker"))
                             {
-                                ApiRequest.ApiData sticker = await apiRequest.UploadImage(localImagePath, "sticker", TagType.Sticker);
+                                ApiRequest.ApiData sticker = await apiRequest.UploadImage(localImagePath, "sticker", TagType.Sticker, null, 0, 0);
                                 NotificationManager.ShowNotification("Sticker uploaded successfully", "Sticker uploaded", NotificationType.Success);
                             }
                             if (invData.Name.Contains("Emoji"))
@@ -411,7 +411,7 @@ namespace VRCGalleryManager.Forms.Panels
                                 }
                                 else
                                 {
-                                    ApiRequest.ApiData emoji = await apiRequest.UploadImage(localImagePath, "emoji", TagType.Sticker);
+                                    ApiRequest.ApiData emoji = await apiRequest.UploadImage(localImagePath, "emoji", TagType.Sticker, null, 0, 0);
                                 }
                                 NotificationManager.ShowNotification("Emoji uploaded successfully", "Emoji uploaded", NotificationType.Success);
                             }
