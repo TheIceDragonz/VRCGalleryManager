@@ -563,6 +563,26 @@ namespace VRCGalleryManager.Properties {
         /// <summary>
         ///   Cerca una risorsa localizzata di tipo System.Byte[].
         /// </summary>
+        internal static byte[] rotate_left_svgrepo_com {
+            get {
+                object obj = ResourceManager.GetObject("rotate_left_svgrepo_com", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Cerca una risorsa localizzata di tipo System.Byte[].
+        /// </summary>
+        internal static byte[] rotate_right_svgrepo_com {
+            get {
+                object obj = ResourceManager.GetObject("rotate_right_svgrepo_com", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Cerca una risorsa localizzata di tipo System.Byte[].
+        /// </summary>
         internal static byte[] scan_svgrepo_com {
             get {
                 object obj = ResourceManager.GetObject("scan_svgrepo_com", resourceCulture);

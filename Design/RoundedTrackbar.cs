@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
+using System.Drawing;
 using System.Drawing.Drawing2D;
 
 namespace CustomControls
@@ -139,7 +140,11 @@ namespace CustomControls
                 TextAlign = ContentAlignment.MiddleCenter
             };
 
-            valueLabel.MouseDown += (s, e) => OnMouseDown(e);
+            valueLabel.MouseDown += (s, e) => {
+                Point clientPt = this.PointToClient(valueLabel.PointToScreen(e.Location));
+                MouseEventArgs translated = new MouseEventArgs(e.Button, e.Clicks, clientPt.X, clientPt.Y, e.Delta);
+                this.OnMouseDown(translated);
+            };
             Controls.Add(valueLabel);
             UpdateValueLabelPosition();
         }
@@ -209,7 +214,16 @@ namespace CustomControls
         protected override void OnMouseDown(MouseEventArgs e)
         {
             base.OnMouseDown(e);
-            Capture = true;
+            if (e.Button == MouseButtons.Left)
+            {
+                Capture = true;
+                int newValue = PixelToValue(e.X);
+                if (newValue != Value)
+                {
+                    Value = newValue;
+                    OnScroll(EventArgs.Empty);
+                }
+            }
         }
 
         protected override void OnMouseMove(MouseEventArgs e)
@@ -220,6 +234,7 @@ namespace CustomControls
                 if (newValue != Value)
                 {
                     Value = newValue;
+                    OnScroll(EventArgs.Empty);
                 }
             }
             base.OnMouseMove(e);

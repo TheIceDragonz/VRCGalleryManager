@@ -12,7 +12,12 @@ namespace VRCGalleryManager.Design
         private static extern bool ShowScrollBar(IntPtr hWnd, int wBar, [MarshalAs(UnmanagedType.Bool)] bool bShow);
 
         private const int SB_VERT = 1;
+        private const int SB_BOTH = 3;
         private const int WM_NCCALCSIZE = 0x0083;
+        private const int WM_NCPAINT = 0x0085;
+        private const int WM_VSCROLL = 0x0115;
+        private const int WM_HSCROLL = 0x0114;
+        private const int WM_MOUSEWHEEL = 0x020A;
 
         private readonly ScrollableControl _control;
         private readonly ModernVScrollBar _scrollBar;
@@ -67,8 +72,23 @@ namespace VRCGalleryManager.Design
         {
             if (m.Msg == WM_NCCALCSIZE)
             {
+                // Call base first so client area calculations are performed,
+                // then immediately hide the native scrollbar.
+                base.WndProc(ref m);
                 HideNativeScrollBar();
+                return;
             }
+
+            if (m.Msg == WM_NCPAINT || m.Msg == WM_VSCROLL || m.Msg == WM_HSCROLL || m.Msg == WM_MOUSEWHEEL)
+            {
+                // Hide native scrollbar before passing the message to prevent drawing it,
+                // and hide it again after processing.
+                HideNativeScrollBar();
+                base.WndProc(ref m);
+                HideNativeScrollBar();
+                return;
+            }
+
             base.WndProc(ref m);
         }
 
@@ -178,7 +198,7 @@ namespace VRCGalleryManager.Design
             {
                 if (_control.IsHandleCreated)
                 {
-                    ShowScrollBar(_control.Handle, SB_VERT, false);
+                    ShowScrollBar(_control.Handle, SB_BOTH, false);
                 }
             }
             catch { }

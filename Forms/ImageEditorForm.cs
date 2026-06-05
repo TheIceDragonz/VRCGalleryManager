@@ -6,6 +6,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using VRCGalleryManager.Core.Helpers;
+using VRCGalleryManager.Design;
 
 namespace VRCGalleryManager.Forms
 {
@@ -29,7 +30,6 @@ namespace VRCGalleryManager.Forms
         private Color removeBgColor = Color.White;
         private int removeBgTolerance = 15;
         private bool isColorPicking = false;
-        private bool isProgrammaticChange = false;
 
         // Feathering state
         private bool featherEnabled = false;
@@ -42,7 +42,7 @@ namespace VRCGalleryManager.Forms
         private int outlineThickness = 5;
 
         // Fixed canvas dimensions — set by LoadImage() based on the ratio string
-        private int _fixedCanvasWidth  = 2048;
+        private int _fixedCanvasWidth = 2048;
         private int _fixedCanvasHeight = 2048;
 
         // Drag state
@@ -98,38 +98,24 @@ namespace VRCGalleryManager.Forms
             // Set fixed canvas dimensions based on ratio
             if (defaultRatioStr == "16:9")
             {
-                _fixedCanvasWidth  = 2048;
+                _fixedCanvasWidth = 2048;
                 _fixedCanvasHeight = 1152;
             }
             else // 1:1 default
             {
-                _fixedCanvasWidth  = 2048;
+                _fixedCanvasWidth = 2048;
                 _fixedCanvasHeight = 2048;
             }
 
-            // Set up adaptation combo
-            comboAdaptation.Items.Clear();
-            comboAdaptation.Items.Add("Fit");
-            comboAdaptation.Items.Add("Fill");
-            comboAdaptation.Items.Add("Stretch");
-            comboAdaptation.Items.Add("Center");
-            comboAdaptation.SelectedIndex = 0; // Fit
+            // Set up adaptation mode selection buttons
+            adaptationMode = AdaptationMode.Fit;
+            UpdateAdaptationButtonsSelection(adaptationMode);
 
-            // Set up background color combo
-            comboBgColor.Items.Clear();
-            comboBgColor.Items.Add("Transparent");
-            comboBgColor.Items.Add("Black");
-            comboBgColor.Items.Add("White");
-            comboBgColor.Items.Add("Custom...");
-            comboBgColor.SelectedIndex = 0; // Transparent
+            // Set up background color panel
+            panelBgColorColor.BackgroundColor = selectedBgColor;
 
-            // Set up remove background color combo
-            comboRemoveBgColor.Items.Clear();
-            comboRemoveBgColor.Items.Add("White (Default)");
-            comboRemoveBgColor.Items.Add("Black");
-            comboRemoveBgColor.Items.Add("Green (Chroma Key)");
-            comboRemoveBgColor.Items.Add("Custom...");
-            comboRemoveBgColor.SelectedIndex = 0; // White
+            // Set up remove background color panel
+            panelRemoveBgColorColor.BackgroundColor = removeBgColor;
 
             chkRemoveBg.Checked = false;
             removeBgEnabled = false;
@@ -207,7 +193,7 @@ namespace VRCGalleryManager.Forms
         {
             bool enabled = chkRemoveBg.Checked;
             lblRemoveBgColor.Enabled = enabled;
-            comboRemoveBgColor.Enabled = enabled;
+            panelRemoveBgColorColor.Enabled = enabled;
             btnPickColor.Enabled = enabled;
             lblTolerance.Enabled = enabled;
             sliderTolerance.Enabled = enabled;
@@ -228,21 +214,13 @@ namespace VRCGalleryManager.Forms
 
         private void GetCurrentCanvasDimensions(out int width, out int height)
         {
-            width  = _fixedCanvasWidth;
+            width = _fixedCanvasWidth;
             height = _fixedCanvasHeight;
         }
 
         private AdaptationMode GetCurrentAdaptationMode()
         {
-            switch (comboAdaptation.SelectedIndex)
-            {
-                case 1: return AdaptationMode.Fill;
-                case 2: return AdaptationMode.Stretch;
-                case 3: return AdaptationMode.Center;
-                case 0:
-                default:
-                    return AdaptationMode.Fit;
-            }
+            return adaptationMode;
         }
 
         private void ClampOffsets()
@@ -605,41 +583,83 @@ namespace VRCGalleryManager.Forms
 
 
         // Dropdown Events
-        private void comboAdaptation_SelectedIndexChanged(object sender, EventArgs e)
+        private void btnAdaptFit_Click(object sender, EventArgs e)
         {
+            adaptationMode = AdaptationMode.Fit;
+            UpdateAdaptationButtonsSelection(adaptationMode);
             UpdateEditorState();
         }
 
-        private void comboBgColor_SelectedIndexChanged(object sender, EventArgs e)
+        private void btnAdaptFill_Click(object sender, EventArgs e)
         {
-            switch (comboBgColor.SelectedIndex)
+            adaptationMode = AdaptationMode.Fill;
+            UpdateAdaptationButtonsSelection(adaptationMode);
+            UpdateEditorState();
+        }
+
+        private void btnAdaptStretch_Click(object sender, EventArgs e)
+        {
+            adaptationMode = AdaptationMode.Stretch;
+            UpdateAdaptationButtonsSelection(adaptationMode);
+            UpdateEditorState();
+        }
+
+        private void btnAdaptCenter_Click(object sender, EventArgs e)
+        {
+            adaptationMode = AdaptationMode.Center;
+            UpdateAdaptationButtonsSelection(adaptationMode);
+            UpdateEditorState();
+        }
+
+        private void UpdateAdaptationButtonsSelection(AdaptationMode mode)
+        {
+            SetButtonSelectedState(btnAdaptFit, mode == AdaptationMode.Fit);
+            SetButtonSelectedState(btnAdaptFill, mode == AdaptationMode.Fill);
+            SetButtonSelectedState(btnAdaptStretch, mode == AdaptationMode.Stretch);
+            SetButtonSelectedState(btnAdaptCenter, mode == AdaptationMode.Center);
+        }
+
+        private void SetButtonSelectedState(RoundedButton btn, bool selected)
+        {
+            if (selected)
             {
-                case 1:
-                    selectedBgColor = Color.Black;
-                    break;
-                case 2:
-                    selectedBgColor = Color.White;
-                    break;
-                case 3:
-                    // Open color dialog
-                    using (ColorDialog cd = new ColorDialog())
-                    {
-                        if (cd.ShowDialog() == DialogResult.OK)
-                        {
-                            selectedBgColor = cd.Color;
-                        }
-                        else
-                        {
-                            // fallback to Transparent if cancelled
-                            comboBgColor.SelectedIndex = 0;
-                        }
-                    }
-                    break;
-                case 0:
-                default:
-                    selectedBgColor = Color.Transparent;
-                    break;
+                btn.BackColor = Color.FromArgb(7, 36, 43);
+                btn.BackgroundColor = Color.FromArgb(7, 36, 43);
+                btn.BorderColor = Color.FromArgb(106, 227, 249);
+                btn.BorderSize = 2;
+                btn.ForeColor = Color.FromArgb(106, 227, 249);
+                btn.TextColor = Color.FromArgb(106, 227, 249);
+                btn.Font = new Font("Segoe UI Black", 8.5F, FontStyle.Bold);
             }
+            else
+            {
+                btn.BackColor = Color.FromArgb(10, 25, 30);
+                btn.BackgroundColor = Color.FromArgb(10, 25, 30);
+                btn.BorderColor = Color.FromArgb(20, 40, 45);
+                btn.BorderSize = 1;
+                btn.ForeColor = Color.Gray;
+                btn.TextColor = Color.Gray;
+                btn.Font = new Font("Segoe UI", 8.5F, FontStyle.Regular);
+            }
+        }
+
+        private void panelBgColorColor_Click(object sender, EventArgs e)
+        {
+            using (CustomColorDialog cd = new CustomColorDialog(selectedBgColor))
+            {
+                if (cd.ShowDialog() == DialogResult.OK)
+                {
+                    selectedBgColor = cd.SelectedColor;
+                    panelBgColorColor.BackgroundColor = selectedBgColor;
+                    previewPanel.Invalidate();
+                }
+            }
+        }
+
+        private void btnBgColorTransparent_Click(object sender, EventArgs e)
+        {
+            selectedBgColor = Color.Transparent;
+            panelBgColorColor.BackgroundColor = Color.Transparent;
             previewPanel.Invalidate();
         }
 
@@ -650,38 +670,19 @@ namespace VRCGalleryManager.Forms
             previewPanel.Invalidate();
         }
 
-        private void comboRemoveBgColor_SelectedIndexChanged(object sender, EventArgs e)
+        private void panelRemoveBgColorColor_Click(object sender, EventArgs e)
         {
-            switch (comboRemoveBgColor.SelectedIndex)
+            if (!removeBgEnabled) return;
+
+            using (CustomColorDialog cd = new CustomColorDialog(removeBgColor))
             {
-                case 1: // Nero
-                    removeBgColor = Color.Black;
-                    break;
-                case 2: // Verde
-                    removeBgColor = Color.Green;
-                    break;
-                case 3: // Personalizzato
-                    if (!isProgrammaticChange)
-                    {
-                        using (ColorDialog cd = new ColorDialog())
-                        {
-                            if (cd.ShowDialog() == DialogResult.OK)
-                            {
-                                removeBgColor = cd.Color;
-                            }
-                            else
-                            {
-                                comboRemoveBgColor.SelectedIndex = 0;
-                            }
-                        }
-                    }
-                    break;
-                case 0: // Bianco
-                default:
-                    removeBgColor = Color.White;
-                    break;
+                if (cd.ShowDialog() == DialogResult.OK)
+                {
+                    removeBgColor = cd.SelectedColor;
+                    panelRemoveBgColorColor.BackgroundColor = removeBgColor;
+                    previewPanel.Invalidate();
+                }
             }
-            previewPanel.Invalidate();
         }
 
         private void sliderTolerance_Scroll(object sender, EventArgs e)
@@ -726,11 +727,13 @@ namespace VRCGalleryManager.Forms
         private void btnReset_Click(object sender, EventArgs e)
         {
             rotationAngle = 0;
-            comboAdaptation.SelectedIndex = 0; // Fit
-            comboBgColor.SelectedIndex = 0; // Transparent
+            adaptationMode = AdaptationMode.Fit;
+            UpdateAdaptationButtonsSelection(adaptationMode);
+            selectedBgColor = Color.Transparent;
+            panelBgColorColor.BackgroundColor = Color.Transparent;
 
             chkRemoveBg.Checked = false;
-            comboRemoveBgColor.SelectedIndex = 0;
+            panelRemoveBgColorColor.BackgroundColor = Color.White;
             sliderTolerance.Value = 15;
             lblToleranceVal.Text = "15";
             removeBgEnabled = false;
@@ -850,6 +853,43 @@ namespace VRCGalleryManager.Forms
                 mat.Translate(bmpW / 2f, bmpH / 2f);
                 mat.Scale(previewScale, previewScale);
                 mat.Translate(panOffsetX, panOffsetY);
+
+                // Get image dimensions, swapping if rotated 90 or 270
+                float imageW = originalImage.Width;
+                float imageH = originalImage.Height;
+                if (rotationAngle == 90 || rotationAngle == 270)
+                {
+                    imageW = originalImage.Height;
+                    imageH = originalImage.Width;
+                }
+
+                float baseScale = 1f;
+                adaptationMode = GetCurrentAdaptationMode();
+                if (adaptationMode == AdaptationMode.Fit)
+                {
+                    baseScale = Math.Min((float)cw / imageW, (float)ch / imageH);
+                }
+                else if (adaptationMode == AdaptationMode.Fill)
+                {
+                    baseScale = Math.Max((float)cw / imageW, (float)ch / imageH);
+                }
+                else if (adaptationMode == AdaptationMode.Center)
+                {
+                    baseScale = 1f;
+                }
+
+                if (adaptationMode == AdaptationMode.Stretch)
+                {
+                    float scaleX = ((float)cw / imageW) * zoomFactor;
+                    float scaleY = ((float)ch / imageH) * zoomFactor;
+                    mat.Scale(scaleX, scaleY);
+                }
+                else
+                {
+                    float finalScale = baseScale * zoomFactor;
+                    mat.Scale(finalScale, finalScale);
+                }
+
                 mat.Rotate(rotationAngle);
                 mat.Translate(-originalImage.Width / 2f, -originalImage.Height / 2f);
 
@@ -874,12 +914,7 @@ namespace VRCGalleryManager.Forms
                     {
                         Color pickedColor = bmp.GetPixel(imgX, imgY);
                         removeBgColor = pickedColor;
-
-                        // Programmatically set selection to Custom without triggering dialog popup
-                        isProgrammaticChange = true;
-                        comboRemoveBgColor.SelectedIndex = 3;
-                        isProgrammaticChange = false;
-
+                        panelRemoveBgColorColor.BackgroundColor = pickedColor;
                         previewPanel.Invalidate();
                     }
                 }
