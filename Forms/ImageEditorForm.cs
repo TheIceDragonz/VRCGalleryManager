@@ -1,6 +1,7 @@
 using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
@@ -22,6 +23,23 @@ namespace VRCGalleryManager.Forms
         private float panOffsetY = 0f;
         private int rotationAngle = 0; // 0, 90, 180, 270
         private Color selectedBgColor = Color.Transparent;
+
+        // Background removal state
+        private bool removeBgEnabled = false;
+        private Color removeBgColor = Color.White;
+        private int removeBgTolerance = 15;
+        private bool isColorPicking = false;
+        private bool isProgrammaticChange = false;
+
+        // Feathering state
+        private bool featherEnabled = false;
+        private int featherRadius = 2;
+        private int chokeRadius = 1;
+
+        // Outline state
+        private bool outlineEnabled = false;
+        private Color outlineColor = Color.White;
+        private int outlineThickness = 5;
 
         // Fixed canvas dimensions — set by LoadImage() based on the ratio string
         private int _fixedCanvasWidth  = 2048;
@@ -66,7 +84,7 @@ namespace VRCGalleryManager.Forms
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Errore nell'aprire l'immagine: {ex.Message}", "Errore", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Error opening image: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 OnCancel?.Invoke();
                 return;
             }
@@ -91,19 +109,51 @@ namespace VRCGalleryManager.Forms
 
             // Set up adaptation combo
             comboAdaptation.Items.Clear();
-            comboAdaptation.Items.Add("Adatta (Fit)");
-            comboAdaptation.Items.Add("Riempi (Fill)");
-            comboAdaptation.Items.Add("Stira (Stretch)");
-            comboAdaptation.Items.Add("Centra (Center)");
+            comboAdaptation.Items.Add("Fit");
+            comboAdaptation.Items.Add("Fill");
+            comboAdaptation.Items.Add("Stretch");
+            comboAdaptation.Items.Add("Center");
             comboAdaptation.SelectedIndex = 0; // Fit
 
             // Set up background color combo
             comboBgColor.Items.Clear();
-            comboBgColor.Items.Add("Trasparente");
-            comboBgColor.Items.Add("Nero");
-            comboBgColor.Items.Add("Bianco");
-            comboBgColor.Items.Add("Personalizzato...");
+            comboBgColor.Items.Add("Transparent");
+            comboBgColor.Items.Add("Black");
+            comboBgColor.Items.Add("White");
+            comboBgColor.Items.Add("Custom...");
             comboBgColor.SelectedIndex = 0; // Transparent
+
+            // Set up remove background color combo
+            comboRemoveBgColor.Items.Clear();
+            comboRemoveBgColor.Items.Add("White (Default)");
+            comboRemoveBgColor.Items.Add("Black");
+            comboRemoveBgColor.Items.Add("Green (Chroma Key)");
+            comboRemoveBgColor.Items.Add("Custom...");
+            comboRemoveBgColor.SelectedIndex = 0; // White
+
+            chkRemoveBg.Checked = false;
+            removeBgEnabled = false;
+            removeBgColor = Color.White;
+            removeBgTolerance = 15;
+            sliderTolerance.Value = 15;
+            lblToleranceVal.Text = "15";
+            UpdateRemoveBgControlsEnabled();
+
+            // Set up feather controls
+            chkFeather.Checked = false;
+            featherEnabled = false;
+            chokeRadius = 1;
+            featherRadius = 2;
+            sliderChoke.Value = 1;
+            lblChokeVal.Text = "1px";
+            sliderFeather.Value = 2;
+            lblFeatherVal.Text = "2px";
+            UpdateFeatherControlsEnabled();
+
+            // Reset outline state (hidden from UI)
+            outlineEnabled = false;
+            outlineColor = Color.White;
+            outlineThickness = 0;
 
             // Trigger initial state layout
             UpdateEditorState();
@@ -152,6 +202,29 @@ namespace VRCGalleryManager.Forms
             sliderZoom.Value = 100;
             lblZoomVal.Text = "100%";
         }
+
+        private void UpdateRemoveBgControlsEnabled()
+        {
+            bool enabled = chkRemoveBg.Checked;
+            lblRemoveBgColor.Enabled = enabled;
+            comboRemoveBgColor.Enabled = enabled;
+            btnPickColor.Enabled = enabled;
+            lblTolerance.Enabled = enabled;
+            sliderTolerance.Enabled = enabled;
+            lblToleranceVal.Enabled = enabled;
+        }
+
+        private void UpdateFeatherControlsEnabled()
+        {
+            bool enabled = chkFeather.Checked;
+            lblChoke.Enabled = enabled;
+            sliderChoke.Enabled = enabled;
+            lblChokeVal.Enabled = enabled;
+            lblFeather.Enabled = enabled;
+            sliderFeather.Enabled = enabled;
+            lblFeatherVal.Enabled = enabled;
+        }
+
 
         private void GetCurrentCanvasDimensions(out int width, out int height)
         {
@@ -272,65 +345,167 @@ namespace VRCGalleryManager.Forms
                 }
             }
 
-            // 3. Render the image with GDI+ transform using clipping
-            GraphicsState state = g.Save();
-            g.SetClip(new RectangleF(rectX, rectY, rectW, rectH));
+            // 3. Render the image with GDI+ transform onto a temporary preview bitmap
+            int bmpW = (int)Math.Max(1, Math.Round(rectW));
+            int bmpH = (int)Math.Max(1, Math.Round(rectH));
 
-            // Set graphics transformation matrix for preview
-            g.TranslateTransform(cx, cy);
-            g.ScaleTransform(previewScale, previewScale);
-            
-            // Translate to canvas center + pan offsets
-            g.TranslateTransform(panOffsetX, panOffsetY);
-
-            // Get image dimensions, swapping if rotated 90 or 270
-            float imageW = originalImage.Width;
-            float imageH = originalImage.Height;
-            if (rotationAngle == 90 || rotationAngle == 270)
+            using (Bitmap previewBmp = new Bitmap(bmpW, bmpH, PixelFormat.Format32bppArgb))
             {
-                imageW = originalImage.Height;
-                imageH = originalImage.Width;
-            }
+                using (Graphics pg = Graphics.FromImage(previewBmp))
+                {
+                    pg.SmoothingMode = SmoothingMode.AntiAlias;
+                    pg.InterpolationMode = InterpolationMode.HighQualityBicubic;
 
-            float baseScale = 1f;
-            if (adaptationMode == AdaptationMode.Fit)
-            {
-                baseScale = Math.Min((float)canvasWidth / imageW, (float)canvasHeight / imageH);
-            }
-            else if (adaptationMode == AdaptationMode.Fill)
-            {
-                baseScale = Math.Max((float)canvasWidth / imageW, (float)canvasHeight / imageH);
-            }
-            else if (adaptationMode == AdaptationMode.Center)
-            {
-                baseScale = 1f;
-            }
+                    float pcx = bmpW / 2f;
+                    float pcy = bmpH / 2f;
 
-            if (adaptationMode == AdaptationMode.Stretch)
-            {
-                float scaleX = ((float)canvasWidth / imageW) * zoomFactor;
-                float scaleY = ((float)canvasHeight / imageH) * zoomFactor;
-                g.ScaleTransform(scaleX, scaleY);
+                    pg.TranslateTransform(pcx, pcy);
+                    pg.ScaleTransform(previewScale, previewScale);
+                    pg.TranslateTransform(panOffsetX, panOffsetY);
+
+                    // Get image dimensions, swapping if rotated 90 or 270
+                    float imageW = originalImage.Width;
+                    float imageH = originalImage.Height;
+                    if (rotationAngle == 90 || rotationAngle == 270)
+                    {
+                        imageW = originalImage.Height;
+                        imageH = originalImage.Width;
+                    }
+
+                    float baseScale = 1f;
+                    if (adaptationMode == AdaptationMode.Fit)
+                    {
+                        baseScale = Math.Min((float)canvasWidth / imageW, (float)canvasHeight / imageH);
+                    }
+                    else if (adaptationMode == AdaptationMode.Fill)
+                    {
+                        baseScale = Math.Max((float)canvasWidth / imageW, (float)canvasHeight / imageH);
+                    }
+                    else if (adaptationMode == AdaptationMode.Center)
+                    {
+                        baseScale = 1f;
+                    }
+
+                    if (adaptationMode == AdaptationMode.Stretch)
+                    {
+                        float scaleX = ((float)canvasWidth / imageW) * zoomFactor;
+                        float scaleY = ((float)canvasHeight / imageH) * zoomFactor;
+                        pg.ScaleTransform(scaleX, scaleY);
+                    }
+                    else
+                    {
+                        float finalScale = baseScale * zoomFactor;
+                        pg.ScaleTransform(finalScale, finalScale);
+                    }
+
+                    pg.RotateTransform(rotationAngle);
+                    float drawW = originalImage.Width;
+                    float drawH = originalImage.Height;
+                    pg.TranslateTransform(-drawW / 2f, -drawH / 2f);
+
+                    // A. Draw outline first if enabled
+                    if (outlineEnabled && outlineThickness > 0)
+                    {
+                        using (ImageAttributes outlineAttr = new ImageAttributes())
+                        {
+                            if (removeBgEnabled)
+                            {
+                                Color targetColor = removeBgColor;
+                                Color lowColor = Color.FromArgb(
+                                    Math.Max(0, targetColor.R - removeBgTolerance),
+                                    Math.Max(0, targetColor.G - removeBgTolerance),
+                                    Math.Max(0, targetColor.B - removeBgTolerance)
+                                );
+                                Color highColor = Color.FromArgb(
+                                    Math.Min(255, targetColor.R + removeBgTolerance),
+                                    Math.Min(255, targetColor.G + removeBgTolerance),
+                                    Math.Min(255, targetColor.B + removeBgTolerance)
+                                );
+                                outlineAttr.SetColorKey(lowColor, highColor);
+                            }
+
+                            Color oc = outlineColor;
+                            ColorMatrix colorMatrix = new ColorMatrix(new float[][]
+                            {
+                                new float[] {0, 0, 0, 0, 0},
+                                new float[] {0, 0, 0, 0, 0},
+                                new float[] {0, 0, 0, 0, 0},
+                                new float[] {0, 0, 0, 1, 0},
+                                new float[] {oc.R/255f, oc.G/255f, oc.B/255f, 0, 1}
+                            });
+                            outlineAttr.SetColorMatrix(colorMatrix);
+
+                            int steps = 16;
+                            float thickness = outlineThickness;
+                            for (int i = 0; i < steps; i++)
+                            {
+                                double angle = i * 2 * Math.PI / steps;
+                                float ox = (float)(Math.Cos(angle) * thickness);
+                                float oy = (float)(Math.Sin(angle) * thickness);
+
+                                GraphicsState outlineState = pg.Save();
+                                pg.TranslateTransform(ox, oy, MatrixOrder.Append);
+                                pg.DrawImage(
+                                    originalImage,
+                                    new Rectangle(0, 0, (int)drawW, (int)drawH),
+                                    0,
+                                    0,
+                                    originalImage.Width,
+                                    originalImage.Height,
+                                    GraphicsUnit.Pixel,
+                                    outlineAttr
+                                );
+                                pg.Restore(outlineState);
+                            }
+                        }
+                    }
+
+                    // B. Draw main image
+                    if (removeBgEnabled)
+                    {
+                        using (ImageAttributes attr = new ImageAttributes())
+                        {
+                            Color targetColor = removeBgColor;
+                            Color lowColor = Color.FromArgb(
+                                Math.Max(0, targetColor.R - removeBgTolerance),
+                                Math.Max(0, targetColor.G - removeBgTolerance),
+                                Math.Max(0, targetColor.B - removeBgTolerance)
+                            );
+                            Color highColor = Color.FromArgb(
+                                Math.Min(255, targetColor.R + removeBgTolerance),
+                                Math.Min(255, targetColor.G + removeBgTolerance),
+                                Math.Min(255, targetColor.B + removeBgTolerance)
+                            );
+                            attr.SetColorKey(lowColor, highColor);
+                            pg.DrawImage(
+                                originalImage,
+                                new Rectangle(0, 0, (int)drawW, (int)drawH),
+                                0,
+                                0,
+                                originalImage.Width,
+                                originalImage.Height,
+                                GraphicsUnit.Pixel,
+                                attr
+                            );
+                        }
+                    }
+                    else
+                    {
+                        pg.DrawImage(originalImage, 0, 0, drawW, drawH);
+                    }
+                }
+
+                // C. Feather alpha channel if enabled
+                if (featherEnabled && (featherRadius > 0 || chokeRadius > 0))
+                {
+                    int scaledChoke = chokeRadius > 0 ? (int)Math.Max(1, Math.Round(chokeRadius * previewScale)) : 0;
+                    int scaledFeather = featherRadius > 0 ? (int)Math.Max(1, Math.Round(featherRadius * previewScale)) : 0;
+                    ImageEditor.FeatherAlphaChannel(previewBmp, scaledChoke, scaledFeather);
+                }
+
+                // Draw the final preview bitmap to panel
+                g.DrawImage(previewBmp, rectX, rectY);
             }
-            else
-            {
-                float finalScale = baseScale * zoomFactor;
-                g.ScaleTransform(finalScale, finalScale);
-            }
-
-            // Rotate around center
-            g.RotateTransform(rotationAngle);
-            
-            // Translate back to draw centered
-            float drawW = originalImage.Width;
-            float drawH = originalImage.Height;
-            g.TranslateTransform(-drawW / 2f, -drawH / 2f);
-
-            // Draw image high quality
-            g.InterpolationMode = InterpolationMode.HighQualityBicubic;
-            g.DrawImage(originalImage, 0, 0, drawW, drawH);
-
-            g.Restore(state);
 
             // 4. Draw outer semi-transparent mask for preview
             using (GraphicsPath outerPath = new GraphicsPath())
@@ -353,6 +528,14 @@ namespace VRCGalleryManager.Forms
         // Panning interaction
         private void previewPanel_MouseDown(object sender, MouseEventArgs e)
         {
+            if (isColorPicking)
+            {
+                SampleColorFromMouse(e.X, e.Y);
+                isColorPicking = false;
+                previewPanel.Cursor = Cursors.Default;
+                return;
+            }
+
             if (e.Button == MouseButtons.Left)
             {
                 isDragging = true;
@@ -460,6 +643,77 @@ namespace VRCGalleryManager.Forms
             previewPanel.Invalidate();
         }
 
+        private void chkRemoveBg_CheckedChanged(object sender, EventArgs e)
+        {
+            removeBgEnabled = chkRemoveBg.Checked;
+            UpdateRemoveBgControlsEnabled();
+            previewPanel.Invalidate();
+        }
+
+        private void comboRemoveBgColor_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            switch (comboRemoveBgColor.SelectedIndex)
+            {
+                case 1: // Nero
+                    removeBgColor = Color.Black;
+                    break;
+                case 2: // Verde
+                    removeBgColor = Color.Green;
+                    break;
+                case 3: // Personalizzato
+                    if (!isProgrammaticChange)
+                    {
+                        using (ColorDialog cd = new ColorDialog())
+                        {
+                            if (cd.ShowDialog() == DialogResult.OK)
+                            {
+                                removeBgColor = cd.Color;
+                            }
+                            else
+                            {
+                                comboRemoveBgColor.SelectedIndex = 0;
+                            }
+                        }
+                    }
+                    break;
+                case 0: // Bianco
+                default:
+                    removeBgColor = Color.White;
+                    break;
+            }
+            previewPanel.Invalidate();
+        }
+
+        private void sliderTolerance_Scroll(object sender, EventArgs e)
+        {
+            removeBgTolerance = sliderTolerance.Value;
+            lblToleranceVal.Text = removeBgTolerance.ToString();
+            previewPanel.Invalidate();
+        }
+
+        private void chkFeather_CheckedChanged(object sender, EventArgs e)
+        {
+            featherEnabled = chkFeather.Checked;
+            UpdateFeatherControlsEnabled();
+            previewPanel.Invalidate();
+        }
+
+        private void sliderChoke_Scroll(object sender, EventArgs e)
+        {
+            chokeRadius = sliderChoke.Value;
+            lblChokeVal.Text = $"{chokeRadius}px";
+            previewPanel.Invalidate();
+        }
+
+        private void sliderFeather_Scroll(object sender, EventArgs e)
+        {
+            featherRadius = sliderFeather.Value;
+            lblFeatherVal.Text = $"{featherRadius}px";
+            previewPanel.Invalidate();
+        }
+
+
+
         // Rotate clockwise
         private void btnRotate_Click(object sender, EventArgs e)
         {
@@ -474,6 +728,30 @@ namespace VRCGalleryManager.Forms
             rotationAngle = 0;
             comboAdaptation.SelectedIndex = 0; // Fit
             comboBgColor.SelectedIndex = 0; // Transparent
+
+            chkRemoveBg.Checked = false;
+            comboRemoveBgColor.SelectedIndex = 0;
+            sliderTolerance.Value = 15;
+            lblToleranceVal.Text = "15";
+            removeBgEnabled = false;
+            removeBgColor = Color.White;
+            removeBgTolerance = 15;
+            UpdateRemoveBgControlsEnabled();
+
+            chkFeather.Checked = false;
+            sliderChoke.Value = 1;
+            lblChokeVal.Text = "1px";
+            sliderFeather.Value = 2;
+            lblFeatherVal.Text = "2px";
+            featherEnabled = false;
+            chokeRadius = 1;
+            featherRadius = 2;
+            UpdateFeatherControlsEnabled();
+
+            outlineEnabled = false;
+            outlineColor = Color.White;
+            outlineThickness = 0;
+
             ResetOffsets();
             ClampOffsets();
             previewPanel.Invalidate();
@@ -500,14 +778,23 @@ namespace VRCGalleryManager.Forms
                     panOffsetX,
                     panOffsetY,
                     rotationAngle,
-                    selectedBgColor
+                    selectedBgColor,
+                    removeBgEnabled,
+                    removeBgColor,
+                    removeBgTolerance,
+                    outlineEnabled,
+                    outlineColor,
+                    outlineThickness,
+                    featherEnabled,
+                    featherRadius,
+                    chokeRadius
                 );
 
                 resultPath = ImageEditor.SaveTempProcessedImage(rendered);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Errore nel salvataggio dell'immagine: {ex.Message}", "Errore", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Error saving image: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
             finally
@@ -522,6 +809,81 @@ namespace VRCGalleryManager.Forms
         private void btnCancel_Click(object sender, EventArgs e)
         {
             OnCancel?.Invoke();
+        }
+
+        private void btnPickColor_Click(object sender, EventArgs e)
+        {
+            isColorPicking = !isColorPicking;
+            if (isColorPicking)
+            {
+                previewPanel.Cursor = Cursors.Cross;
+            }
+            else
+            {
+                previewPanel.Cursor = Cursors.Default;
+            }
+        }
+
+        private void SampleColorFromMouse(int mouseX, int mouseY)
+        {
+            if (originalImage == null) return;
+
+            GetCurrentCanvasDimensions(out int cw, out int ch);
+            int pBoxW = previewPanel.Width;
+            int pBoxH = previewPanel.Height;
+
+            float previewScale = Math.Min((float)pBoxW / cw, (float)pBoxH / ch) * 0.9f;
+            float cx = pBoxW / 2f;
+            float cy = pBoxH / 2f;
+
+            float rectW = cw * previewScale;
+            float rectH = ch * previewScale;
+            float rectX = cx - rectW / 2f;
+            float rectY = cy - rectH / 2f;
+
+            float bmpW = (int)Math.Max(1, Math.Round(rectW));
+            float bmpH = (int)Math.Max(1, Math.Round(rectH));
+
+            using (Matrix mat = new Matrix())
+            {
+                mat.Translate(rectX, rectY);
+                mat.Translate(bmpW / 2f, bmpH / 2f);
+                mat.Scale(previewScale, previewScale);
+                mat.Translate(panOffsetX, panOffsetY);
+                mat.Rotate(rotationAngle);
+                mat.Translate(-originalImage.Width / 2f, -originalImage.Height / 2f);
+
+                try
+                {
+                    mat.Invert();
+                }
+                catch
+                {
+                    return; // Matrix not invertible
+                }
+
+                PointF[] pts = new PointF[] { new PointF(mouseX, mouseY) };
+                mat.TransformPoints(pts);
+
+                int imgX = (int)Math.Round(pts[0].X);
+                int imgY = (int)Math.Round(pts[0].Y);
+
+                if (imgX >= 0 && imgX < originalImage.Width && imgY >= 0 && imgY < originalImage.Height)
+                {
+                    using (Bitmap bmp = new Bitmap(originalImage))
+                    {
+                        Color pickedColor = bmp.GetPixel(imgX, imgY);
+                        removeBgColor = pickedColor;
+
+                        // Programmatically set selection to Custom without triggering dialog popup
+                        isProgrammaticChange = true;
+                        comboRemoveBgColor.SelectedIndex = 3;
+                        isProgrammaticChange = false;
+
+                        previewPanel.Invalidate();
+                    }
+                }
+            }
         }
 
         private void ImageEditorForm_FormClosing(object sender, FormClosingEventArgs e)

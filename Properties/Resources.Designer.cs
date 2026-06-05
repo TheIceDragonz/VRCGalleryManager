@@ -143,6 +143,16 @@ namespace VRCGalleryManager.Properties {
         /// <summary>
         ///   Cerca una risorsa localizzata di tipo System.Byte[].
         /// </summary>
+        internal static byte[] color_picker_svgrepo_com {
+            get {
+                object obj = ResourceManager.GetObject("color_picker_svgrepo_com", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Cerca una risorsa localizzata di tipo System.Byte[].
+        /// </summary>
         internal static byte[] copy_move_svgrepo_com {
             get {
                 object obj = ResourceManager.GetObject("copy_move_svgrepo_com", resourceCulture);
