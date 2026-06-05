@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Linq;
 using VRCGalleryManager.Core;
 using VRCGalleryManager.Core.DTO;
 using VRCGalleryManager.Core.Helpers;
@@ -67,22 +67,42 @@ namespace VRCGalleryManager.Forms
                 }
             }
         }
-        private async void UploadImage(string path)
+        private void UploadImage(string path)
         {
-            string resizedImage = ImageResizer.ResizeImage16x9(path);
+            uploadButton.Enabled = false;
+            pasteButton.Enabled = false;
 
-            try
-            {
-                ApiRequest.ApiDataPrint prints = await apiRequest.UploadPrint(resizedImage, textBoxNotePrint.Text);
-                ImagePanel.AddPrintsPanel(printsPanel, apiRequest, prints.IdImageUploaded, prints.AuthorId, prints.AuthorName, prints.FileId, UpdateCounter);
-                UpdateCounter("Add");
+            var mainPanel = this.TopLevelControl as MainPanel;
+            if (mainPanel == null) return;
 
-                NotificationManager.ShowNotification("File uploaded successfully", "File upload", NotificationType.Success);
-            }
-            catch (Exception ex)
-            {
-                NotificationManager.ShowNotification(ex.Message, "Error during file upload", NotificationType.Error);
-            }
+            mainPanel.ShowEditor(
+                path,
+                "16:9",
+                onSave: async (editedImage) =>
+                {
+                    try
+                    {
+                        ApiRequest.ApiDataPrint prints = await apiRequest.UploadPrint(editedImage, textBoxNotePrint.Text);
+                        ImagePanel.AddPrintsPanel(printsPanel, apiRequest, prints.IdImageUploaded, prints.AuthorId, prints.AuthorName, prints.FileId, UpdateCounter);
+                        UpdateCounter("Add");
+
+                        NotificationManager.ShowNotification("File uploaded successfully", "File upload", NotificationType.Success);
+                    }
+                    catch (Exception ex)
+                    {
+                        NotificationManager.ShowNotification(ex.Message, "Error during file upload", NotificationType.Error);
+                    }
+                    finally
+                    {
+                        try { File.Delete(editedImage); } catch { }
+                        UpdateCounter("");
+                    }
+                },
+                onCancel: () =>
+                {
+                    UpdateCounter("");
+                }
+            );
         }
         private void pasteButton_Click(object sender, EventArgs e)
         {

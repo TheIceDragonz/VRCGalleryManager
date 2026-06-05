@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Linq;
 using System.Windows.Forms;
 using VRCGalleryManager.Core;
 using VRCGalleryManager.Core.DTO;
@@ -91,25 +91,45 @@ namespace VRCGalleryManager.Forms
                 DialogMessage.ShowMissingTypeDialog(this);
             }
         }
-        private async void UploadImage(string path)
+        private void UploadImage(string path)
         {
-            string resizedImage = ImageResizer.ResizeImage1x1(path);
+            uploadButton.Enabled = false;
+            pasteButton.Enabled = false;
 
-            try
-            {
-                EMOJI_ANIMATION_STYLE = emojiOpenTypePanel.Text.ToLower();
+            var mainPanel = this.TopLevelControl as MainPanel;
+            if (mainPanel == null) return;
 
-                ApiRequest.ApiData emoji = await apiRequest.UploadImage(resizedImage, EMOJI_MASK_TAG, TagType.Emoji, EMOJI_ANIMATION_STYLE);
+            mainPanel.ShowEditor(
+                path,
+                "1:1",
+                onSave: async (editedImage) =>
+                {
+                    try
+                    {
+                        EMOJI_ANIMATION_STYLE = emojiOpenTypePanel.Text.ToLower();
 
-                ImagePanel.AddImagePanel(emojiPanel, apiRequest, emoji.IdImageUploaded, emoji.Tags, emoji.Frames, emoji.FramesOverTime, UpdateCounter);
-                UpdateCounter("Add");
+                        ApiRequest.ApiData emoji = await apiRequest.UploadImage(editedImage, EMOJI_MASK_TAG, TagType.Emoji, EMOJI_ANIMATION_STYLE);
 
-                NotificationManager.ShowNotification("Emoji uploaded successfully", "Emoji uploaded", NotificationType.Success);
-            }
-            catch (Exception ex)
-            {
-                NotificationManager.ShowNotification(ex.Message, "Error during file upload", NotificationType.Error);
-            }
+                        ImagePanel.AddImagePanel(emojiPanel, apiRequest, emoji.IdImageUploaded, emoji.Tags, emoji.Frames, emoji.FramesOverTime, UpdateCounter);
+                        UpdateCounter("Add");
+
+                        NotificationManager.ShowNotification("Emoji uploaded successfully", "Emoji uploaded", NotificationType.Success);
+                    }
+                    catch (Exception ex)
+                    {
+                        NotificationManager.ShowNotification(ex.Message, "Error during file upload", NotificationType.Error);
+                    }
+                    finally
+                    {
+                        try { File.Delete(editedImage); } catch { }
+                        UpdateCounter("");
+                    }
+                },
+                onCancel: () =>
+                {
+                    UpdateCounter("");
+                }
+            );
         }
 
         private void emojiOpenTypePanel_Click(object sender, EventArgs e)

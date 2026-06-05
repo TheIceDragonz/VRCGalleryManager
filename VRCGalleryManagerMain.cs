@@ -12,6 +12,14 @@ namespace VRCGalleryManager
         private static Mutex mutex;
 
         private readonly ApiConnectedForm[] _forms;
+        private ImageEditorForm _editorForm;
+        private int _previousFormIndex = 8; // index of the form visible before the editor
+
+        // Track current editor session handlers so we can safely detach them
+        private Action<string> _currentHandleSave;
+        private Action _currentHandleCancel;
+        // Track pending cancel callback so ShowForm() can invoke it if editor is interrupted
+        private Action _currentEditorCancel;
 
         private VRCAuth Auth;
         public MainPanel()
@@ -51,6 +59,14 @@ namespace VRCGalleryManager
                 this.FormsPanel.Controls.Add(form);
                 form.Hide();
             }
+
+            // Create the inline editor (not in the _forms array — managed separately)
+            _editorForm = new ImageEditorForm();
+            _editorForm.TopLevel = false;
+            _editorForm.FormBorderStyle = FormBorderStyle.None;
+            _editorForm.Dock = DockStyle.Fill;
+            this.FormsPanel.Controls.Add(_editorForm);
+            _editorForm.Hide();
 
             ShowForm(8);
 
@@ -124,20 +140,101 @@ namespace VRCGalleryManager
 
         private void ShowForm(int index)
         {
-            foreach (var form in _forms) form.Hide();
+            // If the editor is currently open, treat navigation as a cancel
+            if (_editorForm != null && _editorForm.Visible)
+            {
+                // Detach handlers first to prevent double-fire
+                if (_currentHandleSave != null) _editorForm.OnSave -= _currentHandleSave;
+                if (_currentHandleCancel != null) _editorForm.OnCancel -= _currentHandleCancel;
+                _currentHandleSave = null;
+                _currentHandleCancel = null;
+
+                // Notify the originating form so it can re-enable its buttons
+                var pendingCancel = _currentEditorCancel;
+                _currentEditorCancel = null;
+                pendingCancel?.Invoke();
+
+                _editorForm.Hide();
+            }
+            else
+            {
+                foreach (var form in _forms) form.Hide();
+                _editorForm?.Hide();
+            }
 
             _forms[index].Show();
+            _previousFormIndex = index;
 
-            _switchIcons.BorderColor = index == 0 ? Color.FromArgb(255, 255, 255) : Color.FromArgb(5, 55, 66);
-            _switchPhotos.BorderColor = index == 1 ? Color.FromArgb(255, 255, 255) : Color.FromArgb(5, 55, 66);
-            _switchEmoji.BorderColor = index == 2 ? Color.FromArgb(255, 255, 255) : Color.FromArgb(5, 55, 66);
+            _switchIcons.BorderColor   = index == 0 ? Color.FromArgb(255, 255, 255) : Color.FromArgb(5, 55, 66);
+            _switchPhotos.BorderColor  = index == 1 ? Color.FromArgb(255, 255, 255) : Color.FromArgb(5, 55, 66);
+            _switchEmoji.BorderColor   = index == 2 ? Color.FromArgb(255, 255, 255) : Color.FromArgb(5, 55, 66);
             _switchSticker.BorderColor = index == 3 ? Color.FromArgb(255, 255, 255) : Color.FromArgb(5, 55, 66);
-            _switchPrints.BorderColor = index == 4 ? Color.FromArgb(255, 255, 255) : Color.FromArgb(5, 55, 66);
+            _switchPrints.BorderColor  = index == 4 ? Color.FromArgb(255, 255, 255) : Color.FromArgb(5, 55, 66);
 
-            _switchPicflow.BorderColor = index == 5 ? Color.FromArgb(255, 255, 255) : Color.FromArgb(5, 55, 66);
-            _switchCreate.BorderColor = index == 6 ? Color.FromArgb(255, 255, 255) : Color.FromArgb(5, 55, 66);
-            _switchGallery.BorderColor = index == 7 ? Color.FromArgb(255, 255, 255) : Color.FromArgb(5, 55, 66);
+            _switchPicflow.BorderColor  = index == 5 ? Color.FromArgb(255, 255, 255) : Color.FromArgb(5, 55, 66);
+            _switchCreate.BorderColor   = index == 6 ? Color.FromArgb(255, 255, 255) : Color.FromArgb(5, 55, 66);
+            _switchGallery.BorderColor  = index == 7 ? Color.FromArgb(255, 255, 255) : Color.FromArgb(5, 55, 66);
             _switchSettings.BorderColor = index == 8 ? Color.FromArgb(255, 255, 255) : Color.FromArgb(5, 55, 66);
+        }
+
+        /// <summary>
+        /// Mostra l'image editor inline nel FormsPanel.
+        /// Chiamato dai form child (Photos, Sticker, Emoji, Prints) al posto di ShowDialog().
+        /// </summary>
+        /// <param name="imagePath">Path dell'immagine da editare.</param>
+        /// <param name="ratio">Ratio di default: "1:1" o "16:9".</param>
+        /// <param name="onSave">Callback invocato con il path del file risultante quando l'utente clicca Applica.</param>
+        /// <param name="onCancel">Callback invocato quando l'utente clicca Annulla.</param>
+        public void ShowEditor(string imagePath, string ratio, Action<string> onSave, Action onCancel)
+        {
+            // Safely detach any lingering handlers from a previous session
+            if (_currentHandleSave != null)   _editorForm.OnSave   -= _currentHandleSave;
+            if (_currentHandleCancel != null) _editorForm.OnCancel -= _currentHandleCancel;
+
+            void HandleSave(string resultPath)
+            {
+                _editorForm.OnSave   -= _currentHandleSave;
+                _editorForm.OnCancel -= _currentHandleCancel;
+                _currentHandleSave   = null;
+                _currentHandleCancel = null;
+                _currentEditorCancel = null;
+                HideEditor();
+                onSave?.Invoke(resultPath);
+            }
+
+            void HandleCancel()
+            {
+                _editorForm.OnSave   -= _currentHandleSave;
+                _editorForm.OnCancel -= _currentHandleCancel;
+                _currentHandleSave   = null;
+                _currentHandleCancel = null;
+                _currentEditorCancel = null;
+                HideEditor();
+                onCancel?.Invoke();
+            }
+
+            _currentHandleSave   = HandleSave;
+            _currentHandleCancel = HandleCancel;
+            _currentEditorCancel = onCancel;
+
+            _editorForm.OnSave   += HandleSave;
+            _editorForm.OnCancel += HandleCancel;
+
+            // Load the image into the editor
+            _editorForm.LoadImage(imagePath, ratio);
+
+            // Switch to editor view
+            foreach (var form in _forms) form.Hide();
+            _editorForm.Show();
+            _editorForm.BringToFront();
+        }
+
+        private void HideEditor()
+        {
+            _editorForm.Hide();
+            // Restore the previously visible form
+            if (_previousFormIndex >= 0 && _previousFormIndex < _forms.Length)
+                _forms[_previousFormIndex].Show();
         }
 
         private void _switchIcons_Click(object sender, EventArgs e) => ShowForm(0);
