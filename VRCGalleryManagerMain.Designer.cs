@@ -76,7 +76,7 @@ namespace VRCGalleryManager
             FormsPanel.Location = new Point(228, 0);
             FormsPanel.Margin = new Padding(4);
             FormsPanel.Name = "FormsPanel";
-            FormsPanel.Size = new Size(1079, 710);
+            FormsPanel.Size = new Size(1079, 753);
             FormsPanel.TabIndex = 5;
             // 
             // SwitchPanel
@@ -99,7 +99,7 @@ namespace VRCGalleryManager
             SwitchPanel.Margin = new Padding(0);
             SwitchPanel.Name = "SwitchPanel";
             SwitchPanel.Padding = new Padding(5);
-            SwitchPanel.Size = new Size(196, 469);
+            SwitchPanel.Size = new Size(196, 512);
             SwitchPanel.TabIndex = 6;
             // 
             // _switchPicflow
@@ -115,7 +115,7 @@ namespace VRCGalleryManager
             _switchPicflow.FlatStyle = FlatStyle.Flat;
             _switchPicflow.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
             _switchPicflow.ForeColor = Color.FromArgb(106, 227, 249);
-            _switchPicflow.Location = new Point(5, 314);
+            _switchPicflow.Location = new Point(5, 357);
             _switchPicflow.Margin = new Padding(4);
             _switchPicflow.Name = "_switchPicflow";
             _switchPicflow.Size = new Size(186, 50);
@@ -294,7 +294,7 @@ namespace VRCGalleryManager
             _switchGallery.FlatStyle = FlatStyle.Flat;
             _switchGallery.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
             _switchGallery.ForeColor = Color.FromArgb(106, 227, 249);
-            _switchGallery.Location = new Point(5, 364);
+            _switchGallery.Location = new Point(5, 407);
             _switchGallery.Margin = new Padding(4);
             _switchGallery.Name = "_switchGallery";
             _switchGallery.Size = new Size(186, 50);
@@ -323,7 +323,7 @@ namespace VRCGalleryManager
             _switchSettings.FlatStyle = FlatStyle.Flat;
             _switchSettings.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
             _switchSettings.ForeColor = Color.FromArgb(106, 227, 249);
-            _switchSettings.Location = new Point(5, 414);
+            _switchSettings.Location = new Point(5, 457);
             _switchSettings.Margin = new Padding(4);
             _switchSettings.Name = "_switchSettings";
             _switchSettings.Size = new Size(186, 50);
@@ -464,7 +464,7 @@ namespace VRCGalleryManager
             AutoScaleDimensions = new SizeF(120F, 120F);
             AutoScaleMode = AutoScaleMode.Dpi;
             BackColor = Color.FromArgb(15, 17, 19);
-            ClientSize = new Size(1307, 710);
+            ClientSize = new Size(1307, 753);
             Controls.Add(badgeBox3);
             Controls.Add(badgeBox2);
             Controls.Add(badgeBox1);
@@ -476,7 +476,7 @@ namespace VRCGalleryManager
             Controls.Add(userNameLabel);
             Icon = (Icon)resources.GetObject("$this.Icon");
             Margin = new Padding(4);
-            MinimumSize = new Size(933, 750);
+            MinimumSize = new Size(933, 800);
             Name = "MainPanel";
             Text = "VRCGalleryManager";
             ((System.ComponentModel.ISupportInitialize)bannerIcon).EndInit();

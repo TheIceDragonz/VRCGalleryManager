@@ -1,6 +1,8 @@
+using System;
 using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.Windows.Forms;
 
 namespace CustomControls
 {
@@ -213,14 +215,17 @@ namespace CustomControls
                 _lastThumbSize = thumbSize;
             }
 
-            using (Brush thumbBrush = new SolidBrush(thumbColor))
+            Color currentThumbColor = Enabled ? thumbColor : ControlPaint.Dark(thumbColor);
+            Color currentBorderColor = Enabled ? borderColor : ControlPaint.Dark(borderColor);
+
+            using (Brush thumbBrush = new SolidBrush(currentThumbColor))
             {
                 int x = ValueToPixel(Value) - thumbSize / 2;
                 int y = Height / 2 - thumbSize / 2;
 
                 e.Graphics.TranslateTransform(x, y);
                 e.Graphics.FillPath(thumbBrush, _cachedThumbPath);
-                using (Pen borderPen = new Pen(borderColor, 2))
+                using (Pen borderPen = new Pen(currentBorderColor, 2))
                 {
                     e.Graphics.DrawPath(borderPen, _cachedThumbPath);
                 }
@@ -316,6 +321,16 @@ namespace CustomControls
             base.OnKeyUp(e);
             Invalidate();
             UpdateValueLabelPosition();
+        }
+
+        protected override void OnEnabledChanged(EventArgs e)
+        {
+            base.OnEnabledChanged(e);
+            if (valueLabel != null)
+            {
+                valueLabel.Enabled = Enabled;
+            }
+            Invalidate();
         }
 
         private int PixelToValue(int x)
