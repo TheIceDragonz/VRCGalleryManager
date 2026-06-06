@@ -197,7 +197,7 @@ namespace VRCGalleryManager.Forms
             changeFolder.SvgContent = resources.GetString("changeFolder.SvgContent");
             changeFolder.SvgOffset = new Point(0, 0);
             changeFolder.SvgPadding = new Padding(0);
-            changeFolder.SvgResource = "folder_svgrepo_com";
+            changeFolder.SvgResource = "folder_open_svgrepo_com";
             changeFolder.SvgSize = new Size(15, 15);
             changeFolder.TabIndex = 6;
             changeFolder.TextColor = Color.FromArgb(106, 227, 249);

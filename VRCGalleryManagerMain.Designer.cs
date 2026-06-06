@@ -124,7 +124,7 @@ namespace VRCGalleryManager
             _switchPicflow.SvgContent = resources.GetString("_switchPicflow.SvgContent");
             _switchPicflow.SvgOffset = new Point(10, 0);
             _switchPicflow.SvgPadding = new Padding(0);
-            _switchPicflow.SvgResource = "grid_svgrepo_com";
+            _switchPicflow.SvgResource = "traffic_economy_svgrepo_com";
             _switchPicflow.SvgSize = new Size(25, 25);
             _switchPicflow.TabIndex = 8;
             _switchPicflow.Text = "Picflow";
@@ -184,7 +184,7 @@ namespace VRCGalleryManager
             _switchSticker.SvgContent = resources.GetString("_switchSticker.SvgContent");
             _switchSticker.SvgOffset = new Point(10, 0);
             _switchSticker.SvgPadding = new Padding(0);
-            _switchSticker.SvgResource = "sticker_svgrepo_com";
+            _switchSticker.SvgResource = "sticker_smile_square_svgrepo_com";
             _switchSticker.SvgSize = new Size(25, 25);
             _switchSticker.TabIndex = 4;
             _switchSticker.Text = "Sticker";
@@ -214,7 +214,7 @@ namespace VRCGalleryManager
             _switchEmoji.SvgContent = resources.GetString("_switchEmoji.SvgContent");
             _switchEmoji.SvgOffset = new Point(10, 0);
             _switchEmoji.SvgPadding = new Padding(0);
-            _switchEmoji.SvgResource = "emoji_svgrepo_com";
+            _switchEmoji.SvgResource = "emoji_funny_circle_svgrepo_com";
             _switchEmoji.SvgSize = new Size(25, 25);
             _switchEmoji.TabIndex = 3;
             _switchEmoji.Text = "Emoji";
@@ -244,7 +244,7 @@ namespace VRCGalleryManager
             _switchPhotos.SvgContent = resources.GetString("_switchPhotos.SvgContent");
             _switchPhotos.SvgOffset = new Point(10, 0);
             _switchPhotos.SvgPadding = new Padding(0);
-            _switchPhotos.SvgResource = "image_svgrepo_com";
+            _switchPhotos.SvgResource = "gallery_minimalistic_svgrepo_com";
             _switchPhotos.SvgSize = new Size(25, 25);
             _switchPhotos.TabIndex = 2;
             _switchPhotos.Text = "Photos";
@@ -274,7 +274,7 @@ namespace VRCGalleryManager
             _switchIcons.SvgContent = resources.GetString("_switchIcons.SvgContent");
             _switchIcons.SvgOffset = new Point(10, 0);
             _switchIcons.SvgPadding = new Padding(0);
-            _switchIcons.SvgResource = "scan_svgrepo_com";
+            _switchIcons.SvgResource = "profile_user_svgrepo_com";
             _switchIcons.SvgSize = new Size(25, 25);
             _switchIcons.TabIndex = 1;
             _switchIcons.Text = "Icons";
@@ -303,7 +303,7 @@ namespace VRCGalleryManager
             _switchGallery.SvgContent = resources.GetString("_switchGallery.SvgContent");
             _switchGallery.SvgOffset = new Point(10, 0);
             _switchGallery.SvgPadding = new Padding(0);
-            _switchGallery.SvgResource = "folder_svgrepo_com";
+            _switchGallery.SvgResource = "gallery_wide_svgrepo_com";
             _switchGallery.SvgSize = new Size(25, 25);
             _switchGallery.TabIndex = 9;
             _switchGallery.Text = "Gallery";

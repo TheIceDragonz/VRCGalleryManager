@@ -69,7 +69,7 @@ namespace VRCGalleryManager.Forms
             infoPicflowButton.SvgContent = resources.GetString("infoPicflowButton.SvgContent");
             infoPicflowButton.SvgOffset = new Point(0, 0);
             infoPicflowButton.SvgPadding = new Padding(0);
-            infoPicflowButton.SvgResource = "info_svgrepo_com";
+            infoPicflowButton.SvgResource = "info_circle_svgrepo_com";
             infoPicflowButton.SvgSize = new Size(28, 28);
             infoPicflowButton.TabIndex = 0;
             infoPicflowButton.TextColor = Color.White;
