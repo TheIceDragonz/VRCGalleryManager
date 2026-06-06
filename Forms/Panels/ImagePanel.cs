@@ -66,10 +66,12 @@ namespace VRCGalleryManager.Forms.Panels
 
             if (!finalaviImage.Contains("imageNotFound"))
             {
-                if (tags.Contains("animated"))
+                int.TryParse(frames, out int fCount);
+                int.TryParse(framesOverTime, out int fps);
+                if (tags.Contains("animated") && fCount > 0)
                 {
                     SpriteSheetViewer viewer = new SpriteSheetViewer(pictureBox);
-                    await viewer.LoadSpriteSheetAsync(finalaviImage, int.Parse(frames), int.Parse(framesOverTime));
+                    await viewer.LoadSpriteSheetAsync(finalaviImage, fCount, fps);
                     viewer.StartAnimation();
                 }
                 else
@@ -361,7 +363,7 @@ namespace VRCGalleryManager.Forms.Panels
 
             if (!finalaviImage.Contains("imageNotFound"))
             {
-                if (invData.Metadata != null && invData.Metadata.Animated == true)
+                if (invData.Metadata != null && invData.Metadata.Animated == true && invData.Metadata.Frames > 0)
                 {
                     SpriteSheetViewer viewer = new SpriteSheetViewer(pictureBox);
                     await viewer.LoadSpriteSheetAsync(finalaviImage, invData.Metadata.Frames, invData.Metadata.FramesOverTime);

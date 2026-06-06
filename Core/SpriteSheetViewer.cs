@@ -21,22 +21,49 @@ namespace VRCGalleryManager.Core
 
         public async Task LoadSpriteSheetAsync(string spriteSheetUrl, int frameCount, int framesPerSecond)
         {
-            using (HttpClient client = new HttpClient())
+            try
             {
-                var response = await client.GetAsync(spriteSheetUrl);
-                response.EnsureSuccessStatusCode();
-                using (var stream = await response.Content.ReadAsStreamAsync())
+                using (HttpClient client = new HttpClient())
                 {
-                    using var bitmap = new Bitmap(stream);
-                    InitializeSpriteSheet(new Bitmap(bitmap), frameCount, framesPerSecond);
+                    var response = await client.GetAsync(spriteSheetUrl);
+                    response.EnsureSuccessStatusCode();
+                    using (var stream = await response.Content.ReadAsStreamAsync())
+                    {
+                        using var bitmap = new Bitmap(stream);
+                        InitializeSpriteSheet(new Bitmap(bitmap), frameCount, framesPerSecond);
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error loading sprite sheet: {ex.Message}");
+                try
+                {
+                    _pictureBox.Image?.Dispose();
+                    _pictureBox.Image = null;
+                    _pictureBox.LoadAsync(spriteSheetUrl);
+                }
+                catch { }
             }
         }
 
         public async Task LoadSpriteSheetAsync(Bitmap spriteSheet, int frameCount, int framesPerSecond)
         {
             if (spriteSheet == null) throw new ArgumentNullException(nameof(spriteSheet));
-            InitializeSpriteSheet(spriteSheet, frameCount, framesPerSecond);
+            try
+            {
+                InitializeSpriteSheet(spriteSheet, frameCount, framesPerSecond);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error initializing sprite sheet: {ex.Message}");
+                try
+                {
+                    _pictureBox.Image?.Dispose();
+                    _pictureBox.Image = (Image)spriteSheet.Clone();
+                }
+                catch { }
+            }
             await Task.CompletedTask;
         }
 

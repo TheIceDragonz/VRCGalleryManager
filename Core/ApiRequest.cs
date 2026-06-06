@@ -434,7 +434,7 @@ namespace VRCGalleryManager.Core
 
                 return apiInventory;
             }
-            catch (ApiException ex)
+            catch (Exception ex)
             {
                 Console.WriteLine($"Errore: {ex.Message}");
                 return null;
