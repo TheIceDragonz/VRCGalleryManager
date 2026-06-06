@@ -79,7 +79,7 @@ namespace VRCGalleryManager.Forms.Panels
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine($"Errore caricamento sprite sheet: {ex.Message}");
+                        Console.WriteLine($"Error loading sprite sheet: {ex.Message}");
                         pictureBox.LoadAsync(finalaviImage);
                     }
                 }
@@ -382,7 +382,7 @@ namespace VRCGalleryManager.Forms.Panels
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine($"Errore caricamento sprite sheet: {ex.Message}");
+                        Console.WriteLine($"Error loading sprite sheet: {ex.Message}");
                         pictureBox.LoadAsync(finalaviImage);
                     }
                 }

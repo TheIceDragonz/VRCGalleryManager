@@ -54,7 +54,7 @@ namespace VRCGalleryManager.Forms
             }
             catch (Exception ex)
             {
-                NotificationManager.ShowNotification("Errore nel caricamento sticker: " + ex.Message, "Errore API", NotificationType.Error);
+                NotificationManager.ShowNotification("Error loading sticker: " + ex.Message, "API Error", NotificationType.Error);
             }
             finally
             {

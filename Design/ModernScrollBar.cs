@@ -8,8 +8,8 @@ namespace VRCGalleryManager.Design
     public enum ScrollOrientation { Vertical, Horizontal }
 
     /// <summary>
-    /// Scrollbar personalizzata con stile dark/cyan che supporta
-    /// sia orientamento verticale che orizzontale.
+    /// Custom scrollbar with dark/cyan style supporting
+    /// both vertical and horizontal orientations.
     /// </summary>
     public class ModernScrollBar : Control
     {

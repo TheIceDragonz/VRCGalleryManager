@@ -103,19 +103,19 @@ namespace VRCGalleryManager.Design
             Graphics g = pevent.Graphics;
             g.SmoothingMode = SmoothingMode.AntiAlias;
 
-            // Imposta il colore di sfondo del controllo (se presente il Parent)
+            // Set the control background color (if Parent is present)
             if (Parent != null)
                 g.Clear(Parent.BackColor);
             else
                 g.Clear(BackColor);
 
-            // Se il controllo è disabilitato, utilizziamo dei colori più spenti
+            // If the control is disabled, use dimmer colors
             Color currentBorderColor = Enabled ? borderColor : ControlPaint.Dark(borderColor);
             Color currentCheckColor = Enabled ? checkColor : ControlPaint.Dark(checkColor);
             Color currentBoxFillColor = Enabled ? boxFillColor : ControlPaint.Light(boxFillColor);
             Color currentForeColor = Enabled ? ForeColor : SystemColors.GrayText;
 
-            // Calcola la dimensione e la posizione della "checkbox"
+            // Calculate the checkbox size and position
             int boxSize = Height - 4;
             Rectangle boxRect = new Rectangle(2, 2, boxSize, boxSize);
 
@@ -128,13 +128,13 @@ namespace VRCGalleryManager.Design
                 _lastPathRadius = borderRadius;
             }
 
-            // Disegna il rettangolo arrotondato
+            // Draw the rounded rectangle
             using (SolidBrush brush = new SolidBrush(currentBoxFillColor))
                 g.FillPath(brush, _cachedBoxPath);
             using (Pen penBorder = new Pen(currentBorderColor, borderSize))
                 g.DrawPath(penBorder, _cachedBoxPath);
 
-            // Disegna il segno di spunta se Checked
+            // Draw the checkmark if Checked
             if (Checked)
             {
                 using (Pen penCheck = new Pen(currentCheckColor, 2))
@@ -148,7 +148,7 @@ namespace VRCGalleryManager.Design
                 }
             }
 
-            // Disegna il testo a destra della "checkbox"
+            // Draw text to the right of the checkbox
             int textX = boxRect.Right + 5;
             Rectangle textRect = new Rectangle(textX, 0, Width - textX, Height);
             TextRenderer.DrawText(g, Text, Font, textRect, currentForeColor,

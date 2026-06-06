@@ -78,8 +78,8 @@ namespace VRCGalleryManager.Forms
             if (isGif)
             {
                 VRCGalleryManager.Core.NotificationManager.ShowNotification(
-                    "Le GIF animate sono supportate solo nella sezione Emoji.",
-                    "Attenzione",
+                    "Animated GIFs are only supported in the Emoji section.",
+                    "Warning",
                     VRCGalleryManager.Core.NotificationType.Info
                 );
             }

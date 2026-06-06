@@ -147,7 +147,7 @@ namespace VRCGalleryManager.Core
                 }
                 else
                 {
-                    Console.WriteLine($"Errore: {ex.Message}");
+                    Console.WriteLine($"Error: {ex.Message}");
                 }
             }
 
@@ -168,7 +168,7 @@ namespace VRCGalleryManager.Core
             }
             catch (ApiException ex)
             {
-                Console.WriteLine($"Errore: {ex.Message}");
+                Console.WriteLine($"Error: {ex.Message}");
             }
 
             return apiData;
@@ -231,7 +231,7 @@ namespace VRCGalleryManager.Core
                 apiData.AnimationStyle = response.AnimationStyle?.ToString() ?? "";
                 apiData.MaskTag = response.MaskTag?.ToString() ?? "";
             }
-            catch (ApiException ex) { Console.WriteLine($"Errore caricamento immagine: {ex.Message}"); }
+            catch (ApiException ex) { Console.WriteLine($"Error uploading image: {ex.Message}"); }
 
             return apiData;
         }
@@ -321,7 +321,7 @@ namespace VRCGalleryManager.Core
             }
             catch (ApiException ex)
             {
-                Console.WriteLine($"Errore caricamento immagine: {ex.Message}");
+                Console.WriteLine($"Error uploading image: {ex.Message}");
             }
 
             return apiData;
@@ -344,7 +344,7 @@ namespace VRCGalleryManager.Core
             }
             catch (ApiException ex)
             {
-                Console.WriteLine($"Errore: {ex.Message}");
+                Console.WriteLine($"Error: {ex.Message}");
             }
 
             return apiData;
@@ -360,7 +360,7 @@ namespace VRCGalleryManager.Core
             }
             catch (ApiException ex)
             {
-                Console.WriteLine($"Errore: {ex.Message}");
+                Console.WriteLine($"Error: {ex.Message}");
             }
 
             return apiData;
@@ -375,7 +375,7 @@ namespace VRCGalleryManager.Core
             }
             catch (ApiException ex)
             {
-                Console.WriteLine($"Errore: {ex.Message}");
+                Console.WriteLine($"Error: {ex.Message}");
             }
         }
         public async Task SetProfilePicture(string urlImage)
@@ -386,7 +386,7 @@ namespace VRCGalleryManager.Core
             }
             catch (ApiException ex)
             {
-                Console.WriteLine($"Errore: {ex.Message}");
+                Console.WriteLine($"Error: {ex.Message}");
             }
         }
 
@@ -408,7 +408,7 @@ namespace VRCGalleryManager.Core
             }
             catch (ApiException ex)
             {
-                Console.WriteLine($"Errore: {ex.Message}");
+                Console.WriteLine($"Error: {ex.Message}");
                 return null;
             }
         }
@@ -455,7 +455,7 @@ namespace VRCGalleryManager.Core
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Errore: {ex.Message}");
+                Console.WriteLine($"Error: {ex.Message}");
                 return null;
             }
         }

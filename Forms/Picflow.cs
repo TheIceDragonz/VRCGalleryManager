@@ -16,7 +16,7 @@ namespace VRCGalleryManager.Forms
         private readonly HashSet<string> allItems = new();
         private readonly object _lock = new();
 
-        // ✅ Regex aggiornata: cattura userId, username e stickerId
+        // ✅ Updated Regex: captures userId, username, and stickerId
         private static readonly Regex StickerRegex = new Regex(
             @"User\s+(?<userId>usr_[a-f0-9\-]+)\s+\((?<username>[^)]+)\).*?sticker\s+(?<sticker>inv_[a-f0-9\-]+)",
             RegexOptions.Compiled | RegexOptions.IgnoreCase
@@ -152,7 +152,7 @@ namespace VRCGalleryManager.Forms
                 }
                 catch (IOException ex)
                 {
-                    Debug.WriteLine($"Errore nell'aprire/leggere {logFile}: {ex.Message}");
+                    Debug.WriteLine($"Error opening/reading {logFile}: {ex.Message}");
                 }
             }
 
@@ -244,11 +244,11 @@ namespace VRCGalleryManager.Forms
             }
             catch (IOException ex)
             {
-                Console.WriteLine($"Errore nell'aprire il file {lastLogFile}: {ex.Message}");
+                Console.WriteLine($"Error opening the file {lastLogFile}: {ex.Message}");
             }
         }
 
-        // ✅ Ora include anche "username"
+        // ✅ Now also includes "username"
         private (string userId, string username, string sticker)? ProcessLine(string line)
         {
             var match = StickerRegex.Match(line);

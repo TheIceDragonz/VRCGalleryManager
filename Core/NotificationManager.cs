@@ -36,7 +36,7 @@ namespace VRCGalleryManager.Core
 
         private static void ShowNotificationInternal(Form mainForm, string message, string title, NotificationType type)
         {
-            // Seleziona i colori in base al tipo di notifica
+            // Select colors based on the notification type
             Color borderColor;
             Color textColor;
             switch (type)
