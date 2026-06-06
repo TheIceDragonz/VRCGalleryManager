@@ -65,6 +65,7 @@ namespace VRCGalleryManager.Forms
             InitializeComponent();
             ApplyRecolorBar();
             previewPanel.MouseWheel += previewPanel_MouseWheel;
+            ScrollBarHelper.Attach(settingsPanel);
         }
 
         /// <summary>

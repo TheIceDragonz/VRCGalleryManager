@@ -10,6 +10,17 @@ namespace VRCGalleryManager.Design
         private int borderSize = 0;
         private int borderRadius = 15;
 
+        // ── Cache fields for optimization ────────────────────────────────────────
+        private GraphicsPath _cachedPathSurface = null;
+        private GraphicsPath _cachedPathBorder = null;
+
+        private Size _lastPathSize;
+        private int _lastPathBorderSize;
+        private int _lastPathRadius;
+
+        private Size _lastRegionSize;
+        private int _lastRegionRadius;
+
         [Category("VRCGalleryManager")]
         public int BorderRadius
         {
@@ -230,27 +241,45 @@ namespace VRCGalleryManager.Design
         protected override void OnPaint(PaintEventArgs pevent)
         {
             base.OnPaint(pevent);
- 
+
             Rectangle rectSurface = ClientRectangle;
             Rectangle rectBorder = Rectangle.Inflate(rectSurface, -borderSize, -borderSize);
             int smoothSize = 2;
             if (borderSize > 0)
                 smoothSize = borderSize;
- 
+
             Color parentColor = Parent?.BackColor ?? Color.Transparent;
 
             if (BorderRadius > 2)
             {
-                using (GraphicsPath pathSurface = GetFigurePath(rectSurface, BorderRadius))
-                using (GraphicsPath pathBorder = GetFigurePath(rectBorder, BorderRadius - borderSize))
+                if (_cachedPathSurface == null || _cachedPathBorder == null ||
+                    _lastPathSize != rectSurface.Size ||
+                    _lastPathBorderSize != borderSize ||
+                    _lastPathRadius != borderRadius)
+                {
+                    _cachedPathSurface?.Dispose();
+                    _cachedPathBorder?.Dispose();
+
+                    _cachedPathSurface = GetFigurePath(rectSurface, BorderRadius);
+                    _cachedPathBorder = GetFigurePath(rectBorder, BorderRadius - borderSize);
+
+                    _lastPathSize = rectSurface.Size;
+                    _lastPathBorderSize = borderSize;
+                    _lastPathRadius = borderRadius;
+                }
+
                 using (Pen penSurface = new Pen(parentColor, smoothSize))
-                using (Pen penBorder = new Pen(borderColor, borderSize))
                 {
                     pevent.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-                    pevent.Graphics.DrawPath(penSurface, pathSurface);
- 
-                    if (borderSize >= 1)
-                        pevent.Graphics.DrawPath(penBorder, pathBorder);
+                    pevent.Graphics.DrawPath(penSurface, _cachedPathSurface);
+                }
+                if (borderSize >= 1)
+                {
+                    using (Pen penBorder = new Pen(borderColor, borderSize))
+                    {
+                        pevent.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                        pevent.Graphics.DrawPath(penBorder, _cachedPathBorder);
+                    }
                 }
             }
             else
@@ -376,6 +405,16 @@ namespace VRCGalleryManager.Design
             if (rectSurface.Width <= 0 || rectSurface.Height <= 0)
                 return;
 
+            if (_lastRegionSize == rectSurface.Size &&
+                _lastRegionRadius == borderRadius &&
+                this.Region != null)
+            {
+                return;
+            }
+
+            _lastRegionSize = rectSurface.Size;
+            _lastRegionRadius = borderRadius;
+
             Region oldRegion = this.Region;
             if (borderRadius > 2)
             {
@@ -416,6 +455,11 @@ namespace VRCGalleryManager.Design
                 Region oldRegion = this.Region;
                 this.Region = null;
                 oldRegion?.Dispose();
+
+                _cachedPathSurface?.Dispose();
+                _cachedPathSurface = null;
+                _cachedPathBorder?.Dispose();
+                _cachedPathBorder = null;
             }
             base.Dispose(disposing);
         }

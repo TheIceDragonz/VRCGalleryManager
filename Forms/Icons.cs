@@ -37,6 +37,7 @@ namespace VRCGalleryManager.Forms
 
             iconsJson = icons.JsonImage;
             imageCount = icons.JsonImage.Count;
+            UpdateCounter("");
 
             foreach (string json in iconsJson)
             {
@@ -47,8 +48,6 @@ namespace VRCGalleryManager.Forms
                 ImagePanel.AddImagePanel(iconsPanel, apiRequest, id, UpdateCounter);
                 await Task.Delay(10);
             }
-
-            UpdateCounter("");
 
             _refreshButton.Enabled = true;
         }

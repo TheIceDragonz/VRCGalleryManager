@@ -68,6 +68,8 @@ namespace VRCGalleryManager.Forms
             previewPanel.MouseWheel += previewPanel_MouseWheel;
             previewVRChat.Click += previewVRChat_Click;
             previewPanel.Resize += (s, e) => UpdateGifPreviewBounds();
+            ScrollBarHelper.Attach(emojiTypePanel);
+            ScrollBarHelper.Attach(flowPanelFrames);
         }
 
         private void ApplyRecolorBar()
@@ -1128,7 +1130,7 @@ namespace VRCGalleryManager.Forms
                 int frameIndex = i;
                 Bitmap frame = gifFrames[i];
 
-                Bitmap thumb = new Bitmap(20, 60);
+                Bitmap thumb = new Bitmap(20, 80);
                 using (Graphics g = Graphics.FromImage(thumb))
                 {
                     g.Clear(Color.Transparent);
@@ -1136,18 +1138,19 @@ namespace VRCGalleryManager.Forms
                     int minDim = Math.Min(frame.Width, frame.Height);
                     int srcX = (frame.Width - minDim) / 2;
                     int srcY = (frame.Height - minDim) / 2;
-                    g.DrawImage(frame, new Rectangle(0, 0, 20, 60), new Rectangle(srcX, srcY, minDim, minDim), GraphicsUnit.Pixel);
+                    g.DrawImage(frame, new Rectangle(0, 0, 20, 80), new Rectangle(srcX, srcY, minDim, minDim), GraphicsUnit.Pixel);
                 }
 
                 RoundedPictureBox pb = new RoundedPictureBox();
                 pb.Width = 20;
-                pb.Height = 60;
+                pb.Height = 80;
                 pb.BorderSize = 5;
                 pb.BorderRadiusTopLeft = 6;
                 pb.BorderRadiusTopRight = 6;
                 pb.BorderRadiusBottomLeft = 6;
                 pb.BorderRadiusBottomRight = 6;
                 pb.SizeMode = PictureBoxSizeMode.StretchImage;
+                pb.InterpolationMode = InterpolationMode.Low;
                 pb.Image = thumb;
                 pb.Cursor = Cursors.Hand;
                 pb.Margin = new Padding(3, 3, 3, 3);

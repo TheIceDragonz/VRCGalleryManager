@@ -30,6 +30,11 @@ namespace VRCGalleryManager.Design
         private const int WM_VSCROLL   = 0x0115;
         private const int WM_HSCROLL   = 0x0114;
         private const int WM_MOUSEWHEEL = 0x020A;
+        private const int WM_PAINT      = 0x000F;
+        private const int WM_WINDOWPOSCHANGED = 0x0047;
+        private const int WM_STYLECHANGING = 0x007C;
+        private const int WS_VSCROLL = 0x00200000;
+        private const int WS_HSCROLL = 0x00100000;
 
         private const int BAR_SIZE = 6; // spessore barra in pixel
 
@@ -40,6 +45,7 @@ namespace VRCGalleryManager.Design
         private readonly bool _wantVert;
         private readonly bool _wantHorz;
         private bool _isUpdating = false;
+        private Control _prevParent = null;
 
         // ── Constructor ──────────────────────────────────────────────────────────
         private ScrollBarHelper(ScrollableControl control, bool vertical, bool horizontal)
@@ -64,12 +70,15 @@ namespace VRCGalleryManager.Design
             _control.Scroll        += Control_Scroll;
             _control.Layout        += Control_Layout;
             _control.SizeChanged   += Control_SizeChanged;
+            _control.LocationChanged += Control_LocationChanged;
             _control.ControlAdded  += Control_ControlAdded;
             _control.ControlRemoved += Control_ControlRemoved;
             _control.MouseWheel    += Control_MouseWheel;
             _control.ParentChanged += Control_ParentChanged;
             _control.HandleCreated   += Control_HandleCreated;
             _control.HandleDestroyed += Control_HandleDestroyed;
+            _control.VisibleChanged  += Control_VisibleChanged;
+            _control.EnabledChanged  += Control_EnabledChanged;
             _control.Disposed      += Control_Disposed;
 
             if (_control.Parent != null)
@@ -143,12 +152,36 @@ namespace VRCGalleryManager.Design
             ReleaseHandle();
         }
 
+        private void Control_LocationChanged(object sender, EventArgs e)
+        {
+            PositionBars();
+        }
+
+        private void Control_VisibleChanged(object sender, EventArgs e)
+        {
+            UpdateScrollBarValues();
+        }
+
+        private void Parent_VisibleChanged(object sender, EventArgs e)
+        {
+            UpdateScrollBarValues();
+        }
+
+        private void Control_EnabledChanged(object sender, EventArgs e)
+        {
+            bool enabled = _control.Enabled;
+            if (_vBar != null) _vBar.Enabled = enabled;
+            if (_hBar != null) _hBar.Enabled = enabled;
+            UpdateScrollBarValues();
+        }
+
         private void Control_Disposed(object sender, EventArgs e)
         {
             // Unsubscribe all events
             _control.Scroll        -= Control_Scroll;
             _control.Layout        -= Control_Layout;
             _control.SizeChanged   -= Control_SizeChanged;
+            _control.LocationChanged -= Control_LocationChanged;
             _control.ControlAdded  -= Control_ControlAdded;
             _control.ControlRemoved -= Control_ControlRemoved;
             _control.MouseWheel    -= Control_MouseWheel;
@@ -156,6 +189,14 @@ namespace VRCGalleryManager.Design
             _control.HandleCreated   -= Control_HandleCreated;
             _control.HandleDestroyed -= Control_HandleDestroyed;
             _control.Disposed      -= Control_Disposed;
+            _control.VisibleChanged -= Control_VisibleChanged;
+            _control.EnabledChanged -= Control_EnabledChanged;
+
+            if (_prevParent != null)
+            {
+                _prevParent.VisibleChanged -= Parent_VisibleChanged;
+                _prevParent = null;
+            }
 
             if (_vBar != null)
             {
@@ -183,8 +224,48 @@ namespace VRCGalleryManager.Design
         // ── WndProc hook ─────────────────────────────────────────────────────────
         protected override void WndProc(ref Message m)
         {
+            if (m.Msg == WM_PAINT)
+            {
+                base.WndProc(ref m);
+                EnsureBarsOnTop();
+                if (_vBar != null && _vBar.Visible)
+                {
+                    _vBar.Invalidate();
+                    _vBar.Update();
+                }
+                if (_hBar != null && _hBar.Visible)
+                {
+                    _hBar.Invalidate();
+                    _hBar.Update();
+                }
+                return;
+            }
+
+            if (m.Msg == WM_WINDOWPOSCHANGED)
+            {
+                base.WndProc(ref m);
+                EnsureBarsOnTop();
+                return;
+            }
+
+            if (m.Msg == WM_STYLECHANGING)
+            {
+                try
+                {
+                    STYLESTRUCT ss = (STYLESTRUCT)Marshal.PtrToStructure(m.LParam, typeof(STYLESTRUCT));
+                    if ((ss.styleNew & (WS_VSCROLL | WS_HSCROLL)) != 0)
+                    {
+                        ss.styleNew &= ~WS_VSCROLL;
+                        ss.styleNew &= ~WS_HSCROLL;
+                        Marshal.StructureToPtr(ss, m.LParam, true);
+                    }
+                }
+                catch { }
+            }
+
             if (m.Msg == WM_NCCALCSIZE)
             {
+                HideNativeBars();
                 base.WndProc(ref m);
                 HideNativeBars();
                 return;
@@ -228,16 +309,48 @@ namespace VRCGalleryManager.Design
         private void AddToParent()
         {
             var parent = _control.Parent;
-            if (parent == null) return;
+            if (parent != _prevParent)
+            {
+                if (_prevParent != null)
+                {
+                    _prevParent.VisibleChanged -= Parent_VisibleChanged;
+                }
+                _prevParent = parent;
+                if (parent != null)
+                {
+                    parent.VisibleChanged += Parent_VisibleChanged;
+                }
+            }
+
+            if (parent == null)
+            {
+                if (_vBar != null && _vBar.Parent != null)
+                {
+                    _vBar.Parent.Controls.Remove(_vBar);
+                }
+                if (_hBar != null && _hBar.Parent != null)
+                {
+                    _hBar.Parent.Controls.Remove(_hBar);
+                }
+                return;
+            }
 
             if (_vBar != null && _vBar.Parent != parent)
             {
+                if (_vBar.Parent != null)
+                {
+                    _vBar.Parent.Controls.Remove(_vBar);
+                }
                 parent.Controls.Add(_vBar);
                 _vBar.BringToFront();
             }
 
             if (_hBar != null && _hBar.Parent != parent)
             {
+                if (_hBar.Parent != null)
+                {
+                    _hBar.Parent.Controls.Remove(_hBar);
+                }
                 parent.Controls.Add(_hBar);
                 _hBar.BringToFront();
             }
@@ -266,6 +379,38 @@ namespace VRCGalleryManager.Design
                     _control.Left + 2,
                     _control.Bottom - _hBar.Height - 2);
                 _hBar.Width = _control.Width - 4 - (_vBar != null && _vBar.Visible ? _vBar.Width + 2 : 0);
+            }
+
+            EnsureBarsOnTop();
+        }
+
+        private void EnsureBarsOnTop()
+        {
+            var parent = _control.Parent;
+            if (parent == null) return;
+
+            int visibleCount = 0;
+            if (_vBar != null && _vBar.Visible) visibleCount++;
+            if (_hBar != null && _hBar.Visible) visibleCount++;
+
+            if (visibleCount == 0) return;
+
+            if (_vBar != null && _vBar.Visible)
+            {
+                int idx = parent.Controls.GetChildIndex(_vBar);
+                if (idx >= visibleCount)
+                {
+                    _vBar.BringToFront();
+                }
+            }
+
+            if (_hBar != null && _hBar.Visible)
+            {
+                int idx = parent.Controls.GetChildIndex(_hBar);
+                if (idx >= visibleCount)
+                {
+                    _hBar.BringToFront();
+                }
             }
         }
 
@@ -311,11 +456,21 @@ namespace VRCGalleryManager.Design
                 int clientW  = _control.ClientSize.Width;
                 int displayW = _control.DisplayRectangle.Width;
 
+                bool isControlActive = _control.Visible && _control.Enabled;
+
                 if (_vBar != null)
                 {
                     bool needV = _wantVert && displayH > clientH && clientH > 0;
-                    _vBar.Visible = needV;
-                    if (needV)
+                    bool newV = needV && isControlActive;
+                    if (_vBar.Visible != newV)
+                    {
+                        _vBar.Visible = newV;
+                        if (_control.Parent != null)
+                        {
+                            _control.Parent.Invalidate(_vBar.Bounds);
+                        }
+                    }
+                    if (newV)
                     {
                         _vBar.Minimum     = 0;
                         _vBar.Maximum     = displayH;
@@ -327,14 +482,35 @@ namespace VRCGalleryManager.Design
                 if (_hBar != null)
                 {
                     bool needH = _wantHorz && displayW > clientW && clientW > 0;
-                    _hBar.Visible = needH;
-                    if (needH)
+                    bool newH = needH && isControlActive;
+                    if (_hBar.Visible != newH)
+                    {
+                        _hBar.Visible = newH;
+                        if (_control.Parent != null)
+                        {
+                            _control.Parent.Invalidate(_hBar.Bounds);
+                        }
+                    }
+                    if (newH)
                     {
                         _hBar.Minimum     = 0;
                         _hBar.Maximum     = displayW;
                         _hBar.LargeChange = clientW;
                         _hBar.Value       = -_control.AutoScrollPosition.X;
                     }
+                }
+
+                int reserveV = (_vBar != null && _vBar.Visible) ? (_vBar.Width + 4) : 0;
+                int reserveH = (_hBar != null && _hBar.Visible) ? (_hBar.Height + 4) : 0;
+
+                if (_control.Padding.Right != reserveV || _control.Padding.Bottom != reserveH)
+                {
+                    _control.Padding = new Padding(
+                        _control.Padding.Left,
+                        _control.Padding.Top,
+                        reserveV,
+                        reserveH
+                    );
                 }
             }
             finally { _isUpdating = false; }
@@ -373,5 +549,12 @@ namespace VRCGalleryManager.Design
         /// <summary>Controllo completo su quali assi attivare.</summary>
         public static ScrollBarHelper Attach(ScrollableControl control, bool vertical, bool horizontal)
             => new ScrollBarHelper(control, vertical, horizontal);
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct STYLESTRUCT
+        {
+            public int styleOld;
+            public int styleNew;
+        }
     }
 }

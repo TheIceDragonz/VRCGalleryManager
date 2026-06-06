@@ -221,6 +221,15 @@ namespace VRCGalleryManager.Core
                     vrcMask
                 );
                 apiData.IdImageUploaded = response.Id;
+                apiData.Tags = response.Tags != null ? string.Join(", ", response.Tags) : "";
+                if (tag == TagType.EmojiAnimated && !apiData.Tags.Contains("animated"))
+                {
+                    apiData.Tags = string.IsNullOrEmpty(apiData.Tags) ? "animated" : apiData.Tags + ", animated";
+                }
+                apiData.Frames = response.Frames.ToString();
+                apiData.FramesOverTime = response.FramesOverTime.ToString();
+                apiData.AnimationStyle = response.AnimationStyle?.ToString() ?? "";
+                apiData.MaskTag = response.MaskTag?.ToString() ?? "";
             }
             catch (ApiException ex) { Console.WriteLine($"Errore caricamento immagine: {ex.Message}"); }
 
@@ -304,6 +313,11 @@ namespace VRCGalleryManager.Core
                 );
 
                 apiData.IdImageUploaded = response.Id;
+                apiData.Tags = response.Tags != null ? string.Join(", ", response.Tags) : "";
+                apiData.Frames = response.Frames.ToString();
+                apiData.FramesOverTime = response.FramesOverTime.ToString();
+                apiData.AnimationStyle = response.AnimationStyle?.ToString() ?? "";
+                apiData.MaskTag = response.MaskTag?.ToString() ?? "";
             }
             catch (ApiException ex)
             {
@@ -405,7 +419,12 @@ namespace VRCGalleryManager.Core
 
             try
             {
-                var inventory = await inventoryApi.GetUserInventoryItemAsync(userId, inventoryId);
+                var inventoryResponse = await inventoryApi.GetUserInventoryItemWithHttpInfoAsync(userId, inventoryId);
+                if (inventoryResponse == null || inventoryResponse.Data == null)
+                {
+                    return null;
+                }
+                var inventory = inventoryResponse.Data;
 
                 apiInventory.Collections = inventory.Collections;
                 apiInventory.CreatedAt = inventory.CreatedAt;

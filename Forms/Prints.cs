@@ -36,6 +36,7 @@ namespace VRCGalleryManager.Forms
 
             printsJson = prints.JsonImage;
             imageCount = prints.JsonImage.Count;
+            UpdateCounter("");
 
             foreach (string json in printsJson)
             {
@@ -49,8 +50,6 @@ namespace VRCGalleryManager.Forms
                 ImagePanel.AddPrintsPanel(printsPanel, apiRequest, printId, authorId, authorName , fileId, UpdateCounter);
                 await Task.Delay(10);
             }
-
-            UpdateCounter("");
 
             _refreshButton.Enabled = true;
         }

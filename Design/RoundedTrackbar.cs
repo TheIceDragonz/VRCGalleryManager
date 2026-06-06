@@ -15,14 +15,27 @@ namespace CustomControls
         private Color borderColor = Color.Gray;
         private Label valueLabel;
 
+        // ── Cache fields for optimization ────────────────────────────────────────
+        private GraphicsPath _cachedTrackPath = null;
+        private Size _lastTrackSize;
+        private int _lastTrackRadius;
+        private int _lastTrackPadding;
+
+        private GraphicsPath _cachedThumbPath = null;
+        private int _lastThumbSize;
+
         [Category("VRCGalleryManager")]
         public int BorderRadius
         {
             get => borderRadius;
             set
             {
-                borderRadius = Math.Max(0, value);
-                Invalidate();
+                int val = Math.Max(0, value);
+                if (borderRadius != val)
+                {
+                    borderRadius = val;
+                    Invalidate();
+                }
             }
         }
 
@@ -32,9 +45,13 @@ namespace CustomControls
             get => thumbSize;
             set
             {
-                thumbSize = Math.Max(10, value);
-                Invalidate();
-                UpdateValueLabelPosition();
+                int val = Math.Max(10, value);
+                if (thumbSize != val)
+                {
+                    thumbSize = val;
+                    UpdateValueLabelPosition();
+                    Invalidate();
+                }
             }
         }
 
@@ -44,19 +61,26 @@ namespace CustomControls
             get => labelOffset;
             set
             {
-                labelOffset = value;
-                UpdateValueLabelPosition();
+                if (labelOffset != value)
+                {
+                    labelOffset = value;
+                    UpdateValueLabelPosition();
+                }
             }
         }
 
         [Category("VRCGalleryManager")]
-        public int Padding
+        public new int Padding
         {
             get => padding;
             set
             {
-                padding = Math.Max(0, value);
-                Invalidate();
+                int val = Math.Max(0, value);
+                if (padding != val)
+                {
+                    padding = val;
+                    Invalidate();
+                }
             }
         }
 
@@ -66,8 +90,11 @@ namespace CustomControls
             get => trackColor;
             set
             {
-                trackColor = value;
-                Invalidate();
+                if (trackColor != value)
+                {
+                    trackColor = value;
+                    Invalidate();
+                }
             }
         }
 
@@ -77,8 +104,11 @@ namespace CustomControls
             get => thumbColor;
             set
             {
-                thumbColor = value;
-                Invalidate();
+                if (thumbColor != value)
+                {
+                    thumbColor = value;
+                    Invalidate();
+                }
             }
         }
 
@@ -88,8 +118,11 @@ namespace CustomControls
             get => borderColor;
             set
             {
-                borderColor = value;
-                Invalidate();
+                if (borderColor != value)
+                {
+                    borderColor = value;
+                    Invalidate();
+                }
             }
         }
 
@@ -157,25 +190,42 @@ namespace CustomControls
 
             // Draw track
             Rectangle trackRect = new Rectangle(padding, Height / 2 - 4, Width - 2 * padding, 8);
-            using (GraphicsPath trackPath = GetRoundedRectangle(trackRect, borderRadius))
+            if (_cachedTrackPath == null || _lastTrackSize != ClientRectangle.Size || _lastTrackRadius != borderRadius || _lastTrackPadding != padding)
+            {
+                _cachedTrackPath?.Dispose();
+                _cachedTrackPath = GetRoundedRectangle(trackRect, borderRadius);
+                _lastTrackSize = ClientRectangle.Size;
+                _lastTrackRadius = borderRadius;
+                _lastTrackPadding = padding;
+            }
+
             using (Brush trackBrush = new SolidBrush(trackColor))
             {
-                e.Graphics.FillPath(trackBrush, trackPath);
+                e.Graphics.FillPath(trackBrush, _cachedTrackPath);
             }
 
             // Draw thumb
-            Rectangle thumbRect = new Rectangle(ValueToPixel(Value) - thumbSize / 2, Height / 2 - thumbSize / 2, thumbSize, thumbSize);
-            using (GraphicsPath thumbPath = GetRoundedRectangle(thumbRect, thumbSize / 2))
-            using (Brush thumbBrush = new SolidBrush(thumbColor))
+            if (_cachedThumbPath == null || _lastThumbSize != thumbSize)
             {
-                e.Graphics.FillPath(thumbBrush, thumbPath);
-                using (Pen borderPen = new Pen(borderColor, 2))
-                {
-                    e.Graphics.DrawPath(borderPen, thumbPath);
-                }
+                _cachedThumbPath?.Dispose();
+                Rectangle localThumbRect = new Rectangle(0, 0, thumbSize, thumbSize);
+                _cachedThumbPath = GetRoundedRectangle(localThumbRect, thumbSize / 2);
+                _lastThumbSize = thumbSize;
             }
 
-            UpdateValueLabelPosition();
+            using (Brush thumbBrush = new SolidBrush(thumbColor))
+            {
+                int x = ValueToPixel(Value) - thumbSize / 2;
+                int y = Height / 2 - thumbSize / 2;
+
+                e.Graphics.TranslateTransform(x, y);
+                e.Graphics.FillPath(thumbBrush, _cachedThumbPath);
+                using (Pen borderPen = new Pen(borderColor, 2))
+                {
+                    e.Graphics.DrawPath(borderPen, _cachedThumbPath);
+                }
+                e.Graphics.TranslateTransform(-x, -y);
+            }
         }
 
         private int ValueToPixel(int value)
@@ -286,6 +336,17 @@ namespace CustomControls
             path.AddArc(rect.X, rect.Bottom - curveSize, curveSize, curveSize, 90, 90);
             path.CloseFigure();
             return path;
+        }
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _cachedTrackPath?.Dispose();
+                _cachedTrackPath = null;
+                _cachedThumbPath?.Dispose();
+                _cachedThumbPath = null;
+            }
+            base.Dispose(disposing);
         }
     }
 }

@@ -28,7 +28,16 @@ namespace VRCGalleryManager.Design
         private Color _thumbColor      = Color.FromArgb(106, 227, 249);
         private Color _thumbHoverColor = Color.FromArgb(160, 240, 255);
 
-        public event EventHandler Scroll;
+        // ── Cache fields for optimization ────────────────────────────────────────
+        private GraphicsPath _cachedTrackPath = null;
+        private Size _lastTrackSize;
+        private int _lastTrackRadius;
+
+        private GraphicsPath _cachedThumbPath = null;
+        private Size _lastThumbSize;
+        private int _lastThumbRadius;
+
+        public new event EventHandler Scroll;
 
         // ── Properties ───────────────────────────────────────────────────────────
         public ScrollOrientation Orientation
@@ -36,26 +45,44 @@ namespace VRCGalleryManager.Design
             get => _orientation;
             set
             {
-                _orientation = value;
-                // Swap default size axis
-                if (_orientation == ScrollOrientation.Horizontal)
-                    Height = 8;
-                else
-                    Width = 8;
-                Invalidate();
+                if (_orientation != value)
+                {
+                    _orientation = value;
+                    if (_orientation == ScrollOrientation.Horizontal)
+                        Height = 8;
+                    else
+                        Width = 8;
+                    Invalidate();
+                }
             }
         }
 
         public int Minimum
         {
             get => _minimum;
-            set { _minimum = Math.Max(0, value); Invalidate(); }
+            set
+            {
+                int val = Math.Max(0, value);
+                if (_minimum != val)
+                {
+                    _minimum = val;
+                    Invalidate();
+                }
+            }
         }
 
         public int Maximum
         {
             get => _maximum;
-            set { _maximum = Math.Max(1, value); Invalidate(); }
+            set
+            {
+                int val = Math.Max(1, value);
+                if (_maximum != val)
+                {
+                    _maximum = val;
+                    Invalidate();
+                }
+            }
         }
 
         public int Value
@@ -75,25 +102,54 @@ namespace VRCGalleryManager.Design
         public int LargeChange
         {
             get => _largeChange;
-            set { _largeChange = Math.Max(1, value); Invalidate(); }
+            set
+            {
+                int val = Math.Max(1, value);
+                if (_largeChange != val)
+                {
+                    _largeChange = val;
+                    Invalidate();
+                }
+            }
         }
 
         public Color TrackColor
         {
             get => _trackColor;
-            set { _trackColor = value; Invalidate(); }
+            set
+            {
+                if (_trackColor != value)
+                {
+                    _trackColor = value;
+                    Invalidate();
+                }
+            }
         }
 
         public Color ThumbColor
         {
             get => _thumbColor;
-            set { _thumbColor = value; Invalidate(); }
+            set
+            {
+                if (_thumbColor != value)
+                {
+                    _thumbColor = value;
+                    Invalidate();
+                }
+            }
         }
 
         public Color ThumbHoverColor
         {
             get => _thumbHoverColor;
-            set { _thumbHoverColor = value; Invalidate(); }
+            set
+            {
+                if (_thumbHoverColor != value)
+                {
+                    _thumbHoverColor = value;
+                    Invalidate();
+                }
+            }
         }
 
         // ── Constructor ──────────────────────────────────────────────────────────
@@ -202,21 +258,41 @@ namespace VRCGalleryManager.Design
 
             // Track
             int radius = IsVertical ? Width / 2 : Height / 2;
+            if (_cachedTrackPath == null || _lastTrackSize != ClientRectangle.Size || _lastTrackRadius != radius)
+            {
+                _cachedTrackPath?.Dispose();
+                _cachedTrackPath = RoundedPath(ClientRectangle, radius);
+                _lastTrackSize = ClientRectangle.Size;
+                _lastTrackRadius = radius;
+            }
+
             using (Brush b = new SolidBrush(_trackColor))
-            using (GraphicsPath p = RoundedPath(ClientRectangle, radius))
-                g.FillPath(b, p);
+                g.FillPath(b, _cachedTrackPath);
 
             // Thumb
             int thumbSize = GetThumbSize();
             int thumbPos  = GetThumbPos();
-            Rectangle thumbRect = IsVertical
-                ? new Rectangle(0, thumbPos, Width, thumbSize)
-                : new Rectangle(thumbPos, 0, thumbSize, Height);
+
+            Size currentThumbSize = IsVertical ? new Size(Width, thumbSize) : new Size(thumbSize, Height);
+            if (_cachedThumbPath == null || _lastThumbSize != currentThumbSize || _lastThumbRadius != radius)
+            {
+                _cachedThumbPath?.Dispose();
+                Rectangle localThumbRect = new Rectangle(0, 0, currentThumbSize.Width, currentThumbSize.Height);
+                _cachedThumbPath = RoundedPath(localThumbRect, radius);
+                _lastThumbSize = currentThumbSize;
+                _lastThumbRadius = radius;
+            }
 
             Color thumbCol = (_isDragging || _isHovered) ? _thumbHoverColor : _thumbColor;
             using (Brush b = new SolidBrush(thumbCol))
-            using (GraphicsPath p = RoundedPath(thumbRect, radius))
-                g.FillPath(b, p);
+            {
+                int x = IsVertical ? 0 : thumbPos;
+                int y = IsVertical ? thumbPos : 0;
+                
+                g.TranslateTransform(x, y);
+                g.FillPath(b, _cachedThumbPath);
+                g.TranslateTransform(-x, -y);
+            }
         }
 
         private static GraphicsPath RoundedPath(Rectangle r, int radius)
@@ -236,6 +312,17 @@ namespace VRCGalleryManager.Design
                 path.AddRectangle(r);
             }
             return path;
+        }
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _cachedTrackPath?.Dispose();
+                _cachedTrackPath = null;
+                _cachedThumbPath?.Dispose();
+                _cachedThumbPath = null;
+            }
+            base.Dispose(disposing);
         }
     }
 }

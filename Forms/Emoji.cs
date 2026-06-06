@@ -43,6 +43,7 @@ namespace VRCGalleryManager.Forms
 
             emojiJson = emoji.JsonImage;
             imageCount = emoji.JsonImage.Count;
+            UpdateCounter("");
 
             foreach (string json in emojiJson)
             {
@@ -57,8 +58,6 @@ namespace VRCGalleryManager.Forms
                 ImagePanel.AddImagePanel(emojiPanel, apiRequest, id, tags, frames, framesOverTime, UpdateCounter);
                 await Task.Delay(10);
             }
-
-            UpdateCounter("");
 
             _refreshButton.Enabled = true;
         }

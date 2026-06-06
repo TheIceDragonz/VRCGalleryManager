@@ -40,6 +40,7 @@ namespace VRCGalleryManager.Forms
                 {
                     stickerJson = sticker.JsonImage;
                     imageCount = sticker.JsonImage.Count;
+                    UpdateCounter("");
 
                     foreach (string json in stickerJson)
                     {
@@ -50,7 +51,6 @@ namespace VRCGalleryManager.Forms
                         await Task.Delay(10);
                     }
                 }
-                UpdateCounter("");
             }
             catch (Exception ex)
             {

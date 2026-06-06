@@ -12,46 +12,108 @@ namespace VRCGalleryManager.Design
         private int borderRadiusBottomRight = 20;
         private Color borderColor = Color.PaleVioletRed;
 
+        // ── Cache fields for optimization ────────────────────────────────────────
+        private GraphicsPath _cachedPathBackground = null;
+        private GraphicsPath _cachedPathBorder = null;
+
+        private Size _lastPathSize;
+        private int _lastPathBorderSize;
+        private int _lastPathTl, _lastPathTr, _lastPathBl, _lastPathBr;
+
+        private Size _lastRegionSize;
+        private int _lastRegionTl, _lastRegionTr, _lastRegionBl, _lastRegionBr;
+
         [Category("VRCGalleryManager")]
         public int BorderSize
         {
             get { return borderSize; }
-            set { borderSize = value; Invalidate(); }
+            set
+            {
+                if (borderSize != value)
+                {
+                    borderSize = value;
+                    UpdateRegion();
+                    Invalidate();
+                }
+            }
         }
 
         [Category("VRCGalleryManager")]
         public int BorderRadiusTopLeft
         {
             get { return borderRadiusTopLeft; }
-            set { borderRadiusTopLeft = Math.Max(0, Math.Min(value, Math.Min(Width, Height) / 2)); Invalidate(); }
+            set
+            {
+                int val = Math.Max(0, value);
+                if (borderRadiusTopLeft != val)
+                {
+                    borderRadiusTopLeft = val;
+                    UpdateRegion();
+                    Invalidate();
+                }
+            }
         }
 
         [Category("VRCGalleryManager")]
         public int BorderRadiusTopRight
         {
             get { return borderRadiusTopRight; }
-            set { borderRadiusTopRight = Math.Max(0, Math.Min(value, Math.Min(Width, Height) / 2)); Invalidate(); }
+            set
+            {
+                int val = Math.Max(0, value);
+                if (borderRadiusTopRight != val)
+                {
+                    borderRadiusTopRight = val;
+                    UpdateRegion();
+                    Invalidate();
+                }
+            }
         }
 
         [Category("VRCGalleryManager")]
         public int BorderRadiusBottomLeft
         {
             get { return borderRadiusBottomLeft; }
-            set { borderRadiusBottomLeft = Math.Max(0, Math.Min(value, Math.Min(Width, Height) / 2)); Invalidate(); }
+            set
+            {
+                int val = Math.Max(0, value);
+                if (borderRadiusBottomLeft != val)
+                {
+                    borderRadiusBottomLeft = val;
+                    UpdateRegion();
+                    Invalidate();
+                }
+            }
         }
 
         [Category("VRCGalleryManager")]
         public int BorderRadiusBottomRight
         {
             get { return borderRadiusBottomRight; }
-            set { borderRadiusBottomRight = Math.Max(0, Math.Min(value, Math.Min(Width, Height) / 2)); Invalidate(); }
+            set
+            {
+                int val = Math.Max(0, value);
+                if (borderRadiusBottomRight != val)
+                {
+                    borderRadiusBottomRight = val;
+                    UpdateRegion();
+                    Invalidate();
+                }
+            }
         }
 
         [Category("VRCGalleryManager")]
         public Color BorderColor
         {
             get { return borderColor; }
-            set { borderColor = value; Invalidate(); }
+            set
+            {
+                if (borderColor != value)
+                {
+                    borderColor = value;
+                    Invalidate();
+                }
+            }
         }
 
         public RoundedLabel()
@@ -70,6 +132,36 @@ namespace VRCGalleryManager.Design
                 base.OnPaintBackground(e);
         }
 
+        private void UpdateRegion()
+        {
+            Rectangle rectSurface = ClientRectangle;
+            if (rectSurface.Width <= 0 || rectSurface.Height <= 0)
+                return;
+
+            if (_lastRegionSize == rectSurface.Size &&
+                _lastRegionTl == borderRadiusTopLeft &&
+                _lastRegionTr == borderRadiusTopRight &&
+                _lastRegionBl == borderRadiusBottomLeft &&
+                _lastRegionBr == borderRadiusBottomRight &&
+                this.Region != null)
+            {
+                return;
+            }
+
+            _lastRegionSize = rectSurface.Size;
+            _lastRegionTl = borderRadiusTopLeft;
+            _lastRegionTr = borderRadiusTopRight;
+            _lastRegionBl = borderRadiusBottomLeft;
+            _lastRegionBr = borderRadiusBottomRight;
+
+            using (GraphicsPath pathSurface = GetFigurePath(rectSurface))
+            {
+                Region oldRegion = this.Region;
+                this.Region = new Region(pathSurface);
+                oldRegion?.Dispose();
+            }
+        }
+
         protected override void OnPaint(PaintEventArgs e)
         {
             e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
@@ -77,18 +169,80 @@ namespace VRCGalleryManager.Design
             Rectangle rectBackground = rectClient;
             Rectangle rectBorder = Rectangle.Inflate(rectBackground, -borderSize, -borderSize);
 
-            using (GraphicsPath pathBackground = GetFigurePath(rectBackground))
-            using (GraphicsPath pathBorder = GetFigurePath(rectBorder))
-            using (Pen penBorder = new Pen(borderColor, borderSize))
+            if (_cachedPathBackground == null || _cachedPathBorder == null ||
+                _lastPathSize != rectClient.Size ||
+                _lastPathBorderSize != borderSize ||
+                _lastPathTl != borderRadiusTopLeft ||
+                _lastPathTr != borderRadiusTopRight ||
+                _lastPathBl != borderRadiusBottomLeft ||
+                _lastPathBr != borderRadiusBottomRight)
             {
-                using (SolidBrush brush = new SolidBrush(BackColor))
-                {
-                    e.Graphics.FillPath(brush, pathBackground);
-                }
-                if (borderSize > 0)
-                    e.Graphics.DrawPath(penBorder, pathBorder);
+                _cachedPathBackground?.Dispose();
+                _cachedPathBorder?.Dispose();
+
+                _cachedPathBackground = GetFigurePath(rectBackground);
+                _cachedPathBorder = GetFigurePath(rectBorder);
+
+                _lastPathSize = rectClient.Size;
+                _lastPathBorderSize = borderSize;
+                _lastPathTl = borderRadiusTopLeft;
+                _lastPathTr = borderRadiusTopRight;
+                _lastPathBl = borderRadiusBottomLeft;
+                _lastPathBr = borderRadiusBottomRight;
             }
-            TextRenderer.DrawText(e.Graphics, Text, Font, ClientRectangle, ForeColor, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
+
+            using (SolidBrush brush = new SolidBrush(BackColor))
+            {
+                e.Graphics.FillPath(brush, _cachedPathBackground);
+            }
+            if (borderSize > 0)
+            {
+                using (Pen penBorder = new Pen(borderColor, borderSize))
+                {
+                    e.Graphics.DrawPath(penBorder, _cachedPathBorder);
+                }
+            }
+            // Map TextAlign to TextFormatFlags
+            TextFormatFlags flags = TextFormatFlags.WordBreak;
+            switch (TextAlign)
+            {
+                case ContentAlignment.TopLeft:
+                    flags |= TextFormatFlags.Top | TextFormatFlags.Left;
+                    break;
+                case ContentAlignment.TopCenter:
+                    flags |= TextFormatFlags.Top | TextFormatFlags.HorizontalCenter;
+                    break;
+                case ContentAlignment.TopRight:
+                    flags |= TextFormatFlags.Top | TextFormatFlags.Right;
+                    break;
+                case ContentAlignment.MiddleLeft:
+                    flags |= TextFormatFlags.VerticalCenter | TextFormatFlags.Left;
+                    break;
+                case ContentAlignment.MiddleCenter:
+                    flags |= TextFormatFlags.VerticalCenter | TextFormatFlags.HorizontalCenter;
+                    break;
+                case ContentAlignment.MiddleRight:
+                    flags |= TextFormatFlags.VerticalCenter | TextFormatFlags.Right;
+                    break;
+                case ContentAlignment.BottomLeft:
+                    flags |= TextFormatFlags.Bottom | TextFormatFlags.Left;
+                    break;
+                case ContentAlignment.BottomCenter:
+                    flags |= TextFormatFlags.Bottom | TextFormatFlags.HorizontalCenter;
+                    break;
+                case ContentAlignment.BottomRight:
+                    flags |= TextFormatFlags.Bottom | TextFormatFlags.Right;
+                    break;
+            }
+
+            Rectangle textRect = new Rectangle(
+                rectClient.X + Padding.Left,
+                rectClient.Y + Padding.Top,
+                rectClient.Width - (Padding.Left + Padding.Right),
+                rectClient.Height - (Padding.Top + Padding.Bottom)
+            );
+
+            TextRenderer.DrawText(e.Graphics, Text, Font, textRect, ForeColor, flags);
         }
 
         private GraphicsPath GetFigurePath(Rectangle rect)
@@ -119,12 +273,7 @@ namespace VRCGalleryManager.Design
         protected override void OnResize(EventArgs e)
         {
             base.OnResize(e);
-            using (var path = GetFigurePath(ClientRectangle))
-            {
-                var oldRegion = this.Region;
-                this.Region = new Region(path);
-                oldRegion?.Dispose();
-            }
+            UpdateRegion();
             Invalidate();
         }
 
@@ -135,6 +284,11 @@ namespace VRCGalleryManager.Design
                 Region oldRegion = this.Region;
                 this.Region = null;
                 oldRegion?.Dispose();
+
+                _cachedPathBackground?.Dispose();
+                _cachedPathBackground = null;
+                _cachedPathBorder?.Dispose();
+                _cachedPathBorder = null;
             }
             base.Dispose(disposing);
         }

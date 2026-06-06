@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -14,39 +14,79 @@ namespace VRCGalleryManager.Design
         private Color checkColor = Color.Green;
         private Color boxFillColor = Color.White;
 
+        // ── Cache fields for optimization ────────────────────────────────────────
+        private GraphicsPath _cachedBoxPath = null;
+        private int _lastPathBoxSize;
+        private int _lastPathRadius;
+
         [Category("VRCGalleryManager")]
         public int BorderSize
         {
             get => borderSize;
-            set { borderSize = value; Invalidate(); }
+            set
+            {
+                if (borderSize != value)
+                {
+                    borderSize = value;
+                    Invalidate();
+                }
+            }
         }
 
         [Category("VRCGalleryManager")]
         public int BorderRadius
         {
             get => borderRadius;
-            set { borderRadius = value; Invalidate(); }
+            set
+            {
+                if (borderRadius != value)
+                {
+                    borderRadius = value;
+                    Invalidate();
+                }
+            }
         }
 
         [Category("VRCGalleryManager")]
         public Color BorderColor
         {
             get => borderColor;
-            set { borderColor = value; Invalidate(); }
+            set
+            {
+                if (borderColor != value)
+                {
+                    borderColor = value;
+                    Invalidate();
+                }
+            }
         }
 
         [Category("VRCGalleryManager")]
         public Color CheckColor
         {
             get => checkColor;
-            set { checkColor = value; Invalidate(); }
+            set
+            {
+                if (checkColor != value)
+                {
+                    checkColor = value;
+                    Invalidate();
+                }
+            }
         }
 
         [Category("VRCGalleryManager")]
         public Color BoxFillColor
         {
             get => boxFillColor;
-            set { boxFillColor = value; Invalidate(); }
+            set
+            {
+                if (boxFillColor != value)
+                {
+                    boxFillColor = value;
+                    Invalidate();
+                }
+            }
         }
 
         public RoundedCheckBox()
@@ -79,14 +119,20 @@ namespace VRCGalleryManager.Design
             int boxSize = Height - 4;
             Rectangle boxRect = new Rectangle(2, 2, boxSize, boxSize);
 
-            // Disegna il rettangolo arrotondato
-            using (GraphicsPath path = GetRoundedRectanglePath(boxRect, borderRadius))
+            // Rebuild path if needed
+            if (_cachedBoxPath == null || _lastPathBoxSize != boxSize || _lastPathRadius != borderRadius)
             {
-                using (SolidBrush brush = new SolidBrush(currentBoxFillColor))
-                    g.FillPath(brush, path);
-                using (Pen penBorder = new Pen(currentBorderColor, borderSize))
-                    g.DrawPath(penBorder, path);
+                _cachedBoxPath?.Dispose();
+                _cachedBoxPath = GetRoundedRectanglePath(boxRect, borderRadius);
+                _lastPathBoxSize = boxSize;
+                _lastPathRadius = borderRadius;
             }
+
+            // Disegna il rettangolo arrotondato
+            using (SolidBrush brush = new SolidBrush(currentBoxFillColor))
+                g.FillPath(brush, _cachedBoxPath);
+            using (Pen penBorder = new Pen(currentBorderColor, borderSize))
+                g.DrawPath(penBorder, _cachedBoxPath);
 
             // Disegna il segno di spunta se Checked
             if (Checked)
@@ -133,6 +179,16 @@ namespace VRCGalleryManager.Design
             Checked = !Checked;
             Invalidate();
             base.OnClick(e);
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _cachedBoxPath?.Dispose();
+                _cachedBoxPath = null;
+            }
+            base.Dispose(disposing);
         }
     }
 }

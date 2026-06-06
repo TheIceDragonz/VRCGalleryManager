@@ -44,6 +44,17 @@ namespace VRCGalleryManager.Design
         private const int BAR_W      = 6;   // spessore barra px
         private const int BAR_MARGIN = 3;   // margine dal bordo px
 
+        // ── Cache fields for optimization ────────────────────────────────────────
+        private Size _lastRegionSize;
+        private int _lastRegionRadius;
+        private bool _lastVScroll;
+
+        private GraphicsPath _cachedPathSurface = null;
+        private GraphicsPath _cachedPathBorder = null;
+        private Size _lastPathSize;
+        private int _lastPathRadius;
+        private int _lastPathBorderSize;
+
         private static readonly Color TrackColor      = Color.FromArgb(7,  36,  43);
         private static readonly Color ThumbColor      = Color.FromArgb(106, 227, 249);
         private static readonly Color ThumbHoverColor = Color.FromArgb(160, 240, 255);
@@ -143,6 +154,20 @@ namespace VRCGalleryManager.Design
                 return;
 
             int effectiveRadius = Math.Min(borderRadius, Math.Min(rectSurface.Width, rectSurface.Height) / 2);
+            bool currentVScroll = VScroll;
+
+            if (_lastRegionSize == rectSurface.Size && 
+                _lastRegionRadius == effectiveRadius && 
+                _lastVScroll == currentVScroll && 
+                this.Region != null)
+            {
+                return; // Region already matches, skip allocation
+            }
+
+            _lastRegionSize = rectSurface.Size;
+            _lastRegionRadius = effectiveRadius;
+            _lastVScroll = currentVScroll;
+
             Region oldRegion = this.Region;
             if (effectiveRadius > 2)
             {
@@ -250,12 +275,25 @@ namespace VRCGalleryManager.Design
 
             if (effectiveRadius > 2)
             {
-                using var pathSurface = GetFigurePath(rectSurface, effectiveRadius);
-                using var pathBorder  = GetFigurePath(rectBorder, effectiveRadius - borderSize);
-                using var penSurface  = new Pen(Parent?.BackColor ?? Color.Transparent, smoothSize);
-                using var penBorder   = new Pen(borderColor, borderSize);
-                g.DrawPath(penSurface, pathSurface);
-                if (borderSize >= 1) g.DrawPath(penBorder, pathBorder);
+                if (_cachedPathSurface == null || _cachedPathBorder == null || 
+                    _lastPathSize != rectSurface.Size || 
+                    _lastPathRadius != effectiveRadius || 
+                    _lastPathBorderSize != borderSize)
+                {
+                    _cachedPathSurface?.Dispose();
+                    _cachedPathBorder?.Dispose();
+
+                    _cachedPathSurface = GetFigurePath(rectSurface, effectiveRadius);
+                    _cachedPathBorder = GetFigurePath(rectBorder, Math.Max(1, effectiveRadius - borderSize));
+                    _lastPathSize = rectSurface.Size;
+                    _lastPathRadius = effectiveRadius;
+                    _lastPathBorderSize = borderSize;
+                }
+
+                using var penSurface = new Pen(Parent?.BackColor ?? Color.Transparent, smoothSize);
+                using var penBorder  = new Pen(borderColor, borderSize);
+                g.DrawPath(penSurface, _cachedPathSurface);
+                if (borderSize >= 1) g.DrawPath(penBorder, _cachedPathBorder);
             }
             else
             {
@@ -313,7 +351,6 @@ namespace VRCGalleryManager.Design
                 var rect = new Rectangle(0, ClientSize.Height - reserve, ClientSize.Width, reserve);
                 Invalidate(rect);
             }
-            Update(); // Force immediate synchronous draw of the scrollbar tracks/thumbs
         }
 
         protected override void OnMouseDown(MouseEventArgs e)
@@ -461,6 +498,11 @@ namespace VRCGalleryManager.Design
                 Region oldRegion = this.Region;
                 this.Region = null;
                 oldRegion?.Dispose();
+
+                _cachedPathSurface?.Dispose();
+                _cachedPathSurface = null;
+                _cachedPathBorder?.Dispose();
+                _cachedPathBorder = null;
             }
             base.Dispose(disposing);
         }

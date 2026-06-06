@@ -19,6 +19,7 @@ namespace VRCGalleryManager.Forms.Panels
             //* IMAGE Animated PANEL
             RoundedPictureBox pictureBox = new RoundedPictureBox
             {
+                Size = new Size(150, 150),
                 Dock = DockStyle.Top,
                 BackColor = Color.FromArgb(24, 27, 31),
                 SizeMode = PictureBoxSizeMode.StretchImage,
@@ -68,11 +69,19 @@ namespace VRCGalleryManager.Forms.Panels
             {
                 int.TryParse(frames, out int fCount);
                 int.TryParse(framesOverTime, out int fps);
-                if (tags.Contains("animated") && fCount > 0)
+                if (tags.Contains("animated") && fCount >= 1 && fCount <= 64)
                 {
-                    SpriteSheetViewer viewer = new SpriteSheetViewer(pictureBox);
-                    await viewer.LoadSpriteSheetAsync(finalaviImage, fCount, fps);
-                    viewer.StartAnimation();
+                    try
+                    {
+                        SpriteSheetViewer viewer = new SpriteSheetViewer(pictureBox);
+                        await viewer.LoadSpriteSheetAsync(finalaviImage, fCount, fps);
+                        viewer.StartAnimation();
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Errore caricamento sprite sheet: {ex.Message}");
+                        pictureBox.LoadAsync(finalaviImage);
+                    }
                 }
                 else
                 {
@@ -363,11 +372,19 @@ namespace VRCGalleryManager.Forms.Panels
 
             if (!finalaviImage.Contains("imageNotFound"))
             {
-                if (invData.Metadata != null && invData.Metadata.Animated == true && invData.Metadata.Frames > 0)
+                if (invData.Metadata != null && invData.Metadata.Animated == true && invData.Metadata.Frames >= 1 && invData.Metadata.Frames <= 64)
                 {
-                    SpriteSheetViewer viewer = new SpriteSheetViewer(pictureBox);
-                    await viewer.LoadSpriteSheetAsync(finalaviImage, invData.Metadata.Frames, invData.Metadata.FramesOverTime);
-                    viewer.StartAnimation();
+                    try
+                    {
+                        SpriteSheetViewer viewer = new SpriteSheetViewer(pictureBox);
+                        await viewer.LoadSpriteSheetAsync(finalaviImage, invData.Metadata.Frames, invData.Metadata.FramesOverTime);
+                        viewer.StartAnimation();
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Errore caricamento sprite sheet: {ex.Message}");
+                        pictureBox.LoadAsync(finalaviImage);
+                    }
                 }
                 else
                 {

@@ -21,18 +21,43 @@ namespace VRCGalleryManager.Design
 
         private bool _isHovered = false;
 
-        public event EventHandler Scroll;
+        // ── Cache fields for optimization ────────────────────────────────────────
+        private GraphicsPath _cachedTrackPath = null;
+        private Size _lastTrackSize;
+        private int _lastTrackRadius;
+
+        private GraphicsPath _cachedThumbPath = null;
+        private Size _lastThumbSize;
+        private int _lastThumbRadius;
+
+        public new event EventHandler Scroll;
 
         public int Minimum
         {
             get => _minimum;
-            set { _minimum = Math.Max(0, value); Invalidate(); }
+            set
+            {
+                int val = Math.Max(0, value);
+                if (_minimum != val)
+                {
+                    _minimum = val;
+                    Invalidate();
+                }
+            }
         }
 
         public int Maximum
         {
             get => _maximum;
-            set { _maximum = Math.Max(1, value); Invalidate(); }
+            set
+            {
+                int val = Math.Max(1, value);
+                if (_maximum != val)
+                {
+                    _maximum = val;
+                    Invalidate();
+                }
+            }
         }
 
         public int Value
@@ -54,7 +79,15 @@ namespace VRCGalleryManager.Design
         public int LargeChange
         {
             get => _largeChange;
-            set { _largeChange = Math.Max(1, value); Invalidate(); }
+            set
+            {
+                int val = Math.Max(1, value);
+                if (_largeChange != val)
+                {
+                    _largeChange = val;
+                    Invalidate();
+                }
+            }
         }
 
         public ModernVScrollBar()
@@ -100,27 +133,42 @@ namespace VRCGalleryManager.Design
             Graphics g = e.Graphics;
             g.SmoothingMode = SmoothingMode.AntiAlias;
 
+            int radius = Width / 2;
+
             // Draw track
+            if (_cachedTrackPath == null || _lastTrackSize != ClientRectangle.Size || _lastTrackRadius != radius)
+            {
+                _cachedTrackPath?.Dispose();
+                _cachedTrackPath = GetRoundedRectPath(ClientRectangle, radius);
+                _lastTrackSize = ClientRectangle.Size;
+                _lastTrackRadius = radius;
+            }
+
             using (Brush trackBrush = new SolidBrush(_trackColor))
             {
-                using (GraphicsPath trackPath = GetRoundedRectPath(ClientRectangle, Width / 2))
-                {
-                    g.FillPath(trackBrush, trackPath);
-                }
+                g.FillPath(trackBrush, _cachedTrackPath);
             }
 
             // Draw thumb
             int thumbHeight = GetThumbHeight();
             int thumbY = GetThumbY();
-            Rectangle thumbRect = new Rectangle(0, thumbY, Width, thumbHeight);
+
+            Size currentThumbSize = new Size(Width, thumbHeight);
+            if (_cachedThumbPath == null || _lastThumbSize != currentThumbSize || _lastThumbRadius != radius)
+            {
+                _cachedThumbPath?.Dispose();
+                Rectangle localThumbRect = new Rectangle(0, 0, currentThumbSize.Width, currentThumbSize.Height);
+                _cachedThumbPath = GetRoundedRectPath(localThumbRect, radius);
+                _lastThumbSize = currentThumbSize;
+                _lastThumbRadius = radius;
+            }
 
             Color currentThumbColor = _isDragging || _isHovered ? _thumbHoverColor : _thumbColor;
             using (Brush thumbBrush = new SolidBrush(currentThumbColor))
             {
-                using (GraphicsPath thumbPath = GetRoundedRectPath(thumbRect, Width / 2))
-                {
-                    g.FillPath(thumbBrush, thumbPath);
-                }
+                g.TranslateTransform(0, thumbY);
+                g.FillPath(thumbBrush, _cachedThumbPath);
+                g.TranslateTransform(0, -thumbY);
             }
         }
 
@@ -195,6 +243,17 @@ namespace VRCGalleryManager.Design
             base.OnMouseUp(e);
             _isDragging = false;
             Invalidate();
+        }
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _cachedTrackPath?.Dispose();
+                _cachedTrackPath = null;
+                _cachedThumbPath?.Dispose();
+                _cachedThumbPath = null;
+            }
+            base.Dispose(disposing);
         }
     }
 }

@@ -37,7 +37,7 @@ namespace VRCGalleryManager.Forms
             previewPanel = new DoubleBufferedPanel();
             emojiTypePanel = new Panel();
             previewVRChat = new RoundedPictureBox();
-            flowPanelFrames = new ModernFlowPanel();
+            flowPanelFrames = new FlowLayoutPanel();
             settingsPanel = new RoundedPanel();
             containerImageAndGif = new Panel();
             panelStaticControls = new Panel();
@@ -178,7 +178,6 @@ namespace VRCGalleryManager.Forms
             flowPanelFrames.Name = "flowPanelFrames";
             flowPanelFrames.Size = new Size(1136, 98);
             flowPanelFrames.TabIndex = 8;
-            flowPanelFrames.UseCustomScrollBar = true;
             flowPanelFrames.WrapContents = false;
             // 
             // settingsPanel
@@ -973,7 +972,7 @@ namespace VRCGalleryManager.Forms
         private RoundedPictureBox previewVRChat;
         private Label labelFPS;
         private RoundedTrackBar trackBarFPS;
-        private ModernFlowPanel flowPanelFrames;
+        private FlowLayoutPanel flowPanelFrames;
         private Label lblStartFrame;
         private RoundedTrackBar trackBarStartFrame;
         private Label lblEndFrame;

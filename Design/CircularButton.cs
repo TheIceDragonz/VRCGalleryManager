@@ -11,6 +11,8 @@ namespace VRCGalleryManager.Design
         private int borderSize = 0;
         private Color borderColor = Color.PaleVioletRed;
 
+        private Size _lastRegionSize;
+
         private Image svgImage;
         private string svgResource;
         private ContentAlignment svgAlignment = ContentAlignment.MiddleCenter;
@@ -25,8 +27,11 @@ namespace VRCGalleryManager.Design
             get => borderSize;
             set
             {
-                borderSize = value;
-                Invalidate();
+                if (borderSize != value)
+                {
+                    borderSize = value;
+                    Invalidate();
+                }
             }
         }
 
@@ -36,8 +41,11 @@ namespace VRCGalleryManager.Design
             get => borderColor;
             set
             {
-                borderColor = value;
-                Invalidate();
+                if (borderColor != value)
+                {
+                    borderColor = value;
+                    Invalidate();
+                }
             }
         }
 
@@ -45,14 +53,28 @@ namespace VRCGalleryManager.Design
         public Color BackgroundColor
         {
             get => BackColor;
-            set => BackColor = value;
+            set
+            {
+                if (BackColor != value)
+                {
+                    BackColor = value;
+                    Invalidate();
+                }
+            }
         }
 
         [Category("VRCGalleryManager")]
         public Color TextColor
         {
             get => ForeColor;
-            set => ForeColor = value;
+            set
+            {
+                if (ForeColor != value)
+                {
+                    ForeColor = value;
+                    Invalidate();
+                }
+            }
         }
 
         [Category("VRCGalleryManager")]
@@ -342,6 +364,11 @@ namespace VRCGalleryManager.Design
             if (rectSurface.Width <= 0 || rectSurface.Height <= 0)
                 return;
 
+            if (_lastRegionSize == rectSurface.Size && this.Region != null)
+                return;
+
+            _lastRegionSize = rectSurface.Size;
+
             using (GraphicsPath pathSurface = new GraphicsPath())
             {
                 pathSurface.AddEllipse(rectSurface);
@@ -362,7 +389,11 @@ namespace VRCGalleryManager.Design
         protected override void OnResize(EventArgs e)
         {
             base.OnResize(e);
-            Width = Height;
+            if (Width != Height)
+            {
+                Width = Height;
+                return;
+            }
             UpdateRegion();
         }
 
