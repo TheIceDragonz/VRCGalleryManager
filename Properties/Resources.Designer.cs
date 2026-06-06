@@ -301,6 +301,16 @@ namespace VRCGalleryManager.Properties {
         }
         
         /// <summary>
+        ///   Cerca una risorsa localizzata di tipo System.Byte[].
+        /// </summary>
+        internal static byte[] paste_svgrepo_com {
+            get {
+                object obj = ResourceManager.GetObject("paste_svgrepo_com", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
         ///   Cerca una risorsa localizzata di tipo System.Drawing.Bitmap.
         /// </summary>
         internal static System.Drawing.Bitmap Preview_B2_Aura {

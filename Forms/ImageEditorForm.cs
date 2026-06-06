@@ -57,7 +57,7 @@ namespace VRCGalleryManager.Forms
         private static extern int DwmSetWindowAttribute(IntPtr hwnd, int attr, ref int attrValue, int attrSize);
 
         // Events for inline use (replaces ShowDialog / DialogResult)
-        public event Action<string> OnSave;
+        public event Action<string, string> OnSave;
         public event Action OnCancel;
 
         public ImageEditorForm()
@@ -71,8 +71,18 @@ namespace VRCGalleryManager.Forms
         /// Carica una nuova immagine nell'editor e imposta il ratio di default.
         /// Chiama questo metodo prima di mostrare il pannello.
         /// </summary>
-        public void LoadImage(string imagePath, string defaultRatioStr = "1:1")
+        public void LoadImage(string imagePath, string defaultRatioStr = "1:1", bool showNote = false)
         {
+            bool isGif = Path.GetExtension(imagePath).Equals(".gif", StringComparison.OrdinalIgnoreCase);
+            if (isGif)
+            {
+                VRCGalleryManager.Core.NotificationManager.ShowNotification(
+                    "Le GIF animate sono supportate solo nella sezione Emoji.",
+                    "Attenzione",
+                    VRCGalleryManager.Core.NotificationType.Info
+                );
+            }
+
             // Dispose previous resources
             originalImage?.Dispose();
             checkerBrush?.Dispose();
@@ -141,8 +151,18 @@ namespace VRCGalleryManager.Forms
             outlineColor = Color.White;
             outlineThickness = 0;
 
+            // Set up note textbox
+            textBoxNote.Text = "";
+            UpdateNoteVisibility(showNote);
+
             // Trigger initial state layout
             UpdateEditorState();
+        }
+
+        private void UpdateNoteVisibility(bool showNote)
+        {
+            lblNote.Visible = showNote;
+            panelNote.Visible = showNote;
         }
 
         private void ApplyRecolorBar()
@@ -806,7 +826,7 @@ namespace VRCGalleryManager.Forms
             }
 
             // Notify inline host that save is done
-            OnSave?.Invoke(resultPath);
+            OnSave?.Invoke(resultPath, textBoxNote.Text);
         }
 
         private void btnCancel_Click(object sender, EventArgs e)

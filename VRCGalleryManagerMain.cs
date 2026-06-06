@@ -13,13 +13,19 @@ namespace VRCGalleryManager
 
         private readonly ApiConnectedForm[] _forms;
         private ImageEditorForm _editorForm;
-        private int _previousFormIndex = 8; // index of the form visible before the editor
+        private EmojiEditorForm _emojiEditorForm;
+        private int _previousFormIndex = 7; // index of the form visible before the editor
 
         // Track current editor session handlers so we can safely detach them
-        private Action<string> _currentHandleSave;
+        private Action<string, string> _currentHandleSave;
         private Action _currentHandleCancel;
         // Track pending cancel callback so ShowForm() can invoke it if editor is interrupted
         private Action _currentEditorCancel;
+
+        // Track emoji editor session handlers
+        private Action<string, bool, string, int, int> _currentEmojiHandleSave;
+        private Action _currentEmojiHandleCancel;
+        private Action _currentEmojiEditorCancel;
 
         private VRCAuth Auth;
         public MainPanel()
@@ -48,7 +54,6 @@ namespace VRCGalleryManager
                 new Prints(Auth),
 
                 new Picflow(Auth),
-                new Create(Auth),
                 new Gallery(Auth),
                 new Settings(Auth, this)
             };
@@ -68,7 +73,15 @@ namespace VRCGalleryManager
             this.FormsPanel.Controls.Add(_editorForm);
             _editorForm.Hide();
 
-            ShowForm(8);
+            // Create the inline emoji editor
+            _emojiEditorForm = new EmojiEditorForm();
+            _emojiEditorForm.TopLevel = false;
+            _emojiEditorForm.FormBorderStyle = FormBorderStyle.None;
+            _emojiEditorForm.Dock = DockStyle.Fill;
+            this.FormsPanel.Controls.Add(_emojiEditorForm);
+            _emojiEditorForm.Hide();
+
+            ShowForm(7);
 
             if (Auth.LoggedIn || Auth.CookieLoaded)
             {
@@ -156,10 +169,26 @@ namespace VRCGalleryManager
 
                 _editorForm.Hide();
             }
+            else if (_emojiEditorForm != null && _emojiEditorForm.Visible)
+            {
+                // Detach handlers first to prevent double-fire
+                if (_currentEmojiHandleSave != null) _emojiEditorForm.OnSave -= _currentEmojiHandleSave;
+                if (_currentEmojiHandleCancel != null) _emojiEditorForm.OnCancel -= _currentEmojiHandleCancel;
+                _currentEmojiHandleSave = null;
+                _currentEmojiHandleCancel = null;
+
+                // Notify the originating form
+                var pendingCancel = _currentEmojiEditorCancel;
+                _currentEmojiEditorCancel = null;
+                pendingCancel?.Invoke();
+
+                _emojiEditorForm.Hide();
+            }
             else
             {
                 foreach (var form in _forms) form.Hide();
                 _editorForm?.Hide();
+                _emojiEditorForm?.Hide();
             }
 
             _forms[index].Show();
@@ -172,9 +201,8 @@ namespace VRCGalleryManager
             _switchPrints.BorderColor  = index == 4 ? Color.FromArgb(255, 255, 255) : Color.FromArgb(5, 55, 66);
 
             _switchPicflow.BorderColor  = index == 5 ? Color.FromArgb(255, 255, 255) : Color.FromArgb(5, 55, 66);
-            _switchCreate.BorderColor   = index == 6 ? Color.FromArgb(255, 255, 255) : Color.FromArgb(5, 55, 66);
-            _switchGallery.BorderColor  = index == 7 ? Color.FromArgb(255, 255, 255) : Color.FromArgb(5, 55, 66);
-            _switchSettings.BorderColor = index == 8 ? Color.FromArgb(255, 255, 255) : Color.FromArgb(5, 55, 66);
+            _switchGallery.BorderColor  = index == 6 ? Color.FromArgb(255, 255, 255) : Color.FromArgb(5, 55, 66);
+            _switchSettings.BorderColor = index == 7 ? Color.FromArgb(255, 255, 255) : Color.FromArgb(5, 55, 66);
         }
 
         /// <summary>
@@ -187,11 +215,19 @@ namespace VRCGalleryManager
         /// <param name="onCancel">Callback invocato quando l'utente clicca Annulla.</param>
         public void ShowEditor(string imagePath, string ratio, Action<string> onSave, Action onCancel)
         {
+            ShowEditor(imagePath, ratio, (path, note) => onSave?.Invoke(path), onCancel, showNote: false);
+        }
+
+        /// <summary>
+        /// Mostra l'image editor inline nel FormsPanel con supporto per note (es. per Prints).
+        /// </summary>
+        public void ShowEditor(string imagePath, string ratio, Action<string, string> onSave, Action onCancel, bool showNote)
+        {
             // Safely detach any lingering handlers from a previous session
             if (_currentHandleSave != null)   _editorForm.OnSave   -= _currentHandleSave;
             if (_currentHandleCancel != null) _editorForm.OnCancel -= _currentHandleCancel;
 
-            void HandleSave(string resultPath)
+            void HandleSave(string resultPath, string note)
             {
                 _editorForm.OnSave   -= _currentHandleSave;
                 _editorForm.OnCancel -= _currentHandleCancel;
@@ -199,7 +235,7 @@ namespace VRCGalleryManager
                 _currentHandleCancel = null;
                 _currentEditorCancel = null;
                 HideEditor();
-                onSave?.Invoke(resultPath);
+                onSave?.Invoke(resultPath, note);
             }
 
             void HandleCancel()
@@ -221,10 +257,11 @@ namespace VRCGalleryManager
             _editorForm.OnCancel += HandleCancel;
 
             // Load the image into the editor
-            _editorForm.LoadImage(imagePath, ratio);
+            _editorForm.LoadImage(imagePath, ratio, showNote);
 
             // Switch to editor view
             foreach (var form in _forms) form.Hide();
+            _emojiEditorForm?.Hide();
             _editorForm.Show();
             _editorForm.BringToFront();
         }
@@ -237,6 +274,60 @@ namespace VRCGalleryManager
                 _forms[_previousFormIndex].Show();
         }
 
+        /// <summary>
+        /// Mostra l'emoji editor inline nel FormsPanel.
+        /// </summary>
+        public void ShowEmojiEditor(string imagePath, Action<string, bool, string, int, int> onSave, Action onCancel)
+        {
+            if (_currentEmojiHandleSave != null)   _emojiEditorForm.OnSave   -= _currentEmojiHandleSave;
+            if (_currentEmojiHandleCancel != null) _emojiEditorForm.OnCancel -= _currentEmojiHandleCancel;
+
+            void HandleSave(string resultPath, bool isAnimated, string style, int frames, int fps)
+            {
+                _emojiEditorForm.OnSave   -= _currentEmojiHandleSave;
+                _emojiEditorForm.OnCancel -= _currentEmojiHandleCancel;
+                _currentEmojiHandleSave   = null;
+                _currentEmojiHandleCancel = null;
+                _currentEmojiEditorCancel = null;
+                HideEmojiEditor();
+                onSave?.Invoke(resultPath, isAnimated, style, frames, fps);
+            }
+
+            void HandleCancel()
+            {
+                _emojiEditorForm.OnSave   -= _currentEmojiHandleSave;
+                _emojiEditorForm.OnCancel -= _currentEmojiHandleCancel;
+                _currentEmojiHandleSave   = null;
+                _currentEmojiHandleCancel = null;
+                _currentEmojiEditorCancel = null;
+                HideEmojiEditor();
+                onCancel?.Invoke();
+            }
+
+            _currentEmojiHandleSave   = HandleSave;
+            _currentEmojiHandleCancel = HandleCancel;
+            _currentEmojiEditorCancel = onCancel;
+
+            _emojiEditorForm.OnSave   += HandleSave;
+            _emojiEditorForm.OnCancel += HandleCancel;
+
+            // Load the image/gif into the emoji editor
+            _emojiEditorForm.LoadImage(imagePath);
+
+            // Switch to emoji editor view
+            foreach (var form in _forms) form.Hide();
+            _editorForm?.Hide();
+            _emojiEditorForm.Show();
+            _emojiEditorForm.BringToFront();
+        }
+
+        private void HideEmojiEditor()
+        {
+            _emojiEditorForm.Hide();
+            if (_previousFormIndex >= 0 && _previousFormIndex < _forms.Length)
+                _forms[_previousFormIndex].Show();
+        }
+
         private void _switchIcons_Click(object sender, EventArgs e) => ShowForm(0);
         private void _switchPhotos_Click(object sender, EventArgs e) => ShowForm(1);
         private void _switchEmoji_Click(object sender, EventArgs e) => ShowForm(2);
@@ -244,9 +335,8 @@ namespace VRCGalleryManager
         private void _switchPrints_Click(object sender, EventArgs e) => ShowForm(4);
 
         private void _switchPicflow_Click(object sender, EventArgs e) => ShowForm(5);
-        private void _switchCreate_Click(object sender, EventArgs e) => ShowForm(6);
-        private void _switchGallery_Click(object sender, EventArgs e) => ShowForm(7);
-        private void _switchSettings_Click(object sender, EventArgs e) => ShowForm(8);
+        private void _switchGallery_Click(object sender, EventArgs e) => ShowForm(6);
+        private void _switchSettings_Click(object sender, EventArgs e) => ShowForm(7);
 
         public void SetFeatureControlsEnabled(bool enabled)
         {
@@ -256,7 +346,6 @@ namespace VRCGalleryManager
             _switchSticker.Enabled = enabled;
             _switchPrints.Enabled = enabled;
             _switchPicflow.Enabled = enabled;
-            _switchCreate.Enabled = enabled;
         }
 
         //Recolor Bar

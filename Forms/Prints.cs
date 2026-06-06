@@ -78,11 +78,11 @@ namespace VRCGalleryManager.Forms
             mainPanel.ShowEditor(
                 path,
                 "16:9",
-                onSave: async (editedImage) =>
+                onSave: async (editedImage, note) =>
                 {
                     try
                     {
-                        ApiRequest.ApiDataPrint prints = await apiRequest.UploadPrint(editedImage, textBoxNotePrint.Text);
+                        ApiRequest.ApiDataPrint prints = await apiRequest.UploadPrint(editedImage, note);
                         ImagePanel.AddPrintsPanel(printsPanel, apiRequest, prints.IdImageUploaded, prints.AuthorId, prints.AuthorName, prints.FileId, UpdateCounter);
                         UpdateCounter("Add");
 
@@ -101,7 +101,8 @@ namespace VRCGalleryManager.Forms
                 onCancel: () =>
                 {
                     UpdateCounter("");
-                }
+                },
+                showNote: true
             );
         }
         private void pasteButton_Click(object sender, EventArgs e)

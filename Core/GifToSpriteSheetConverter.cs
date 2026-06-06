@@ -1,4 +1,4 @@
-﻿using System.Drawing.Imaging;
+using System.Drawing.Imaging;
 using System.Text.RegularExpressions;
 
 namespace VRCGalleryManager.Core
@@ -63,20 +63,31 @@ namespace VRCGalleryManager.Core
 
         public (Bitmap spriteSheet, int frameCount) ConvertGifToSpriteSheet(string gifPath)
         {
+            gifImage?.Dispose();
+            gifImage = Image.FromFile(gifPath);
+            FrameDimension dimension = new FrameDimension(gifImage.FrameDimensionsList[0]);
+            int count = gifImage.GetFrameCount(dimension);
+            int maxFrames = Math.Min(count, 64);
+            return ConvertGifToSpriteSheet(gifPath, 0, maxFrames - 1);
+        }
+
+        public (Bitmap spriteSheet, int frameCount) ConvertGifToSpriteSheet(string gifPath, int startFrame, int endFrame)
+        {
             int textureSize = 1024;
             gifImage?.Dispose();
             gifImage = Image.FromFile(gifPath);
             FrameDimension dimension = new FrameDimension(gifImage.FrameDimensionsList[0]);
-            frameCount = Math.Min(gifImage.GetFrameCount(dimension), 64);
+            int count = gifImage.GetFrameCount(dimension);
+
+            int framesToUse = endFrame - startFrame + 1;
+            if (framesToUse <= 0 || framesToUse > 64)
+            {
+                throw new ArgumentException("Selected frame range is invalid or exceeds 64 frames.");
+            }
 
             int squareSize, cols, rows;
 
-            if (frameCount == 1)
-            {
-                throw new ArgumentException("The GIF must contain more than one frame.");
-            }
-
-            if (frameCount <= 16)
+            if (framesToUse <= 16)
             {
                 squareSize = textureSize / 4;
                 cols = rows = 4;
@@ -93,19 +104,21 @@ namespace VRCGalleryManager.Core
             {
                 g.Clear(Color.Transparent);
 
-                for (int i = 0; i < frameCount; i++)
+                for (int i = 0; i < framesToUse; i++)
                 {
-                    gifImage.SelectActiveFrame(dimension, i);
-                    Bitmap squareFrame = CropToSquare(gifImage, squareSize);
+                    gifImage.SelectActiveFrame(dimension, startFrame + i);
+                    using (Bitmap squareFrame = CropToSquare(gifImage, squareSize))
+                    {
+                        int col = i % cols;
+                        int row = i / cols;
 
-                    int col = i % cols;
-                    int row = i / cols;
-
-                    g.DrawImage(squareFrame, col * squareSize, row * squareSize, squareSize, squareSize);
+                        g.DrawImage(squareFrame, col * squareSize, row * squareSize, squareSize, squareSize);
+                    }
                 }
             }
 
-            return (SpriteSheet, frameCount);
+            frameCount = framesToUse;
+            return (SpriteSheet, framesToUse);
         }
 
         public string SaveSpriteSheet(string outputPath)

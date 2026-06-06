@@ -34,8 +34,6 @@ namespace VRCGalleryManager.Forms
             emojiPanel = new FlowLayoutPanel();
             _refreshButton = new RoundedButton();
             uploadButton = new RoundedButton();
-            emojiOpenTypePanel = new RoundedButton();
-            emojiTypePanel = new RoundedPanel();
             limitPanel = new RoundedPanel();
             limitLabel = new Label();
             limitCounterLabel = new Label();
@@ -99,7 +97,7 @@ namespace VRCGalleryManager.Forms
             uploadButton.Location = new Point(15, 669);
             uploadButton.Margin = new Padding(4);
             uploadButton.Name = "uploadButton";
-            uploadButton.Size = new Size(650, 50);
+            uploadButton.Size = new Size(802, 50);
             uploadButton.SvgAlignment = ContentAlignment.MiddleCenter;
             uploadButton.SvgColor = Color.Black;
             uploadButton.SvgContent = null;
@@ -112,52 +110,6 @@ namespace VRCGalleryManager.Forms
             uploadButton.TextColor = Color.FromArgb(106, 227, 249);
             uploadButton.UseVisualStyleBackColor = false;
             uploadButton.Click += uploadEmoji_Click;
-            // 
-            // emojiOpenTypePanel
-            // 
-            emojiOpenTypePanel.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            emojiOpenTypePanel.BackColor = Color.FromArgb(7, 36, 43);
-            emojiOpenTypePanel.BackgroundColor = Color.FromArgb(7, 36, 43);
-            emojiOpenTypePanel.BorderColor = Color.FromArgb(5, 55, 66);
-            emojiOpenTypePanel.BorderRadius = 10;
-            emojiOpenTypePanel.BorderSize = 2;
-            emojiOpenTypePanel.FlatAppearance.BorderSize = 0;
-            emojiOpenTypePanel.FlatStyle = FlatStyle.Flat;
-            emojiOpenTypePanel.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
-            emojiOpenTypePanel.ForeColor = Color.FromArgb(106, 227, 249);
-            emojiOpenTypePanel.Location = new Point(730, 669);
-            emojiOpenTypePanel.Margin = new Padding(4);
-            emojiOpenTypePanel.Name = "emojiOpenTypePanel";
-            emojiOpenTypePanel.Size = new Size(145, 50);
-            emojiOpenTypePanel.SvgAlignment = ContentAlignment.MiddleCenter;
-            emojiOpenTypePanel.SvgColor = Color.Black;
-            emojiOpenTypePanel.SvgContent = null;
-            emojiOpenTypePanel.SvgOffset = new Point(0, 0);
-            emojiOpenTypePanel.SvgPadding = new Padding(0);
-            emojiOpenTypePanel.SvgResource = null;
-            emojiOpenTypePanel.SvgSize = new Size(50, 50);
-            emojiOpenTypePanel.TabIndex = 7;
-            emojiOpenTypePanel.Text = "Type";
-            emojiOpenTypePanel.TextColor = Color.FromArgb(106, 227, 249);
-            emojiOpenTypePanel.UseVisualStyleBackColor = false;
-            emojiOpenTypePanel.Click += emojiOpenTypePanel_Click;
-            // 
-            // emojiTypePanel
-            // 
-            emojiTypePanel.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Right;
-            emojiTypePanel.AutoScroll = true;
-            emojiTypePanel.BackColor = Color.FromArgb(7, 36, 43);
-            emojiTypePanel.BackgroundColor = Color.FromArgb(7, 36, 43);
-            emojiTypePanel.BorderColor = Color.PaleVioletRed;
-            emojiTypePanel.BorderRadius = 9;
-            emojiTypePanel.BorderSize = 0;
-            emojiTypePanel.Location = new Point(553, 56);
-            emojiTypePanel.Margin = new Padding(4);
-            emojiTypePanel.Name = "emojiTypePanel";
-            emojiTypePanel.Padding = new Padding(6);
-            emojiTypePanel.Size = new Size(322, 605);
-            emojiTypePanel.TabIndex = 8;
-            emojiTypePanel.Visible = false;
             // 
             // limitPanel
             // 
@@ -214,7 +166,7 @@ namespace VRCGalleryManager.Forms
             pasteButton.FlatStyle = FlatStyle.Flat;
             pasteButton.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
             pasteButton.ForeColor = Color.FromArgb(106, 227, 249);
-            pasteButton.Location = new Point(673, 669);
+            pasteButton.Location = new Point(825, 669);
             pasteButton.Margin = new Padding(4);
             pasteButton.Name = "pasteButton";
             pasteButton.Size = new Size(50, 50);
@@ -223,7 +175,7 @@ namespace VRCGalleryManager.Forms
             pasteButton.SvgContent = resources.GetString("pasteButton.SvgContent");
             pasteButton.SvgOffset = new Point(0, 0);
             pasteButton.SvgPadding = new Padding(0);
-            pasteButton.SvgResource = "backward_svgrepo_com";
+            pasteButton.SvgResource = "paste_svgrepo_com";
             pasteButton.SvgSize = new Size(25, 25);
             pasteButton.TabIndex = 8;
             pasteButton.TextColor = Color.FromArgb(106, 227, 249);
@@ -240,8 +192,6 @@ namespace VRCGalleryManager.Forms
             Controls.Add(pasteButton);
             Controls.Add(limitCounterLabel);
             Controls.Add(limitPanel);
-            Controls.Add(emojiTypePanel);
-            Controls.Add(emojiOpenTypePanel);
             Controls.Add(uploadButton);
             Controls.Add(_refreshButton);
             Controls.Add(emojiPanel);
@@ -258,8 +208,6 @@ namespace VRCGalleryManager.Forms
         #endregion
         private RoundedButton _refreshButton;
         private RoundedButton uploadButton;
-        private RoundedButton emojiOpenTypePanel;
-        private RoundedPanel emojiTypePanel;
         private RoundedPanel limitPanel;
         private Label limitLabel;
         private Label limitCounterLabel;

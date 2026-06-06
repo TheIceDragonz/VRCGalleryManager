@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.Drawing.Drawing2D;
 
 namespace VRCGalleryManager.Design
@@ -11,6 +11,7 @@ namespace VRCGalleryManager.Design
         private int borderRadiusBottomLeft = 20;
         private int borderRadiusBottomRight = 20;
         private Color borderColor = Color.PaleVioletRed;
+        private bool useMaxRoundness = false;
 
         [Category("VRCGalleryManager")]
         public int BorderSize
@@ -19,6 +20,7 @@ namespace VRCGalleryManager.Design
             set
             {
                 borderSize = value;
+                UpdateRegion();
                 Invalidate();
             }
         }
@@ -30,6 +32,7 @@ namespace VRCGalleryManager.Design
             set
             {
                 borderRadiusTopLeft = Math.Max(0, Math.Min(value, Math.Min(Width, Height) / 2));
+                UpdateRegion();
                 Invalidate();
             }
         }
@@ -41,6 +44,7 @@ namespace VRCGalleryManager.Design
             set
             {
                 borderRadiusTopRight = Math.Max(0, Math.Min(value, Math.Min(Width, Height) / 2));
+                UpdateRegion();
                 Invalidate();
             }
         }
@@ -52,6 +56,7 @@ namespace VRCGalleryManager.Design
             set
             {
                 borderRadiusBottomLeft = Math.Max(0, Math.Min(value, Math.Min(Width, Height) / 2));
+                UpdateRegion();
                 Invalidate();
             }
         }
@@ -63,6 +68,7 @@ namespace VRCGalleryManager.Design
             set
             {
                 borderRadiusBottomRight = Math.Max(0, Math.Min(value, Math.Min(Width, Height) / 2));
+                UpdateRegion();
                 Invalidate();
             }
         }
@@ -87,14 +93,42 @@ namespace VRCGalleryManager.Design
 
         [Category("VRCGalleryManager")]
         [DefaultValue(false)]
-        public bool UseMaxRoundness { get; set; }
+        public bool UseMaxRoundness
+        {
+            get { return useMaxRoundness; }
+            set
+            {
+                useMaxRoundness = value;
+                UpdateRegion();
+                Invalidate();
+            }
+        }
 
         public RoundedPictureBox()
         {
             Size = new Size(150, 150);
             SizeMode = PictureBoxSizeMode.StretchImage;
             BackColor = Color.MediumSlateBlue;
-            UseMaxRoundness = false;
+            useMaxRoundness = false;
+        }
+
+        private void UpdateRegion()
+        {
+            Rectangle rectSurface = ClientRectangle;
+            if (rectSurface.Width <= 0 || rectSurface.Height <= 0)
+                return;
+            using (GraphicsPath pathSurface = GetFigurePath(rectSurface))
+            {
+                Region oldRegion = this.Region;
+                this.Region = new Region(pathSurface);
+                oldRegion?.Dispose();
+            }
+        }
+
+        protected override void OnSizeChanged(EventArgs e)
+        {
+            base.OnSizeChanged(e);
+            UpdateRegion();
         }
 
         protected override void OnPaint(PaintEventArgs pevent)
@@ -130,7 +164,6 @@ namespace VRCGalleryManager.Design
             using (Pen penBorder = new Pen(borderColor, borderSize))
             {
                 pevent.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-                Region = new Region(pathSurface);
                 pevent.Graphics.DrawPath(penSurface, pathSurface);
                 if (borderSize >= 1)
                     pevent.Graphics.DrawPath(penBorder, pathBorder);

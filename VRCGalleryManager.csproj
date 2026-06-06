@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
@@ -36,7 +36,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="Forms\Create.cs" />
+    <Compile Update="Forms\EmojiEditorForm.cs" />
+    <Compile Update="Forms\EmojiEditorForm.Designer.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="Forms\ImageEditorForm.cs" />
+    <Compile Update="Forms\ImageEditorForm.Designer.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Update="Forms\Photos.cs" />
     <Compile Update="Forms\Photos.Designer.cs">
       <SubType>Form</SubType>

@@ -14,18 +14,16 @@ namespace VRCGalleryManager.Forms
         private int imageCount;
 
         private static string EMOJI_MASK_TAG = "square";
-        private static string EMOJI_ANIMATION_STYLE = "";
-
-        private string tags = new string("");
-        private string animationStyle = new string("");
-        private string frames = new string("");
-        private string framesOverTime = new string("");
-        private string maskTag = new string("");
 
         public Emoji(VRCAuth auth)
         {
             InitializeComponent();
             InitApiRequest(auth);
+
+            // Position pasteButton to the right and expand uploadButton
+            pasteButton.Left = 825;
+            uploadButton.Width = 802;
+
             this.Shown += (s, e) => { if (emojiPanel.Controls.Count == 0) EmojiList(); };
         }
 
@@ -64,31 +62,17 @@ namespace VRCGalleryManager.Forms
             _refreshButton.Enabled = true;
         }
 
-        private async void uploadEmoji_Click(object sender, EventArgs e)
+        private void uploadEmoji_Click(object sender, EventArgs e)
         {
-            if (!emojiOpenTypePanel.Text.Contains("Type"))
+            using (OpenFileDialog openFileDialog = new OpenFileDialog())
             {
-                using (OpenFileDialog openFileDialog = new OpenFileDialog())
-                {
-                    ImageHelper.SetOpenFileDialogFilter(openFileDialog);
-                    openFileDialog.Multiselect = false;
+                ImageHelper.SetOpenFileDialogFilter(openFileDialog);
+                openFileDialog.Multiselect = false;
 
-                    if (openFileDialog.ShowDialog() == DialogResult.OK)
-                    {
-                        if (!emojiOpenTypePanel.Text.Contains("Type"))
-                        {
-                            UploadImage(openFileDialog.FileName);
-                        }
-                        else
-                        {
-                            DialogMessage.ShowMissingTypeDialog(this);
-                        }
-                    }
+                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    UploadImage(openFileDialog.FileName);
                 }
-            }
-            else
-            {
-                DialogMessage.ShowMissingTypeDialog(this);
             }
         }
         private void UploadImage(string path)
@@ -99,16 +83,21 @@ namespace VRCGalleryManager.Forms
             var mainPanel = this.TopLevelControl as MainPanel;
             if (mainPanel == null) return;
 
-            mainPanel.ShowEditor(
+            mainPanel.ShowEmojiEditor(
                 path,
-                "1:1",
-                onSave: async (editedImage) =>
+                onSave: async (editedPath, isAnimated, style, frames, fps) =>
                 {
                     try
                     {
-                        EMOJI_ANIMATION_STYLE = emojiOpenTypePanel.Text.ToLower();
-
-                        ApiRequest.ApiData emoji = await apiRequest.UploadImage(editedImage, EMOJI_MASK_TAG, TagType.Emoji, EMOJI_ANIMATION_STYLE);
+                        ApiRequest.ApiData emoji;
+                        if (isAnimated)
+                        {
+                            emoji = await apiRequest.UploadImage(editedPath, EMOJI_MASK_TAG, TagType.EmojiAnimated, style.ToLower(), frames, fps);
+                        }
+                        else
+                        {
+                            emoji = await apiRequest.UploadImage(editedPath, EMOJI_MASK_TAG, TagType.Emoji, style.ToLower());
+                        }
 
                         ImagePanel.AddImagePanel(emojiPanel, apiRequest, emoji.IdImageUploaded, emoji.Tags, emoji.Frames, emoji.FramesOverTime, UpdateCounter);
                         UpdateCounter("Add");
@@ -121,7 +110,7 @@ namespace VRCGalleryManager.Forms
                     }
                     finally
                     {
-                        try { File.Delete(editedImage); } catch { }
+                        try { File.Delete(editedPath); } catch { }
                         UpdateCounter("");
                     }
                 },
@@ -132,30 +121,9 @@ namespace VRCGalleryManager.Forms
             );
         }
 
-        private void emojiOpenTypePanel_Click(object sender, EventArgs e)
-        {
-            if (emojiTypePanel.Visible)
-            {
-                TypePanel.ClearEmojiType(emojiTypePanel);
-            }
-            else
-            {
-                TypePanel.LoadEmojiType(emojiOpenTypePanel, emojiTypePanel);
-            }
-
-            emojiTypePanel.Visible = !emojiTypePanel.Visible;
-        }
-
         private void pasteButton_Click(object sender, EventArgs e)
         {
-            if (!emojiOpenTypePanel.Text.Contains("Type"))
-            {
-                ClipboardHandler.ClipboardDataImageOrLink(pasteButton, UploadImage);
-            }
-            else
-            {
-                DialogMessage.ShowMissingTypeDialog(this);
-            }
+            ClipboardHandler.ClipboardDataImageOrLink(pasteButton, UploadImage);
         }
 
         private void UpdateCounter(string action)
@@ -184,14 +152,7 @@ namespace VRCGalleryManager.Forms
 
         private void File_DragDrop(object sender, DragEventArgs e)
         {
-            if (!emojiOpenTypePanel.Text.Contains("Type"))
-            {
-                ImageHelper.ProcessDragDrop(e, UploadImage);
-            }
-            else
-            {
-                DialogMessage.ShowMissingTypeDialog(this);
-            }
+            ImageHelper.ProcessDragDrop(e, UploadImage);
         }
     }
 }

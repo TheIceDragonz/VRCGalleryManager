@@ -1,4 +1,4 @@
-﻿using Timer = System.Windows.Forms.Timer;
+using Timer = System.Windows.Forms.Timer;
 
 namespace VRCGalleryManager.Core
 {
@@ -52,8 +52,8 @@ namespace VRCGalleryManager.Core
             if (textureSize != 256 && textureSize != 512 && textureSize != 1024)
                 throw new ArgumentException("La risoluzione dello sprite sheet deve essere 256×256, 512×512 o 1024×1024.");
 
-            if (frameCount <= 1 || frameCount > 64)
-                throw new ArgumentException("frameCount deve essere tra 2 e 64.");
+            if (frameCount < 1 || frameCount > 64)
+                throw new ArgumentException("frameCount deve essere tra 1 e 64.");
 
             _frameCount = frameCount;
             _currentFrame = 0;
@@ -70,13 +70,30 @@ namespace VRCGalleryManager.Core
             _frameTimer.Interval = Math.Max(1, 1000 / Math.Max(1, framesPerSecond));
 
             _pictureBox.Image?.Dispose();
-            _pictureBox.Image = new Bitmap(_frameWidth, _frameHeight);
+            _pictureBox.Image = null;
+
+            if (frameCount == 1)
+            {
+                Rectangle srcRect = new Rectangle(0, 0, _frameWidth, _frameHeight);
+                Bitmap firstFrame = new Bitmap(_frameWidth, _frameHeight);
+                using (Graphics g = Graphics.FromImage(firstFrame))
+                {
+                    g.Clear(Color.Transparent);
+                    g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
+                    g.DrawImage(_spriteSheet, new Rectangle(0, 0, _frameWidth, _frameHeight), srcRect, GraphicsUnit.Pixel);
+                }
+                _pictureBox.Image = firstFrame;
+                _pictureBox.Refresh();
+            }
         }
 
         public void StartAnimation()
         {
             if (_spriteSheet == null) throw new InvalidOperationException("Sprite sheet non caricato.");
-            _frameTimer.Start();
+            if (_frameCount > 1)
+            {
+                _frameTimer.Start();
+            }
         }
 
         public void StopAnimation() => _frameTimer.Stop();
@@ -88,19 +105,24 @@ namespace VRCGalleryManager.Core
 
         private void FrameTimer_Tick(object? sender, EventArgs e)
         {
-            if (_spriteSheet == null || _frameCount <= 0 || _pictureBox.Image == null) return;
+            if (_spriteSheet == null || _frameCount <= 0) return;
 
             int cols = _spriteSheet.Width / _frameWidth;
             int x = (_currentFrame % cols) * _frameWidth;
             int y = (_currentFrame / cols) * _frameHeight;
 
             Rectangle srcRect = new Rectangle(x, y, _frameWidth, _frameHeight);
-            using (Graphics g = Graphics.FromImage(_pictureBox.Image))
+            Bitmap nextFrame = new Bitmap(_frameWidth, _frameHeight);
+            using (Graphics g = Graphics.FromImage(nextFrame))
             {
                 g.Clear(Color.Transparent);
                 g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
                 g.DrawImage(_spriteSheet, new Rectangle(0, 0, _frameWidth, _frameHeight), srcRect, GraphicsUnit.Pixel);
             }
+
+            var oldImage = _pictureBox.Image;
+            _pictureBox.Image = nextFrame;
+            oldImage?.Dispose();
 
             _pictureBox.Refresh();
             _currentFrame = (_currentFrame + 1) % _frameCount;

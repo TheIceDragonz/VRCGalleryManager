@@ -175,7 +175,7 @@ namespace VRCGalleryManager.Forms
             pasteButton.SvgContent = resources.GetString("pasteButton.SvgContent");
             pasteButton.SvgOffset = new Point(0, 0);
             pasteButton.SvgPadding = new Padding(0);
-            pasteButton.SvgResource = "backward_svgrepo_com";
+            pasteButton.SvgResource = "paste_svgrepo_com";
             pasteButton.SvgSize = new Size(25, 25);
             pasteButton.TabIndex = 8;
             pasteButton.TextColor = Color.FromArgb(106, 227, 249);

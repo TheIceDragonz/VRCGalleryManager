@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
@@ -82,7 +82,7 @@ namespace VRCGalleryManager.Core
                     using var src = Image.FromStream(pngStream, true, true);
                     string filePath = GetTempFilePath("Pasted-Image");
                     src.Save(filePath, ImageFormat.Png);
-                    NotificationManager.ShowNotification("Image pasted and saved successfully!", "Paste Image", NotificationType.Info);
+                    NotificationManager.ShowNotification("Image pasted and saved successfully!", "Paste Image", NotificationType.Success);
                     return filePath;
                 }
             }
@@ -145,21 +145,39 @@ namespace VRCGalleryManager.Core
             {
                 var res = await HttpClient.GetAsync(url);
                 string ct = res.Content.Headers.ContentType?.MediaType;
-                if (!res.IsSuccessStatusCode || !ct.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
+                if (!res.IsSuccessStatusCode || ct == null || !ct.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
                     return null;
 
-                using var stream = await res.Content.ReadAsStreamAsync();
-                using var src = Image.FromStream(stream, true, true);
-                using var bmp = new Bitmap(src.Width, src.Height, PixelFormat.Format32bppArgb);
-                using (var g = Graphics.FromImage(bmp))
+                string cleanUrl = url.Split('?')[0];
+                bool isGif = ct.Equals("image/gif", StringComparison.OrdinalIgnoreCase) ||
+                             cleanUrl.EndsWith(".gif", StringComparison.OrdinalIgnoreCase);
+
+                if (isGif)
                 {
-                    g.CompositingMode = CompositingMode.SourceCopy;
-                    g.DrawImage(src, 0, 0);
+                    string filePath = Path.Combine(TempDirectory, $"Downloaded-Image_{Guid.NewGuid():N}.gif");
+                    using (var stream = await res.Content.ReadAsStreamAsync())
+                    using (var fileStream = File.Create(filePath))
+                    {
+                        await stream.CopyToAsync(fileStream);
+                    }
+                    NotificationManager.ShowNotification("GIF downloaded and saved successfully!", "Download GIF", NotificationType.Success);
+                    return filePath;
                 }
-                string filePath = GetTempFilePath("Downloaded-Image");
-                bmp.Save(filePath, ImageFormat.Png);
-                NotificationManager.ShowNotification("Image downloaded and saved successfully!", "Download Image", NotificationType.Info);
-                return filePath;
+                else
+                {
+                    using var stream = await res.Content.ReadAsStreamAsync();
+                    using var src = Image.FromStream(stream, true, true);
+                    using var bmp = new Bitmap(src.Width, src.Height, PixelFormat.Format32bppArgb);
+                    using (var g = Graphics.FromImage(bmp))
+                    {
+                        g.CompositingMode = CompositingMode.SourceCopy;
+                        g.DrawImage(src, 0, 0);
+                    }
+                    string filePath = GetTempFilePath("Downloaded-Image");
+                    bmp.Save(filePath, ImageFormat.Png);
+                    NotificationManager.ShowNotification("Image downloaded and saved successfully!", "Download Image", NotificationType.Success);
+                    return filePath;
+                }
             }
             catch (Exception ex)
             {

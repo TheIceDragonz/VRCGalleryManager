@@ -8,11 +8,13 @@ using System.Windows.Forms;
 namespace VRCGalleryManager.Design
 {
     /// <summary>
-    /// Panel con angoli arrotondati e scrollbar personalizzata disegnata
-    /// direttamente in OnPaint (nessun controllo figlio per le barre →
-    /// zero interferenza con DisplayRectangle e AutoScroll).
+    /// FlowLayoutPanel con scrollbar personalizzata in stile dark/cyan.
+    /// Le barre sono disegnate direttamente in OnPaint — nessun controllo
+    /// figlio aggiuntivo, zero interferenza con DisplayRectangle e AutoScroll.
+    ///
+    /// Utilizzo: imposta AutoScroll = true e UseCustomScrollBar = true (default).
     /// </summary>
-    public class RoundedPanel : Panel
+    public class ModernFlowPanel : FlowLayoutPanel
     {
         // ── WinAPI ───────────────────────────────────────────────────────────────
         [DllImport("user32.dll")]
@@ -23,12 +25,7 @@ namespace VRCGalleryManager.Design
         private const int WM_VSCROLL    = 0x0115;
         private const int WM_HSCROLL    = 0x0114;
 
-        // ── Border fields ────────────────────────────────────────────────────────
-        private int   borderSize   = 0;
-        private int   borderRadius = 15;
-        private Color borderColor  = Color.PaleVioletRed;
-
-        // ── Scrollbar visual state (NO child controls!) ──────────────────────────
+        // ── Scrollbar visual state ────────────────────────────────────────────────
         private bool _useCustomScrollBar = true;
         private bool _showVBar           = false;
         private bool _showHBar           = false;
@@ -39,49 +36,18 @@ namespace VRCGalleryManager.Design
         private bool _vBarHovered        = false;
         private bool _hBarHovered        = false;
 
-        private const int BAR_W      = 6;   // spessore barra px
-        private const int BAR_MARGIN = 3;   // margine dal bordo px
+        private const int BAR_W      = 6;
+        private const int BAR_MARGIN = 3;
 
         private static readonly Color TrackColor      = Color.FromArgb(7,  36,  43);
         private static readonly Color ThumbColor      = Color.FromArgb(106, 227, 249);
         private static readonly Color ThumbHoverColor = Color.FromArgb(160, 240, 255);
 
-        // ── Border Properties ────────────────────────────────────────────────────
+        // ── Properties ───────────────────────────────────────────────────────────
 
-        [Category("VRCGalleryManager")]
-        public int BorderSize
-        {
-            get => borderSize;
-            set { if (borderSize != value) { borderSize = value; Invalidate(); } }
-        }
-
-        [Category("VRCGalleryManager")]
-        public int BorderRadius
-        {
-            get => borderRadius;
-            set { if (borderRadius != value) { borderRadius = value; Invalidate(); } }
-        }
-
-        [Category("VRCGalleryManager")]
-        public Color BorderColor
-        {
-            get => borderColor;
-            set { if (borderColor != value) { borderColor = value; Invalidate(); } }
-        }
-
-        [Category("VRCGalleryManager")]
-        public Color BackgroundColor
-        {
-            get => BackColor;
-            set => BackColor = value;
-        }
-
-        /// <summary>
-        /// Quando true, nasconde le scrollbar native e le disegna in stile
-        /// dark/cyan direttamente nel panel (funziona solo con AutoScroll=true).
-        /// </summary>
         [Category("VRCGalleryManager")]
         [DefaultValue(true)]
+        [Description("Sostituisce le scrollbar native con quelle in stile dark/cyan.")]
         public bool UseCustomScrollBar
         {
             get => _useCustomScrollBar;
@@ -90,14 +56,15 @@ namespace VRCGalleryManager.Design
 
         // ── Constructor ──────────────────────────────────────────────────────────
 
-        public RoundedPanel()
+        public ModernFlowPanel()
         {
-            Size = new Size(150, 150);
-            BackColor = Color.MediumSlateBlue;
             DoubleBuffered = true;
+            SetStyle(ControlStyles.OptimizedDoubleBuffer |
+                     ControlStyles.AllPaintingInWmPaint  |
+                     ControlStyles.ResizeRedraw, true);
         }
 
-        // ── Padding per riservare spazio alla barra ──────────────────────────────
+        // ── Padding per lo spazio barre ──────────────────────────────────────────
 
         protected override void OnHandleCreated(EventArgs e)
         {
@@ -107,20 +74,32 @@ namespace VRCGalleryManager.Design
 
         private void UpdateScrollPadding()
         {
-            int reserve = BAR_W + BAR_MARGIN * 2;
             if (!_useCustomScrollBar || DesignMode)
             {
-                if (Padding.Right == reserve)
-                    Padding = new Padding(Padding.Left, Padding.Top, 0, Padding.Bottom);
+                Padding = Padding.Empty;
                 return;
             }
-            // Riserviamo BAR_W + BAR_MARGIN*2 a destra così i figli non ci
-            // vanno sotto la barra verticale.
-            if (Padding.Right != reserve)
-                Padding = new Padding(Padding.Left, Padding.Top, reserve, Padding.Bottom);
+
+            int reserve = BAR_W + BAR_MARGIN * 2;
+            // Determina automaticamente su quale lato riservare spazio
+            // in base alla direzione del flow e al WrapContents
+            bool needRight  = NeedsVBar();
+            bool needBottom = NeedsHBar();
+
+            int right  = needRight  || (!WrapContents) ? reserve : 0;
+            int bottom = needBottom || (!WrapContents && FlowDirection == FlowDirection.LeftToRight) ? reserve : 0;
+
+            if (Padding.Right != right || Padding.Bottom != bottom)
+                Padding = new Padding(Padding.Left, Padding.Top, right, bottom);
         }
 
-        // ── WndProc: nasconde le scrollbar native ────────────────────────────────
+        private bool NeedsVBar() =>
+            IsHandleCreated && DisplayRectangle.Height > ClientSize.Height && ClientSize.Height > 0;
+
+        private bool NeedsHBar() =>
+            IsHandleCreated && DisplayRectangle.Width > ClientSize.Width && ClientSize.Width > 0;
+
+        // ── WndProc ──────────────────────────────────────────────────────────────
 
         protected override void WndProc(ref Message m)
         {
@@ -135,7 +114,7 @@ namespace VRCGalleryManager.Design
             }
         }
 
-        // ── Geometry helpers ─────────────────────────────────────────────────────
+        // ── Geometry ─────────────────────────────────────────────────────────────
 
         private (Rectangle track, Rectangle thumb) GetVBarRects()
         {
@@ -145,15 +124,14 @@ namespace VRCGalleryManager.Design
             int trackH   = clientH - BAR_MARGIN * 2 - (_showHBar ? BAR_W + BAR_MARGIN : 0);
             var track    = new Rectangle(trackX, BAR_MARGIN, BAR_W, Math.Max(0, trackH));
 
-            float ratio    = displayH > 0 ? Math.Min(1f, (float)clientH / displayH) : 1f;
-            int   thumbH   = Math.Max(20, (int)(track.Height * ratio));
-            int   maxScr   = displayH - clientH;
-            int   range    = track.Height - thumbH;
-            int   thumbY   = (maxScr > 0 && range > 0)
+            float ratio  = displayH > 0 ? Math.Min(1f, (float)clientH / displayH) : 1f;
+            int thumbH   = Math.Max(20, (int)(track.Height * ratio));
+            int maxScr   = displayH - clientH;
+            int range    = track.Height - thumbH;
+            int thumbY   = (maxScr > 0 && range > 0)
                                ? (int)((float)(-AutoScrollPosition.Y) / maxScr * range)
                                : 0;
-            var thumb = new Rectangle(track.X, track.Y + thumbY, track.Width, thumbH);
-            return (track, thumb);
+            return (track, new Rectangle(track.X, track.Y + thumbY, track.Width, thumbH));
         }
 
         private (Rectangle track, Rectangle thumb) GetHBarRects()
@@ -171,8 +149,7 @@ namespace VRCGalleryManager.Design
             int thumbX   = (maxScr > 0 && range > 0)
                                ? (int)((float)(-AutoScrollPosition.X) / maxScr * range)
                                : 0;
-            var thumb = new Rectangle(track.X + thumbX, track.Y, thumbW, track.Height);
-            return (track, thumb);
+            return (track, new Rectangle(track.X + thumbX, track.Y, thumbW, track.Height));
         }
 
         private static GraphicsPath BuildRoundedPath(Rectangle r, int radius)
@@ -193,42 +170,13 @@ namespace VRCGalleryManager.Design
 
         // ── Paint ────────────────────────────────────────────────────────────────
 
-        protected override void OnPaint(PaintEventArgs pevent)
+        protected override void OnPaint(PaintEventArgs e)
         {
-            base.OnPaint(pevent);
-            var g = pevent.Graphics;
-            g.SmoothingMode = SmoothingMode.AntiAlias;
-
-            // ── Border / rounded region ─────────────────────────────────────────
-            int extraWidth = (AutoScroll && (DisplayRectangle.Height > ClientSize.Height)) ? 17 : 0;
-            Rectangle rectSurface = new Rectangle(0, 0, ClientRectangle.Width + extraWidth, ClientRectangle.Height);
-            Rectangle rectBorder  = Rectangle.Inflate(rectSurface, -borderSize, -borderSize);
-            int smoothSize        = borderSize > 0 ? borderSize : 2;
-            int effectiveRadius   = Math.Min(borderRadius, Math.Min(rectSurface.Width, rectSurface.Height) / 2);
-
-            if (effectiveRadius > 2)
-            {
-                using var pathSurface = GetFigurePath(rectSurface, effectiveRadius);
-                using var pathBorder  = GetFigurePath(rectBorder, effectiveRadius - borderSize);
-                using var penSurface  = new Pen(Parent?.BackColor ?? Color.Transparent, smoothSize);
-                using var penBorder   = new Pen(borderColor, borderSize);
-                Region = new Region(pathSurface);
-                g.DrawPath(penSurface, pathSurface);
-                if (borderSize >= 1) g.DrawPath(penBorder, pathBorder);
-            }
-            else
-            {
-                Region = new Region(rectSurface);
-                if (borderSize >= 1)
-                {
-                    using var penBorder = new Pen(borderColor, borderSize);
-                    penBorder.Alignment = PenAlignment.Inset;
-                    g.DrawRectangle(penBorder, 0, 0, rectSurface.Width - 1, rectSurface.Height - 1);
-                }
-            }
-
-            // ── Custom scrollbars ───────────────────────────────────────────────
+            base.OnPaint(e);
             if (!_useCustomScrollBar || !AutoScroll || DesignMode) return;
+
+            var g = e.Graphics;
+            g.SmoothingMode = SmoothingMode.AntiAlias;
 
             int clientH  = ClientSize.Height;
             int clientW  = ClientSize.Width;
@@ -238,6 +186,7 @@ namespace VRCGalleryManager.Design
             _showVBar = displayH > clientH && clientH > 0;
             _showHBar = displayW > clientW && clientW > 0;
 
+            // Disegna le barre nel client area (sopra i figli, in coda alla paint)
             if (_showVBar)
             {
                 var (track, thumb) = GetVBarRects();
@@ -256,11 +205,13 @@ namespace VRCGalleryManager.Design
             int r = Math.Min(track.Width, track.Height) / 2;
             using var trackPath = BuildRoundedPath(track, r);
             using var thumbPath = BuildRoundedPath(thumb, r);
-            using (var b = new SolidBrush(TrackColor))      g.FillPath(b, trackPath);
-            using (var b = new SolidBrush(hovered ? ThumbHoverColor : ThumbColor)) g.FillPath(b, thumbPath);
+            using (var b = new SolidBrush(TrackColor))
+                g.FillPath(b, trackPath);
+            using (var b = new SolidBrush(hovered ? ThumbHoverColor : ThumbColor))
+                g.FillPath(b, thumbPath);
         }
 
-        // ── Mouse events ─────────────────────────────────────────────────────────
+        // ── Mouse ────────────────────────────────────────────────────────────────
 
         protected override void OnMouseDown(MouseEventArgs e)
         {
@@ -277,10 +228,7 @@ namespace VRCGalleryManager.Design
                         _vBarDragging = true;
                         _vBarDragOffset = e.Y - thumb.Y;
                     }
-                    else
-                    {
-                        ScrollBy(vertical: true, direction: e.Y < thumb.Y ? -1 : 1);
-                    }
+                    else ScrollBy(vertical: true, direction: e.Y < thumb.Y ? -1 : 1);
                     Invalidate();
                     return;
                 }
@@ -296,10 +244,7 @@ namespace VRCGalleryManager.Design
                         _hBarDragging = true;
                         _hBarDragOffset = e.X - thumb.X;
                     }
-                    else
-                    {
-                        ScrollBy(vertical: false, direction: e.X < thumb.X ? -1 : 1);
-                    }
+                    else ScrollBy(vertical: false, direction: e.X < thumb.X ? -1 : 1);
                     Invalidate();
                 }
             }
@@ -315,28 +260,24 @@ namespace VRCGalleryManager.Design
             if (_vBarDragging && e.Button == MouseButtons.Left)
             {
                 var (track, thumb) = GetVBarRects();
-                int thumbH  = thumb.Height;
-                int range   = track.Height - thumbH;
+                int range = track.Height - thumb.Height;
                 if (range > 0)
                 {
-                    int pos       = Math.Clamp(e.Y - track.Y - _vBarDragOffset, 0, range);
-                    int displayH  = DisplayRectangle.Height;
-                    int maxScroll = Math.Max(0, displayH - ClientSize.Height);
-                    AutoScrollPosition = new Point(-AutoScrollPosition.X, (int)((float)pos / range * maxScroll));
+                    int pos    = Math.Clamp(e.Y - track.Y - _vBarDragOffset, 0, range);
+                    int maxScr = Math.Max(0, DisplayRectangle.Height - ClientSize.Height);
+                    AutoScrollPosition = new Point(-AutoScrollPosition.X, (int)((float)pos / range * maxScr));
                 }
                 redraw = true;
             }
             else if (_hBarDragging && e.Button == MouseButtons.Left)
             {
                 var (track, thumb) = GetHBarRects();
-                int thumbW  = thumb.Width;
-                int range   = track.Width - thumbW;
+                int range = track.Width - thumb.Width;
                 if (range > 0)
                 {
-                    int pos       = Math.Clamp(e.X - track.X - _hBarDragOffset, 0, range);
-                    int displayW  = DisplayRectangle.Width;
-                    int maxScroll = Math.Max(0, displayW - ClientSize.Width);
-                    AutoScrollPosition = new Point((int)((float)pos / range * maxScroll), -AutoScrollPosition.Y);
+                    int pos    = Math.Clamp(e.X - track.X - _hBarDragOffset, 0, range);
+                    int maxScr = Math.Max(0, DisplayRectangle.Width - ClientSize.Width);
+                    AutoScrollPosition = new Point((int)((float)pos / range * maxScr), -AutoScrollPosition.Y);
                 }
                 redraw = true;
             }
@@ -389,13 +330,26 @@ namespace VRCGalleryManager.Design
         protected override void OnLayout(LayoutEventArgs levent)
         {
             base.OnLayout(levent);
+            if (_useCustomScrollBar && !DesignMode)
+                try { if (IsHandleCreated) ShowScrollBar(Handle, SB_BOTH, false); } catch { }
             Invalidate();
         }
 
         protected override void OnResize(EventArgs e)
         {
             base.OnResize(e);
-            Region = null;
+            Invalidate();
+        }
+
+        protected override void OnControlAdded(ControlEventArgs e)
+        {
+            base.OnControlAdded(e);
+            Invalidate();
+        }
+
+        protected override void OnControlRemoved(ControlEventArgs e)
+        {
+            base.OnControlRemoved(e);
             Invalidate();
         }
 
@@ -405,31 +359,17 @@ namespace VRCGalleryManager.Design
         {
             if (vertical)
             {
-                int max   = Math.Max(0, DisplayRectangle.Height - ClientSize.Height);
-                int newY  = Math.Clamp(-AutoScrollPosition.Y + direction * ClientSize.Height / 3, 0, max);
+                int max  = Math.Max(0, DisplayRectangle.Height - ClientSize.Height);
+                int newY = Math.Clamp(-AutoScrollPosition.Y + direction * ClientSize.Height / 3, 0, max);
                 AutoScrollPosition = new Point(-AutoScrollPosition.X, newY);
             }
             else
             {
-                int max   = Math.Max(0, DisplayRectangle.Width - ClientSize.Width);
-                int newX  = Math.Clamp(-AutoScrollPosition.X + direction * ClientSize.Width / 3, 0, max);
+                int max  = Math.Max(0, DisplayRectangle.Width - ClientSize.Width);
+                int newX = Math.Clamp(-AutoScrollPosition.X + direction * ClientSize.Width / 3, 0, max);
                 AutoScrollPosition = new Point(newX, -AutoScrollPosition.Y);
             }
-        }
-
-        // ── Border helpers ────────────────────────────────────────────────────────
-
-        private GraphicsPath GetFigurePath(Rectangle rect, float radius)
-        {
-            GraphicsPath path = new GraphicsPath();
-            float curveSize = radius * 2F;
-            path.StartFigure();
-            path.AddArc(rect.X, rect.Y, curveSize, curveSize, 180, 90);
-            path.AddArc(rect.Right - curveSize, rect.Y, curveSize, curveSize, 270, 90);
-            path.AddArc(rect.Right - curveSize, rect.Bottom - curveSize, curveSize, curveSize, 0, 90);
-            path.AddArc(rect.X, rect.Bottom - curveSize, curveSize, curveSize, 90, 90);
-            path.CloseFigure();
-            return path;
+            Invalidate();
         }
     }
 }
