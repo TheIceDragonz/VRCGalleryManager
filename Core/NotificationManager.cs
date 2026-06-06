@@ -1,4 +1,4 @@
-﻿using VRCGalleryManager.Design;
+using VRCGalleryManager.Design;
 using Timer = System.Windows.Forms.Timer;
 
 namespace VRCGalleryManager.Core
@@ -22,6 +22,7 @@ namespace VRCGalleryManager.Core
                     if (mainFormDelayed != null)
                     {
                         waitTimer.Stop();
+                        waitTimer.Dispose();
                         ShowNotificationInternal(mainFormDelayed, message, title, type);
                     }
                 };
@@ -35,7 +36,7 @@ namespace VRCGalleryManager.Core
 
         private static void ShowNotificationInternal(Form mainForm, string message, string title, NotificationType type)
         {
-            // Seleziona i colori in base al tipo di notifica
+            // Select colors based on the notification type
             Color borderColor;
             Color textColor;
             switch (type)
@@ -97,38 +98,91 @@ namespace VRCGalleryManager.Core
             }
 
             Timer slideInTimer = new Timer { Interval = 5 };
+            notificationPanel.Tag = slideInTimer;
             slideInTimer.Tick += (s, e) =>
             {
-                if (notificationPanel.Location.X < 10)
-                    notificationPanel.Location = new Point(notificationPanel.Location.X + 20, notificationPanel.Location.Y);
-                else
+                if (notificationPanel.IsDisposed)
+                {
                     slideInTimer.Stop();
+                    slideInTimer.Dispose();
+                    return;
+                }
+
+                if (notificationPanel.Location.X < 10)
+                {
+                    notificationPanel.Location = new Point(notificationPanel.Location.X + 20, notificationPanel.Location.Y);
+                }
+                else
+                {
+                    slideInTimer.Stop();
+                    slideInTimer.Dispose();
+                    if (notificationPanel.Tag == slideInTimer)
+                        notificationPanel.Tag = null;
+
+                    StartCloseTimer(notificationPanel);
+                }
             };
             slideInTimer.Start();
+        }
+
+        private static void StartCloseTimer(RoundedPanel notificationPanel)
+        {
+            if (notificationPanel.IsDisposed) return;
 
             Timer closeTimer = new Timer { Interval = 3000 };
+            notificationPanel.Tag = closeTimer;
             closeTimer.Tick += (s, e) =>
             {
                 closeTimer.Stop();
-                RemoveNotification(notificationPanel);
+                closeTimer.Dispose();
+                if (!notificationPanel.IsDisposed)
+                {
+                    if (notificationPanel.Tag == closeTimer)
+                        notificationPanel.Tag = null;
+                    RemoveNotification(notificationPanel);
+                }
             };
             closeTimer.Start();
         }
 
         private static void RemoveNotification(RoundedPanel notificationPanel)
         {
+            if (notificationPanel.IsDisposed) return;
+
+            // Stop any existing animation or close timer
+            if (notificationPanel.Tag is Timer existingTimer)
+            {
+                existingTimer.Stop();
+                existingTimer.Dispose();
+                notificationPanel.Tag = null;
+            }
+
             Timer slideOutTimer = new Timer { Interval = 5 };
+            notificationPanel.Tag = slideOutTimer;
             slideOutTimer.Tick += (s, e) =>
             {
+                if (notificationPanel.IsDisposed)
+                {
+                    slideOutTimer.Stop();
+                    slideOutTimer.Dispose();
+                    return;
+                }
+
                 if (notificationPanel.Location.X > -PanelWidth)
+                {
                     notificationPanel.Location = new Point(notificationPanel.Location.X - 20, notificationPanel.Location.Y);
+                }
                 else
                 {
                     slideOutTimer.Stop();
+                    slideOutTimer.Dispose();
                     lock (ActiveNotifications)
                     {
                         ActiveNotifications.Remove(notificationPanel);
-                        notificationPanel.Parent.Controls.Remove(notificationPanel);
+                        if (notificationPanel.Parent != null)
+                        {
+                            notificationPanel.Parent.Controls.Remove(notificationPanel);
+                        }
                         notificationPanel.Dispose();
                         AdjustNotificationPositions();
                     }
@@ -147,6 +201,7 @@ namespace VRCGalleryManager.Core
                 int currentY = mainForm.ClientSize.Height - (PanelHeight + Spacing);
                 foreach (var panel in ActiveNotifications)
                 {
+                    if (panel.IsDisposed) continue;
                     panel.Location = new Point(panel.Location.X, currentY);
                     currentY -= (PanelHeight + Spacing);
                 }

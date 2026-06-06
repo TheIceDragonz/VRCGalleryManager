@@ -30,7 +30,7 @@ namespace VRCGalleryManager.Forms
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Gallery));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Photos));
             photosPanel = new FlowLayoutPanel();
             _refreshButton = new RoundedButton();
             uploadButton = new RoundedButton();
@@ -176,14 +176,14 @@ namespace VRCGalleryManager.Forms
             pasteButton.SvgContent = resources.GetString("pasteButton.SvgContent");
             pasteButton.SvgOffset = new Point(0, 0);
             pasteButton.SvgPadding = new Padding(0);
-            pasteButton.SvgResource = "backward_svgrepo_com";
+            pasteButton.SvgResource = "paste_svgrepo_com";
             pasteButton.SvgSize = new Size(25, 25);
             pasteButton.TabIndex = 8;
             pasteButton.TextColor = Color.FromArgb(106, 227, 249);
             pasteButton.UseVisualStyleBackColor = false;
             pasteButton.Click += pasteButton_Click;
             // 
-            // Gallery
+            // Photos
             // 
             AllowDrop = true;
             AutoScaleDimensions = new SizeF(120F, 120F);
@@ -198,7 +198,7 @@ namespace VRCGalleryManager.Forms
             Controls.Add(photosPanel);
             FormBorderStyle = FormBorderStyle.None;
             Margin = new Padding(4);
-            Name = "Gallery";
+            Name = "Photos";
             Text = "Gallery";
             DragDrop += File_DragDrop;
             DragEnter += File_DragEnter;

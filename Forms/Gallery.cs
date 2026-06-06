@@ -15,6 +15,7 @@ namespace VRCGalleryManager.Forms
         public Gallery(VRCAuth auth)
         {
             InitializeComponent();
+            ScrollBarHelper.Attach(userInfoPanel);
             InitApiRequest(auth);
 
             this.Shown += (s, e) =>
@@ -96,26 +97,163 @@ namespace VRCGalleryManager.Forms
             _refreshButton.Enabled = true;
         }
 
+        private class ThumbnailLoadRequest
+        {
+            public bool IsFolder { get; set; }
+            public string Path { get; set; }
+            public PictureBox PictureBox { get; set; }
+            public Label Label { get; set; }
+        }
+
         private async Task ShowFoldersAndImagesAsync(string folderPath, CancellationToken token)
         {
             PrepareGallery();
+
+            var loadRequests = new List<ThumbnailLoadRequest>();
 
             var dirs = Directory.GetDirectories(folderPath);
             foreach (var dir in dirs)
             {
                 token.ThrowIfCancellationRequested();
-                var panel = await Task.Run(() => CreateFolderPanel(dir), token);
-                if (token.IsCancellationRequested) break;
+                var panel = CreateFolderPanel(dir, out var pictureBox, out var label);
                 galleryPanel.Controls.Add(panel);
+                loadRequests.Add(new ThumbnailLoadRequest
+                {
+                    IsFolder = true,
+                    Path = dir,
+                    PictureBox = pictureBox,
+                    Label = label
+                });
             }
 
             var files = GetImageFiles(folderPath);
             foreach (var file in files)
             {
                 token.ThrowIfCancellationRequested();
-                var box = await Task.Run(() => CreateImageBox(file), token);
-                if (token.IsCancellationRequested) break;
+                var box = CreateImageBox(file);
                 galleryPanel.Controls.Add(box);
+                loadRequests.Add(new ThumbnailLoadRequest
+                {
+                    IsFolder = false,
+                    Path = file,
+                    PictureBox = box
+                });
+            }
+
+            // Start sequential background loading
+            _ = Task.Run(() => ProcessLoadQueue(loadRequests, token), token);
+
+            await Task.CompletedTask;
+        }
+
+        private void ProcessLoadQueue(List<ThumbnailLoadRequest> requests, CancellationToken token)
+        {
+            foreach (var req in requests)
+            {
+                if (token.IsCancellationRequested)
+                    break;
+
+                try
+                {
+                    if (req.IsFolder)
+                    {
+                        var files = GetImageFiles(req.Path).ToList();
+                        var firstImage = files.LastOrDefault();
+                        if (string.IsNullOrEmpty(firstImage))
+                        {
+                            if (!this.IsDisposed && this.IsHandleCreated)
+                            {
+                                this.BeginInvoke(new Action(() =>
+                                {
+                                    if (!token.IsCancellationRequested && !req.PictureBox.IsDisposed)
+                                    {
+                                        req.PictureBox.Visible = false;
+                                        req.Label.Dock = DockStyle.Fill;
+                                    }
+                                }));
+                            }
+                            continue;
+                        }
+
+                        var thumb = LoadThumbnail(firstImage);
+                        if (token.IsCancellationRequested)
+                        {
+                            thumb?.Dispose();
+                            break;
+                        }
+
+                        if (thumb != null)
+                        {
+                            if (!this.IsDisposed && this.IsHandleCreated)
+                            {
+                                this.BeginInvoke(new Action(() =>
+                                {
+                                    if (!token.IsCancellationRequested && !req.PictureBox.IsDisposed)
+                                    {
+                                        req.PictureBox.Image = thumb;
+                                    }
+                                    else
+                                    {
+                                        thumb.Dispose();
+                                    }
+                                }));
+                            }
+                            else
+                            {
+                                thumb.Dispose();
+                            }
+                        }
+                        else
+                        {
+                            if (!this.IsDisposed && this.IsHandleCreated)
+                            {
+                                this.BeginInvoke(new Action(() =>
+                                {
+                                    if (!token.IsCancellationRequested && !req.PictureBox.IsDisposed)
+                                    {
+                                        req.PictureBox.Visible = false;
+                                        req.Label.Dock = DockStyle.Fill;
+                                    }
+                                }));
+                            }
+                        }
+                    }
+                    else
+                    {
+                        var thumb = LoadThumbnail(req.Path);
+                        if (token.IsCancellationRequested)
+                        {
+                            thumb?.Dispose();
+                            break;
+                        }
+
+                        if (thumb != null)
+                        {
+                            if (!this.IsDisposed && this.IsHandleCreated)
+                            {
+                                this.BeginInvoke(new Action(() =>
+                                {
+                                    if (!token.IsCancellationRequested && !req.PictureBox.IsDisposed)
+                                    {
+                                        req.PictureBox.Image = thumb;
+                                    }
+                                    else
+                                    {
+                                        thumb.Dispose();
+                                    }
+                                }));
+                            }
+                            else
+                            {
+                                thumb.Dispose();
+                            }
+                        }
+                    }
+                }
+                catch
+                {
+                    // Ignore exceptions for individual items, proceed with the queue
+                }
             }
         }
 
@@ -136,7 +274,7 @@ namespace VRCGalleryManager.Forms
         }
 
 
-        private RoundedPanel CreateFolderPanel(string path)
+        private RoundedPanel CreateFolderPanel(string path, out PictureBox outPictureBox, out Label outLabel)
         {
             var panel = new RoundedPanel
             {
@@ -148,15 +286,12 @@ namespace VRCGalleryManager.Forms
                 Padding = new Padding(7)
             };
 
-            var firstImage = GetImageFiles(path).LastOrDefault();
-            var thumb = LoadThumbnail(firstImage);
-
             var pictureBox = new RoundedPictureBox
             {
                 Dock = DockStyle.Fill,
                 SizeMode = PictureBoxSizeMode.CenterImage,
                 Cursor = Cursors.Hand,
-                Image = thumb,
+                Image = null,
                 BorderRadiusBottomLeft = 10,
                 BorderRadiusBottomRight = 10,
                 BorderRadiusTopLeft = 10,
@@ -173,12 +308,6 @@ namespace VRCGalleryManager.Forms
                 Cursor = Cursors.Hand
             };
 
-            if (thumb == null)
-            {
-                pictureBox.Visible = false;
-                label.Dock = DockStyle.Fill;
-            }
-
             void OpenFolder(object s, EventArgs e)
             {
                 _cts?.Cancel();
@@ -193,6 +322,10 @@ namespace VRCGalleryManager.Forms
 
             panel.Controls.Add(pictureBox);
             panel.Controls.Add(label);
+
+            outPictureBox = pictureBox;
+            outLabel = label;
+
             return panel;
         }
 
@@ -204,7 +337,8 @@ namespace VRCGalleryManager.Forms
                 SizeMode = PictureBoxSizeMode.Zoom,
                 Margin = new Padding(10),
                 Cursor = Cursors.Hand,
-                Image = LoadThumbnail(file)
+                Image = null,
+                BackColor = Color.FromArgb(5, 5, 5)
             };
 
             pb.DoubleClick += (s, e) =>
@@ -251,17 +385,51 @@ namespace VRCGalleryManager.Forms
             if (string.IsNullOrEmpty(path) || !File.Exists(path)) return null;
             try
             {
-                var shellFile = ShellFile.FromFilePath(path);
-                using var bmp = shellFile.Thumbnail.LargeBitmap;
-                return new Bitmap(bmp);
+                using (var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
+                using (var original = Image.FromStream(stream, false, false))
+                {
+                    int width = 150;
+                    int height = 150;
+
+                    float ratioX = (float)width / original.Width;
+                    float ratioY = (float)height / original.Height;
+                    float ratio = Math.Min(ratioX, ratioY);
+
+                    int newWidth = Math.Max(1, (int)(original.Width * ratio));
+                    int newHeight = Math.Max(1, (int)(original.Height * ratio));
+
+                    Bitmap thumb = new Bitmap(newWidth, newHeight);
+                    using (Graphics g = Graphics.FromImage(thumb))
+                    {
+                        g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.Low;
+                        g.DrawImage(original, 0, 0, newWidth, newHeight);
+                    }
+                    return thumb;
+                }
             }
-            catch { return null; }
+            catch
+            {
+                try
+                {
+                    var shellFile = ShellFile.FromFilePath(path);
+                    using var bmp = shellFile.Thumbnail.LargeBitmap;
+                    return new Bitmap(bmp);
+                }
+                catch { return null; }
+            }
+        }
+
+        private static bool IsImageFile(string filename)
+        {
+            if (filename.Length < 4) return false;
+            return filename.EndsWith(".png", StringComparison.OrdinalIgnoreCase) ||
+                   filename.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase) ||
+                   filename.EndsWith(".jpeg", StringComparison.OrdinalIgnoreCase);
         }
 
         private IEnumerable<string> GetImageFiles(string dir)
         {
-            return Directory.EnumerateFiles(dir)
-                .Where(f => new[] { ".jpg", ".jpeg", ".png" }.Contains(Path.GetExtension(f).ToLower()));
+            return Directory.EnumerateFiles(dir).Where(IsImageFile);
         }
 
         private void ClearGalleryPanel()

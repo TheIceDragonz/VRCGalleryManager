@@ -40,6 +40,7 @@ namespace VRCGalleryManager.Forms
                 {
                     stickerJson = sticker.JsonImage;
                     imageCount = sticker.JsonImage.Count;
+                    UpdateCounter("");
 
                     foreach (string json in stickerJson)
                     {
@@ -47,13 +48,13 @@ namespace VRCGalleryManager.Forms
                         string id = jsonObject["id"]?.ToString();
                         string fileId = jsonObject["metadata"]?["fileId"]?.ToString();
                         ImagePanel.AddImagePanel(stickerPanel, apiRequest, id, UpdateCounter, fileId);
+                        await Task.Delay(10);
                     }
                 }
-                UpdateCounter("");
             }
             catch (Exception ex)
             {
-                NotificationManager.ShowNotification("Errore nel caricamento sticker: " + ex.Message, "Errore API", NotificationType.Error);
+                NotificationManager.ShowNotification("Error loading sticker: " + ex.Message, "API Error", NotificationType.Error);
             }
             finally
             {
@@ -74,23 +75,43 @@ namespace VRCGalleryManager.Forms
                 }
             }
         }
-        private async void UploadImage(string path)
+        private void UploadImage(string path)
         {
-            string resizedImage = ImageResizer.ResizeImage1x1(path);
+            uploadButton.Enabled = false;
+            pasteButton.Enabled = false;
 
-            try
-            {
-                ApiRequest.ApiData sticker = await apiRequest.UploadImage(resizedImage, STICKER_MASK_TYPE, TagType.Sticker, null, 0, 0);
+            var mainPanel = this.TopLevelControl as MainPanel;
+            if (mainPanel == null) return;
 
-                ImagePanel.AddImagePanel(stickerPanel, apiRequest, sticker.IdImageUploaded, UpdateCounter);
-                UpdateCounter("Add");
+            mainPanel.ShowEditor(
+                path,
+                "1:1",
+                onSave: async (editedImage) =>
+                {
+                    try
+                    {
+                        ApiRequest.ApiData sticker = await apiRequest.UploadImage(editedImage, STICKER_MASK_TYPE, TagType.Sticker, null, 0, 0);
 
-                NotificationManager.ShowNotification("Sticker uploaded successfully", "Sticker uploaded", NotificationType.Success);
-            }
-            catch (Exception ex)
-            {
-                NotificationManager.ShowNotification(ex.Message, "Error during file upload", NotificationType.Error);
-            }
+                        ImagePanel.AddImagePanel(stickerPanel, apiRequest, sticker.IdImageUploaded, UpdateCounter);
+                        UpdateCounter("Add");
+
+                        NotificationManager.ShowNotification("Sticker uploaded successfully", "Sticker uploaded", NotificationType.Success);
+                    }
+                    catch (Exception ex)
+                    {
+                        NotificationManager.ShowNotification(ex.Message, "Error during file upload", NotificationType.Error);
+                    }
+                    finally
+                    {
+                        try { File.Delete(editedImage); } catch { }
+                        UpdateCounter("");
+                    }
+                },
+                onCancel: () =>
+                {
+                    UpdateCounter("");
+                }
+            );
         }
 
         private void pasteButton_Click(object sender, EventArgs e)

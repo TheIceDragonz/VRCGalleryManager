@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
@@ -46,7 +46,7 @@ namespace VRCGalleryManager.Core.Helpers
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show("Errore: " + ex.Message);
+                    MessageBox.Show("Error: " + ex.Message);
                 }
             }
         }

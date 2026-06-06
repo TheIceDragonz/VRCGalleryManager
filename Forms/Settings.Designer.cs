@@ -1,4 +1,4 @@
-﻿using VRCGalleryManager.Design;
+using VRCGalleryManager.Design;
 
 namespace VRCGalleryManager.Forms
 {
@@ -44,7 +44,7 @@ namespace VRCGalleryManager.Forms
             _openTempFile = new RoundedButton();
             _openVrchatLogs = new RoundedButton();
             _clearAllCacheFiles = new RoundedButton();
-            infoCacheLabel = new Label();
+            infoCacheLabel = new RoundedLabel();
             _openGitHubPage = new RoundedButton();
             _newUpdate = new RoundedButton();
             _clearAllVRChatLogs = new RoundedButton();
@@ -166,7 +166,7 @@ namespace VRCGalleryManager.Forms
             viewPassword.SvgOffset = new Point(0, 0);
             viewPassword.SvgPadding = new Padding(0);
             viewPassword.SvgResource = "eye_svgrepo_com";
-            viewPassword.SvgSize = new Size(15, 15);
+            viewPassword.SvgSize = new Size(20, 20);
             viewPassword.TabIndex = 15;
             viewPassword.TextColor = Color.White;
             viewPassword.UseVisualStyleBackColor = false;
@@ -340,13 +340,20 @@ namespace VRCGalleryManager.Forms
             // 
             infoCacheLabel.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             infoCacheLabel.BackColor = Color.FromArgb(14, 16, 19);
+            infoCacheLabel.BorderColor = Color.PaleVioletRed;
+            infoCacheLabel.BorderRadiusBottomLeft = 10;
+            infoCacheLabel.BorderRadiusBottomRight = 10;
+            infoCacheLabel.BorderRadiusTopLeft = 10;
+            infoCacheLabel.BorderRadiusTopRight = 10;
+            infoCacheLabel.BorderSize = 0;
             infoCacheLabel.ForeColor = Color.FromArgb(106, 227, 249);
             infoCacheLabel.Location = new Point(90, 525);
             infoCacheLabel.Margin = new Padding(4, 0, 4, 0);
             infoCacheLabel.Name = "infoCacheLabel";
+            infoCacheLabel.Padding = new Padding(5);
             infoCacheLabel.Size = new Size(843, 115);
             infoCacheLabel.TabIndex = 11;
-            infoCacheLabel.Text = "Info\r";
+            infoCacheLabel.Text = "Info\r\n";
             // 
             // _openGitHubPage
             // 
@@ -487,7 +494,7 @@ namespace VRCGalleryManager.Forms
         private RoundedButton _openTempFile;
         private RoundedButton _openVrchatLogs;
         private RoundedButton _clearAllCacheFiles;
-        private Label infoCacheLabel;
+        private RoundedLabel infoCacheLabel;
         private RoundedButton _openGitHubPage;
         private RoundedButton _newUpdate;
         private RoundedButton _clearAllVRChatLogs;

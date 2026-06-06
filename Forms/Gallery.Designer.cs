@@ -1,4 +1,4 @@
-﻿using VRCGalleryManager.Design;
+using VRCGalleryManager.Design;
 
 namespace VRCGalleryManager.Forms
 {
@@ -53,7 +53,7 @@ namespace VRCGalleryManager.Forms
             galleryPanel.Location = new Point(0, 0);
             galleryPanel.Margin = new Padding(4);
             galleryPanel.Name = "galleryPanel";
-            galleryPanel.Size = new Size(896, 792);
+            galleryPanel.Size = new Size(959, 722);
             galleryPanel.TabIndex = 2;
             // 
             // _refreshButton
@@ -68,7 +68,7 @@ namespace VRCGalleryManager.Forms
             _refreshButton.FlatStyle = FlatStyle.Flat;
             _refreshButton.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
             _refreshButton.ForeColor = Color.FromArgb(106, 227, 249);
-            _refreshButton.Location = new Point(1088, 12);
+            _refreshButton.Location = new Point(1151, 12);
             _refreshButton.Margin = new Padding(4);
             _refreshButton.Name = "_refreshButton";
             _refreshButton.Size = new Size(145, 36);
@@ -119,7 +119,7 @@ namespace VRCGalleryManager.Forms
             BackPanel.Controls.Add(galleryInfoPanel);
             BackPanel.Location = new Point(12, 54);
             BackPanel.Name = "BackPanel";
-            BackPanel.Size = new Size(1221, 792);
+            BackPanel.Size = new Size(1284, 722);
             BackPanel.TabIndex = 5;
             // 
             // galleryInfoPanel
@@ -128,10 +128,10 @@ namespace VRCGalleryManager.Forms
             galleryInfoPanel.Controls.Add(worldImage);
             galleryInfoPanel.Controls.Add(worldNameLabel);
             galleryInfoPanel.Dock = DockStyle.Right;
-            galleryInfoPanel.Location = new Point(896, 0);
+            galleryInfoPanel.Location = new Point(959, 0);
             galleryInfoPanel.Name = "galleryInfoPanel";
             galleryInfoPanel.Padding = new Padding(10);
-            galleryInfoPanel.Size = new Size(325, 792);
+            galleryInfoPanel.Size = new Size(325, 722);
             galleryInfoPanel.TabIndex = 0;
             galleryInfoPanel.Visible = false;
             // 
@@ -142,7 +142,7 @@ namespace VRCGalleryManager.Forms
             userInfoPanel.Location = new Point(10, 273);
             userInfoPanel.Name = "userInfoPanel";
             userInfoPanel.Padding = new Padding(10);
-            userInfoPanel.Size = new Size(305, 509);
+            userInfoPanel.Size = new Size(305, 439);
             userInfoPanel.TabIndex = 3;
             // 
             // worldImage
@@ -188,7 +188,7 @@ namespace VRCGalleryManager.Forms
             changeFolder.FlatStyle = FlatStyle.Flat;
             changeFolder.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
             changeFolder.ForeColor = Color.FromArgb(106, 227, 249);
-            changeFolder.Location = new Point(1045, 13);
+            changeFolder.Location = new Point(1108, 13);
             changeFolder.Margin = new Padding(4);
             changeFolder.Name = "changeFolder";
             changeFolder.Size = new Size(35, 35);
@@ -197,7 +197,7 @@ namespace VRCGalleryManager.Forms
             changeFolder.SvgContent = resources.GetString("changeFolder.SvgContent");
             changeFolder.SvgOffset = new Point(0, 0);
             changeFolder.SvgPadding = new Padding(0);
-            changeFolder.SvgResource = "folder_svgrepo_com";
+            changeFolder.SvgResource = "folder_open_svgrepo_com";
             changeFolder.SvgSize = new Size(15, 15);
             changeFolder.TabIndex = 6;
             changeFolder.TextColor = Color.FromArgb(106, 227, 249);
@@ -210,7 +210,7 @@ namespace VRCGalleryManager.Forms
             AutoScaleDimensions = new SizeF(120F, 120F);
             AutoScaleMode = AutoScaleMode.Dpi;
             BackColor = Color.FromArgb(5, 5, 5);
-            ClientSize = new Size(1248, 858);
+            ClientSize = new Size(1311, 788);
             Controls.Add(changeFolder);
             Controls.Add(BackPanel);
             Controls.Add(folderBack);

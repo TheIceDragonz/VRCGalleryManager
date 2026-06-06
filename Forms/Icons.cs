@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Linq;
 using VRCGalleryManager.Core;
 using VRCGalleryManager.Core.DTO;
 using VRCGalleryManager.Core.Helpers;
@@ -37,6 +37,7 @@ namespace VRCGalleryManager.Forms
 
             iconsJson = icons.JsonImage;
             imageCount = icons.JsonImage.Count;
+            UpdateCounter("");
 
             foreach (string json in iconsJson)
             {
@@ -45,9 +46,8 @@ namespace VRCGalleryManager.Forms
                 string id = jsonObject["id"]?.ToString();
 
                 ImagePanel.AddImagePanel(iconsPanel, apiRequest, id, UpdateCounter);
+                await Task.Delay(10);
             }
-
-            UpdateCounter("");
 
             _refreshButton.Enabled = true;
         }
@@ -66,23 +66,43 @@ namespace VRCGalleryManager.Forms
             }
         }
 
-        private async void UploadImage(string path)
+        private void UploadImage(string path)
         {
-            string resizedImage = ImageResizer.ResizeImage1x1(path);
+            uploadButton.Enabled = false;
+            pasteButton.Enabled = false;
 
-            try
-            {
-                ApiRequest.ApiData icons = await apiRequest.UploadImage(resizedImage, ICONS_MASK_TYPE, TagType.Icon, null, 0, 0);
+            var mainPanel = this.TopLevelControl as MainPanel;
+            if (mainPanel == null) return;
 
-                ImagePanel.AddImagePanel(iconsPanel, apiRequest, icons.IdImageUploaded, UpdateCounter);
-                UpdateCounter("Add");
+            mainPanel.ShowEditor(
+                path,
+                "1:1",
+                onSave: async (editedImage) =>
+                {
+                    try
+                    {
+                        ApiRequest.ApiData icons = await apiRequest.UploadImage(editedImage, ICONS_MASK_TYPE, TagType.Icon, null, 0, 0);
 
-                NotificationManager.ShowNotification("Icons uploaded successfully", "Icons uploaded", NotificationType.Success);
-            }
-            catch (Exception ex)
-            {
-                NotificationManager.ShowNotification(ex.Message, "Error during file upload", NotificationType.Error);
-            }
+                        ImagePanel.AddImagePanel(iconsPanel, apiRequest, icons.IdImageUploaded, UpdateCounter);
+                        UpdateCounter("Add");
+
+                        NotificationManager.ShowNotification("Icons uploaded successfully", "Icons uploaded", NotificationType.Success);
+                    }
+                    catch (Exception ex)
+                    {
+                        NotificationManager.ShowNotification(ex.Message, "Error during file upload", NotificationType.Error);
+                    }
+                    finally
+                    {
+                        try { File.Delete(editedImage); } catch { }
+                        UpdateCounter("");
+                    }
+                },
+                onCancel: () =>
+                {
+                    UpdateCounter("");
+                }
+            );
         }
 
         private void pasteButton_Click(object sender, EventArgs e)

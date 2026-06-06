@@ -19,6 +19,7 @@ namespace VRCGalleryManager.Forms.Panels
             //* IMAGE Animated PANEL
             RoundedPictureBox pictureBox = new RoundedPictureBox
             {
+                Size = new Size(150, 150),
                 Dock = DockStyle.Top,
                 BackColor = Color.FromArgb(24, 27, 31),
                 SizeMode = PictureBoxSizeMode.StretchImage,
@@ -31,6 +32,33 @@ namespace VRCGalleryManager.Forms.Panels
                 Padding = new Padding(5)
             };
 
+            CircularButton btn_open = CircularButtonTools.CreateButton("open", (sender, e) =>
+            {
+                Process.Start("explorer.exe", $"https://api.vrchat.cloud/api/1/file/{imageId}/1/file");
+            });
+            btn_open.Location = new Point(pictureBox.Size.Width - 60, pictureBox.Size.Height - 35);
+            pictureBox.Controls.Add(btn_open);
+
+            CircularButton btn_delete = CircularButtonTools.CreateButton("delete", async (sender, e) =>
+            {
+                DialogResult result = DialogMessage.ShowDeleteFileDialog(imageId);
+
+                if (result == DialogResult.Yes)
+                {
+                    Debug.WriteLine("Delete: " + imageId);
+                    await apiRequest.DeleteApiData(imageId);
+                    mainPanel.Controls.Remove(pictureBox);
+
+                    UpdateCounter("Remove");
+                }
+            });
+            btn_delete.Location = new Point(pictureBox.Size.Width - 35, pictureBox.Size.Height - 35);
+            pictureBox.Controls.Add(btn_delete);
+
+            mainPanel.Controls.Add(pictureBox);
+
+            await Task.Yield();
+
             string image = tags.Contains("animated")
                 ? $"https://api.vrchat.cloud/api/1/file/{imageId}/1/file"
                 : $"https://api.vrchat.cloud/api/1/image/{imageId}/1/256";
@@ -39,50 +67,27 @@ namespace VRCGalleryManager.Forms.Panels
 
             if (!finalaviImage.Contains("imageNotFound"))
             {
-                if (pictureBox.Controls["btn_open"] == null)
+                int.TryParse(frames, out int fCount);
+                int.TryParse(framesOverTime, out int fps);
+                if (tags.Contains("animated") && fCount >= 1 && fCount <= 64)
                 {
-                    CircularButton btn_open = CircularButtonTools.CreateButton("open", (sender, e) =>
-                    {
-                        Process.Start("explorer.exe", $"https://api.vrchat.cloud/api/1/file/{imageId}/1/file");
-                    });
-
-                    btn_open.Location = new Point(pictureBox.Size.Width - 60, pictureBox.Size.Height - 35);
-
-                    if (tags.Contains("animated"))
+                    try
                     {
                         SpriteSheetViewer viewer = new SpriteSheetViewer(pictureBox);
-                        await viewer.LoadSpriteSheetAsync(finalaviImage, int.Parse(frames), int.Parse(framesOverTime));
+                        await viewer.LoadSpriteSheetAsync(finalaviImage, fCount, fps);
                         viewer.StartAnimation();
                     }
-                    else
+                    catch (Exception ex)
                     {
+                        Console.WriteLine($"Error loading sprite sheet: {ex.Message}");
                         pictureBox.LoadAsync(finalaviImage);
                     }
-
-                    pictureBox.Controls.Add(btn_open);
+                }
+                else
+                {
+                    pictureBox.LoadAsync(finalaviImage);
                 }
             }
-
-            if (pictureBox.Controls["btn_delete"] == null)
-            {
-                CircularButton btn_delete = CircularButtonTools.CreateButton("delete", async (sender, e) =>
-                {
-                    DialogResult result = DialogMessage.ShowDeleteFileDialog(imageId);
-
-                    if (result == DialogResult.Yes)
-                    {
-                        Debug.WriteLine("Delete: " + imageId);
-                        await apiRequest.DeleteApiData(imageId);
-                        mainPanel.Controls.Remove(pictureBox);
-
-                        UpdateCounter("Remove");
-                    }
-                });
-                btn_delete.Location = new Point(pictureBox.Size.Width - 35, pictureBox.Size.Height - 35);
-                pictureBox.Controls.Add(btn_delete);
-            }
-
-            mainPanel.Controls.Add(pictureBox);
         }
 
         private static List<RoundedPictureBox> pictureIconList = new List<RoundedPictureBox>();
@@ -99,7 +104,6 @@ namespace VRCGalleryManager.Forms.Panels
             string targetFileId = fileId ?? imageId;
             string imageFull = $"https://api.vrchat.cloud/api/1/file/{targetFileId}/1/file";
             string image256 = $"https://api.vrchat.cloud/api/1/image/{targetFileId}/1/256";
-            string finalaviImage = await HttpImage.GetFinalUrlAsync(image256);
 
             var selectedColor = Color.FromArgb(106, 227, 249);
 
@@ -184,42 +188,38 @@ namespace VRCGalleryManager.Forms.Panels
                 picturePhotosList.Add(pictureBox);
             }
 
-            if (!finalaviImage.Contains("imageNotFound"))
+            CircularButton btn_open = CircularButtonTools.CreateButton("open", (sender, e) =>
             {
-                if (pictureBox.Controls["btn_open"] == null)
+                Process.Start("explorer.exe", imageFull);
+            });
+            btn_open.Location = new Point(pictureBox.Size.Width - 60, pictureBox.Size.Height - 35);
+            pictureBox.Controls.Add(btn_open);
+
+            CircularButton btn_delete = CircularButtonTools.CreateButton("delete", async (sender, e) =>
+            {
+                DialogResult result = DialogMessage.ShowDeleteFileDialog(imageId);
+
+                if (result == DialogResult.Yes)
                 {
-                    CircularButton btn_open = CircularButtonTools.CreateButton("open", (sender, e) =>
-                    {
-                        Process.Start("explorer.exe", imageFull);
-                    });
+                    Debug.WriteLine("Delete: " + imageId);
+                    await apiRequest.DeleteApiData(imageId);
+                    mainPanel.Controls.Remove(pictureBox);
 
-                    btn_open.Location = new Point(pictureBox.Size.Width - 60, pictureBox.Size.Height - 35);
-
-                    pictureBox.LoadAsync(finalaviImage);
-
-                    pictureBox.Controls.Add(btn_open);
+                    UpdateCounter("Remove");
                 }
-            }
-            if (pictureBox.Controls["btn_delete"] == null)
-            {
-                CircularButton btn_delete = CircularButtonTools.CreateButton("delete", async (sender, e) =>
-                {
-                    DialogResult result = DialogMessage.ShowDeleteFileDialog(imageId);
-
-                    if (result == DialogResult.Yes)
-                    {
-                        Debug.WriteLine("Delete: " + imageId);
-                        await apiRequest.DeleteApiData(imageId);
-                        mainPanel.Controls.Remove(pictureBox);
-
-                        UpdateCounter("Remove");
-                    }
-                });
-                btn_delete.Location = new Point(pictureBox.Size.Width - 35, pictureBox.Size.Height - 35);
-                pictureBox.Controls.Add(btn_delete);
-            }
+            });
+            btn_delete.Location = new Point(pictureBox.Size.Width - 35, pictureBox.Size.Height - 35);
+            pictureBox.Controls.Add(btn_delete);
 
             mainPanel.Controls.Add(pictureBox);
+
+            await Task.Yield();
+
+            string finalaviImage = await HttpImage.GetFinalUrlAsync(image256);
+            if (!finalaviImage.Contains("imageNotFound"))
+            {
+                pictureBox.LoadAsync(finalaviImage);
+            }
         }
 
         //Prints
@@ -229,7 +229,6 @@ namespace VRCGalleryManager.Forms.Panels
 
             string imageFull = $"https://api.vrchat.cloud/api/1/file/{imageId}/1/file";
             string image256 = $"https://api.vrchat.cloud/api/1/image/{imageId}/1/256";
-            string finalaviImage = await HttpImage.GetFinalUrlAsync(image256);
 
             var selectedColor = Color.FromArgb(106, 227, 249);
 
@@ -263,40 +262,28 @@ namespace VRCGalleryManager.Forms.Panels
             authorLabel.Cursor = Cursors.Hand;
             pictureBox.Controls.Add(authorLabel);
 
-            if (!finalaviImage.Contains("imageNotFound"))
+            CircularButton btn_open = CircularButtonTools.CreateButton("open", (sender, e) =>
             {
-                if (pictureBox.Controls["btn_open"] == null)
+                Process.Start("explorer.exe", imageFull);
+            });
+            btn_open.Location = new Point(pictureBox.Size.Width - 60, pictureBox.Size.Height - 35);
+            pictureBox.Controls.Add(btn_open);
+
+            CircularButton btn_delete = CircularButtonTools.CreateButton("delete", async (sender, e) =>
+            {
+                DialogResult result = DialogMessage.ShowDeleteFileDialog(imageId);
+
+                if (result == DialogResult.Yes)
                 {
-                    CircularButton btn_open = CircularButtonTools.CreateButton("open", (sender, e) =>
-                    {
-                        Process.Start("explorer.exe", imageFull);
-                    });
+                    Debug.WriteLine("Delete: " + printid);
+                    await apiRequest.DeleteApiDataPrint(printid);
+                    mainPanel.Controls.Remove(pictureBox);
 
-                    btn_open.Location = new Point(pictureBox.Size.Width - 60, pictureBox.Size.Height - 35);
-
-                    pictureBox.LoadAsync(finalaviImage);
-
-                    pictureBox.Controls.Add(btn_open);
+                    UpdateCounter("Remove");
                 }
-            }
-            if (pictureBox.Controls["btn_delete"] == null)
-            {
-                CircularButton btn_delete = CircularButtonTools.CreateButton("delete", async (sender, e) =>
-                {
-                    DialogResult result = DialogMessage.ShowDeleteFileDialog(imageId);
-
-                    if (result == DialogResult.Yes)
-                    {
-                        Debug.WriteLine("Delete: " + printid);
-                        await apiRequest.DeleteApiDataPrint(printid);
-                        mainPanel.Controls.Remove(pictureBox);
-
-                        UpdateCounter("Remove");
-                    }
-                });
-                btn_delete.Location = new Point(pictureBox.Size.Width - 35, pictureBox.Size.Height - 35);
-                pictureBox.Controls.Add(btn_delete);
-            }
+            });
+            btn_delete.Location = new Point(pictureBox.Size.Width - 35, pictureBox.Size.Height - 35);
+            pictureBox.Controls.Add(btn_delete);
 
             if (Settings.Friends.Contains(userId))
             {
@@ -308,16 +295,71 @@ namespace VRCGalleryManager.Forms.Panels
             }
 
             mainPanel.Controls.Add(pictureBox);
+
+            await Task.Yield();
+
+            string finalaviImage = await HttpImage.GetFinalUrlAsync(image256);
+            if (!finalaviImage.Contains("imageNotFound"))
+            {
+                pictureBox.LoadAsync(finalaviImage);
+            }
         }
 
         //PicFlow
         static public async void AddImagePanel(FlowLayoutPanel mainPanel, ApiRequest apiRequest, string userName, string userId, string imageId)
         {
+            Size size = new Size(150, 150);
+
+            //* IMAGE Static PANEL
+            RoundedPictureBox pictureBox = new RoundedPictureBox
+            {
+                Size = size,
+                Dock = DockStyle.Top,
+                BackColor = Color.FromArgb(24, 27, 31),
+                SizeMode = PictureBoxSizeMode.StretchImage,
+                BorderRadiusBottomLeft = 10,
+                BorderRadiusBottomRight = 10,
+                BorderRadiusTopLeft = 10,
+                BorderRadiusTopRight = 10,
+                BorderColor = Color.FromArgb(24, 27, 31),
+                BorderSize = 5,
+                Padding = new Padding(5)
+            };
+
+            RoundedLabel authorLabel = new RoundedLabel
+            {
+                Text = userName,
+                ForeColor = Color.White,
+                Font = new Font("Arial", 8, FontStyle.Bold),
+                AutoSize = true,
+                Location = new Point(5, 5),
+                BackColor = Color.FromArgb(24, 27, 31),
+                BorderSize = 0,
+            };
+            authorLabel.Click += (s, e) => Process.Start(new ProcessStartInfo($"https://vrchat.com/home/user/{userId}") { UseShellExecute = true });
+            authorLabel.Cursor = Cursors.Hand;
+            pictureBox.Controls.Add(authorLabel);
+
+            if (Settings.Friends.Contains(userId))
+            {
+                authorLabel.ForeColor = Settings.FriendColor;
+            }
+            if (Settings.UserId.Contains(userId))
+            {
+                authorLabel.ForeColor = Settings.MeColor;
+            }
+
+            mainPanel.Controls.Add(pictureBox);
+
+            await Task.Yield();
+
             var invData = await apiRequest.GetInventoryInfo(userId, imageId);
 
-            if (invData == null) return;
-
-            Size size = new Size(150, 150);
+            if (invData == null)
+            {
+                mainPanel.Controls.Remove(pictureBox);
+                return;
+            }
 
             string imageFull = $"https://api.vrchat.cloud/api/1/file/{invData.Metadata.FileId}/1/file";
             string image256 = $"https://api.vrchat.cloud/api/1/image/{invData.Metadata.FileId}/1/256";
@@ -330,46 +372,24 @@ namespace VRCGalleryManager.Forms.Panels
 
             if (!finalaviImage.Contains("imageNotFound"))
             {
-                //* IMAGE Static PANEL
-                RoundedPictureBox pictureBox = new RoundedPictureBox
+                if (invData.Metadata != null && invData.Metadata.Animated == true && invData.Metadata.Frames >= 1 && invData.Metadata.Frames <= 64)
                 {
-                    Size = size,
-                    Dock = DockStyle.Top,
-                    BackColor = Color.FromArgb(24, 27, 31),
-                    SizeMode = PictureBoxSizeMode.StretchImage,
-                    BorderRadiusBottomLeft = 10,
-                    BorderRadiusBottomRight = 10,
-                    BorderRadiusTopLeft = 10,
-                    BorderRadiusTopRight = 10,
-                    BorderColor = Color.FromArgb(24, 27, 31),
-                    BorderSize = 5,
-                    Padding = new Padding(5)
-                };
-
-                if (invData.Metadata != null && invData.Metadata.Animated == true)
-                {
-                    SpriteSheetViewer viewer = new SpriteSheetViewer(pictureBox);
-                    await viewer.LoadSpriteSheetAsync(finalaviImage, invData.Metadata.Frames, invData.Metadata.FramesOverTime);
-                    viewer.StartAnimation();
+                    try
+                    {
+                        SpriteSheetViewer viewer = new SpriteSheetViewer(pictureBox);
+                        await viewer.LoadSpriteSheetAsync(finalaviImage, invData.Metadata.Frames, invData.Metadata.FramesOverTime);
+                        viewer.StartAnimation();
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Error loading sprite sheet: {ex.Message}");
+                        pictureBox.LoadAsync(finalaviImage);
+                    }
                 }
                 else
                 {
                     pictureBox.LoadAsync(finalaviImage);
                 }
-
-                RoundedLabel authorLabel = new RoundedLabel
-                {
-                    Text = userName,
-                    ForeColor = Color.White,
-                    Font = new Font("Arial", 8, FontStyle.Bold),
-                    AutoSize = true,
-                    Location = new Point(5, 5),
-                    BackColor = Color.FromArgb(24, 27, 31),
-                    BorderSize = 0,
-                };
-                authorLabel.Click += (s, e) => Process.Start(new ProcessStartInfo($"https://vrchat.com/home/user/{userId}") { UseShellExecute = true });
-                authorLabel.Cursor = Cursors.Hand;
-                pictureBox.Controls.Add(authorLabel);
 
                 if (pictureBox.Controls["btn_open"] == null && invData.Name.Contains("Custom"))
                 {
@@ -379,7 +399,6 @@ namespace VRCGalleryManager.Forms.Panels
                     });
 
                     btn_open.Location = new Point(pictureBox.Size.Width - 60, pictureBox.Size.Height - 35);
-
                     pictureBox.Controls.Add(btn_open);
                 }
 
@@ -428,17 +447,6 @@ namespace VRCGalleryManager.Forms.Panels
                     btn_picflowupload.Location = new Point(pictureBox.Size.Width - 35, pictureBox.Size.Height - 35);
                     pictureBox.Controls.Add(btn_picflowupload);
                 }
-
-                if (Settings.Friends.Contains(userId))
-                {
-                    authorLabel.ForeColor = Settings.FriendColor;
-                }
-                if (Settings.UserId.Contains(userId))
-                {
-                    authorLabel.ForeColor = Settings.MeColor;
-                }
-
-                mainPanel.Controls.Add(pictureBox);
             }
         }
     }
