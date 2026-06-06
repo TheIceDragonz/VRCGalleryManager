@@ -76,7 +76,7 @@ namespace VRCGalleryManager
             FormsPanel.Location = new Point(228, 0);
             FormsPanel.Margin = new Padding(4);
             FormsPanel.Name = "FormsPanel";
-            FormsPanel.Size = new Size(1070, 710);
+            FormsPanel.Size = new Size(1079, 710);
             FormsPanel.TabIndex = 5;
             // 
             // SwitchPanel
@@ -101,7 +101,6 @@ namespace VRCGalleryManager
             SwitchPanel.Padding = new Padding(5);
             SwitchPanel.Size = new Size(196, 469);
             SwitchPanel.TabIndex = 6;
-            SwitchPanel.UseCustomScrollBar = false;
             // 
             // _switchPicflow
             // 
@@ -465,7 +464,7 @@ namespace VRCGalleryManager
             AutoScaleDimensions = new SizeF(120F, 120F);
             AutoScaleMode = AutoScaleMode.Dpi;
             BackColor = Color.FromArgb(15, 17, 19);
-            ClientSize = new Size(1298, 710);
+            ClientSize = new Size(1307, 710);
             Controls.Add(badgeBox3);
             Controls.Add(badgeBox2);
             Controls.Add(badgeBox1);

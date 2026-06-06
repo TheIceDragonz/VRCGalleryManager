@@ -104,7 +104,7 @@ namespace VRCGalleryManager.Forms
                     ToggleLoginFields(false);
                     UpdateLoginButtonUI(true);
 
-                    CurrentUser currentUser = Auth.AuthApi.GetCurrentUser();
+                    CurrentUser currentUser = await Auth.AuthApi.GetCurrentUserAsync();
 
                     Friends.AddRange(currentUser.Friends.ToList());
 

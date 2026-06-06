@@ -1,4 +1,4 @@
-﻿using VRCGalleryManager.Core;
+using VRCGalleryManager.Core;
 using VRCGalleryManager.Design;
 using static VRCGalleryManager.Core.EmojiType;
 
@@ -41,7 +41,6 @@ namespace VRCGalleryManager.Forms.Panels
                 if (panel != null && panel.Tag is EmojiPanelTag tag)
                 {
                     tag.ButtonTypePanel.Text = tag.TypeWithImage.Type;
-                    ClearEmojiType(tag.TypePanel);
                     tag.TypePanel.Visible = false;
                 }
             }

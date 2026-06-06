@@ -101,21 +101,22 @@ namespace VRCGalleryManager.Forms
             PrepareGallery();
 
             var dirs = Directory.GetDirectories(folderPath);
+
             foreach (var dir in dirs)
             {
                 token.ThrowIfCancellationRequested();
-                var panel = await Task.Run(() => CreateFolderPanel(dir), token);
-                if (token.IsCancellationRequested) break;
+                var panel = CreateFolderPanel(dir, token);
                 galleryPanel.Controls.Add(panel);
+                await Task.Yield();
             }
 
             var files = GetImageFiles(folderPath);
             foreach (var file in files)
             {
                 token.ThrowIfCancellationRequested();
-                var box = await Task.Run(() => CreateImageBox(file), token);
-                if (token.IsCancellationRequested) break;
+                var box = CreateImageBox(file, token);
                 galleryPanel.Controls.Add(box);
+                await Task.Yield();
             }
         }
 
@@ -136,7 +137,7 @@ namespace VRCGalleryManager.Forms
         }
 
 
-        private RoundedPanel CreateFolderPanel(string path)
+        private RoundedPanel CreateFolderPanel(string path, CancellationToken token)
         {
             var panel = new RoundedPanel
             {
@@ -148,15 +149,12 @@ namespace VRCGalleryManager.Forms
                 Padding = new Padding(7)
             };
 
-            var firstImage = GetImageFiles(path).LastOrDefault();
-            var thumb = LoadThumbnail(firstImage);
-
             var pictureBox = new RoundedPictureBox
             {
                 Dock = DockStyle.Fill,
                 SizeMode = PictureBoxSizeMode.CenterImage,
                 Cursor = Cursors.Hand,
-                Image = thumb,
+                Image = null,
                 BorderRadiusBottomLeft = 10,
                 BorderRadiusBottomRight = 10,
                 BorderRadiusTopLeft = 10,
@@ -173,12 +171,6 @@ namespace VRCGalleryManager.Forms
                 Cursor = Cursors.Hand
             };
 
-            if (thumb == null)
-            {
-                pictureBox.Visible = false;
-                label.Dock = DockStyle.Fill;
-            }
-
             void OpenFolder(object s, EventArgs e)
             {
                 _cts?.Cancel();
@@ -193,10 +185,79 @@ namespace VRCGalleryManager.Forms
 
             panel.Controls.Add(pictureBox);
             panel.Controls.Add(label);
+
+            _ = Task.Run(() =>
+            {
+                try
+                {
+                    var files = GetImageFiles(path);
+                    var firstImage = files.LastOrDefault();
+                    if (string.IsNullOrEmpty(firstImage))
+                    {
+                        if (!this.IsDisposed && this.IsHandleCreated)
+                        {
+                            this.BeginInvoke(new Action(() =>
+                            {
+                                if (!token.IsCancellationRequested && !pictureBox.IsDisposed)
+                                {
+                                    pictureBox.Visible = false;
+                                    label.Dock = DockStyle.Fill;
+                                }
+                            }));
+                        }
+                        return;
+                    }
+
+                    var thumb = LoadThumbnail(firstImage);
+                    if (thumb != null)
+                    {
+                        if (token.IsCancellationRequested)
+                        {
+                            thumb.Dispose();
+                            return;
+                        }
+
+                        if (!this.IsDisposed && this.IsHandleCreated)
+                        {
+                            this.BeginInvoke(new Action(() =>
+                            {
+                                if (!token.IsCancellationRequested && !pictureBox.IsDisposed)
+                                {
+                                    pictureBox.Image = thumb;
+                                }
+                                else
+                                {
+                                    thumb.Dispose();
+                                }
+                            }));
+                        }
+                        else
+                        {
+                            thumb.Dispose();
+                        }
+                    }
+                    else
+                    {
+                        if (!this.IsDisposed && this.IsHandleCreated)
+                        {
+                            this.BeginInvoke(new Action(() =>
+                            {
+                                if (!token.IsCancellationRequested && !pictureBox.IsDisposed)
+                                {
+                                    pictureBox.Visible = false;
+                                    label.Dock = DockStyle.Fill;
+                                }
+                            }));
+                        }
+                    }
+                }
+                catch { }
+            }, token);
+
             return panel;
         }
 
-        private PictureBox CreateImageBox(string file)
+        private PictureBox CreateImageBox(string file, CancellationToken token)
         {
             var pb = new PictureBox
             {
@@ -204,7 +265,8 @@ namespace VRCGalleryManager.Forms
                 SizeMode = PictureBoxSizeMode.Zoom,
                 Margin = new Padding(10),
                 Cursor = Cursors.Hand,
-                Image = LoadThumbnail(file)
+                Image = null,
+                BackColor = Color.FromArgb(24, 27, 31)
             };
 
             pb.DoubleClick += (s, e) =>
@@ -242,6 +304,42 @@ namespace VRCGalleryManager.Forms
                     galleryInfoPanel.Visible = false;
                 }
             };
+
+            _ = Task.Run(() =>
+            {
+                try
+                {
+                    var thumb = LoadThumbnail(file);
+                    if (thumb != null)
+                    {
+                        if (token.IsCancellationRequested)
+                        {
+                            thumb.Dispose();
+                            return;
+                        }
+
+                        if (!this.IsDisposed && this.IsHandleCreated)
+                        {
+                            this.BeginInvoke(new Action(() =>
+                            {
+                                if (!token.IsCancellationRequested && !pb.IsDisposed)
+                                {
+                                    pb.Image = thumb;
+                                }
+                                else
+                                {
+                                    thumb.Dispose();
+                                }
+                            }));
+                        }
+                        else
+                        {
+                            thumb.Dispose();
+                        }
+                    }
+                }
+                catch { }
+            }, token);
 
             return pb;
         }

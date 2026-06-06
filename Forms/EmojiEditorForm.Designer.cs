@@ -35,7 +35,7 @@ namespace VRCGalleryManager.Forms
             mainTableLayout = new TableLayoutPanel();
             workspacePanel = new Panel();
             previewPanel = new DoubleBufferedPanel();
-            emojiTypePanel = new RoundedPanel();
+            emojiTypePanel = new Panel();
             previewVRChat = new RoundedPictureBox();
             flowPanelFrames = new ModernFlowPanel();
             settingsPanel = new RoundedPanel();
@@ -144,14 +144,10 @@ namespace VRCGalleryManager.Forms
             emojiTypePanel.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Right;
             emojiTypePanel.AutoScroll = true;
             emojiTypePanel.BackColor = Color.FromArgb(7, 36, 43);
-            emojiTypePanel.BackgroundColor = Color.FromArgb(7, 36, 43);
-            emojiTypePanel.BorderColor = Color.PaleVioletRed;
-            emojiTypePanel.BorderRadius = 9;
-            emojiTypePanel.BorderSize = 0;
-            emojiTypePanel.Location = new Point(784, 3);
+            emojiTypePanel.Location = new Point(849, 3);
             emojiTypePanel.Name = "emojiTypePanel";
-            emojiTypePanel.Padding = new Padding(6);
-            emojiTypePanel.Size = new Size(355, 756);
+            emojiTypePanel.Padding = new Padding(6, 6, 0, 0);
+            emojiTypePanel.Size = new Size(290, 756);
             emojiTypePanel.TabIndex = 2;
             emojiTypePanel.Visible = false;
             // 
@@ -182,6 +178,7 @@ namespace VRCGalleryManager.Forms
             flowPanelFrames.Name = "flowPanelFrames";
             flowPanelFrames.Size = new Size(1136, 98);
             flowPanelFrames.TabIndex = 8;
+            flowPanelFrames.UseCustomScrollBar = true;
             flowPanelFrames.WrapContents = false;
             // 
             // settingsPanel
@@ -754,7 +751,7 @@ namespace VRCGalleryManager.Forms
             lblStartFrame.Name = "lblStartFrame";
             lblStartFrame.Size = new Size(320, 20);
             lblStartFrame.TabIndex = 4;
-            lblStartFrame.Text = "Start Frame: 0";
+            lblStartFrame.Text = "Start Frame";
             lblStartFrame.TextAlign = ContentAlignment.MiddleLeft;
             // 
             // trackBarStartFrame
@@ -766,7 +763,7 @@ namespace VRCGalleryManager.Forms
             trackBarStartFrame.LabelFont = new Font("Segoe UI", 8.25F, FontStyle.Bold);
             trackBarStartFrame.LabelOffset = new Point(0, 0);
             trackBarStartFrame.LabelText = "0";
-            trackBarStartFrame.LabelTextColor = Color.FromArgb(106, 227, 249);
+            trackBarStartFrame.LabelTextColor = Color.Black;
             trackBarStartFrame.Location = new Point(25, 45);
             trackBarStartFrame.Maximum = 63;
             trackBarStartFrame.Name = "trackBarStartFrame";
@@ -786,7 +783,7 @@ namespace VRCGalleryManager.Forms
             lblEndFrame.Name = "lblEndFrame";
             lblEndFrame.Size = new Size(320, 20);
             lblEndFrame.TabIndex = 6;
-            lblEndFrame.Text = "End Frame: 0";
+            lblEndFrame.Text = "End Frame";
             lblEndFrame.TextAlign = ContentAlignment.MiddleLeft;
             // 
             // trackBarEndFrame
@@ -798,7 +795,7 @@ namespace VRCGalleryManager.Forms
             trackBarEndFrame.LabelFont = new Font("Segoe UI", 8.25F, FontStyle.Bold);
             trackBarEndFrame.LabelOffset = new Point(0, 0);
             trackBarEndFrame.LabelText = "0";
-            trackBarEndFrame.LabelTextColor = Color.FromArgb(106, 227, 249);
+            trackBarEndFrame.LabelTextColor = Color.Black;
             trackBarEndFrame.Location = new Point(25, 140);
             trackBarEndFrame.Maximum = 63;
             trackBarEndFrame.Name = "trackBarEndFrame";
@@ -830,7 +827,7 @@ namespace VRCGalleryManager.Forms
             trackBarFPS.LabelFont = new Font("Segoe UI", 8.25F, FontStyle.Bold);
             trackBarFPS.LabelOffset = new Point(0, 0);
             trackBarFPS.LabelText = "15";
-            trackBarFPS.LabelTextColor = Color.FromArgb(106, 227, 249);
+            trackBarFPS.LabelTextColor = Color.Black;
             trackBarFPS.Location = new Point(25, 235);
             trackBarFPS.Maximum = 64;
             trackBarFPS.Minimum = 1;
@@ -985,7 +982,7 @@ namespace VRCGalleryManager.Forms
         private RoundedPanel settingsPanel;
         private Label lblTitle;
         private RoundedButton btnEmojiStyle;
-        private RoundedPanel emojiTypePanel;
+        private Panel emojiTypePanel;
         private Panel panelStaticControls;
         private Label lblAdaptation;
         private RoundedButton btnAdaptFit;

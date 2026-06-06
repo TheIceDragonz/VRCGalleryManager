@@ -225,10 +225,25 @@ namespace VRCGalleryManager.Design
             return path;
         }
 
-        protected override void OnHandleCreated(EventArgs e)
+        private Control _observedParent;
+
+        protected override void OnParentChanged(EventArgs e)
         {
-            base.OnHandleCreated(e);
-            Parent.BackColorChanged += Container_BackColorChanged;
+            base.OnParentChanged(e);
+            SetupParentEvent();
+        }
+
+        private void SetupParentEvent()
+        {
+            if (_observedParent != null)
+            {
+                _observedParent.BackColorChanged -= Container_BackColorChanged;
+            }
+            _observedParent = Parent;
+            if (_observedParent != null)
+            {
+                _observedParent.BackColorChanged += Container_BackColorChanged;
+            }
         }
 
         private void Container_BackColorChanged(object sender, EventArgs e)
@@ -236,11 +251,17 @@ namespace VRCGalleryManager.Design
             Invalidate();
         }
 
-        protected override void OnHandleDestroyed(EventArgs e)
+        protected override void Dispose(bool disposing)
         {
-            if (Parent != null)
-                Parent.BackColorChanged -= Container_BackColorChanged;
-            base.OnHandleDestroyed(e);
+            if (disposing)
+            {
+                if (_observedParent != null)
+                {
+                    _observedParent.BackColorChanged -= Container_BackColorChanged;
+                    _observedParent = null;
+                }
+            }
+            base.Dispose(disposing);
         }
     }
 }

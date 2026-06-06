@@ -55,6 +55,7 @@ namespace VRCGalleryManager.Forms
                 string tags = jsonObject["tags"]?.ToString();
 
                 ImagePanel.AddImagePanel(emojiPanel, apiRequest, id, tags, frames, framesOverTime, UpdateCounter);
+                await Task.Delay(10);
             }
 
             UpdateCounter("");

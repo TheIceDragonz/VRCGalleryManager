@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Linq;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
@@ -14,6 +14,7 @@ namespace VRCGalleryManager.Forms
         private CancellationTokenSource? streamingCancellationTokenSource;
         private Task? streamingTask;
         private readonly HashSet<string> allItems = new();
+        private readonly object _lock = new();
 
         // ✅ Regex aggiornata: cattura userId, username e stickerId
         private static readonly Regex StickerRegex = new Regex(
@@ -28,28 +29,35 @@ namespace VRCGalleryManager.Forms
             InitializeComponent();
             InitApiRequest(auth);
             uiContext = SynchronizationContext.Current ?? new SynchronizationContext();
-            this.Shown += (s, e) =>
+            this.Shown += async (s, e) =>
             {
                 if (picflowPanel.Controls.Count == 0)
-                    PicflowList();
+                    await PicflowListAsync();
             };
         }
 
-        private async void PicflowList()
+        private async Task PicflowListAsync()
         {
+            streamingCancellationTokenSource?.Cancel();
+            streamingCancellationTokenSource = new CancellationTokenSource();
+            var token = streamingCancellationTokenSource.Token;
+
             ClearItems();
+
             if (streamPicFlow.Checked)
             {
                 if (streamingTask == null || streamingTask.IsCompleted)
                 {
-                    streamingCancellationTokenSource = new CancellationTokenSource();
-                    streamingTask = Task.Run(() => StreamItemsAsync(streamingCancellationTokenSource.Token));
+                    streamingTask = Task.Run(() => StreamItemsAsync(token), token);
                 }
             }
             else
             {
-                streamingCancellationTokenSource?.Cancel();
-                await ExtractNonStreamingItemsAsync();
+                try
+                {
+                    await ExtractNonStreamingItemsAsync(token);
+                }
+                catch (OperationCanceledException) { }
             }
         }
 
@@ -81,6 +89,8 @@ namespace VRCGalleryManager.Forms
 
             await AnimateTextAsync("Found data from VRChat | Processing...").ConfigureAwait(false);
 
+            var localBatch = new List<(string userId, string username, string sticker)>();
+
             foreach (var logFile in logFiles)
             {
                 ct.ThrowIfCancellationRequested();
@@ -96,15 +106,47 @@ namespace VRCGalleryManager.Forms
                         ct.ThrowIfCancellationRequested();
 
                         var stickerData = ProcessLine(line);
-                        if (stickerData != null && allItems.Add(stickerData.Value.sticker))
+                        if (stickerData != null)
                         {
-                            var (userId, username, sticker) = stickerData.Value;
-
-                            uiContext.Post(_ =>
+                            bool isNew = false;
+                            lock (_lock)
                             {
-                                ImagePanel.AddImagePanel(picflowPanel, apiRequest, username, userId, sticker);
-                                limitCounterLabel.Text = $"{allItems.Count} Items";
-                            }, null);
+                                isNew = allItems.Add(stickerData.Value.sticker);
+                            }
+
+                            if (isNew)
+                            {
+                                localBatch.Add(stickerData.Value);
+
+                                if (localBatch.Count >= 5)
+                                {
+                                    var uiBatch = localBatch.ToList();
+                                    localBatch.Clear();
+
+                                    uiContext.Post(_ =>
+                                    {
+                                        if (!ct.IsCancellationRequested)
+                                        {
+                                            picflowPanel.SuspendLayout();
+                                            foreach (var item in uiBatch)
+                                            {
+                                                ImagePanel.AddImagePanel(picflowPanel, apiRequest, item.username, item.userId, item.sticker);
+                                            }
+                                            picflowPanel.ResumeLayout(true);
+                                            picflowPanel.Update();
+
+                                            int totalCount;
+                                            lock (_lock)
+                                            {
+                                                totalCount = allItems.Count;
+                                            }
+                                            limitCounterLabel.Text = $"{totalCount} Items";
+                                        }
+                                    }, null);
+
+                                    await Task.Delay(10, ct).ConfigureAwait(false);
+                                }
+                            }
                         }
                     }
                 }
@@ -112,6 +154,31 @@ namespace VRCGalleryManager.Forms
                 {
                     Debug.WriteLine($"Errore nell'aprire/leggere {logFile}: {ex.Message}");
                 }
+            }
+
+            if (localBatch.Count > 0)
+            {
+                var uiBatch = localBatch;
+                uiContext.Post(_ =>
+                {
+                    if (!ct.IsCancellationRequested)
+                    {
+                        picflowPanel.SuspendLayout();
+                        foreach (var item in uiBatch)
+                        {
+                            ImagePanel.AddImagePanel(picflowPanel, apiRequest, item.username, item.userId, item.sticker);
+                        }
+                        picflowPanel.ResumeLayout(true);
+                        picflowPanel.Update();
+
+                        int totalCount;
+                        lock (_lock)
+                        {
+                            totalCount = allItems.Count;
+                        }
+                        limitCounterLabel.Text = $"{totalCount} Items";
+                    }
+                }, null);
             }
 
             await AnimateClearTextAsync();
@@ -144,15 +211,29 @@ namespace VRCGalleryManager.Forms
                     if (line != null)
                     {
                         var stickerData = ProcessLine(line);
-                        if (stickerData != null && allItems.Add(stickerData.Value.sticker))
+                        if (stickerData != null)
                         {
-                            var (userId, username, sticker) = stickerData.Value;
-
-                            picflowPanel.Invoke(() =>
+                            bool isNew = false;
+                            lock (_lock)
                             {
-                                ImagePanel.AddImagePanel(picflowPanel, apiRequest, username, userId, sticker);
-                                limitCounterLabel.Text = $"{allItems.Count} Items";
-                            });
+                                isNew = allItems.Add(stickerData.Value.sticker);
+                            }
+
+                            if (isNew)
+                            {
+                                var (userId, username, sticker) = stickerData.Value;
+
+                                picflowPanel.Invoke(() =>
+                                {
+                                    ImagePanel.AddImagePanel(picflowPanel, apiRequest, username, userId, sticker);
+                                    int totalCount;
+                                    lock (_lock)
+                                    {
+                                        totalCount = allItems.Count;
+                                    }
+                                    limitCounterLabel.Text = $"{totalCount} Items";
+                                });
+                            }
                         }
                     }
                     else
@@ -181,10 +262,10 @@ namespace VRCGalleryManager.Forms
             return null;
         }
 
-        private void _refreshButton_Click(object sender, EventArgs e)
+        private async void _refreshButton_Click(object sender, EventArgs e)
         {
             _refreshButton.Enabled = false;
-            PicflowList();
+            await PicflowListAsync();
             _refreshButton.Enabled = true;
         }
 
@@ -196,7 +277,10 @@ namespace VRCGalleryManager.Forms
         private void ClearItems()
         {
             picflowPanel.Controls.Clear();
-            allItems.Clear();
+            lock (_lock)
+            {
+                allItems.Clear();
+            }
             limitCounterLabel.Text = "0 Items";
         }
 

@@ -11,7 +11,8 @@ namespace VRCGalleryManager
     {
         private static Mutex mutex;
 
-        private readonly ApiConnectedForm[] _forms;
+        private readonly ApiConnectedForm[] _forms = new ApiConnectedForm[8];
+        private readonly Func<ApiConnectedForm>[] _formFactories;
         private ImageEditorForm _editorForm;
         private EmojiEditorForm _emojiEditorForm;
         private int _previousFormIndex = 7; // index of the form visible before the editor
@@ -45,49 +46,20 @@ namespace VRCGalleryManager
             Auth = VRCAuth.Instance();
             Auth.LoadCookies();
 
-            _forms = new ApiConnectedForm[]
+            _formFactories = new Func<ApiConnectedForm>[]
             {
-                new Icons(Auth),
-                new Photos(Auth),
-                new Emoji(Auth),
-                new Sticker(Auth),
-                new Prints(Auth),
+                () => new Icons(Auth),
+                () => new Photos(Auth),
+                () => new Emoji(Auth),
+                () => new Sticker(Auth),
+                () => new Prints(Auth),
 
-                new Picflow(Auth),
-                new Gallery(Auth),
-                new Settings(Auth, this)
+                () => new Picflow(Auth),
+                () => new Gallery(Auth),
+                () => new Settings(Auth, this)
             };
-            foreach (var form in _forms)
-            {
-                form.TopLevel = false;
-                form.Dock = DockStyle.Fill;
-                this.FormsPanel.Controls.Add(form);
-                form.Hide();
-            }
-
-            // Create the inline editor (not in the _forms array — managed separately)
-            _editorForm = new ImageEditorForm();
-            _editorForm.TopLevel = false;
-            _editorForm.FormBorderStyle = FormBorderStyle.None;
-            _editorForm.Dock = DockStyle.Fill;
-            this.FormsPanel.Controls.Add(_editorForm);
-            _editorForm.Hide();
-
-            // Create the inline emoji editor
-            _emojiEditorForm = new EmojiEditorForm();
-            _emojiEditorForm.TopLevel = false;
-            _emojiEditorForm.FormBorderStyle = FormBorderStyle.None;
-            _emojiEditorForm.Dock = DockStyle.Fill;
-            this.FormsPanel.Controls.Add(_emojiEditorForm);
-            _emojiEditorForm.Hide();
 
             ShowForm(7);
-
-            if (Auth.LoggedIn || Auth.CookieLoaded)
-            {
-                _ = ProfileImage();
-                _ = SetCurrentName();
-            }
 
             ApplyRecolorBar();
         }
@@ -186,12 +158,12 @@ namespace VRCGalleryManager
             }
             else
             {
-                foreach (var form in _forms) form.Hide();
+                foreach (var form in _forms) form?.Hide();
                 _editorForm?.Hide();
                 _emojiEditorForm?.Hide();
             }
 
-            _forms[index].Show();
+            GetForm(index).Show();
             _previousFormIndex = index;
 
             _switchIcons.BorderColor   = index == 0 ? Color.FromArgb(255, 255, 255) : Color.FromArgb(5, 55, 66);
@@ -223,6 +195,16 @@ namespace VRCGalleryManager
         /// </summary>
         public void ShowEditor(string imagePath, string ratio, Action<string, string> onSave, Action onCancel, bool showNote)
         {
+            if (_editorForm == null)
+            {
+                _editorForm = new ImageEditorForm();
+                _editorForm.TopLevel = false;
+                _editorForm.FormBorderStyle = FormBorderStyle.None;
+                _editorForm.Dock = DockStyle.Fill;
+                this.FormsPanel.Controls.Add(_editorForm);
+                _editorForm.Hide();
+            }
+
             // Safely detach any lingering handlers from a previous session
             if (_currentHandleSave != null)   _editorForm.OnSave   -= _currentHandleSave;
             if (_currentHandleCancel != null) _editorForm.OnCancel -= _currentHandleCancel;
@@ -260,7 +242,7 @@ namespace VRCGalleryManager
             _editorForm.LoadImage(imagePath, ratio, showNote);
 
             // Switch to editor view
-            foreach (var form in _forms) form.Hide();
+            foreach (var form in _forms) form?.Hide();
             _emojiEditorForm?.Hide();
             _editorForm.Show();
             _editorForm.BringToFront();
@@ -268,10 +250,10 @@ namespace VRCGalleryManager
 
         private void HideEditor()
         {
-            _editorForm.Hide();
+            _editorForm?.Hide();
             // Restore the previously visible form
             if (_previousFormIndex >= 0 && _previousFormIndex < _forms.Length)
-                _forms[_previousFormIndex].Show();
+                GetForm(_previousFormIndex).Show();
         }
 
         /// <summary>
@@ -279,6 +261,16 @@ namespace VRCGalleryManager
         /// </summary>
         public void ShowEmojiEditor(string imagePath, Action<string, bool, string, int, int> onSave, Action onCancel)
         {
+            if (_emojiEditorForm == null)
+            {
+                _emojiEditorForm = new EmojiEditorForm();
+                _emojiEditorForm.TopLevel = false;
+                _emojiEditorForm.FormBorderStyle = FormBorderStyle.None;
+                _emojiEditorForm.Dock = DockStyle.Fill;
+                this.FormsPanel.Controls.Add(_emojiEditorForm);
+                _emojiEditorForm.Hide();
+            }
+
             if (_currentEmojiHandleSave != null)   _emojiEditorForm.OnSave   -= _currentEmojiHandleSave;
             if (_currentEmojiHandleCancel != null) _emojiEditorForm.OnCancel -= _currentEmojiHandleCancel;
 
@@ -315,7 +307,7 @@ namespace VRCGalleryManager
             _emojiEditorForm.LoadImage(imagePath);
 
             // Switch to emoji editor view
-            foreach (var form in _forms) form.Hide();
+            foreach (var form in _forms) form?.Hide();
             _editorForm?.Hide();
             _emojiEditorForm.Show();
             _emojiEditorForm.BringToFront();
@@ -325,7 +317,21 @@ namespace VRCGalleryManager
         {
             _emojiEditorForm.Hide();
             if (_previousFormIndex >= 0 && _previousFormIndex < _forms.Length)
-                _forms[_previousFormIndex].Show();
+                GetForm(_previousFormIndex).Show();
+        }
+
+        private ApiConnectedForm GetForm(int index)
+        {
+            if (_forms[index] == null)
+            {
+                var form = _formFactories[index]();
+                form.TopLevel = false;
+                form.Dock = DockStyle.Fill;
+                this.FormsPanel.Controls.Add(form);
+                form.Hide();
+                _forms[index] = form;
+            }
+            return _forms[index];
         }
 
         private void _switchIcons_Click(object sender, EventArgs e) => ShowForm(0);

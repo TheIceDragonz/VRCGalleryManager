@@ -51,27 +51,29 @@ namespace VRCGalleryManager.Design
             if (_wantVert)
             {
                 _vBar = CreateBar(ScrollOrientation.Vertical);
-                _vBar.Scroll += (s, e) => OnBarScroll();
+                _vBar.Scroll += OnBarScrollEvent;
             }
 
             if (_wantHorz)
             {
                 _hBar = CreateBar(ScrollOrientation.Horizontal);
-                _hBar.Scroll += (s, e) => OnBarScroll();
+                _hBar.Scroll += OnBarScrollEvent;
             }
 
-            // Wire control events
-            _control.Scroll        += (s, e) => UpdatePositionFromControl();
-            _control.Layout        += (s, e) => UpdateScrollBarValues();
-            _control.SizeChanged   += (s, e) => { PositionBars(); UpdateScrollBarValues(); };
-            _control.ControlAdded  += (s, e) => UpdateScrollBarValues();
-            _control.ControlRemoved += (s, e) => UpdateScrollBarValues();
-            _control.MouseWheel    += (s, e) => _control.BeginInvoke(new Action(UpdatePositionFromControl));
+            // Wire control events using named methods to prevent leaks
+            _control.Scroll        += Control_Scroll;
+            _control.Layout        += Control_Layout;
+            _control.SizeChanged   += Control_SizeChanged;
+            _control.ControlAdded  += Control_ControlAdded;
+            _control.ControlRemoved += Control_ControlRemoved;
+            _control.MouseWheel    += Control_MouseWheel;
+            _control.ParentChanged += Control_ParentChanged;
+            _control.HandleCreated   += Control_HandleCreated;
+            _control.HandleDestroyed += Control_HandleDestroyed;
+            _control.Disposed      += Control_Disposed;
 
             if (_control.Parent != null)
                 AddToParent();
-            else
-                _control.ParentChanged += (s, e) => AddToParent();
 
             if (_control.IsHandleCreated)
             {
@@ -79,10 +81,103 @@ namespace VRCGalleryManager.Design
                 AssignHandle(_control.Handle);
             }
 
-            _control.HandleCreated   += (s, e) => { HideNativeBars(); AssignHandle(_control.Handle); };
-            _control.HandleDestroyed += (s, e) => ReleaseHandle();
-
             UpdateScrollBarValues();
+        }
+
+        private void OnBarScrollEvent(object sender, EventArgs e)
+        {
+            OnBarScroll();
+        }
+
+        private void Control_Scroll(object sender, ScrollEventArgs e)
+        {
+            UpdatePositionFromControl();
+        }
+
+        private void Control_Layout(object sender, LayoutEventArgs e)
+        {
+            UpdateScrollBarValues();
+        }
+
+        private void Control_SizeChanged(object sender, EventArgs e)
+        {
+            PositionBars();
+            UpdateScrollBarValues();
+        }
+
+        private void Control_ControlAdded(object sender, ControlEventArgs e)
+        {
+            UpdateScrollBarValues();
+        }
+
+        private void Control_ControlRemoved(object sender, ControlEventArgs e)
+        {
+            UpdateScrollBarValues();
+        }
+
+        private void Control_MouseWheel(object sender, MouseEventArgs e)
+        {
+            if (!_control.IsDisposed)
+            {
+                try
+                {
+                    _control.BeginInvoke(new Action(UpdatePositionFromControl));
+                }
+                catch { }
+            }
+        }
+
+        private void Control_ParentChanged(object sender, EventArgs e)
+        {
+            AddToParent();
+        }
+
+        private void Control_HandleCreated(object sender, EventArgs e)
+        {
+            HideNativeBars();
+            AssignHandle(_control.Handle);
+        }
+
+        private void Control_HandleDestroyed(object sender, EventArgs e)
+        {
+            ReleaseHandle();
+        }
+
+        private void Control_Disposed(object sender, EventArgs e)
+        {
+            // Unsubscribe all events
+            _control.Scroll        -= Control_Scroll;
+            _control.Layout        -= Control_Layout;
+            _control.SizeChanged   -= Control_SizeChanged;
+            _control.ControlAdded  -= Control_ControlAdded;
+            _control.ControlRemoved -= Control_ControlRemoved;
+            _control.MouseWheel    -= Control_MouseWheel;
+            _control.ParentChanged -= Control_ParentChanged;
+            _control.HandleCreated   -= Control_HandleCreated;
+            _control.HandleDestroyed -= Control_HandleDestroyed;
+            _control.Disposed      -= Control_Disposed;
+
+            if (_vBar != null)
+            {
+                _vBar.Scroll -= OnBarScrollEvent;
+                if (_vBar.Parent != null)
+                {
+                    _vBar.Parent.Controls.Remove(_vBar);
+                }
+                _vBar.Dispose();
+            }
+
+            if (_hBar != null)
+            {
+                _hBar.Scroll -= OnBarScrollEvent;
+                if (_hBar.Parent != null)
+                {
+                    _hBar.Parent.Controls.Remove(_hBar);
+                }
+                _hBar.Dispose();
+            }
+
+            ReleaseHandle();
         }
 
         // ── WndProc hook ─────────────────────────────────────────────────────────

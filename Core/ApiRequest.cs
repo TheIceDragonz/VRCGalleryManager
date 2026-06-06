@@ -122,7 +122,7 @@ namespace VRCGalleryManager.Core
                 }
                 else if (!tag.Contains("print"))
                 {
-                    var images = filesApi.GetFiles(tag, null, 100);
+                    var images = await filesApi.GetFilesAsync(tag, null, 100);
 
                     foreach (var image in images)
                     {

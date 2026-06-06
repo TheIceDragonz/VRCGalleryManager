@@ -27,6 +27,7 @@ namespace VRCGalleryManager.Forms
         // GIF Mode State
         private readonly GifToSpriteSheetConverter gifConverter;
         private SpriteSheetViewer spriteSheetViewer;
+        private System.Windows.Forms.Timer gifPreviewDebounceTimer;
         private int gifFramesCount = 0;
         private Bitmap spriteSheetBitmap;
         private List<Bitmap> gifFrames = new List<Bitmap>();
@@ -134,14 +135,14 @@ namespace VRCGalleryManager.Forms
                     trackBarStartFrame.Maximum = Math.Max(0, maxFrames - 1);
                     trackBarStartFrame.Value = 0;
                     trackBarStartFrame.LabelText = "1";
-                    lblStartFrame.Text = "Start Frame: 1";
+                    lblStartFrame.Text = "Start Frame";
 
                     trackBarEndFrame.Minimum = 0;
                     trackBarEndFrame.Maximum = Math.Max(0, maxFrames - 1);
                     int defaultEnd = Math.Min(maxFrames - 1, 63);
                     trackBarEndFrame.Value = defaultEnd;
                     trackBarEndFrame.LabelText = (defaultEnd + 1).ToString();
-                    lblEndFrame.Text = $"End Frame: {defaultEnd + 1}";
+                    lblEndFrame.Text = "End Frame";
 
                     PopulateFrameStrip();
                     UpdateFrameStripHighlight();
@@ -873,18 +874,19 @@ namespace VRCGalleryManager.Forms
         // Action controls
         private void btnEmojiStyle_Click(object sender, EventArgs e)
         {
-            if (emojiTypePanel.Visible)
+            if (!emojiTypePanel.Visible)
             {
-                TypePanel.ClearEmojiType(emojiTypePanel);
+                if (emojiTypePanel.Controls.Count == 0)
+                {
+                    TypePanel.LoadEmojiType(btnEmojiStyle, emojiTypePanel);
+                }
+                emojiTypePanel.Visible = true;
+                emojiTypePanel.BringToFront();
             }
             else
             {
-                TypePanel.LoadEmojiType(btnEmojiStyle, emojiTypePanel);
+                emojiTypePanel.Visible = false;
             }
-            emojiTypePanel.Visible = !emojiTypePanel.Visible;
-
-            if (emojiTypePanel.Visible)
-                emojiTypePanel.BringToFront();
         }
 
         private void btnSave_Click(object sender, EventArgs e)
@@ -892,7 +894,7 @@ namespace VRCGalleryManager.Forms
             string style = btnEmojiStyle.Text;
             if (style.Contains("Select..."))
             {
-                MessageBox.Show("Please choose an Emoji style/type first!", "Style Required", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                VRCGalleryManager.Core.NotificationManager.ShowNotification("Please choose an Emoji style/type first!", "Style Required", VRCGalleryManager.Core.NotificationType.Error);
                 return;
             }
 
@@ -967,10 +969,15 @@ namespace VRCGalleryManager.Forms
         protected override void OnFormClosed(FormClosedEventArgs e)
         {
             base.OnFormClosed(e);
+            gifPreviewDebounceTimer?.Stop();
+            gifPreviewDebounceTimer?.Dispose();
+            gifPreviewDebounceTimer = null;
             originalImage?.Dispose();
             checkerBrush?.Dispose();
             spriteSheetBitmap?.Dispose();
             ClearGifFrames();
+            TypePanel.ClearEmojiType(emojiTypePanel);
+            gifConverter.Dispose();
         }
 
         private void trackBarStartFrame_Scroll(object sender, EventArgs e)
@@ -979,16 +986,13 @@ namespace VRCGalleryManager.Forms
             {
                 trackBarEndFrame.Value = trackBarStartFrame.Value;
                 trackBarEndFrame.LabelText = (trackBarEndFrame.Value + 1).ToString();
-                lblEndFrame.Text = $"End Frame: {trackBarEndFrame.Value + 1}";
             }
             else if (trackBarEndFrame.Value - trackBarStartFrame.Value + 1 > 64)
             {
                 trackBarEndFrame.Value = trackBarStartFrame.Value + 63;
                 trackBarEndFrame.LabelText = (trackBarEndFrame.Value + 1).ToString();
-                lblEndFrame.Text = $"End Frame: {trackBarEndFrame.Value + 1}";
             }
             trackBarStartFrame.LabelText = (trackBarStartFrame.Value + 1).ToString();
-            lblStartFrame.Text = $"Start Frame: {trackBarStartFrame.Value + 1}";
 
             UpdateFrameStripHighlight();
             UpdateGifPreview();
@@ -1000,22 +1004,40 @@ namespace VRCGalleryManager.Forms
             {
                 trackBarStartFrame.Value = trackBarEndFrame.Value;
                 trackBarStartFrame.LabelText = (trackBarStartFrame.Value + 1).ToString();
-                lblStartFrame.Text = $"Start Frame: {trackBarStartFrame.Value + 1}";
             }
             else if (trackBarEndFrame.Value - trackBarStartFrame.Value + 1 > 64)
             {
                 trackBarStartFrame.Value = trackBarEndFrame.Value - 63;
                 trackBarStartFrame.LabelText = (trackBarStartFrame.Value + 1).ToString();
-                lblStartFrame.Text = $"Start Frame: {trackBarStartFrame.Value + 1}";
             }
             trackBarEndFrame.LabelText = (trackBarEndFrame.Value + 1).ToString();
-            lblEndFrame.Text = $"End Frame: {trackBarEndFrame.Value + 1}";
 
             UpdateFrameStripHighlight();
             UpdateGifPreview();
         }
 
+        private void InitializeGifDebounceTimer()
+        {
+            gifPreviewDebounceTimer = new System.Windows.Forms.Timer();
+            gifPreviewDebounceTimer.Interval = 150; // 150ms delay
+            gifPreviewDebounceTimer.Tick += (s, e) =>
+            {
+                gifPreviewDebounceTimer.Stop();
+                UpdateGifPreviewInternal();
+            };
+        }
+
         private void UpdateGifPreview()
+        {
+            if (gifPreviewDebounceTimer == null)
+            {
+                InitializeGifDebounceTimer();
+            }
+            gifPreviewDebounceTimer.Stop();
+            gifPreviewDebounceTimer.Start();
+        }
+
+        private void UpdateGifPreviewInternal()
         {
             if (string.IsNullOrEmpty(originalPath)) return;
 

@@ -47,6 +47,7 @@ namespace VRCGalleryManager.Forms
                 string fileId = jsonObject["files"]?["fileId"]?.ToString();
 
                 ImagePanel.AddPrintsPanel(printsPanel, apiRequest, printId, authorId, authorName , fileId, UpdateCounter);
+                await Task.Delay(10);
             }
 
             UpdateCounter("");

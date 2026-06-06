@@ -47,6 +47,7 @@ namespace VRCGalleryManager.Forms
                 string id = jsonObject["id"]?.ToString();
 
                 ImagePanel.AddImagePanel(photosPanel, apiRequest, id, UpdateCounter);
+                await Task.Delay(10);
             }
 
             UpdateCounter("");

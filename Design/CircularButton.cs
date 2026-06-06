@@ -1,4 +1,4 @@
-﻿using Svg;
+using Svg;
 using System.Collections;
 using System.ComponentModel;
 using System.Drawing.Drawing2D;
@@ -67,7 +67,11 @@ namespace VRCGalleryManager.Design
                 {
                     _ = UpdateSvgContentAsync(svgResource);
                 }
-                svgImage = null;
+                if (svgImage != null)
+                {
+                    svgImage.Dispose();
+                    svgImage = null;
+                }
                 Refresh();
             }
         }
@@ -75,7 +79,11 @@ namespace VRCGalleryManager.Design
         private async Task UpdateSvgContentAsync(string resourceName)
         {
             SvgContent = await LoadSvgFromResourcesAsync(resourceName);
-            svgImage = null;
+            if (svgImage != null)
+            {
+                svgImage.Dispose();
+                svgImage = null;
+            }
             Refresh();
         }
 
@@ -105,7 +113,11 @@ namespace VRCGalleryManager.Design
                 if (svgColor != value)
                 {
                     svgColor = value;
-                    svgImage = null;
+                    if (svgImage != null)
+                    {
+                        svgImage.Dispose();
+                        svgImage = null;
+                    }
                     Refresh();
                 }
             }
@@ -120,7 +132,11 @@ namespace VRCGalleryManager.Design
                 if (svgSize != value)
                 {
                     svgSize = value;
-                    svgImage = null;
+                    if (svgImage != null)
+                    {
+                        svgImage.Dispose();
+                        svgImage = null;
+                    }
                     Refresh();
                 }
             }
@@ -160,16 +176,13 @@ namespace VRCGalleryManager.Design
 
             var rectSurface = ClientRectangle;
             var rectBorder = Rectangle.Inflate(rectSurface, -borderSize, -borderSize);
+            Color parentColor = Parent?.BackColor ?? Color.Transparent;
 
-            using (var pathSurface = new GraphicsPath())
             using (var pathBorder = new GraphicsPath())
-            using (var penSurface = new Pen(Parent.BackColor, borderSize))
+            using (var penSurface = new Pen(parentColor, borderSize))
             using (var penBorder = new Pen(borderColor, borderSize))
             {
                 pevent.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-
-                pathSurface.AddEllipse(rectSurface);
-                Region = new Region(pathSurface);
 
                 pevent.Graphics.DrawEllipse(penSurface, rectSurface);
 
@@ -287,12 +300,6 @@ namespace VRCGalleryManager.Design
             return new Rectangle(new Point(x, y), imageSize);
         }
 
-        protected override void OnResize(EventArgs e)
-        {
-            base.OnResize(e);
-            Width = Height;
-        }
-
         public CircularButton()
         {
             SetStyle(ControlStyles.Selectable, false);
@@ -303,11 +310,25 @@ namespace VRCGalleryManager.Design
             ForeColor = Color.White;
         }
 
-        protected override void OnHandleCreated(EventArgs e)
+        private Control _observedParent;
+
+        protected override void OnParentChanged(EventArgs e)
         {
-            base.OnHandleCreated(e);
-            Parent.BackColorChanged += Container_BackColorChanged;
-            Cursor = Cursors.Hand;
+            base.OnParentChanged(e);
+            SetupParentEvent();
+        }
+
+        private void SetupParentEvent()
+        {
+            if (_observedParent != null)
+            {
+                _observedParent.BackColorChanged -= Container_BackColorChanged;
+            }
+            _observedParent = Parent;
+            if (_observedParent != null)
+            {
+                _observedParent.BackColorChanged += Container_BackColorChanged;
+            }
         }
 
         private void Container_BackColorChanged(object sender, EventArgs e)
@@ -315,17 +336,65 @@ namespace VRCGalleryManager.Design
             Invalidate();
         }
 
-        protected override void OnHandleDestroyed(EventArgs e)
+        private void UpdateRegion()
         {
-            if (Parent != null)
-                Parent.BackColorChanged -= Container_BackColorChanged;
-            base.OnHandleDestroyed(e);
+            Rectangle rectSurface = ClientRectangle;
+            if (rectSurface.Width <= 0 || rectSurface.Height <= 0)
+                return;
+
+            using (GraphicsPath pathSurface = new GraphicsPath())
+            {
+                pathSurface.AddEllipse(rectSurface);
+                Region oldRegion = this.Region;
+                this.Region = new Region(pathSurface);
+                oldRegion?.Dispose();
+            }
+        }
+
+        protected override void OnHandleCreated(EventArgs e)
+        {
+            base.OnHandleCreated(e);
+            SetupParentEvent();
+            UpdateRegion();
+            Cursor = Cursors.Hand;
+        }
+
+        protected override void OnResize(EventArgs e)
+        {
+            base.OnResize(e);
+            Width = Height;
+            UpdateRegion();
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (svgImage != null)
+                {
+                    svgImage.Dispose();
+                    svgImage = null;
+                }
+                if (_observedParent != null)
+                {
+                    _observedParent.BackColorChanged -= Container_BackColorChanged;
+                    _observedParent = null;
+                }
+                Region oldRegion = this.Region;
+                this.Region = null;
+                oldRegion?.Dispose();
+            }
+            base.Dispose(disposing);
         }
 
         protected override void OnEnabledChanged(EventArgs e)
         {
             base.OnEnabledChanged(e);
-            svgImage = null;
+            if (svgImage != null)
+            {
+                svgImage.Dispose();
+                svgImage = null;
+            }
             Invalidate();
         }
     }

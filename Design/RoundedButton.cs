@@ -1,4 +1,4 @@
-﻿using Svg;
+using Svg;
 using System.Collections;
 using System.ComponentModel;
 using System.Drawing.Drawing2D;
@@ -8,9 +8,24 @@ namespace VRCGalleryManager.Design
     public class RoundedButton : Button
     {
         private int borderSize = 0;
-        public int BorderRadius { get; set; } = 15;
-        private Color borderColor = Color.PaleVioletRed;
+        private int borderRadius = 15;
 
+        [Category("VRCGalleryManager")]
+        public int BorderRadius
+        {
+            get => borderRadius;
+            set
+            {
+                if (borderRadius != value)
+                {
+                    borderRadius = value;
+                    UpdateRegion();
+                    Invalidate();
+                }
+            }
+        }
+        private Color borderColor = Color.PaleVioletRed;
+ 
         private Image svgImage;
         private string svgResource;
         private ContentAlignment svgAlignment = ContentAlignment.MiddleCenter;
@@ -18,7 +33,7 @@ namespace VRCGalleryManager.Design
         private Size svgSize = new Size(50, 50);
         private Padding svgPadding = new Padding(0);
         private Point svgOffset = Point.Empty;
-
+ 
         [Category("VRCGalleryManager")]
         public int BorderSize
         {
@@ -28,11 +43,12 @@ namespace VRCGalleryManager.Design
                 if (borderSize != value)
                 {
                     borderSize = value;
+                    UpdateRegion();
                     Invalidate();
                 }
             }
         }
-
+ 
         [Category("VRCGalleryManager")]
         public Color BorderColor
         {
@@ -46,7 +62,7 @@ namespace VRCGalleryManager.Design
                 }
             }
         }
-
+ 
         [Category("VRCGalleryManager")]
         public Color BackgroundColor
         {
@@ -60,7 +76,7 @@ namespace VRCGalleryManager.Design
                 }
             }
         }
-
+ 
         [Category("VRCGalleryManager")]
         public Color TextColor
         {
@@ -74,7 +90,7 @@ namespace VRCGalleryManager.Design
                 }
             }
         }
-
+ 
         [Category("VRCGalleryManager")]
         [TypeConverter(typeof(ResourceNameConverter))]
         public string SvgResource
@@ -87,14 +103,18 @@ namespace VRCGalleryManager.Design
                 {
                     SvgContent = LoadSvgFromResources(svgResource);
                 }
-                svgImage = null;
+                if (svgImage != null)
+                {
+                    svgImage.Dispose();
+                    svgImage = null;
+                }
                 Refresh();
             }
         }
-
+ 
         [Browsable(false)]
         public string SvgContent { get; set; }
-
+ 
         [Category("VRCGalleryManager")]
         public ContentAlignment SvgAlignment
         {
@@ -108,7 +128,7 @@ namespace VRCGalleryManager.Design
                 }
             }
         }
-
+ 
         [Category("VRCGalleryManager")]
         public Color SvgColor
         {
@@ -118,12 +138,16 @@ namespace VRCGalleryManager.Design
                 if (svgColor != value)
                 {
                     svgColor = value;
-                    svgImage = null;
+                    if (svgImage != null)
+                    {
+                        svgImage.Dispose();
+                        svgImage = null;
+                    }
                     Refresh();
                 }
             }
         }
-
+ 
         [Category("VRCGalleryManager")]
         public Size SvgSize
         {
@@ -133,12 +157,16 @@ namespace VRCGalleryManager.Design
                 if (svgSize != value)
                 {
                     svgSize = value;
-                    svgImage = null;
+                    if (svgImage != null)
+                    {
+                        svgImage.Dispose();
+                        svgImage = null;
+                    }
                     Refresh();
                 }
             }
         }
-
+ 
         [Category("VRCGalleryManager")]
         public Padding SvgPadding
         {
@@ -152,7 +180,7 @@ namespace VRCGalleryManager.Design
                 }
             }
         }
-
+ 
         [Category("VRCGalleryManager")]
         public Point SvgOffset
         {
@@ -166,14 +194,14 @@ namespace VRCGalleryManager.Design
                 }
             }
         }
-
+ 
         private string LoadSvgFromResources(string resourceName)
         {
             Console.WriteLine($"Loading resource: {resourceName}");
-
+ 
             var resourceManager = Properties.Resources.ResourceManager;
             var resourceSet = resourceManager.GetResourceSet(System.Globalization.CultureInfo.CurrentCulture, true, true);
-
+ 
             foreach (DictionaryEntry entry in resourceSet)
             {
                 if (entry.Key.ToString() == resourceName)
@@ -194,34 +222,33 @@ namespace VRCGalleryManager.Design
                     }
                 }
             }
-
+ 
             Console.WriteLine($"Resource {resourceName} not found.");
             return null;
         }
-
+ 
         protected override void OnPaint(PaintEventArgs pevent)
         {
             base.OnPaint(pevent);
-
+ 
             Rectangle rectSurface = ClientRectangle;
             Rectangle rectBorder = Rectangle.Inflate(rectSurface, -borderSize, -borderSize);
             int smoothSize = 2;
             if (borderSize > 0)
                 smoothSize = borderSize;
+ 
+            Color parentColor = Parent?.BackColor ?? Color.Transparent;
 
             if (BorderRadius > 2)
             {
                 using (GraphicsPath pathSurface = GetFigurePath(rectSurface, BorderRadius))
                 using (GraphicsPath pathBorder = GetFigurePath(rectBorder, BorderRadius - borderSize))
-                using (Pen penSurface = new Pen(Parent.BackColor, smoothSize))
+                using (Pen penSurface = new Pen(parentColor, smoothSize))
                 using (Pen penBorder = new Pen(borderColor, borderSize))
                 {
                     pevent.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-
-                    Region = new Region(pathSurface);
-
                     pevent.Graphics.DrawPath(penSurface, pathSurface);
-
+ 
                     if (borderSize >= 1)
                         pevent.Graphics.DrawPath(penBorder, pathBorder);
                 }
@@ -229,7 +256,6 @@ namespace VRCGalleryManager.Design
             else
             {
                 pevent.Graphics.SmoothingMode = SmoothingMode.None;
-                Region = new Region(rectSurface);
                 if (borderSize >= 1)
                 {
                     using (Pen penBorder = new Pen(borderColor, borderSize))
@@ -239,13 +265,13 @@ namespace VRCGalleryManager.Design
                     }
                 }
             }
-
+ 
             if (!string.IsNullOrEmpty(SvgContent))
             {
                 try
                 {
                     Color effectiveSvgColor = this.Enabled ? SvgColor : Color.Black;
-
+ 
                     if (svgImage == null)
                     {
                         using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(SvgContent)))
@@ -264,18 +290,18 @@ namespace VRCGalleryManager.Design
                             svgImage = svgDoc.Draw(SvgSize.Width, SvgSize.Height);
                         }
                     }
-
+ 
                     if (svgImage != null)
                     {
                         Rectangle imageRect = GetAlignedRectangle(SvgSize, ClientRectangle, SvgAlignment);
-
+ 
                         imageRect.X += SvgPadding.Left;
                         imageRect.Y += SvgPadding.Top;
                         imageRect.Width -= (SvgPadding.Left + SvgPadding.Right);
                         imageRect.Height -= (SvgPadding.Top + SvgPadding.Bottom);
-
+ 
                         imageRect.Offset(SvgOffset);
-
+ 
                         pevent.Graphics.DrawImage(svgImage, imageRect);
                     }
                 }
@@ -285,12 +311,12 @@ namespace VRCGalleryManager.Design
                 }
             }
         }
-
+ 
         private Rectangle GetAlignedRectangle(Size imageSize, Rectangle container, ContentAlignment alignment)
         {
             int x = container.X;
             int y = container.Y;
-
+ 
             if (alignment == ContentAlignment.TopCenter || alignment == ContentAlignment.MiddleCenter || alignment == ContentAlignment.BottomCenter)
             {
                 x += (container.Width - imageSize.Width) / 2;
@@ -299,7 +325,7 @@ namespace VRCGalleryManager.Design
             {
                 x += container.Width - imageSize.Width;
             }
-
+ 
             if (alignment == ContentAlignment.MiddleLeft || alignment == ContentAlignment.MiddleCenter || alignment == ContentAlignment.MiddleRight)
             {
                 y += (container.Height - imageSize.Height) / 2;
@@ -308,10 +334,10 @@ namespace VRCGalleryManager.Design
             {
                 y += container.Height - imageSize.Height;
             }
-
+ 
             return new Rectangle(new Point(x, y), imageSize);
         }
-
+ 
         public RoundedButton()
         {
             SetStyle(ControlStyles.Selectable, false);
@@ -322,28 +348,89 @@ namespace VRCGalleryManager.Design
             ForeColor = Color.White;
             Resize += Button_Resize;
         }
+ 
+        private Control _observedParent;
+
+        protected override void OnParentChanged(EventArgs e)
+        {
+            base.OnParentChanged(e);
+            SetupParentEvent();
+        }
+
+        private void SetupParentEvent()
+        {
+            if (_observedParent != null)
+            {
+                _observedParent.BackColorChanged -= Container_BackColorChanged;
+            }
+            _observedParent = Parent;
+            if (_observedParent != null)
+            {
+                _observedParent.BackColorChanged += Container_BackColorChanged;
+            }
+        }
+
+        private void UpdateRegion()
+        {
+            Rectangle rectSurface = ClientRectangle;
+            if (rectSurface.Width <= 0 || rectSurface.Height <= 0)
+                return;
+
+            Region oldRegion = this.Region;
+            if (borderRadius > 2)
+            {
+                using (GraphicsPath pathSurface = GetFigurePath(rectSurface, borderRadius))
+                {
+                    this.Region = new Region(pathSurface);
+                }
+            }
+            else
+            {
+                this.Region = new Region(rectSurface);
+            }
+            oldRegion?.Dispose();
+        }
 
         protected override void OnHandleCreated(EventArgs e)
         {
             base.OnHandleCreated(e);
-            Parent.BackColorChanged += Container_BackColorChanged;
+            SetupParentEvent();
+            UpdateRegion();
             Cursor = Cursors.Hand;
         }
 
-        protected override void OnHandleDestroyed(EventArgs e)
+        protected override void Dispose(bool disposing)
         {
-            if (Parent != null)
-                Parent.BackColorChanged -= Container_BackColorChanged;
-            base.OnHandleDestroyed(e);
+            if (disposing)
+            {
+                if (svgImage != null)
+                {
+                    svgImage.Dispose();
+                    svgImage = null;
+                }
+                if (_observedParent != null)
+                {
+                    _observedParent.BackColorChanged -= Container_BackColorChanged;
+                    _observedParent = null;
+                }
+                Region oldRegion = this.Region;
+                this.Region = null;
+                oldRegion?.Dispose();
+            }
+            base.Dispose(disposing);
         }
-
+ 
         protected override void OnEnabledChanged(EventArgs e)
         {
             base.OnEnabledChanged(e);
-            svgImage = null;
+            if (svgImage != null)
+            {
+                svgImage.Dispose();
+                svgImage = null;
+            }
             Invalidate();
         }
-
+ 
         private GraphicsPath GetFigurePath(Rectangle rect, float radius)
         {
             GraphicsPath path = new GraphicsPath();
@@ -356,16 +443,17 @@ namespace VRCGalleryManager.Design
             path.CloseFigure();
             return path;
         }
-
+ 
         private void Container_BackColorChanged(object sender, EventArgs e)
         {
             Invalidate();
         }
-
+ 
         private void Button_Resize(object sender, EventArgs e)
         {
-            if (BorderRadius > Height)
-                BorderRadius = Height;
+            if (borderRadius > Height)
+                borderRadius = Height;
+            UpdateRegion();
         }
     }
 

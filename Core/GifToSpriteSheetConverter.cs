@@ -61,10 +61,25 @@ namespace VRCGalleryManager.Core
             }
         }
 
-        public (Bitmap spriteSheet, int frameCount) ConvertGifToSpriteSheet(string gifPath)
+        private string loadedGifPath = null;
+
+        public void Dispose()
         {
             gifImage?.Dispose();
-            gifImage = Image.FromFile(gifPath);
+            gifImage = null;
+            loadedGifPath = null;
+            SpriteSheet?.Dispose();
+            SpriteSheet = null;
+        }
+
+        public (Bitmap spriteSheet, int frameCount) ConvertGifToSpriteSheet(string gifPath)
+        {
+            if (loadedGifPath != gifPath || gifImage == null)
+            {
+                gifImage?.Dispose();
+                gifImage = Image.FromFile(gifPath);
+                loadedGifPath = gifPath;
+            }
             FrameDimension dimension = new FrameDimension(gifImage.FrameDimensionsList[0]);
             int count = gifImage.GetFrameCount(dimension);
             int maxFrames = Math.Min(count, 64);
@@ -74,8 +89,12 @@ namespace VRCGalleryManager.Core
         public (Bitmap spriteSheet, int frameCount) ConvertGifToSpriteSheet(string gifPath, int startFrame, int endFrame)
         {
             int textureSize = 1024;
-            gifImage?.Dispose();
-            gifImage = Image.FromFile(gifPath);
+            if (loadedGifPath != gifPath || gifImage == null)
+            {
+                gifImage?.Dispose();
+                gifImage = Image.FromFile(gifPath);
+                loadedGifPath = gifPath;
+            }
             FrameDimension dimension = new FrameDimension(gifImage.FrameDimensionsList[0]);
             int count = gifImage.GetFrameCount(dimension);
 
@@ -98,6 +117,7 @@ namespace VRCGalleryManager.Core
                 cols = rows = 8;
             }
 
+            SpriteSheet?.Dispose();
             SpriteSheet = new Bitmap(textureSize, 1024);
 
             using (Graphics g = Graphics.FromImage(SpriteSheet))

@@ -29,9 +29,11 @@ namespace VRCGalleryManager.Design
         private Color borderColor  = Color.PaleVioletRed;
 
         // ── Scrollbar visual state (NO child controls!) ──────────────────────────
-        private bool _useCustomScrollBar = true;
+        private bool _useCustomScrollBar = false;
         private bool _showVBar           = false;
         private bool _showHBar           = false;
+        private bool _needV              = false;
+        private bool _needH              = false;
         private bool _vBarDragging       = false;
         private bool _hBarDragging       = false;
         private int  _vBarDragOffset     = 0;
@@ -52,14 +54,14 @@ namespace VRCGalleryManager.Design
         public int BorderSize
         {
             get => borderSize;
-            set { if (borderSize != value) { borderSize = value; Invalidate(); } }
+            set { if (borderSize != value) { borderSize = value; UpdateRegion(); Invalidate(); } }
         }
 
         [Category("VRCGalleryManager")]
         public int BorderRadius
         {
             get => borderRadius;
-            set { if (borderRadius != value) { borderRadius = value; Invalidate(); } }
+            set { if (borderRadius != value) { borderRadius = value; UpdateRegion(); Invalidate(); } }
         }
 
         [Category("VRCGalleryManager")]
@@ -81,11 +83,11 @@ namespace VRCGalleryManager.Design
         /// dark/cyan direttamente nel panel (funziona solo con AutoScroll=true).
         /// </summary>
         [Category("VRCGalleryManager")]
-        [DefaultValue(true)]
+        [DefaultValue(false)]
         public bool UseCustomScrollBar
         {
             get => _useCustomScrollBar;
-            set { _useCustomScrollBar = value; UpdateScrollPadding(); Invalidate(); }
+            set { _useCustomScrollBar = value; UpdateScrollPadding(); UpdateRegion(); Invalidate(); }
         }
 
         // ── Constructor ──────────────────────────────────────────────────────────
@@ -103,21 +105,57 @@ namespace VRCGalleryManager.Design
         {
             base.OnHandleCreated(e);
             UpdateScrollPadding();
+            UpdateRegion();
         }
+
+        private int GetVirtualContentHeight() => DisplayRectangle.Height;
+
+        private int GetVirtualContentWidth() => DisplayRectangle.Width;
 
         private void UpdateScrollPadding()
         {
-            int reserve = BAR_W + BAR_MARGIN * 2;
-            if (!_useCustomScrollBar || DesignMode)
+            if (!_useCustomScrollBar || DesignMode || !IsHandleCreated)
             {
-                if (Padding.Right == reserve)
-                    Padding = new Padding(Padding.Left, Padding.Top, 0, Padding.Bottom);
+                _needV = false;
+                _needH = false;
                 return;
             }
-            // Riserviamo BAR_W + BAR_MARGIN*2 a destra così i figli non ci
-            // vanno sotto la barra verticale.
-            if (Padding.Right != reserve)
-                Padding = new Padding(Padding.Left, Padding.Top, reserve, Padding.Bottom);
+
+            int reserve = BAR_W + BAR_MARGIN * 2;
+            
+            _needV = VScroll;
+            _needH = HScroll;
+
+            int right = _needV ? reserve : 0;
+            int bottom = _needH ? reserve : 0;
+
+            if (Padding.Right != right || Padding.Bottom != bottom)
+            {
+                Padding = new Padding(Padding.Left, Padding.Top, right, bottom);
+            }
+        }
+
+        private void UpdateRegion()
+        {
+            int extraWidth = (AutoScroll && VScroll) ? SystemInformation.VerticalScrollBarWidth : 0;
+            Rectangle rectSurface = new Rectangle(0, 0, ClientRectangle.Width + extraWidth, ClientRectangle.Height);
+            if (rectSurface.Width <= 0 || rectSurface.Height <= 0)
+                return;
+
+            int effectiveRadius = Math.Min(borderRadius, Math.Min(rectSurface.Width, rectSurface.Height) / 2);
+            Region oldRegion = this.Region;
+            if (effectiveRadius > 2)
+            {
+                using (GraphicsPath pathSurface = GetFigurePath(rectSurface, effectiveRadius))
+                {
+                    this.Region = new Region(pathSurface);
+                }
+            }
+            else
+            {
+                this.Region = new Region(rectSurface);
+            }
+            oldRegion?.Dispose();
         }
 
         // ── WndProc: nasconde le scrollbar native ────────────────────────────────
@@ -133,6 +171,10 @@ namespace VRCGalleryManager.Design
                     try { ShowScrollBar(Handle, SB_BOTH, false); } catch { }
                 }
             }
+            if (m.Msg == WM_VSCROLL || m.Msg == WM_HSCROLL || m.Msg == 0x020A /* WM_MOUSEWHEEL */)
+            {
+                InvalidateScrollBars();
+            }
         }
 
         // ── Geometry helpers ─────────────────────────────────────────────────────
@@ -140,7 +182,7 @@ namespace VRCGalleryManager.Design
         private (Rectangle track, Rectangle thumb) GetVBarRects()
         {
             int clientH  = ClientSize.Height;
-            int displayH = DisplayRectangle.Height;
+            int displayH = GetVirtualContentHeight();
             int trackX   = ClientSize.Width - BAR_W - BAR_MARGIN;
             int trackH   = clientH - BAR_MARGIN * 2 - (_showHBar ? BAR_W + BAR_MARGIN : 0);
             var track    = new Rectangle(trackX, BAR_MARGIN, BAR_W, Math.Max(0, trackH));
@@ -159,7 +201,7 @@ namespace VRCGalleryManager.Design
         private (Rectangle track, Rectangle thumb) GetHBarRects()
         {
             int clientW  = ClientSize.Width;
-            int displayW = DisplayRectangle.Width;
+            int displayW = GetVirtualContentWidth();
             int trackY   = ClientSize.Height - BAR_W - BAR_MARGIN;
             int trackW   = clientW - BAR_MARGIN * 2 - (_showVBar ? BAR_W + BAR_MARGIN : 0);
             var track    = new Rectangle(BAR_MARGIN, trackY, Math.Max(0, trackW), BAR_W);
@@ -200,7 +242,7 @@ namespace VRCGalleryManager.Design
             g.SmoothingMode = SmoothingMode.AntiAlias;
 
             // ── Border / rounded region ─────────────────────────────────────────
-            int extraWidth = (AutoScroll && (DisplayRectangle.Height > ClientSize.Height)) ? 17 : 0;
+            int extraWidth = (AutoScroll && VScroll) ? SystemInformation.VerticalScrollBarWidth : 0;
             Rectangle rectSurface = new Rectangle(0, 0, ClientRectangle.Width + extraWidth, ClientRectangle.Height);
             Rectangle rectBorder  = Rectangle.Inflate(rectSurface, -borderSize, -borderSize);
             int smoothSize        = borderSize > 0 ? borderSize : 2;
@@ -212,13 +254,11 @@ namespace VRCGalleryManager.Design
                 using var pathBorder  = GetFigurePath(rectBorder, effectiveRadius - borderSize);
                 using var penSurface  = new Pen(Parent?.BackColor ?? Color.Transparent, smoothSize);
                 using var penBorder   = new Pen(borderColor, borderSize);
-                Region = new Region(pathSurface);
                 g.DrawPath(penSurface, pathSurface);
                 if (borderSize >= 1) g.DrawPath(penBorder, pathBorder);
             }
             else
             {
-                Region = new Region(rectSurface);
                 if (borderSize >= 1)
                 {
                     using var penBorder = new Pen(borderColor, borderSize);
@@ -230,13 +270,8 @@ namespace VRCGalleryManager.Design
             // ── Custom scrollbars ───────────────────────────────────────────────
             if (!_useCustomScrollBar || !AutoScroll || DesignMode) return;
 
-            int clientH  = ClientSize.Height;
-            int clientW  = ClientSize.Width;
-            int displayH = DisplayRectangle.Height;
-            int displayW = DisplayRectangle.Width;
-
-            _showVBar = displayH > clientH && clientH > 0;
-            _showHBar = displayW > clientW && clientW > 0;
+            _showVBar = _needV;
+            _showHBar = _needH;
 
             if (_showVBar)
             {
@@ -262,6 +297,25 @@ namespace VRCGalleryManager.Design
 
         // ── Mouse events ─────────────────────────────────────────────────────────
 
+        private void InvalidateScrollBars()
+        {
+            if (!IsHandleCreated) return;
+
+            int reserve = BAR_W + BAR_MARGIN * 2 + 4; // safety margin for rendering
+
+            if (_showVBar)
+            {
+                var rect = new Rectangle(ClientSize.Width - reserve, 0, reserve, ClientSize.Height);
+                Invalidate(rect);
+            }
+            if (_showHBar)
+            {
+                var rect = new Rectangle(0, ClientSize.Height - reserve, ClientSize.Width, reserve);
+                Invalidate(rect);
+            }
+            Update(); // Force immediate synchronous draw of the scrollbar tracks/thumbs
+        }
+
         protected override void OnMouseDown(MouseEventArgs e)
         {
             base.OnMouseDown(e);
@@ -281,7 +335,7 @@ namespace VRCGalleryManager.Design
                     {
                         ScrollBy(vertical: true, direction: e.Y < thumb.Y ? -1 : 1);
                     }
-                    Invalidate();
+                    InvalidateScrollBars();
                     return;
                 }
             }
@@ -300,7 +354,7 @@ namespace VRCGalleryManager.Design
                     {
                         ScrollBy(vertical: false, direction: e.X < thumb.X ? -1 : 1);
                     }
-                    Invalidate();
+                    InvalidateScrollBars();
                 }
             }
         }
@@ -352,7 +406,7 @@ namespace VRCGalleryManager.Design
                 }
             }
 
-            if (redraw) Invalidate();
+            if (redraw) InvalidateScrollBars();
         }
 
         protected override void OnMouseUp(MouseEventArgs e)
@@ -362,7 +416,7 @@ namespace VRCGalleryManager.Design
             {
                 _vBarDragging = false;
                 _hBarDragging = false;
-                Invalidate();
+                InvalidateScrollBars();
             }
         }
 
@@ -371,32 +425,44 @@ namespace VRCGalleryManager.Design
             base.OnMouseLeave(e);
             _vBarHovered = false;
             _hBarHovered = false;
-            Invalidate();
+            InvalidateScrollBars();
         }
 
         protected override void OnScroll(ScrollEventArgs se)
         {
             base.OnScroll(se);
-            Invalidate();
+            InvalidateScrollBars();
         }
 
         protected override void OnMouseWheel(MouseEventArgs e)
         {
             base.OnMouseWheel(e);
-            Invalidate();
+            InvalidateScrollBars();
         }
 
         protected override void OnLayout(LayoutEventArgs levent)
         {
             base.OnLayout(levent);
+            UpdateScrollPadding();
             Invalidate();
         }
 
         protected override void OnResize(EventArgs e)
         {
             base.OnResize(e);
-            Region = null;
+            UpdateRegion();
             Invalidate();
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                Region oldRegion = this.Region;
+                this.Region = null;
+                oldRegion?.Dispose();
+            }
+            base.Dispose(disposing);
         }
 
         // ── Scroll helpers ────────────────────────────────────────────────────────
@@ -405,16 +471,17 @@ namespace VRCGalleryManager.Design
         {
             if (vertical)
             {
-                int max   = Math.Max(0, DisplayRectangle.Height - ClientSize.Height);
+                int max   = Math.Max(0, GetVirtualContentHeight() - ClientSize.Height);
                 int newY  = Math.Clamp(-AutoScrollPosition.Y + direction * ClientSize.Height / 3, 0, max);
                 AutoScrollPosition = new Point(-AutoScrollPosition.X, newY);
             }
             else
             {
-                int max   = Math.Max(0, DisplayRectangle.Width - ClientSize.Width);
+                int max   = Math.Max(0, GetVirtualContentWidth() - ClientSize.Width);
                 int newX  = Math.Clamp(-AutoScrollPosition.X + direction * ClientSize.Width / 3, 0, max);
                 AutoScrollPosition = new Point(newX, -AutoScrollPosition.Y);
             }
+            InvalidateScrollBars();
         }
 
         // ── Border helpers ────────────────────────────────────────────────────────

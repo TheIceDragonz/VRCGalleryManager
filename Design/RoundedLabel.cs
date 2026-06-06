@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.Drawing.Drawing2D;
 
 namespace VRCGalleryManager.Design
@@ -119,8 +119,24 @@ namespace VRCGalleryManager.Design
         protected override void OnResize(EventArgs e)
         {
             base.OnResize(e);
-            Region = new Region(GetFigurePath(ClientRectangle));
+            using (var path = GetFigurePath(ClientRectangle))
+            {
+                var oldRegion = this.Region;
+                this.Region = new Region(path);
+                oldRegion?.Dispose();
+            }
             Invalidate();
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                Region oldRegion = this.Region;
+                this.Region = null;
+                oldRegion?.Dispose();
+            }
+            base.Dispose(disposing);
         }
     }
 }

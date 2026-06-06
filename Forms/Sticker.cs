@@ -47,6 +47,7 @@ namespace VRCGalleryManager.Forms
                         string id = jsonObject["id"]?.ToString();
                         string fileId = jsonObject["metadata"]?["fileId"]?.ToString();
                         ImagePanel.AddImagePanel(stickerPanel, apiRequest, id, UpdateCounter, fileId);
+                        await Task.Delay(10);
                     }
                 }
                 UpdateCounter("");
