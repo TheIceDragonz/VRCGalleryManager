@@ -46,6 +46,7 @@ namespace VRCGalleryManager.Design
         private readonly bool _wantHorz;
         private bool _isUpdating = false;
         private Control _prevParent = null;
+        private Form _parentForm = null;
 
         // ── Constructor ──────────────────────────────────────────────────────────
         private ScrollBarHelper(ScrollableControl control, bool vertical, bool horizontal)
@@ -130,7 +131,29 @@ namespace VRCGalleryManager.Design
             {
                 try
                 {
-                    _control.BeginInvoke(new Action(UpdatePositionFromControl));
+                    // If vertical scrollbar is not active but horizontal scrollbar is:
+                    // translate vertical mouse wheel scroll to horizontal scrolling!
+                    if ((_vBar == null || !_vBar.Visible) && _hBar != null && _hBar.Visible)
+                    {
+                        int currentX = -_control.AutoScrollPosition.X;
+                        int scrollAmount = 40; // Pixels per wheel notch
+                        if (e.Delta > 0)
+                        {
+                            currentX = Math.Max(0, currentX - scrollAmount);
+                        }
+                        else
+                        {
+                            int maxX = _control.DisplayRectangle.Width - _control.ClientSize.Width;
+                            currentX = Math.Min(maxX, currentX + scrollAmount);
+                        }
+
+                        _control.AutoScrollPosition = new Point(currentX, 0);
+                        _hBar.Value = currentX;
+                    }
+                    else
+                    {
+                        _control.BeginInvoke(new Action(UpdatePositionFromControl));
+                    }
                 }
                 catch { }
             }
@@ -145,6 +168,7 @@ namespace VRCGalleryManager.Design
         {
             HideNativeBars();
             AssignHandle(_control.Handle);
+            UpdateScrollBarValues();
         }
 
         private void Control_HandleDestroyed(object sender, EventArgs e)
@@ -196,6 +220,13 @@ namespace VRCGalleryManager.Design
             {
                 _prevParent.VisibleChanged -= Parent_VisibleChanged;
                 _prevParent = null;
+            }
+
+            if (_parentForm != null)
+            {
+                _parentForm.VisibleChanged -= ParentForm_VisibleChanged;
+                _parentForm.Shown -= ParentForm_Shown;
+                _parentForm = null;
             }
 
             if (_vBar != null)
@@ -322,6 +353,23 @@ namespace VRCGalleryManager.Design
                 }
             }
 
+            // Also find and hook the parent Form's visible and shown events
+            var form = _control.FindForm();
+            if (form != _parentForm)
+            {
+                if (_parentForm != null)
+                {
+                    _parentForm.VisibleChanged -= ParentForm_VisibleChanged;
+                    _parentForm.Shown -= ParentForm_Shown;
+                }
+                _parentForm = form;
+                if (form != null)
+                {
+                    form.VisibleChanged += ParentForm_VisibleChanged;
+                    form.Shown += ParentForm_Shown;
+                }
+            }
+
             if (parent == null)
             {
                 if (_vBar != null && _vBar.Parent != null)
@@ -356,6 +404,16 @@ namespace VRCGalleryManager.Design
             }
 
             PositionBars();
+        }
+
+        private void ParentForm_VisibleChanged(object sender, EventArgs e)
+        {
+            UpdateScrollBarValues();
+        }
+
+        private void ParentForm_Shown(object sender, EventArgs e)
+        {
+            UpdateScrollBarValues();
         }
 
         // ── Positioning ──────────────────────────────────────────────────────────
