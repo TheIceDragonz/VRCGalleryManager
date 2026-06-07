@@ -20,10 +20,6 @@ namespace VRCGalleryManager.Forms
             InitializeComponent();
             InitApiRequest(auth);
 
-            // Position pasteButton to the right and expand uploadButton
-            pasteButton.Left = 825;
-            uploadButton.Width = 802;
-
             this.Shown += (s, e) => { if (emojiPanel.Controls.Count == 0) EmojiList(); };
         }
 

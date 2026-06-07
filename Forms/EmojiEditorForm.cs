@@ -70,6 +70,11 @@ namespace VRCGalleryManager.Forms
             previewPanel.Resize += (s, e) => UpdateGifPreviewBounds();
             ScrollBarHelper.Attach(emojiTypePanel);
             ScrollBarHelper.Attach(flowPanelFrames);
+
+            // Configure docking dynamically to support DPI scaling and window resizing
+            flowPanelFrames.Dock = DockStyle.Bottom;
+            previewPanel.Dock = DockStyle.Fill;
+            previewPanel.BringToFront();
         }
 
         private void ApplyRecolorBar()
@@ -114,13 +119,9 @@ namespace VRCGalleryManager.Forms
             if (isGif)
             {
                 isAnimatedMode = true;
-                previewPanel.Dock = DockStyle.None;
-                previewPanel.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-                previewPanel.Size = new Size(workspacePanel.Width, workspacePanel.Height - flowPanelFrames.Height - 9);
-                previewPanel.Show();
-                previewPanel.BringToFront();
-                previewVRChat.Show();
                 flowPanelFrames.Show();
+                previewPanel.Show();
+                previewVRChat.Show();
                 panelStaticControls.Dock = DockStyle.None;
                 panelStaticControls.Hide();
                 panelGifControls.Dock = DockStyle.Fill;
@@ -167,11 +168,9 @@ namespace VRCGalleryManager.Forms
             else
             {
                 isAnimatedMode = false;
-                previewPanel.Dock = DockStyle.Fill;
-                previewPanel.Show();
-                previewPanel.BringToFront();
-                previewVRChat.Hide();
                 flowPanelFrames.Hide();
+                previewPanel.Show();
+                previewVRChat.Hide();
                 panelGifControls.Dock = DockStyle.None;
                 panelGifControls.Hide();
                 panelStaticControls.Dock = DockStyle.Fill;
@@ -531,6 +530,8 @@ namespace VRCGalleryManager.Forms
 
         private void previewPanel_MouseDown(object sender, MouseEventArgs e)
         {
+            if (isAnimatedMode) return; // Disable panning/dragging for GIFs
+
             if (isColorPicking)
             {
                 SampleColorFromMouse(e.X, e.Y);
@@ -581,6 +582,8 @@ namespace VRCGalleryManager.Forms
 
         private void previewPanel_MouseWheel(object sender, MouseEventArgs e)
         {
+            if (isAnimatedMode) return; // Disable zoom via mouse wheel for GIFs
+
             int delta = e.Delta;
             int step = (delta > 0) ? 5 : -5;
             int newVal = sliderZoom.Value + step;
@@ -1125,12 +1128,16 @@ namespace VRCGalleryManager.Forms
             flowPanelFrames.Controls.Clear();
             frameThumbnails.Clear();
 
+            float scaleFactor = (float)this.DeviceDpi / 120f;
+            int itemWidth = (int)Math.Round(20 * scaleFactor);
+            int itemHeight = (int)Math.Round(80 * scaleFactor);
+
             for (int i = 0; i < gifFrames.Count; i++)
             {
                 int frameIndex = i;
                 Bitmap frame = gifFrames[i];
 
-                Bitmap thumb = new Bitmap(20, 80);
+                Bitmap thumb = new Bitmap(itemWidth, itemHeight);
                 using (Graphics g = Graphics.FromImage(thumb))
                 {
                     g.Clear(Color.Transparent);
@@ -1138,22 +1145,22 @@ namespace VRCGalleryManager.Forms
                     int minDim = Math.Min(frame.Width, frame.Height);
                     int srcX = (frame.Width - minDim) / 2;
                     int srcY = (frame.Height - minDim) / 2;
-                    g.DrawImage(frame, new Rectangle(0, 0, 20, 80), new Rectangle(srcX, srcY, minDim, minDim), GraphicsUnit.Pixel);
+                    g.DrawImage(frame, new Rectangle(0, 0, itemWidth, itemHeight), new Rectangle(srcX, srcY, minDim, minDim), GraphicsUnit.Pixel);
                 }
 
                 RoundedPictureBox pb = new RoundedPictureBox();
-                pb.Width = 20;
-                pb.Height = 80;
-                pb.BorderSize = 5;
-                pb.BorderRadiusTopLeft = 6;
-                pb.BorderRadiusTopRight = 6;
-                pb.BorderRadiusBottomLeft = 6;
-                pb.BorderRadiusBottomRight = 6;
+                pb.Width = itemWidth;
+                pb.Height = itemHeight;
+                pb.BorderSize = (int)Math.Round(5 * scaleFactor);
+                pb.BorderRadiusTopLeft = (int)Math.Round(6 * scaleFactor);
+                pb.BorderRadiusTopRight = (int)Math.Round(6 * scaleFactor);
+                pb.BorderRadiusBottomLeft = (int)Math.Round(6 * scaleFactor);
+                pb.BorderRadiusBottomRight = (int)Math.Round(6 * scaleFactor);
                 pb.SizeMode = PictureBoxSizeMode.StretchImage;
                 pb.InterpolationMode = InterpolationMode.Low;
                 pb.Image = thumb;
                 pb.Cursor = Cursors.Hand;
-                pb.Margin = new Padding(3, 3, 3, 3);
+                pb.Margin = new Padding((int)Math.Round(3 * scaleFactor));
 
                 pb.Click += (s, e) => {
                     if (spriteSheetViewer != null)
@@ -1167,6 +1174,7 @@ namespace VRCGalleryManager.Forms
                 frameThumbnails.Add(pb);
                 flowPanelFrames.Controls.Add(pb);
             }
+            flowPanelFrames.PerformLayout();
         }
 
         private void UpdateFrameStripHighlight()
