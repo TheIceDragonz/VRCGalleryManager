@@ -169,6 +169,7 @@ namespace VRCGalleryManager.Core
             catch (ApiException ex)
             {
                 Console.WriteLine($"Error: {ex.Message}");
+                throw;
             }
 
             return apiData;
@@ -231,7 +232,11 @@ namespace VRCGalleryManager.Core
                 apiData.AnimationStyle = response.AnimationStyle?.ToString() ?? "";
                 apiData.MaskTag = response.MaskTag?.ToString() ?? "";
             }
-            catch (ApiException ex) { Console.WriteLine($"Error uploading image: {ex.Message}"); }
+            catch (ApiException ex) 
+            { 
+                Console.WriteLine($"Error uploading image: {ex.Message}"); 
+                throw;
+            }
 
             return apiData;
         }
@@ -265,7 +270,11 @@ namespace VRCGalleryManager.Core
                 apiData.AuthorName = response.AuthorName ?? "";
                 apiData.FileId = response.Files?.FileId ?? "";
             }
-            catch (ApiException ex) { Console.WriteLine(ex.Message); }
+            catch (ApiException ex) 
+            { 
+                Console.WriteLine(ex.Message); 
+                throw;
+            }
             return apiData;
         }
 
@@ -322,6 +331,7 @@ namespace VRCGalleryManager.Core
             catch (ApiException ex)
             {
                 Console.WriteLine($"Error uploading image: {ex.Message}");
+                throw;
             }
 
             return apiData;

@@ -139,12 +139,19 @@ namespace VRCGalleryManager.Core.Helpers
                 float drawH = originalImage.Height;
                 g.TranslateTransform(-drawW / 2f, -drawH / 2f);
 
-                // 1. Draw outline if enabled
-                if (addOutline && outlineThickness > 0)
+                Image imageToDraw = originalImage;
+                bool disposeImageToDraw = false;
+
+                if (removeBg)
                 {
-                    using (ImageAttributes outlineAttr = new ImageAttributes())
+                    imageToDraw = new Bitmap(originalImage.Width, originalImage.Height, PixelFormat.Format32bppArgb);
+                    disposeImageToDraw = true;
+                    using (Graphics gTemp = Graphics.FromImage(imageToDraw))
                     {
-                        if (removeBg)
+                        gTemp.InterpolationMode = InterpolationMode.NearestNeighbor;
+                        gTemp.SmoothingMode = SmoothingMode.None;
+                        
+                        using (ImageAttributes attr = new ImageAttributes())
                         {
                             Color targetColor = removeBgColor == default ? Color.White : removeBgColor;
                             Color lowColor = Color.FromArgb(
@@ -157,77 +164,64 @@ namespace VRCGalleryManager.Core.Helpers
                                 Math.Min(255, targetColor.G + removeBgTolerance),
                                 Math.Min(255, targetColor.B + removeBgTolerance)
                             );
-                            outlineAttr.SetColorKey(lowColor, highColor);
-                        }
-
-                        Color oc = outlineColor == default ? Color.White : outlineColor;
-                        ColorMatrix colorMatrix = new ColorMatrix(new float[][]
-                        {
-                            new float[] {0, 0, 0, 0, 0},
-                            new float[] {0, 0, 0, 0, 0},
-                            new float[] {0, 0, 0, 0, 0},
-                            new float[] {0, 0, 0, 1, 0},
-                            new float[] {oc.R/255f, oc.G/255f, oc.B/255f, 0, 1}
-                        });
-                        outlineAttr.SetColorMatrix(colorMatrix);
-
-                        int steps = 16;
-                        for (int i = 0; i < steps; i++)
-                        {
-                            double angle = i * 2 * Math.PI / steps;
-                            float ox = (float)(Math.Cos(angle) * outlineThickness);
-                            float oy = (float)(Math.Sin(angle) * outlineThickness);
-
-                            GraphicsState outlineState = g.Save();
-                            g.TranslateTransform(ox, oy, MatrixOrder.Append);
-                            g.DrawImage(
-                                originalImage,
-                                new Rectangle(0, 0, (int)drawW, (int)drawH),
-                                0,
-                                0,
-                                originalImage.Width,
-                                originalImage.Height,
-                                GraphicsUnit.Pixel,
-                                outlineAttr
-                            );
-                            g.Restore(outlineState);
+                            attr.SetColorKey(lowColor, highColor);
+                            
+                            gTemp.DrawImage(originalImage, new Rectangle(0, 0, originalImage.Width, originalImage.Height), 0, 0, originalImage.Width, originalImage.Height, GraphicsUnit.Pixel, attr);
                         }
                     }
                 }
 
-                // 2. Draw main image
-                if (removeBg)
+                try
                 {
-                    using (ImageAttributes attr = new ImageAttributes())
+                    // 1. Draw outline if enabled
+                    if (addOutline && outlineThickness > 0)
                     {
-                        // Safely handle default color
-                        Color targetColor = removeBgColor == default ? Color.White : removeBgColor;
-                        Color lowColor = Color.FromArgb(
-                            Math.Max(0, targetColor.R - removeBgTolerance),
-                            Math.Max(0, targetColor.G - removeBgTolerance),
-                            Math.Max(0, targetColor.B - removeBgTolerance)
-                        );
-                        Color highColor = Color.FromArgb(
-                            Math.Min(255, targetColor.R + removeBgTolerance),
-                            Math.Min(255, targetColor.G + removeBgTolerance),
-                            Math.Min(255, targetColor.B + removeBgTolerance)
-                        );
-                        attr.SetColorKey(lowColor, highColor);
-                        g.DrawImage(
-                            originalImage,
-                            new Rectangle(0, 0, (int)drawW, (int)drawH),
-                            0,
-                            0,
-                            originalImage.Width,
-                            originalImage.Height,
-                            GraphicsUnit.Pixel,
-                            attr
-                        );
+                        using (ImageAttributes outlineAttr = new ImageAttributes())
+                        {
+                            Color oc = outlineColor == default ? Color.White : outlineColor;
+                            ColorMatrix colorMatrix = new ColorMatrix(new float[][]
+                            {
+                                new float[] {0, 0, 0, 0, 0},
+                                new float[] {0, 0, 0, 0, 0},
+                                new float[] {0, 0, 0, 0, 0},
+                                new float[] {0, 0, 0, 1, 0},
+                                new float[] {oc.R/255f, oc.G/255f, oc.B/255f, 0, 1}
+                            });
+                            outlineAttr.SetColorMatrix(colorMatrix);
+
+                            int steps = 16;
+                            for (int i = 0; i < steps; i++)
+                            {
+                                double angle = i * 2 * Math.PI / steps;
+                                float ox = (float)(Math.Cos(angle) * outlineThickness);
+                                float oy = (float)(Math.Sin(angle) * outlineThickness);
+
+                                GraphicsState outlineState = g.Save();
+                                g.TranslateTransform(ox, oy, MatrixOrder.Append);
+                                g.DrawImage(
+                                    imageToDraw,
+                                    new Rectangle(0, 0, (int)drawW, (int)drawH),
+                                    0,
+                                    0,
+                                    imageToDraw.Width,
+                                    imageToDraw.Height,
+                                    GraphicsUnit.Pixel,
+                                    outlineAttr
+                                );
+                                g.Restore(outlineState);
+                            }
+                        }
                     }
+
+                    // 2. Draw main image
+                    g.DrawImage(imageToDraw, 0, 0, drawW, drawH);
                 }
-                else
+                finally
                 {
-                    g.DrawImage(originalImage, 0, 0, drawW, drawH);
+                    if (disposeImageToDraw)
+                    {
+                        imageToDraw.Dispose();
+                    }
                 }
             }
 

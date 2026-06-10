@@ -39,11 +39,18 @@ namespace VRCGalleryManager.Forms
             previewVRChat = new RoundedPictureBox();
             flowPanelFrames = new FlowLayoutPanel();
             settingsPanel = new RoundedPanel();
+            lblTitle = new Label();
+            btnEmojiStyle = new RoundedButton();
+            btnSave = new RoundedButton();
+            btnCancel = new RoundedButton();
             containerImageAndGif = new Panel();
             panelStaticControls = new Panel();
             lblAdaptation = new Label();
             btnAdaptFit = new RoundedButton();
+            lblCompression = new Label();
             btnAdaptFill = new RoundedButton();
+            lblFileSize = new Label();
+            sliderCompression = new RoundedTrackBar();
             btnAdaptStretch = new RoundedButton();
             btnAdaptCenter = new RoundedButton();
             lblZoom = new Label();
@@ -75,10 +82,6 @@ namespace VRCGalleryManager.Forms
             trackBarEndFrame = new RoundedTrackBar();
             labelFPS = new Label();
             trackBarFPS = new RoundedTrackBar();
-            lblTitle = new Label();
-            btnEmojiStyle = new RoundedButton();
-            btnSave = new RoundedButton();
-            btnCancel = new RoundedButton();
             mainTableLayout.SuspendLayout();
             workspacePanel.SuspendLayout();
             previewPanel.SuspendLayout();
@@ -86,6 +89,7 @@ namespace VRCGalleryManager.Forms
             settingsPanel.SuspendLayout();
             containerImageAndGif.SuspendLayout();
             panelStaticControls.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)sliderCompression).BeginInit();
             ((System.ComponentModel.ISupportInitialize)sliderZoom).BeginInit();
             ((System.ComponentModel.ISupportInitialize)sliderTolerance).BeginInit();
             ((System.ComponentModel.ISupportInitialize)sliderChoke).BeginInit();
@@ -187,17 +191,112 @@ namespace VRCGalleryManager.Forms
             settingsPanel.BorderColor = Color.FromArgb(5, 55, 66);
             settingsPanel.BorderRadius = 15;
             settingsPanel.BorderSize = 2;
-            settingsPanel.Controls.Add(containerImageAndGif);
             settingsPanel.Controls.Add(lblTitle);
             settingsPanel.Controls.Add(btnEmojiStyle);
             settingsPanel.Controls.Add(btnSave);
             settingsPanel.Controls.Add(btnCancel);
+            settingsPanel.Controls.Add(containerImageAndGif);
             settingsPanel.Dock = DockStyle.Fill;
             settingsPanel.Location = new Point(1178, 12);
             settingsPanel.Margin = new Padding(12);
             settingsPanel.Name = "settingsPanel";
             settingsPanel.Size = new Size(376, 869);
             settingsPanel.TabIndex = 1;
+            // 
+            // lblTitle
+            // 
+            lblTitle.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            lblTitle.Font = new Font("Segoe UI Black", 14F, FontStyle.Bold);
+            lblTitle.ForeColor = Color.FromArgb(106, 227, 249);
+            lblTitle.Location = new Point(19, 19);
+            lblTitle.Name = "lblTitle";
+            lblTitle.Size = new Size(339, 38);
+            lblTitle.TabIndex = 0;
+            lblTitle.Text = "EMOJI EDITOR";
+            lblTitle.TextAlign = ContentAlignment.MiddleCenter;
+            // 
+            // btnEmojiStyle
+            // 
+            btnEmojiStyle.BackColor = Color.FromArgb(7, 36, 43);
+            btnEmojiStyle.BackgroundColor = Color.FromArgb(7, 36, 43);
+            btnEmojiStyle.BorderColor = Color.FromArgb(5, 55, 66);
+            btnEmojiStyle.BorderRadius = 10;
+            btnEmojiStyle.BorderSize = 2;
+            btnEmojiStyle.FlatAppearance.BorderSize = 0;
+            btnEmojiStyle.FlatStyle = FlatStyle.Flat;
+            btnEmojiStyle.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
+            btnEmojiStyle.ForeColor = Color.FromArgb(106, 227, 249);
+            btnEmojiStyle.Location = new Point(25, 67);
+            btnEmojiStyle.Name = "btnEmojiStyle";
+            btnEmojiStyle.Size = new Size(332, 40);
+            btnEmojiStyle.SvgAlignment = ContentAlignment.MiddleCenter;
+            btnEmojiStyle.SvgColor = Color.Black;
+            btnEmojiStyle.SvgContent = null;
+            btnEmojiStyle.SvgOffset = new Point(0, 0);
+            btnEmojiStyle.SvgPadding = new Padding(0);
+            btnEmojiStyle.SvgResource = null;
+            btnEmojiStyle.SvgSize = new Size(50, 50);
+            btnEmojiStyle.TabIndex = 1;
+            btnEmojiStyle.Text = "Style: Select...";
+            btnEmojiStyle.TextColor = Color.FromArgb(106, 227, 249);
+            btnEmojiStyle.UseVisualStyleBackColor = false;
+            btnEmojiStyle.Click += btnEmojiStyle_Click;
+            // 
+            // btnSave
+            // 
+            btnSave.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            btnSave.BackColor = Color.FromArgb(7, 36, 43);
+            btnSave.BackgroundColor = Color.FromArgb(7, 36, 43);
+            btnSave.BorderColor = Color.FromArgb(106, 227, 249);
+            btnSave.BorderRadius = 12;
+            btnSave.BorderSize = 2;
+            btnSave.FlatAppearance.BorderSize = 0;
+            btnSave.FlatStyle = FlatStyle.Flat;
+            btnSave.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
+            btnSave.ForeColor = Color.FromArgb(106, 227, 249);
+            btnSave.Location = new Point(25, 719);
+            btnSave.Name = "btnSave";
+            btnSave.Size = new Size(326, 56);
+            btnSave.SvgAlignment = ContentAlignment.MiddleCenter;
+            btnSave.SvgColor = Color.Black;
+            btnSave.SvgContent = null;
+            btnSave.SvgOffset = new Point(0, 0);
+            btnSave.SvgPadding = new Padding(0);
+            btnSave.SvgResource = null;
+            btnSave.SvgSize = new Size(50, 50);
+            btnSave.TabIndex = 5;
+            btnSave.Text = "Apply And Upload";
+            btnSave.TextColor = Color.FromArgb(106, 227, 249);
+            btnSave.UseVisualStyleBackColor = false;
+            btnSave.Click += btnSave_Click;
+            // 
+            // btnCancel
+            // 
+            btnCancel.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            btnCancel.BackColor = Color.FromArgb(20, 15, 15);
+            btnCancel.BackgroundColor = Color.FromArgb(20, 15, 15);
+            btnCancel.BorderColor = Color.FromArgb(80, 20, 20);
+            btnCancel.BorderRadius = 12;
+            btnCancel.BorderSize = 2;
+            btnCancel.FlatAppearance.BorderSize = 0;
+            btnCancel.FlatStyle = FlatStyle.Flat;
+            btnCancel.Font = new Font("Segoe UI Black", 11F, FontStyle.Bold);
+            btnCancel.ForeColor = Color.FromArgb(255, 128, 128);
+            btnCancel.Location = new Point(25, 788);
+            btnCancel.Name = "btnCancel";
+            btnCancel.Size = new Size(326, 56);
+            btnCancel.SvgAlignment = ContentAlignment.MiddleCenter;
+            btnCancel.SvgColor = Color.Black;
+            btnCancel.SvgContent = null;
+            btnCancel.SvgOffset = new Point(0, 0);
+            btnCancel.SvgPadding = new Padding(0);
+            btnCancel.SvgResource = null;
+            btnCancel.SvgSize = new Size(50, 50);
+            btnCancel.TabIndex = 6;
+            btnCancel.Text = "Cancel";
+            btnCancel.TextColor = Color.FromArgb(255, 128, 128);
+            btnCancel.UseVisualStyleBackColor = false;
+            btnCancel.Click += btnCancel_Click;
             // 
             // containerImageAndGif
             // 
@@ -211,13 +310,17 @@ namespace VRCGalleryManager.Forms
             // 
             // panelStaticControls
             // 
+            panelStaticControls.Controls.Add(lblCompression);
+            panelStaticControls.Controls.Add(lblFileSize);
+            panelStaticControls.Controls.Add(sliderCompression);
+            panelStaticControls.Controls.Add(btnReset);
+            panelStaticControls.Controls.Add(btnRotate);
             panelStaticControls.Controls.Add(lblAdaptation);
             panelStaticControls.Controls.Add(btnAdaptFit);
             panelStaticControls.Controls.Add(btnAdaptFill);
             panelStaticControls.Controls.Add(btnAdaptStretch);
             panelStaticControls.Controls.Add(btnAdaptCenter);
             panelStaticControls.Controls.Add(lblZoom);
-            panelStaticControls.Controls.Add(sliderZoom);
             panelStaticControls.Controls.Add(lblZoomVal);
             panelStaticControls.Controls.Add(lblBgColor);
             panelStaticControls.Controls.Add(panelBgColorColor);
@@ -236,11 +339,10 @@ namespace VRCGalleryManager.Forms
             panelStaticControls.Controls.Add(lblFeather);
             panelStaticControls.Controls.Add(sliderFeather);
             panelStaticControls.Controls.Add(lblFeatherVal);
-            panelStaticControls.Controls.Add(btnReset);
-            panelStaticControls.Controls.Add(btnRotate);
+            panelStaticControls.Controls.Add(sliderZoom);
             panelStaticControls.Location = new Point(0, 0);
             panelStaticControls.Name = "panelStaticControls";
-            panelStaticControls.Size = new Size(370, 290);
+            panelStaticControls.Size = new Size(370, 324);
             panelStaticControls.TabIndex = 3;
             // 
             // lblAdaptation
@@ -280,6 +382,18 @@ namespace VRCGalleryManager.Forms
             btnAdaptFit.UseVisualStyleBackColor = false;
             btnAdaptFit.Click += btnAdaptFit_Click;
             // 
+            // lblCompression
+            // 
+            lblCompression.AutoSize = true;
+            lblCompression.Font = new Font("Segoe UI", 9.5F, FontStyle.Bold);
+            lblCompression.ForeColor = Color.White;
+            lblCompression.Location = new Point(16, 415);
+            lblCompression.Margin = new Padding(4, 0, 4, 0);
+            lblCompression.Name = "lblCompression";
+            lblCompression.Size = new Size(122, 21);
+            lblCompression.TabIndex = 30;
+            lblCompression.Text = "Quality (Scale)";
+            // 
             // btnAdaptFill
             // 
             btnAdaptFill.BackColor = Color.FromArgb(10, 25, 30);
@@ -305,6 +419,42 @@ namespace VRCGalleryManager.Forms
             btnAdaptFill.TextColor = Color.Gray;
             btnAdaptFill.UseVisualStyleBackColor = false;
             btnAdaptFill.Click += btnAdaptFill_Click;
+            // 
+            // lblFileSize
+            // 
+            lblFileSize.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            lblFileSize.Font = new Font("Segoe UI", 9.5F, FontStyle.Bold);
+            lblFileSize.ForeColor = Color.FromArgb(106, 227, 249);
+            lblFileSize.Location = new Point(163, 415);
+            lblFileSize.Margin = new Padding(4, 0, 4, 0);
+            lblFileSize.Name = "lblFileSize";
+            lblFileSize.Size = new Size(190, 21);
+            lblFileSize.TabIndex = 31;
+            lblFileSize.Text = "Size: -- MB";
+            lblFileSize.TextAlign = ContentAlignment.MiddleRight;
+            // 
+            // sliderCompression
+            // 
+            sliderCompression.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            sliderCompression.BackColor = Color.FromArgb(10, 25, 30);
+            sliderCompression.BorderColor = Color.FromArgb(10, 25, 30);
+            sliderCompression.BorderRadius = 4;
+            sliderCompression.LabelFont = new Font("Segoe UI", 9F);
+            sliderCompression.LabelOffset = new Point(0, 0);
+            sliderCompression.LabelText = "";
+            sliderCompression.LabelTextColor = Color.Black;
+            sliderCompression.Location = new Point(13, 419);
+            sliderCompression.Margin = new Padding(4);
+            sliderCompression.Maximum = 100;
+            sliderCompression.Minimum = 10;
+            sliderCompression.Name = "sliderCompression";
+            sliderCompression.Size = new Size(340, 56);
+            sliderCompression.TabIndex = 32;
+            sliderCompression.ThumbColor = Color.FromArgb(106, 227, 249);
+            sliderCompression.ThumbSize = 16;
+            sliderCompression.TrackColor = Color.FromArgb(7, 36, 43);
+            sliderCompression.Value = 100;
+            sliderCompression.Scroll += sliderCompression_Scroll;
             // 
             // btnAdaptStretch
             // 
@@ -363,7 +513,7 @@ namespace VRCGalleryManager.Forms
             lblZoom.AutoSize = true;
             lblZoom.Font = new Font("Segoe UI", 9.5F, FontStyle.Bold);
             lblZoom.ForeColor = Color.White;
-            lblZoom.Location = new Point(17, 68);
+            lblZoom.Location = new Point(17, 63);
             lblZoom.Name = "lblZoom";
             lblZoom.Size = new Size(55, 21);
             lblZoom.TabIndex = 5;
@@ -378,7 +528,7 @@ namespace VRCGalleryManager.Forms
             sliderZoom.LabelOffset = new Point(0, 0);
             sliderZoom.LabelText = "";
             sliderZoom.LabelTextColor = Color.Black;
-            sliderZoom.Location = new Point(11, 78);
+            sliderZoom.Location = new Point(11, 73);
             sliderZoom.Maximum = 500;
             sliderZoom.Minimum = 100;
             sliderZoom.Name = "sliderZoom";
@@ -394,7 +544,7 @@ namespace VRCGalleryManager.Forms
             // 
             lblZoomVal.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
             lblZoomVal.ForeColor = Color.FromArgb(106, 227, 249);
-            lblZoomVal.Location = new Point(297, 95);
+            lblZoomVal.Location = new Point(297, 90);
             lblZoomVal.Name = "lblZoomVal";
             lblZoomVal.Size = new Size(56, 25);
             lblZoomVal.TabIndex = 7;
@@ -406,7 +556,7 @@ namespace VRCGalleryManager.Forms
             lblBgColor.AutoSize = true;
             lblBgColor.Font = new Font("Segoe UI", 9.5F, FontStyle.Bold);
             lblBgColor.ForeColor = Color.White;
-            lblBgColor.Location = new Point(16, 130);
+            lblBgColor.Location = new Point(16, 116);
             lblBgColor.Name = "lblBgColor";
             lblBgColor.Size = new Size(147, 21);
             lblBgColor.TabIndex = 8;
@@ -420,7 +570,7 @@ namespace VRCGalleryManager.Forms
             panelBgColorColor.BorderRadius = 8;
             panelBgColorColor.BorderSize = 2;
             panelBgColorColor.Cursor = Cursors.Hand;
-            panelBgColorColor.Location = new Point(19, 160);
+            panelBgColorColor.Location = new Point(19, 146);
             panelBgColorColor.Name = "panelBgColorColor";
             panelBgColorColor.Size = new Size(123, 32);
             panelBgColorColor.TabIndex = 9;
@@ -437,7 +587,7 @@ namespace VRCGalleryManager.Forms
             btnBgColorTransparent.FlatStyle = FlatStyle.Flat;
             btnBgColorTransparent.Font = new Font("Segoe UI Black", 8.5F, FontStyle.Bold);
             btnBgColorTransparent.ForeColor = Color.FromArgb(106, 227, 249);
-            btnBgColorTransparent.Location = new Point(148, 160);
+            btnBgColorTransparent.Location = new Point(148, 146);
             btnBgColorTransparent.Name = "btnBgColorTransparent";
             btnBgColorTransparent.Size = new Size(201, 32);
             btnBgColorTransparent.SvgAlignment = ContentAlignment.MiddleCenter;
@@ -465,7 +615,7 @@ namespace VRCGalleryManager.Forms
             chkRemoveBg.CheckColor = Color.FromArgb(106, 227, 249);
             chkRemoveBg.Font = new Font("Segoe UI", 9.5F, FontStyle.Bold);
             chkRemoveBg.ForeColor = Color.White;
-            chkRemoveBg.Location = new Point(16, 208);
+            chkRemoveBg.Location = new Point(16, 185);
             chkRemoveBg.Name = "chkRemoveBg";
             chkRemoveBg.Size = new Size(190, 25);
             chkRemoveBg.TabIndex = 11;
@@ -478,7 +628,7 @@ namespace VRCGalleryManager.Forms
             lblRemoveBgColor.AutoSize = true;
             lblRemoveBgColor.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
             lblRemoveBgColor.ForeColor = Color.White;
-            lblRemoveBgColor.Location = new Point(16, 243);
+            lblRemoveBgColor.Location = new Point(16, 219);
             lblRemoveBgColor.Name = "lblRemoveBgColor";
             lblRemoveBgColor.Size = new Size(126, 20);
             lblRemoveBgColor.TabIndex = 12;
@@ -492,7 +642,7 @@ namespace VRCGalleryManager.Forms
             panelRemoveBgColorColor.BorderRadius = 8;
             panelRemoveBgColorColor.BorderSize = 2;
             panelRemoveBgColorColor.Cursor = Cursors.Hand;
-            panelRemoveBgColorColor.Location = new Point(16, 265);
+            panelRemoveBgColorColor.Location = new Point(16, 241);
             panelRemoveBgColorColor.Name = "panelRemoveBgColorColor";
             panelRemoveBgColorColor.Size = new Size(126, 32);
             panelRemoveBgColorColor.TabIndex = 13;
@@ -509,7 +659,7 @@ namespace VRCGalleryManager.Forms
             btnPickColor.FlatStyle = FlatStyle.Flat;
             btnPickColor.Font = new Font("Segoe UI Black", 8.5F, FontStyle.Bold);
             btnPickColor.ForeColor = Color.FromArgb(106, 227, 249);
-            btnPickColor.Location = new Point(147, 265);
+            btnPickColor.Location = new Point(147, 241);
             btnPickColor.Name = "btnPickColor";
             btnPickColor.Size = new Size(32, 32);
             btnPickColor.SvgAlignment = ContentAlignment.MiddleCenter;
@@ -529,7 +679,7 @@ namespace VRCGalleryManager.Forms
             lblTolerance.AutoSize = true;
             lblTolerance.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
             lblTolerance.ForeColor = Color.White;
-            lblTolerance.Location = new Point(193, 243);
+            lblTolerance.Location = new Point(193, 219);
             lblTolerance.Name = "lblTolerance";
             lblTolerance.Size = new Size(76, 20);
             lblTolerance.TabIndex = 15;
@@ -544,7 +694,7 @@ namespace VRCGalleryManager.Forms
             sliderTolerance.LabelOffset = new Point(0, 0);
             sliderTolerance.LabelText = "";
             sliderTolerance.LabelTextColor = Color.Black;
-            sliderTolerance.Location = new Point(188, 253);
+            sliderTolerance.Location = new Point(188, 229);
             sliderTolerance.Maximum = 100;
             sliderTolerance.Name = "sliderTolerance";
             sliderTolerance.Size = new Size(128, 56);
@@ -560,7 +710,7 @@ namespace VRCGalleryManager.Forms
             lblToleranceVal.AutoSize = true;
             lblToleranceVal.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
             lblToleranceVal.ForeColor = Color.FromArgb(106, 227, 249);
-            lblToleranceVal.Location = new Point(326, 268);
+            lblToleranceVal.Location = new Point(326, 244);
             lblToleranceVal.Name = "lblToleranceVal";
             lblToleranceVal.Size = new Size(27, 20);
             lblToleranceVal.TabIndex = 17;
@@ -579,7 +729,7 @@ namespace VRCGalleryManager.Forms
             chkFeather.CheckColor = Color.FromArgb(106, 227, 249);
             chkFeather.Font = new Font("Segoe UI", 9.5F, FontStyle.Bold);
             chkFeather.ForeColor = Color.White;
-            chkFeather.Location = new Point(17, 304);
+            chkFeather.Location = new Point(17, 282);
             chkFeather.Name = "chkFeather";
             chkFeather.Size = new Size(123, 25);
             chkFeather.TabIndex = 18;
@@ -592,7 +742,7 @@ namespace VRCGalleryManager.Forms
             lblChoke.AutoSize = true;
             lblChoke.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
             lblChoke.ForeColor = Color.White;
-            lblChoke.Location = new Point(13, 338);
+            lblChoke.Location = new Point(13, 313);
             lblChoke.Name = "lblChoke";
             lblChoke.Size = new Size(52, 20);
             lblChoke.TabIndex = 19;
@@ -607,7 +757,7 @@ namespace VRCGalleryManager.Forms
             sliderChoke.LabelOffset = new Point(0, 0);
             sliderChoke.LabelText = "";
             sliderChoke.LabelTextColor = Color.Black;
-            sliderChoke.Location = new Point(13, 347);
+            sliderChoke.Location = new Point(13, 322);
             sliderChoke.Maximum = 100;
             sliderChoke.Name = "sliderChoke";
             sliderChoke.Size = new Size(128, 56);
@@ -623,7 +773,7 @@ namespace VRCGalleryManager.Forms
             lblChokeVal.AutoSize = true;
             lblChokeVal.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
             lblChokeVal.ForeColor = Color.FromArgb(106, 227, 249);
-            lblChokeVal.Location = new Point(144, 363);
+            lblChokeVal.Location = new Point(144, 338);
             lblChokeVal.Name = "lblChokeVal";
             lblChokeVal.Size = new Size(35, 20);
             lblChokeVal.TabIndex = 21;
@@ -635,7 +785,7 @@ namespace VRCGalleryManager.Forms
             lblFeather.AutoSize = true;
             lblFeather.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
             lblFeather.ForeColor = Color.White;
-            lblFeather.Location = new Point(193, 337);
+            lblFeather.Location = new Point(193, 312);
             lblFeather.Name = "lblFeather";
             lblFeather.Size = new Size(62, 20);
             lblFeather.TabIndex = 22;
@@ -650,7 +800,7 @@ namespace VRCGalleryManager.Forms
             sliderFeather.LabelOffset = new Point(0, 0);
             sliderFeather.LabelText = "";
             sliderFeather.LabelTextColor = Color.Black;
-            sliderFeather.Location = new Point(188, 347);
+            sliderFeather.Location = new Point(188, 322);
             sliderFeather.Maximum = 100;
             sliderFeather.Name = "sliderFeather";
             sliderFeather.Size = new Size(128, 56);
@@ -666,7 +816,7 @@ namespace VRCGalleryManager.Forms
             lblFeatherVal.AutoSize = true;
             lblFeatherVal.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
             lblFeatherVal.ForeColor = Color.FromArgb(106, 227, 249);
-            lblFeatherVal.Location = new Point(321, 363);
+            lblFeatherVal.Location = new Point(321, 338);
             lblFeatherVal.Name = "lblFeatherVal";
             lblFeatherVal.Size = new Size(35, 20);
             lblFeatherVal.TabIndex = 24;
@@ -684,7 +834,7 @@ namespace VRCGalleryManager.Forms
             btnReset.FlatStyle = FlatStyle.Flat;
             btnReset.Font = new Font("Segoe UI Black", 9.5F, FontStyle.Bold);
             btnReset.ForeColor = Color.FromArgb(106, 227, 249);
-            btnReset.Location = new Point(17, 410);
+            btnReset.Location = new Point(17, 368);
             btnReset.Name = "btnReset";
             btnReset.Size = new Size(163, 44);
             btnReset.SvgAlignment = ContentAlignment.MiddleCenter;
@@ -711,7 +861,7 @@ namespace VRCGalleryManager.Forms
             btnRotate.FlatStyle = FlatStyle.Flat;
             btnRotate.Font = new Font("Segoe UI Black", 9.5F, FontStyle.Bold);
             btnRotate.ForeColor = Color.FromArgb(106, 227, 249);
-            btnRotate.Location = new Point(188, 410);
+            btnRotate.Location = new Point(188, 368);
             btnRotate.Name = "btnRotate";
             btnRotate.Size = new Size(161, 44);
             btnRotate.SvgAlignment = ContentAlignment.MiddleRight;
@@ -735,9 +885,9 @@ namespace VRCGalleryManager.Forms
             panelGifControls.Controls.Add(trackBarEndFrame);
             panelGifControls.Controls.Add(labelFPS);
             panelGifControls.Controls.Add(trackBarFPS);
-            panelGifControls.Location = new Point(0, 321);
+            panelGifControls.Location = new Point(0, 386);
             panelGifControls.Name = "panelGifControls";
-            panelGifControls.Size = new Size(370, 279);
+            panelGifControls.Size = new Size(370, 214);
             panelGifControls.TabIndex = 4;
             panelGifControls.Visible = false;
             // 
@@ -839,101 +989,6 @@ namespace VRCGalleryManager.Forms
             trackBarFPS.Value = 15;
             trackBarFPS.Scroll += trackBarFPS_Scroll;
             // 
-            // lblTitle
-            // 
-            lblTitle.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            lblTitle.Font = new Font("Segoe UI Black", 14F, FontStyle.Bold);
-            lblTitle.ForeColor = Color.FromArgb(106, 227, 249);
-            lblTitle.Location = new Point(19, 19);
-            lblTitle.Name = "lblTitle";
-            lblTitle.Size = new Size(339, 38);
-            lblTitle.TabIndex = 0;
-            lblTitle.Text = "EMOJI EDITOR";
-            lblTitle.TextAlign = ContentAlignment.MiddleCenter;
-            // 
-            // btnEmojiStyle
-            // 
-            btnEmojiStyle.BackColor = Color.FromArgb(7, 36, 43);
-            btnEmojiStyle.BackgroundColor = Color.FromArgb(7, 36, 43);
-            btnEmojiStyle.BorderColor = Color.FromArgb(5, 55, 66);
-            btnEmojiStyle.BorderRadius = 10;
-            btnEmojiStyle.BorderSize = 2;
-            btnEmojiStyle.FlatAppearance.BorderSize = 0;
-            btnEmojiStyle.FlatStyle = FlatStyle.Flat;
-            btnEmojiStyle.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
-            btnEmojiStyle.ForeColor = Color.FromArgb(106, 227, 249);
-            btnEmojiStyle.Location = new Point(25, 67);
-            btnEmojiStyle.Name = "btnEmojiStyle";
-            btnEmojiStyle.Size = new Size(332, 40);
-            btnEmojiStyle.SvgAlignment = ContentAlignment.MiddleCenter;
-            btnEmojiStyle.SvgColor = Color.Black;
-            btnEmojiStyle.SvgContent = null;
-            btnEmojiStyle.SvgOffset = new Point(0, 0);
-            btnEmojiStyle.SvgPadding = new Padding(0);
-            btnEmojiStyle.SvgResource = null;
-            btnEmojiStyle.SvgSize = new Size(50, 50);
-            btnEmojiStyle.TabIndex = 1;
-            btnEmojiStyle.Text = "Style: Select...";
-            btnEmojiStyle.TextColor = Color.FromArgb(106, 227, 249);
-            btnEmojiStyle.UseVisualStyleBackColor = false;
-            btnEmojiStyle.Click += btnEmojiStyle_Click;
-            // 
-            // btnSave
-            // 
-            btnSave.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            btnSave.BackColor = Color.FromArgb(7, 36, 43);
-            btnSave.BackgroundColor = Color.FromArgb(7, 36, 43);
-            btnSave.BorderColor = Color.FromArgb(106, 227, 249);
-            btnSave.BorderRadius = 12;
-            btnSave.BorderSize = 2;
-            btnSave.FlatAppearance.BorderSize = 0;
-            btnSave.FlatStyle = FlatStyle.Flat;
-            btnSave.Font = new Font("Segoe UI Black", 9F, FontStyle.Bold);
-            btnSave.ForeColor = Color.FromArgb(106, 227, 249);
-            btnSave.Location = new Point(25, 719);
-            btnSave.Name = "btnSave";
-            btnSave.Size = new Size(326, 56);
-            btnSave.SvgAlignment = ContentAlignment.MiddleCenter;
-            btnSave.SvgColor = Color.Black;
-            btnSave.SvgContent = null;
-            btnSave.SvgOffset = new Point(0, 0);
-            btnSave.SvgPadding = new Padding(0);
-            btnSave.SvgResource = null;
-            btnSave.SvgSize = new Size(50, 50);
-            btnSave.TabIndex = 5;
-            btnSave.Text = "Apply And Upload";
-            btnSave.TextColor = Color.FromArgb(106, 227, 249);
-            btnSave.UseVisualStyleBackColor = false;
-            btnSave.Click += btnSave_Click;
-            // 
-            // btnCancel
-            // 
-            btnCancel.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            btnCancel.BackColor = Color.FromArgb(20, 15, 15);
-            btnCancel.BackgroundColor = Color.FromArgb(20, 15, 15);
-            btnCancel.BorderColor = Color.FromArgb(80, 20, 20);
-            btnCancel.BorderRadius = 12;
-            btnCancel.BorderSize = 2;
-            btnCancel.FlatAppearance.BorderSize = 0;
-            btnCancel.FlatStyle = FlatStyle.Flat;
-            btnCancel.Font = new Font("Segoe UI Black", 11F, FontStyle.Bold);
-            btnCancel.ForeColor = Color.FromArgb(255, 128, 128);
-            btnCancel.Location = new Point(25, 788);
-            btnCancel.Name = "btnCancel";
-            btnCancel.Size = new Size(326, 56);
-            btnCancel.SvgAlignment = ContentAlignment.MiddleCenter;
-            btnCancel.SvgColor = Color.Black;
-            btnCancel.SvgContent = null;
-            btnCancel.SvgOffset = new Point(0, 0);
-            btnCancel.SvgPadding = new Padding(0);
-            btnCancel.SvgResource = null;
-            btnCancel.SvgSize = new Size(50, 50);
-            btnCancel.TabIndex = 6;
-            btnCancel.Text = "Cancel";
-            btnCancel.TextColor = Color.FromArgb(255, 128, 128);
-            btnCancel.UseVisualStyleBackColor = false;
-            btnCancel.Click += btnCancel_Click;
-            // 
             // EmojiEditorForm
             // 
             AutoScaleDimensions = new SizeF(120F, 120F);
@@ -952,6 +1007,7 @@ namespace VRCGalleryManager.Forms
             containerImageAndGif.ResumeLayout(false);
             panelStaticControls.ResumeLayout(false);
             panelStaticControls.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)sliderCompression).EndInit();
             ((System.ComponentModel.ISupportInitialize)sliderZoom).EndInit();
             ((System.ComponentModel.ISupportInitialize)sliderTolerance).EndInit();
             ((System.ComponentModel.ISupportInitialize)sliderChoke).EndInit();
@@ -998,6 +1054,9 @@ namespace VRCGalleryManager.Forms
         private Label lblRemoveBgColor;
         private RoundedPanel panelRemoveBgColorColor;
         private RoundedButton btnPickColor;
+        private Label lblCompression;
+        private Label lblFileSize;
+        private RoundedTrackBar sliderCompression;
         private Label lblTolerance;
         private RoundedTrackBar sliderTolerance;
         private Label lblToleranceVal;

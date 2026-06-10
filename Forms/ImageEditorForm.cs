@@ -56,6 +56,11 @@ namespace VRCGalleryManager.Forms
         [DllImport("dwmapi.dll")]
         private static extern int DwmSetWindowAttribute(IntPtr hwnd, int attr, ref int attrValue, int attrSize);
 
+        // Timer for debounced file size calculation
+        private System.Windows.Forms.Timer sizeCalcTimer;
+        private Bitmap _cachedRender = null;
+        private string _lastRenderHash = "";
+
         // Events for inline use (replaces ShowDialog / DialogResult)
         public event Action<string, string> OnSave;
         public event Action OnCancel;
@@ -66,6 +71,10 @@ namespace VRCGalleryManager.Forms
             ApplyRecolorBar();
             previewPanel.MouseWheel += previewPanel_MouseWheel;
             ScrollBarHelper.Attach(settingsPanel);
+
+            sizeCalcTimer = new System.Windows.Forms.Timer();
+            sizeCalcTimer.Interval = 150;
+            sizeCalcTimer.Tick += SizeCalcTimer_Tick;
         }
 
         /// <summary>
@@ -152,12 +161,17 @@ namespace VRCGalleryManager.Forms
             outlineColor = Color.White;
             outlineThickness = 0;
 
+            // Reset compression slider
+            sliderCompression.Value = 100;
+            lblCompression.Text = "Quality (Scale): 100%";
+
             // Set up note textbox
             textBoxNote.Text = "";
             UpdateNoteVisibility(showNote);
 
             // Trigger initial state layout
             UpdateEditorState();
+            DebounceFileSizeCalculation();
         }
 
         private void UpdateNoteVisibility(bool showNote)
@@ -311,8 +325,10 @@ namespace VRCGalleryManager.Forms
         // Preview rendering
         private void previewPanel_Paint(object sender, PaintEventArgs e)
         {
+            if (originalImage == null) return;
+
             Graphics g = e.Graphics;
-            g.SmoothingMode = SmoothingMode.AntiAlias;
+            g.InterpolationMode = InterpolationMode.HighQualityBicubic;
 
             // Get target dimensions
             GetCurrentCanvasDimensions(out canvasWidth, out canvasHeight);
@@ -335,178 +351,43 @@ namespace VRCGalleryManager.Forms
             // 1. Draw Checker background inside the canvas bounds
             g.FillRectangle(checkerBrush, rectX, rectY, rectW, rectH);
 
-            // 2. Draw canvas background color if it is not Transparent
-            if (selectedBgColor.A > 0)
+            float outScale = sliderCompression.Value / 100f;
+
+            // 2. Render image onto temp preview bitmap using the EXACT final logic
+            int bmpW = (int)Math.Max(1, Math.Round(rectW * outScale));
+            int bmpH = (int)Math.Max(1, Math.Round(rectH * outScale));
+
+            float scaledPanX = panOffsetX * previewScale * outScale;
+            float scaledPanY = panOffsetY * previewScale * outScale;
+            
+            int scaledOutline = outlineEnabled && outlineThickness > 0 ? (int)Math.Max(1, Math.Round(outlineThickness * previewScale * outScale)) : 0;
+            int scaledFeather = featherEnabled && featherRadius > 0 ? (int)Math.Max(1, Math.Round(featherRadius * previewScale * outScale)) : 0;
+            int scaledChoke = featherEnabled && chokeRadius > 0 ? (int)Math.Max(1, Math.Round(chokeRadius * previewScale * outScale)) : 0;
+
+            using (Bitmap previewBmp = ImageEditor.RenderImage(
+                originalImage,
+                bmpW,
+                bmpH,
+                adaptationMode,
+                zoomFactor,
+                scaledPanX,
+                scaledPanY,
+                rotationAngle,
+                selectedBgColor,
+                removeBgEnabled,
+                removeBgColor,
+                removeBgTolerance,
+                outlineEnabled,
+                outlineColor,
+                scaledOutline,
+                featherEnabled,
+                scaledFeather,
+                scaledChoke))
             {
-                using (Brush bgB = new SolidBrush(selectedBgColor))
-                {
-                    g.FillRectangle(bgB, rectX, rectY, rectW, rectH);
-                }
+                g.DrawImage(previewBmp, rectX, rectY, rectW, rectH);
             }
 
-            // 3. Render the image with GDI+ transform onto a temporary preview bitmap
-            int bmpW = (int)Math.Max(1, Math.Round(rectW));
-            int bmpH = (int)Math.Max(1, Math.Round(rectH));
-
-            using (Bitmap previewBmp = new Bitmap(bmpW, bmpH, PixelFormat.Format32bppArgb))
-            {
-                using (Graphics pg = Graphics.FromImage(previewBmp))
-                {
-                    pg.SmoothingMode = SmoothingMode.AntiAlias;
-                    pg.InterpolationMode = InterpolationMode.HighQualityBicubic;
-
-                    float pcx = bmpW / 2f;
-                    float pcy = bmpH / 2f;
-
-                    pg.TranslateTransform(pcx, pcy);
-                    pg.ScaleTransform(previewScale, previewScale);
-                    pg.TranslateTransform(panOffsetX, panOffsetY);
-
-                    // Get image dimensions, swapping if rotated 90 or 270
-                    float imageW = originalImage.Width;
-                    float imageH = originalImage.Height;
-                    if (rotationAngle == 90 || rotationAngle == 270)
-                    {
-                        imageW = originalImage.Height;
-                        imageH = originalImage.Width;
-                    }
-
-                    float baseScale = 1f;
-                    if (adaptationMode == AdaptationMode.Fit)
-                    {
-                        baseScale = Math.Min((float)canvasWidth / imageW, (float)canvasHeight / imageH);
-                    }
-                    else if (adaptationMode == AdaptationMode.Fill)
-                    {
-                        baseScale = Math.Max((float)canvasWidth / imageW, (float)canvasHeight / imageH);
-                    }
-                    else if (adaptationMode == AdaptationMode.Center)
-                    {
-                        baseScale = 1f;
-                    }
-
-                    if (adaptationMode == AdaptationMode.Stretch)
-                    {
-                        float scaleX = ((float)canvasWidth / imageW) * zoomFactor;
-                        float scaleY = ((float)canvasHeight / imageH) * zoomFactor;
-                        pg.ScaleTransform(scaleX, scaleY);
-                    }
-                    else
-                    {
-                        float finalScale = baseScale * zoomFactor;
-                        pg.ScaleTransform(finalScale, finalScale);
-                    }
-
-                    pg.RotateTransform(rotationAngle);
-                    float drawW = originalImage.Width;
-                    float drawH = originalImage.Height;
-                    pg.TranslateTransform(-drawW / 2f, -drawH / 2f);
-
-                    // A. Draw outline first if enabled
-                    if (outlineEnabled && outlineThickness > 0)
-                    {
-                        using (ImageAttributes outlineAttr = new ImageAttributes())
-                        {
-                            if (removeBgEnabled)
-                            {
-                                Color targetColor = removeBgColor;
-                                Color lowColor = Color.FromArgb(
-                                    Math.Max(0, targetColor.R - removeBgTolerance),
-                                    Math.Max(0, targetColor.G - removeBgTolerance),
-                                    Math.Max(0, targetColor.B - removeBgTolerance)
-                                );
-                                Color highColor = Color.FromArgb(
-                                    Math.Min(255, targetColor.R + removeBgTolerance),
-                                    Math.Min(255, targetColor.G + removeBgTolerance),
-                                    Math.Min(255, targetColor.B + removeBgTolerance)
-                                );
-                                outlineAttr.SetColorKey(lowColor, highColor);
-                            }
-
-                            Color oc = outlineColor;
-                            ColorMatrix colorMatrix = new ColorMatrix(new float[][]
-                            {
-                                new float[] {0, 0, 0, 0, 0},
-                                new float[] {0, 0, 0, 0, 0},
-                                new float[] {0, 0, 0, 0, 0},
-                                new float[] {0, 0, 0, 1, 0},
-                                new float[] {oc.R/255f, oc.G/255f, oc.B/255f, 0, 1}
-                            });
-                            outlineAttr.SetColorMatrix(colorMatrix);
-
-                            int steps = 16;
-                            float thickness = outlineThickness;
-                            for (int i = 0; i < steps; i++)
-                            {
-                                double angle = i * 2 * Math.PI / steps;
-                                float ox = (float)(Math.Cos(angle) * thickness);
-                                float oy = (float)(Math.Sin(angle) * thickness);
-
-                                GraphicsState outlineState = pg.Save();
-                                pg.TranslateTransform(ox, oy, MatrixOrder.Append);
-                                pg.DrawImage(
-                                    originalImage,
-                                    new Rectangle(0, 0, (int)drawW, (int)drawH),
-                                    0,
-                                    0,
-                                    originalImage.Width,
-                                    originalImage.Height,
-                                    GraphicsUnit.Pixel,
-                                    outlineAttr
-                                );
-                                pg.Restore(outlineState);
-                            }
-                        }
-                    }
-
-                    // B. Draw main image
-                    if (removeBgEnabled)
-                    {
-                        using (ImageAttributes attr = new ImageAttributes())
-                        {
-                            Color targetColor = removeBgColor;
-                            Color lowColor = Color.FromArgb(
-                                Math.Max(0, targetColor.R - removeBgTolerance),
-                                Math.Max(0, targetColor.G - removeBgTolerance),
-                                Math.Max(0, targetColor.B - removeBgTolerance)
-                            );
-                            Color highColor = Color.FromArgb(
-                                Math.Min(255, targetColor.R + removeBgTolerance),
-                                Math.Min(255, targetColor.G + removeBgTolerance),
-                                Math.Min(255, targetColor.B + removeBgTolerance)
-                            );
-                            attr.SetColorKey(lowColor, highColor);
-                            pg.DrawImage(
-                                originalImage,
-                                new Rectangle(0, 0, (int)drawW, (int)drawH),
-                                0,
-                                0,
-                                originalImage.Width,
-                                originalImage.Height,
-                                GraphicsUnit.Pixel,
-                                attr
-                            );
-                        }
-                    }
-                    else
-                    {
-                        pg.DrawImage(originalImage, 0, 0, drawW, drawH);
-                    }
-                }
-
-                // C. Feather alpha channel if enabled
-                if (featherEnabled && (featherRadius > 0 || chokeRadius > 0))
-                {
-                    int scaledChoke = chokeRadius > 0 ? (int)Math.Max(1, Math.Round(chokeRadius * previewScale)) : 0;
-                    int scaledFeather = featherRadius > 0 ? (int)Math.Max(1, Math.Round(featherRadius * previewScale)) : 0;
-                    ImageEditor.FeatherAlphaChannel(previewBmp, scaledChoke, scaledFeather);
-                }
-
-                // Draw the final preview bitmap to panel
-                g.DrawImage(previewBmp, rectX, rectY);
-            }
-
-            // 4. Draw outer semi-transparent mask for preview
+            // 3. Draw outer semi-transparent mask for preview
             using (GraphicsPath outerPath = new GraphicsPath())
             {
                 outerPath.AddRectangle(new Rectangle(0, 0, pBoxW, pBoxH));
@@ -573,6 +454,7 @@ namespace VRCGalleryManager.Forms
             {
                 isDragging = false;
                 previewPanel.Cursor = Cursors.Default;
+                DebounceFileSizeCalculation();
             }
         }
 
@@ -600,6 +482,7 @@ namespace VRCGalleryManager.Forms
             lblZoomVal.Text = $"{sliderZoom.Value}%";
             ClampOffsets();
             previewPanel.Invalidate();
+            DebounceFileSizeCalculation();
         }
 
 
@@ -609,6 +492,7 @@ namespace VRCGalleryManager.Forms
             adaptationMode = AdaptationMode.Fit;
             UpdateAdaptationButtonsSelection(adaptationMode);
             UpdateEditorState();
+            DebounceFileSizeCalculation();
         }
 
         private void btnAdaptFill_Click(object sender, EventArgs e)
@@ -616,6 +500,7 @@ namespace VRCGalleryManager.Forms
             adaptationMode = AdaptationMode.Fill;
             UpdateAdaptationButtonsSelection(adaptationMode);
             UpdateEditorState();
+            DebounceFileSizeCalculation();
         }
 
         private void btnAdaptStretch_Click(object sender, EventArgs e)
@@ -623,6 +508,7 @@ namespace VRCGalleryManager.Forms
             adaptationMode = AdaptationMode.Stretch;
             UpdateAdaptationButtonsSelection(adaptationMode);
             UpdateEditorState();
+            DebounceFileSizeCalculation();
         }
 
         private void btnAdaptCenter_Click(object sender, EventArgs e)
@@ -630,6 +516,7 @@ namespace VRCGalleryManager.Forms
             adaptationMode = AdaptationMode.Center;
             UpdateAdaptationButtonsSelection(adaptationMode);
             UpdateEditorState();
+            DebounceFileSizeCalculation();
         }
 
         private void UpdateAdaptationButtonsSelection(AdaptationMode mode)
@@ -673,6 +560,7 @@ namespace VRCGalleryManager.Forms
                     selectedBgColor = cd.SelectedColor;
                     panelBgColorColor.BackgroundColor = selectedBgColor;
                     previewPanel.Invalidate();
+                    DebounceFileSizeCalculation();
                 }
             }
         }
@@ -682,6 +570,7 @@ namespace VRCGalleryManager.Forms
             selectedBgColor = Color.Transparent;
             panelBgColorColor.BackgroundColor = Color.Transparent;
             previewPanel.Invalidate();
+            DebounceFileSizeCalculation();
         }
 
         private void chkRemoveBg_CheckedChanged(object sender, EventArgs e)
@@ -689,6 +578,7 @@ namespace VRCGalleryManager.Forms
             removeBgEnabled = chkRemoveBg.Checked;
             UpdateRemoveBgControlsEnabled();
             previewPanel.Invalidate();
+            DebounceFileSizeCalculation();
         }
 
         private void panelRemoveBgColorColor_Click(object sender, EventArgs e)
@@ -702,6 +592,7 @@ namespace VRCGalleryManager.Forms
                     removeBgColor = cd.SelectedColor;
                     panelRemoveBgColorColor.BackgroundColor = removeBgColor;
                     previewPanel.Invalidate();
+                    DebounceFileSizeCalculation();
                 }
             }
         }
@@ -711,6 +602,7 @@ namespace VRCGalleryManager.Forms
             removeBgTolerance = sliderTolerance.Value;
             lblToleranceVal.Text = removeBgTolerance.ToString();
             previewPanel.Invalidate();
+            DebounceFileSizeCalculation();
         }
 
         private void chkFeather_CheckedChanged(object sender, EventArgs e)
@@ -718,6 +610,7 @@ namespace VRCGalleryManager.Forms
             featherEnabled = chkFeather.Checked;
             UpdateFeatherControlsEnabled();
             previewPanel.Invalidate();
+            DebounceFileSizeCalculation();
         }
 
         private void sliderChoke_Scroll(object sender, EventArgs e)
@@ -725,6 +618,7 @@ namespace VRCGalleryManager.Forms
             chokeRadius = sliderChoke.Value;
             lblChokeVal.Text = $"{chokeRadius}px";
             previewPanel.Invalidate();
+            DebounceFileSizeCalculation();
         }
 
         private void sliderFeather_Scroll(object sender, EventArgs e)
@@ -732,9 +626,130 @@ namespace VRCGalleryManager.Forms
             featherRadius = sliderFeather.Value;
             lblFeatherVal.Text = $"{featherRadius}px";
             previewPanel.Invalidate();
+            DebounceFileSizeCalculation();
         }
 
+        private void sliderCompression_Scroll(object sender, EventArgs e)
+        {
+            lblCompression.Text = $"Quality (Scale): {sliderCompression.Value}%";
+            previewPanel.Invalidate();
+            DebounceFileSizeCalculation();
+        }
 
+        private void DebounceFileSizeCalculation()
+        {
+            if (sizeCalcTimer == null) return;
+            sizeCalcTimer.Stop();
+            lblFileSize.Text = "Size: Calculating...";
+            lblFileSize.ForeColor = Color.Gray;
+            btnSave.Enabled = false;
+            sizeCalcTimer.Start();
+        }
+
+        private async void SizeCalcTimer_Tick(object sender, EventArgs e)
+        {
+            sizeCalcTimer.Stop();
+            if (originalImage == null) return;
+
+            GetCurrentCanvasDimensions(out int cW, out int cH);
+            AdaptationMode mode = GetCurrentAdaptationMode();
+            float outScale = sliderCompression.Value / 100f;
+
+            // Snapshot current settings to avoid cross-thread UI access issues
+            float z = zoomFactor;
+            float px = panOffsetX;
+            float py = panOffsetY;
+            int rAngle = rotationAngle;
+            Color bgCol = selectedBgColor;
+            bool rBg = removeBgEnabled;
+            Color rBgCol = removeBgColor;
+            int rBgTol = removeBgTolerance;
+            bool outEn = outlineEnabled;
+            Color outCol = outlineColor;
+            int outThick = outlineThickness;
+            bool featEn = featherEnabled;
+            int featRad = featherRadius;
+            int chRad = chokeRadius;
+            Image sourceImg = originalImage;
+
+            long sizeBytes = 0;
+
+            string currentHash = $"{cW}_{cH}_{mode}_{z}_{px}_{py}_{rAngle}_{bgCol.ToArgb()}_{rBg}_{rBgCol.ToArgb()}_{rBgTol}_{outEn}_{outCol.ToArgb()}_{outThick}_{featEn}_{featRad}_{chRad}";
+
+            await System.Threading.Tasks.Task.Run(() =>
+            {
+                try
+                {
+                    Bitmap renderedToUse = null;
+                    bool newRender = false;
+
+                    if (_lastRenderHash == currentHash && _cachedRender != null)
+                    {
+                        renderedToUse = _cachedRender;
+                    }
+                    else
+                    {
+                        renderedToUse = ImageEditor.RenderImage(
+                            sourceImg, cW, cH, mode, z, px, py, rAngle,
+                            bgCol, rBg, rBgCol, rBgTol,
+                            outEn, outCol, outThick, featEn, featRad, chRad);
+                        
+                        if (renderedToUse != null)
+                        {
+                            _cachedRender?.Dispose();
+                            _cachedRender = (Bitmap)renderedToUse.Clone(); // Clone to prevent cross-thread issues
+                            _lastRenderHash = currentHash;
+                        }
+                        newRender = true;
+                    }
+
+                    if (renderedToUse == null) return;
+
+                    Bitmap finalRendered = renderedToUse;
+                    bool disposeFinal = false;
+
+                    if (outScale < 1.0f && outScale > 0.0f)
+                    {
+                        int newW = Math.Max(1, (int)(cW * outScale));
+                        int newH = Math.Max(1, (int)(cH * outScale));
+                        finalRendered = new Bitmap(newW, newH, PixelFormat.Format32bppArgb);
+                        using (Graphics g = Graphics.FromImage(finalRendered))
+                        {
+                            g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                            g.SmoothingMode = SmoothingMode.HighQuality;
+                            g.DrawImage(renderedToUse, 0, 0, newW, newH);
+                        }
+                        disposeFinal = true;
+                    }
+
+                    using (MemoryStream ms = new MemoryStream())
+                    {
+                        finalRendered.Save(ms, ImageFormat.Png);
+                        sizeBytes = ms.Length;
+                    }
+
+                    if (disposeFinal) finalRendered.Dispose();
+                    if (newRender) renderedToUse.Dispose();
+                }
+                catch { }
+            });
+
+            if (this.IsDisposed) return;
+
+            double mb = sizeBytes / (1024.0 * 1024.0);
+            lblFileSize.Text = $"Size: {mb:0.00} MB";
+
+            if (mb > 10.0)
+            {
+                lblFileSize.ForeColor = Color.FromArgb(255, 128, 128); // Light red
+                btnSave.Enabled = false;
+            }
+            else
+            {
+                lblFileSize.ForeColor = Color.FromArgb(106, 227, 249); // Cyan
+                btnSave.Enabled = true;
+            }
+        }
 
         // Rotate clockwise
         private void btnRotate_Click(object sender, EventArgs e)
@@ -775,10 +790,14 @@ namespace VRCGalleryManager.Forms
             outlineEnabled = false;
             outlineColor = Color.White;
             outlineThickness = 0;
+            
+            sliderCompression.Value = 100;
+            lblCompression.Text = "Quality (Scale): 100%";
 
             ResetOffsets();
             ClampOffsets();
             previewPanel.Invalidate();
+            DebounceFileSizeCalculation();
         }
 
         // OK / Save Click
@@ -787,9 +806,11 @@ namespace VRCGalleryManager.Forms
             GetCurrentCanvasDimensions(out canvasWidth, out canvasHeight);
             adaptationMode = GetCurrentAdaptationMode();
             ClampOffsets();
+            float outScale = sliderCompression.Value / 100f;
 
             // Render output
             Bitmap rendered = null;
+            Bitmap finalRendered = null;
             string resultPath = string.Empty;
             try
             {
@@ -814,7 +835,21 @@ namespace VRCGalleryManager.Forms
                     chokeRadius
                 );
 
-                resultPath = ImageEditor.SaveTempProcessedImage(rendered);
+                finalRendered = rendered;
+                if (outScale < 1.0f && outScale > 0.0f)
+                {
+                    int newW = Math.Max(1, (int)(canvasWidth * outScale));
+                    int newH = Math.Max(1, (int)(canvasHeight * outScale));
+                    finalRendered = new Bitmap(newW, newH, PixelFormat.Format32bppArgb);
+                    using (Graphics g = Graphics.FromImage(finalRendered))
+                    {
+                        g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                        g.SmoothingMode = SmoothingMode.HighQuality;
+                        g.DrawImage(rendered, 0, 0, newW, newH);
+                    }
+                }
+
+                resultPath = ImageEditor.SaveTempProcessedImage(finalRendered);
             }
             catch (Exception ex)
             {
@@ -823,6 +858,8 @@ namespace VRCGalleryManager.Forms
             }
             finally
             {
+                if (finalRendered != null && finalRendered != rendered)
+                    finalRendered.Dispose();
                 rendered?.Dispose();
             }
 

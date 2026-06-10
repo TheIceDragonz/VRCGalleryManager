@@ -65,6 +65,9 @@ namespace VRCGalleryManager.Forms
             lblFeather = new Label();
             sliderFeather = new RoundedTrackBar();
             lblFeatherVal = new Label();
+            lblCompression = new Label();
+            lblFileSize = new Label();
+            sliderCompression = new RoundedTrackBar();
             sliderZoom = new RoundedTrackBar();
             lblZoomVal = new Label();
             mainTableLayout.SuspendLayout();
@@ -74,6 +77,7 @@ namespace VRCGalleryManager.Forms
             ((System.ComponentModel.ISupportInitialize)sliderTolerance).BeginInit();
             ((System.ComponentModel.ISupportInitialize)sliderChoke).BeginInit();
             ((System.ComponentModel.ISupportInitialize)sliderFeather).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)sliderCompression).BeginInit();
             ((System.ComponentModel.ISupportInitialize)sliderZoom).BeginInit();
             SuspendLayout();
             // 
@@ -186,15 +190,17 @@ namespace VRCGalleryManager.Forms
             settingsPanel.Controls.Add(lblFeather);
             settingsPanel.Controls.Add(sliderFeather);
             settingsPanel.Controls.Add(lblFeatherVal);
+            settingsPanel.Controls.Add(lblCompression);
+            settingsPanel.Controls.Add(lblFileSize);
             settingsPanel.Controls.Add(sliderZoom);
             settingsPanel.Controls.Add(lblZoomVal);
+            settingsPanel.Controls.Add(sliderCompression);
             settingsPanel.Dock = DockStyle.Fill;
             settingsPanel.Location = new Point(881, 12);
             settingsPanel.Margin = new Padding(6, 12, 12, 12);
             settingsPanel.Name = "settingsPanel";
             settingsPanel.Size = new Size(382, 851);
             settingsPanel.TabIndex = 1;
-            settingsPanel.UseCustomScrollBar = false;
             // 
             // btnSave
             // 
@@ -739,6 +745,54 @@ namespace VRCGalleryManager.Forms
             lblFeatherVal.Text = "2px";
             lblFeatherVal.TextAlign = ContentAlignment.MiddleLeft;
             // 
+            // lblCompression
+            // 
+            lblCompression.AutoSize = true;
+            lblCompression.Font = new Font("Segoe UI", 9.5F, FontStyle.Bold);
+            lblCompression.ForeColor = Color.White;
+            lblCompression.Location = new Point(25, 518);
+            lblCompression.Margin = new Padding(4, 0, 4, 0);
+            lblCompression.Name = "lblCompression";
+            lblCompression.Size = new Size(122, 21);
+            lblCompression.TabIndex = 30;
+            lblCompression.Text = "Quality (Scale)";
+            // 
+            // lblFileSize
+            // 
+            lblFileSize.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            lblFileSize.Font = new Font("Segoe UI", 9.5F, FontStyle.Bold);
+            lblFileSize.ForeColor = Color.FromArgb(106, 227, 249);
+            lblFileSize.Location = new Point(160, 518);
+            lblFileSize.Margin = new Padding(4, 0, 4, 0);
+            lblFileSize.Name = "lblFileSize";
+            lblFileSize.Size = new Size(200, 21);
+            lblFileSize.TabIndex = 31;
+            lblFileSize.Text = "Size: -- MB";
+            lblFileSize.TextAlign = ContentAlignment.MiddleRight;
+            // 
+            // sliderCompression
+            // 
+            sliderCompression.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            sliderCompression.BackColor = Color.FromArgb(10, 25, 30);
+            sliderCompression.BorderColor = Color.FromArgb(10, 25, 30);
+            sliderCompression.BorderRadius = 4;
+            sliderCompression.LabelFont = new Font("Segoe UI", 9F);
+            sliderCompression.LabelOffset = new Point(0, 0);
+            sliderCompression.LabelText = "";
+            sliderCompression.LabelTextColor = Color.Black;
+            sliderCompression.Location = new Point(25, 524);
+            sliderCompression.Margin = new Padding(4);
+            sliderCompression.Maximum = 100;
+            sliderCompression.Minimum = 10;
+            sliderCompression.Name = "sliderCompression";
+            sliderCompression.Size = new Size(332, 56);
+            sliderCompression.TabIndex = 32;
+            sliderCompression.ThumbColor = Color.FromArgb(106, 227, 249);
+            sliderCompression.ThumbSize = 16;
+            sliderCompression.TrackColor = Color.FromArgb(7, 36, 43);
+            sliderCompression.Value = 100;
+            sliderCompression.Scroll += sliderCompression_Scroll;
+            // 
             // sliderZoom
             // 
             sliderZoom.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
@@ -798,6 +852,7 @@ namespace VRCGalleryManager.Forms
             ((System.ComponentModel.ISupportInitialize)sliderTolerance).EndInit();
             ((System.ComponentModel.ISupportInitialize)sliderChoke).EndInit();
             ((System.ComponentModel.ISupportInitialize)sliderFeather).EndInit();
+            ((System.ComponentModel.ISupportInitialize)sliderCompression).EndInit();
             ((System.ComponentModel.ISupportInitialize)sliderZoom).EndInit();
             ResumeLayout(false);
         }
@@ -840,6 +895,9 @@ namespace VRCGalleryManager.Forms
         private Label lblNote;
         private VRCGalleryManager.Design.RoundedPanel panelNote;
         private TextBox textBoxNote;
+        private Label lblCompression;
+        private Label lblFileSize;
+        private RoundedTrackBar sliderCompression;
     }
 
     /// <summary>
