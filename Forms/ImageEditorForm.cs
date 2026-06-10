@@ -13,6 +13,7 @@ namespace VRCGalleryManager.Forms
     public partial class ImageEditorForm : Form
     {
         private Image originalImage;
+        private Image bgOriginalImage;
         private string originalPath;
 
         // Configuration State
@@ -95,12 +96,18 @@ namespace VRCGalleryManager.Forms
 
             // Dispose previous resources
             originalImage?.Dispose();
+            bgOriginalImage?.Dispose();
             checkerBrush?.Dispose();
 
             originalPath = imagePath;
             try
             {
                 originalImage = Image.FromFile(imagePath);
+                bgOriginalImage = new Bitmap(originalImage.Width, originalImage.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+                using (Graphics g = Graphics.FromImage(bgOriginalImage))
+                {
+                    g.DrawImage(originalImage, 0, 0, originalImage.Width, originalImage.Height);
+                }
             }
             catch (Exception ex)
             {
@@ -670,7 +677,7 @@ namespace VRCGalleryManager.Forms
             bool featEn = featherEnabled;
             int featRad = featherRadius;
             int chRad = chokeRadius;
-            Image sourceImg = originalImage;
+            Image sourceImg = bgOriginalImage;
 
             long sizeBytes = 0;
 
@@ -983,6 +990,7 @@ namespace VRCGalleryManager.Forms
         {
             checkerBrush?.Dispose();
             originalImage?.Dispose();
+            bgOriginalImage?.Dispose();
         }
     }
 }
