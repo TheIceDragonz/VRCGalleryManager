@@ -22,6 +22,7 @@ namespace VRCGalleryManager.Forms
 
         private string originalPath;
         private Image originalImage;
+        private Image bgOriginalImage;
         private bool isAnimatedMode = false;
 
         // GIF Mode State
@@ -102,6 +103,8 @@ namespace VRCGalleryManager.Forms
             // Dispose old resources
             originalImage?.Dispose();
             originalImage = null;
+            bgOriginalImage?.Dispose();
+            bgOriginalImage = null;
             checkerBrush?.Dispose();
             checkerBrush = null;
             if (spriteSheetViewer != null)
@@ -189,6 +192,11 @@ namespace VRCGalleryManager.Forms
                 try
                 {
                     originalImage = Image.FromFile(imagePath);
+                    bgOriginalImage = new Bitmap(originalImage.Width, originalImage.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+                    using (Graphics g = Graphics.FromImage(bgOriginalImage))
+                    {
+                        g.DrawImage(originalImage, 0, 0, originalImage.Width, originalImage.Height);
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -998,7 +1006,7 @@ namespace VRCGalleryManager.Forms
                 bool featEn = featherEnabled;
                 int featRad = featherRadius;
                 int chRad = chokeRadius;
-                Image sourceImg = originalImage;
+                Image sourceImg = bgOriginalImage;
 
                 string currentHash = $"{cW}_{cH}_{mode}_{z}_{px}_{py}_{rAngle}_{bgCol.ToArgb()}_{rBg}_{rBgCol.ToArgb()}_{rBgTol}_{featEn}_{featRad}_{chRad}";
 
@@ -1225,6 +1233,7 @@ namespace VRCGalleryManager.Forms
             gifPreviewDebounceTimer?.Dispose();
             gifPreviewDebounceTimer = null;
             originalImage?.Dispose();
+            bgOriginalImage?.Dispose();
             checkerBrush?.Dispose();
             spriteSheetBitmap?.Dispose();
             ClearGifFrames();
