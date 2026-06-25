@@ -11,6 +11,7 @@ namespace VRCGalleryManager.Forms
         private string currentFolder;
         private CancellationTokenSource _cts;
         MetaDataImageReader.VrcxData vrcxData;
+        private string selectedImagePath;
 
         public Gallery(VRCAuth auth)
         {
@@ -75,6 +76,7 @@ namespace VRCGalleryManager.Forms
 
         private async Task RefreshGalleryAsync()
         {
+            selectedImagePath = null;
             _cts?.Cancel();
             _cts = new CancellationTokenSource();
             var token = _cts.Token;
@@ -289,6 +291,7 @@ namespace VRCGalleryManager.Forms
             var pictureBox = new RoundedPictureBox
             {
                 Dock = DockStyle.Fill,
+                BackColor = Color.FromArgb(5, 5, 5),
                 SizeMode = PictureBoxSizeMode.CenterImage,
                 Cursor = Cursors.Hand,
                 Image = null,
@@ -353,6 +356,7 @@ namespace VRCGalleryManager.Forms
 
             pb.Click += async (s, e) =>
             {
+                selectedImagePath = file;
                 vrcxData = MetaDataImageReader.ExtractVrcxData(file);
                 if (vrcxData != null)
                 {
@@ -369,12 +373,32 @@ namespace VRCGalleryManager.Forms
                     var sortedLabels = playerLabels.OrderByDescending(p => p.priority).Select(p => p.label).ToArray();
                     userInfoPanel.Controls.Clear();
                     userInfoPanel.Controls.AddRange(sortedLabels);
-                    galleryInfoPanel.Visible = true;
+
+                    detailsPanel.Visible = true;
+
+                    // Force child controls to be visible inside detailsPanel
+                    worldImage.Visible = true;
+                    worldNameLabel.Visible = true;
+                    userInfoPanel.Visible = true;
                 }
                 else
                 {
-                    galleryInfoPanel.Visible = false;
+                    detailsPanel.Visible = false;
                 }
+
+                // Show high-quality preview of the clicked image
+                try
+                {
+                    imagePreview.Image?.Dispose();
+                    using (var stream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read))
+                    using (var img = Image.FromStream(stream))
+                    {
+                        imagePreview.Image = new Bitmap(img);
+                    }
+                }
+                catch { }
+
+                galleryInfoPanel.Visible = true;
             };
 
             return pb;
@@ -478,6 +502,158 @@ namespace VRCGalleryManager.Forms
                 currentFolder = dialog.SelectedPath;
             }
             await RefreshGalleryAsync();
+        }
+
+        private void btnUpload_Click(object sender, EventArgs e)
+        {
+            var menu = new Design.CustomContextMenuStrip();
+            
+            // Match btnUpload colors and border size
+            menu.BackgroundColor = btnUpload.BackColor;
+            menu.BorderColor = btnUpload.BorderColor;
+            menu.TextColor = btnUpload.ForeColor;
+            menu.PrimaryColor = btnUpload.ForeColor;
+            menu.BorderSize = btnUpload.BorderSize;
+            
+            // Match width
+            menu.MinimumSize = new Size(btnUpload.Width, 0);
+
+            menu.Items.Add("Icons", null, (s, ev) => UploadForCategory("Icons", 0));
+            menu.Items.Add("Photos", null, (s, ev) => UploadForCategory("Photos", 1));
+            menu.Items.Add("Emoji", null, (s, ev) => UploadForCategory("Emoji", 2));
+            menu.Items.Add("Sticker", null, (s, ev) => UploadForCategory("Sticker", 3));
+            menu.Items.Add("Prints", null, (s, ev) => UploadForCategory("Prints", 4));
+
+            foreach (ToolStripItem item in menu.Items)
+            {
+                item.AutoSize = false;
+                item.Size = new Size(btnUpload.Width - (menu.BorderSize * 2), 35);
+                item.TextAlign = ContentAlignment.MiddleCenter;
+                item.Font = btnUpload.Font;
+            }
+
+            menu.Show(btnUpload, new Point(0, btnUpload.Height));
+        }
+
+        private void UploadForCategory(string category, int formIndex)
+        {
+            string path = selectedImagePath;
+
+            if (string.IsNullOrEmpty(path))
+            {
+                using (OpenFileDialog openFileDialog = new OpenFileDialog())
+                {
+                    openFileDialog.Filter = "Image Files|*.jpg;*.jpeg;*.png;*.gif;*.bmp|All Files|*.*";
+                    openFileDialog.Multiselect = false;
+
+                    if (openFileDialog.ShowDialog() == DialogResult.OK)
+                    {
+                        path = openFileDialog.FileName;
+                    }
+                    else
+                    {
+                        return;
+                    }
+                }
+            }
+
+            var mainPanel = this.TopLevelControl as MainPanel;
+            if (mainPanel == null) return;
+
+            // Switch to the selected category form using reflection
+            var method = mainPanel.GetType().GetMethod("ShowForm", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            method?.Invoke(mainPanel, new object[] { formIndex });
+
+            // Find the newly shown form to trigger its specific upload logic on save
+            ApiConnectedForm targetForm = null;
+            var formsField = mainPanel.GetType().GetField("_forms", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            if (formsField != null)
+            {
+                var forms = formsField.GetValue(mainPanel) as ApiConnectedForm[];
+                if (forms != null && formIndex >= 0 && formIndex < forms.Length)
+                {
+                    targetForm = forms[formIndex];
+                }
+            }
+
+            if (category == "Emoji")
+            {
+                mainPanel.ShowEmojiEditor(
+                    path,
+                    onSave: async (editedImage, isAnimated, style, frames, fps) =>
+                    {
+                        try
+                        {
+                            if (isAnimated)
+                                await apiRequest.UploadImage(editedImage, "emoji", VRCGalleryManager.Core.DTO.TagType.EmojiAnimated, style, frames, fps);
+                            else
+                                await apiRequest.UploadImage(editedImage, "emoji", VRCGalleryManager.Core.DTO.TagType.Sticker, null, 0, 0);
+
+                            VRCGalleryManager.Core.NotificationManager.ShowNotification($"{category} uploaded successfully", $"{category} uploaded", VRCGalleryManager.Core.NotificationType.Success);
+
+                            var refreshMethod = targetForm?.GetType().GetMethod("EmojiList", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                            refreshMethod?.Invoke(targetForm, null);
+                        }
+                        catch (Exception ex)
+                        {
+                            VRCGalleryManager.Core.NotificationManager.ShowNotification(ex.Message, "Error during file upload", VRCGalleryManager.Core.NotificationType.Error);
+                        }
+                        finally
+                        {
+                            try { File.Delete(editedImage); } catch { }
+                        }
+                    },
+                    onCancel: () => { }
+                );
+            }
+            else
+            {
+                string ratio = (category == "Photos" || category == "Prints") ? "16:9" : "1:1";
+                mainPanel.ShowEditor(
+                    path,
+                    ratio,
+                    onSave: async (editedImage, note) =>
+                    {
+                        try
+                        {
+                            if (category == "Icons")
+                            {
+                                await apiRequest.UploadImage(editedImage, "square", VRCGalleryManager.Core.DTO.TagType.Icon, null, 0, 0);
+                            }
+                            else if (category == "Photos")
+                            {
+                                await apiRequest.UploadImage(editedImage, "square", VRCGalleryManager.Core.DTO.TagType.Gallery, null, 0, 0);
+                            }
+                            else if (category == "Prints")
+                            {
+                                await apiRequest.UploadPrint(editedImage, note);
+                            }
+                            else if (category == "Sticker")
+                            {
+                                await apiRequest.UploadImage(editedImage, "square", VRCGalleryManager.Core.DTO.TagType.Sticker, null, 0, 0);
+                            }
+                            VRCGalleryManager.Core.NotificationManager.ShowNotification($"{category} uploaded successfully", $"{category} uploaded", VRCGalleryManager.Core.NotificationType.Success);
+
+                            // Refresh the target panel
+                            var refreshMethod = targetForm?.GetType().GetMethod("IconsList", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance) ??
+                                                targetForm?.GetType().GetMethod("PhotosList", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance) ??
+                                                targetForm?.GetType().GetMethod("PrintsList", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance) ??
+                                                targetForm?.GetType().GetMethod("StickerList", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                            refreshMethod?.Invoke(targetForm, null);
+                        }
+                        catch (Exception ex)
+                        {
+                            VRCGalleryManager.Core.NotificationManager.ShowNotification(ex.Message, "Error during file upload", VRCGalleryManager.Core.NotificationType.Error);
+                        }
+                        finally
+                        {
+                            try { File.Delete(editedImage); } catch { }
+                        }
+                    },
+                    onCancel: () => { },
+                    showNote: category == "Prints"
+                );
+            }
         }
     }
 }
