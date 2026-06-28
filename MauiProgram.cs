@@ -13,7 +13,18 @@ public static class MauiProgram
 		{
 			try
 			{
-				System.IO.File.AppendAllText("crash.log", eventArgs.Exception.ToString() + "\n\n");
+				string path = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "crash.log");
+				System.IO.File.AppendAllText(path, eventArgs.Exception.ToString() + "\n\n");
+			}
+			catch { }
+		};
+
+		AppDomain.CurrentDomain.UnhandledException += (sender, eventArgs) =>
+		{
+			try
+			{
+				string path = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "fatal.log");
+				System.IO.File.AppendAllText(path, eventArgs.ExceptionObject.ToString() + "\n\n");
 			}
 			catch { }
 		};
