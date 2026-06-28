@@ -1,3 +1,8 @@
+using Bitmap = System.Drawing.Bitmap;
+using PixelFormat = System.Drawing.Imaging.PixelFormat;
+using Graphics = System.Drawing.Graphics;
+using Image = System.Drawing.Image;
+using ImageFormat = System.Drawing.Imaging.ImageFormat;
 using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -5,7 +10,6 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
-using System.Windows.Forms;
 
 namespace VRCGalleryManager.Core
 {
@@ -23,97 +27,77 @@ namespace VRCGalleryManager.Core
             }
             catch (Exception ex)
             {
-                NotificationManager.ShowNotification(
-                    $"Could not create temp directory: {ex.Message}",
-                    "Initialization Error",
-                    NotificationType.Error
-                );
+                Console.WriteLine($"Could not create temp directory: {ex.Message}");
             }
         }
 
-        public static async Task ClipboardDataImageOrLink(Button pasteButton, Action<string> uploadImage)
+        public static async Task<string> ClipboardDataImageOrLink(Action<string> uploadImage = null)
         {
-            var data = Clipboard.GetDataObject();
-            if (data == null)
+            return await Microsoft.Maui.ApplicationModel.MainThread.InvokeOnMainThreadAsync(async () =>
             {
-                NotificationManager.ShowNotification("Clipboard is empty!", "Error", NotificationType.Error);
-                return;
-            }
-
-            string savedPath = null;
-
-            if (data.GetDataPresent("PNG"))
-            {
-                savedPath = HandlePngFromClipboard(data);
-            }
-            else if (data.GetDataPresent(DataFormats.FileDrop))
-            {
-                HandleFileDrop(data, pasteButton, uploadImage);
-                return;
-            }
-            else if (data.GetDataPresent(DataFormats.Text))
-            {
-                string text = Clipboard.GetText();
-                if (await IsValidImageLinkAsync(text))
-                    savedPath = await SaveImageFromUrlAsync(text, pasteButton);
-                else
+                if (Microsoft.Maui.ApplicationModel.DataTransfer.Clipboard.Default.HasText)
                 {
-                    NotificationManager.ShowNotification("The link does not contain a valid image!", "Error", NotificationType.Error);
-                    return;
+                    string text = await Microsoft.Maui.ApplicationModel.DataTransfer.Clipboard.Default.GetTextAsync();
+                    if (!string.IsNullOrEmpty(text) && await IsValidImageLinkAsync(text))
+                    {
+                        string savedPath = await SaveImageFromUrlAsync(text);
+                        if (!string.IsNullOrEmpty(savedPath))
+                        {
+                            uploadImage?.Invoke(savedPath);
+                            return savedPath;
+                        }
+                    }
                 }
-            }
-            else
-            {
-                NotificationManager.ShowNotification("No image, file or link found in the clipboard!", "Error", NotificationType.Error);
-                return;
-            }
 
-            if (!string.IsNullOrEmpty(savedPath))
-                uploadImage(savedPath);
-        }
-
-        private static string HandlePngFromClipboard(IDataObject data)
-        {
-            try
-            {
-                const string pngFormat = "PNG";
-                if (data.GetData(pngFormat) is MemoryStream pngStream)
-                {
-                    using var src = Image.FromStream(pngStream, true, true);
-                    string filePath = GetTempFilePath("Pasted-Image");
-                    src.Save(filePath, ImageFormat.Png);
-                    NotificationManager.ShowNotification("Image pasted and saved successfully!", "Paste Image", NotificationType.Success);
-                    return filePath;
-                }
-            }
-            catch (Exception ex)
-            {
-                NotificationManager.ShowNotification($"Error saving PNG from clipboard: {ex.Message}", "Error", NotificationType.Error);
-            }
-            return null;
-        }
-
-        private static void HandleFileDrop(IDataObject data, Button pasteButton, Action<string> uploadImage)
-        {
-            if (data.GetData(DataFormats.FileDrop) is string[] files && files.Length > 0)
-            {
-                string file = files[0];
-                string ext = Path.GetExtension(file).ToLowerInvariant();
-                if (ext != ".png" && ext != ".jpg" && ext != ".jpeg" && ext != ".gif")
-                {
-                    NotificationManager.ShowNotification("Dropped file is not a supported image type!", "Error", NotificationType.Error);
-                    return;
-                }
+#if WINDOWS
                 try
                 {
-                    pasteButton.Enabled = false;
-                    uploadImage(file);
+                    var dataPackageView = Windows.ApplicationModel.DataTransfer.Clipboard.GetContent();
+
+                    if (dataPackageView.Contains(Windows.ApplicationModel.DataTransfer.StandardDataFormats.StorageItems))
+                    {
+                        var items = await dataPackageView.GetStorageItemsAsync();
+                        foreach (var item in items)
+                        {
+                            if (item is Windows.Storage.StorageFile file)
+                            {
+                                string ext = file.FileType.ToLower();
+                                if (ext == ".png" || ext == ".jpg" || ext == ".jpeg" || ext == ".webp" || ext == ".gif")
+                                {
+                                    uploadImage?.Invoke(file.Path);
+                                    return file.Path;
+                                }
+                            }
+                        }
+                    }
+
+                    if (dataPackageView.Contains(Windows.ApplicationModel.DataTransfer.StandardDataFormats.Bitmap))
+                    {
+                        var imageStreamRef = await dataPackageView.GetBitmapAsync();
+                        using var ras = await imageStreamRef.OpenReadAsync();
+                        using var stream = ras.AsStreamForRead();
+                        
+                        using var src = Image.FromStream(stream, true, true);
+                        using var bmp = new Bitmap(src.Width, src.Height, PixelFormat.Format32bppArgb);
+                        using (var g = Graphics.FromImage(bmp))
+                        {
+                            g.CompositingMode = CompositingMode.SourceCopy;
+                            g.DrawImage(src, 0, 0);
+                        }
+                        string filePath = GetTempFilePath("Clipboard-Image");
+                        bmp.Save(filePath, ImageFormat.Png);
+
+                        uploadImage?.Invoke(filePath);
+                        return filePath;
+                    }
                 }
-                finally
+                catch (Exception ex)
                 {
-                    pasteButton.Enabled = true;
+                    Console.WriteLine($"Native Clipboard Error: {ex.Message}");
                 }
-            }
+#endif
+                return null;
+            });
         }
 
         private static async Task<bool> IsValidImageLinkAsync(string url)
@@ -138,15 +122,37 @@ namespace VRCGalleryManager.Core
             }
         }
 
-        private static async Task<string> SaveImageFromUrlAsync(string url, Button pasteButton = null)
+        public static async Task<string> SaveImageFromUrlAsync(string url)
         {
-            pasteButton?.Invoke((Action)(() => pasteButton.Enabled = false));
             try
             {
-                var res = await HttpClient.GetAsync(url);
+                var request = new HttpRequestMessage(HttpMethod.Get, url);
+                request.Headers.Add("User-Agent", "VRCGalleryManager/1.0"); // VRChat API requires User-Agent
+                
+                if (url.Contains("vrchat.cloud"))
+                {
+                    var authConfig = VRCAuth.Instance().Config;
+                    if (authConfig != null && authConfig.DefaultHeaders.TryGetValue("Cookie", out var cookieValue))
+                    {
+                        request.Headers.Add("Cookie", cookieValue);
+                    }
+                }
+
+                var res = await HttpClient.SendAsync(request);
                 string ct = res.Content.Headers.ContentType?.MediaType;
-                if (!res.IsSuccessStatusCode || ct == null || !ct.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
+                
+                if (!res.IsSuccessStatusCode)
+                {
+                    string errorBody = await res.Content.ReadAsStringAsync();
+                    System.Diagnostics.Debug.WriteLine($"Download failed! Status: {res.StatusCode}, Body: {errorBody}");
                     return null;
+                }
+                
+                if (ct == null || !ct.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
+                {
+                    System.Diagnostics.Debug.WriteLine($"Download failed! Invalid content type: {ct}");
+                    return null;
+                }
 
                 string cleanUrl = url.Split('?')[0];
                 bool isGif = ct.Equals("image/gif", StringComparison.OrdinalIgnoreCase) ||
@@ -160,7 +166,6 @@ namespace VRCGalleryManager.Core
                     {
                         await stream.CopyToAsync(fileStream);
                     }
-                    NotificationManager.ShowNotification("GIF downloaded and saved successfully!", "Download GIF", NotificationType.Success);
                     return filePath;
                 }
                 else
@@ -175,18 +180,13 @@ namespace VRCGalleryManager.Core
                     }
                     string filePath = GetTempFilePath("Downloaded-Image");
                     bmp.Save(filePath, ImageFormat.Png);
-                    NotificationManager.ShowNotification("Image downloaded and saved successfully!", "Download Image", NotificationType.Success);
                     return filePath;
                 }
             }
             catch (Exception ex)
             {
-                NotificationManager.ShowNotification($"Error downloading image: {ex.Message}", "Error", NotificationType.Error);
+                Console.WriteLine($"Error downloading image: {ex.Message}");
                 return null;
-            }
-            finally
-            {
-                pasteButton?.Invoke((Action)(() => pasteButton.Enabled = true));
             }
         }
 

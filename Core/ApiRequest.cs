@@ -3,7 +3,7 @@ using VRCGalleryManager.Core.DTO;
 using VRChat.API.Api;
 using VRChat.API.Client;
 using VRChat.API.Model;
-using VRCGalleryManager.Forms;
+// using VRCGalleryManager.Forms;
 using System.Data;
 using System.Text.Json;
 
@@ -131,7 +131,8 @@ namespace VRCGalleryManager.Core
                 }
                 else
                 {
-                    var images = await printsApi.GetUserPrintsAsync(Settings.UserId, 100, 0);
+                    var user = await Auth.AuthApi.GetCurrentUserAsync();
+                    var images = await printsApi.GetUserPrintsAsync(user.Id, 100, 0);
 
                     foreach (var image in images)
                     {
@@ -381,7 +382,8 @@ namespace VRCGalleryManager.Core
         {
             try
             {
-                await usersApi.UpdateUserAsync(Settings.UserId, new  UpdateUserRequest { UserIcon = urlImage });
+                var user = await Auth.AuthApi.GetCurrentUserAsync();
+                await usersApi.UpdateUserAsync(user.Id, new  UpdateUserRequest { UserIcon = urlImage });
             }
             catch (ApiException ex)
             {
@@ -392,7 +394,8 @@ namespace VRCGalleryManager.Core
         {
             try
             {
-                await usersApi.UpdateUserAsync(Settings.UserId, new UpdateUserRequest { ProfilePicOverride = urlImage });
+                var user = await Auth.AuthApi.GetCurrentUserAsync();
+                await usersApi.UpdateUserAsync(user.Id, new UpdateUserRequest { ProfilePicOverride = urlImage });
             }
             catch (ApiException ex)
             {

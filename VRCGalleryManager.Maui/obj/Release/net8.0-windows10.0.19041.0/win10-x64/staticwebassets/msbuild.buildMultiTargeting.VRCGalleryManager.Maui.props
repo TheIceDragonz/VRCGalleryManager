@@ -1,3 +1,0 @@
-﻿<Project>
-  <Import Project="..\build\VRCGalleryManager.Maui.props" />
-</Project>

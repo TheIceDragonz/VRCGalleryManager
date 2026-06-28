@@ -1,0 +1,113 @@
+using VRCGalleryManager.Core;
+
+namespace VRCGalleryManager;
+
+public partial class MainPage : ContentPage
+{
+	public MainPage()
+	{
+		InitializeComponent();
+	}
+
+    private FileDropService GetFileDropService()
+    {
+        return Handler?.MauiContext?.Services.GetService<FileDropService>() 
+            ?? Application.Current?.Windows.FirstOrDefault()?.Page?.Handler?.MauiContext?.Services.GetService<FileDropService>();
+    }
+
+    private bool? _isCurrentDragValid = null;
+
+    private async void OnDrop(object sender, DropEventArgs e)
+    {
+        _isCurrentDragValid = null;
+        var service = GetFileDropService();
+        if (service == null || !service.IsDragDropEnabled) return;
+
+        var filePaths = new List<string>();
+
+#if WINDOWS
+        if (e.PlatformArgs is not null && e.PlatformArgs.DragEventArgs.DataView.Contains(Windows.ApplicationModel.DataTransfer.StandardDataFormats.StorageItems))
+        {
+            var items = await e.PlatformArgs.DragEventArgs.DataView.GetStorageItemsAsync();
+            foreach (var item in items)
+            {
+                if (item is Windows.Storage.StorageFile file)
+                {
+                    filePaths.Add(file.Path);
+                }
+            }
+        }
+#endif
+
+        if (filePaths.Count > 0)
+        {
+            service.NotifyFileDropped(filePaths.ToArray());
+        }
+        service.NotifyDragLeave();
+    }
+
+    private async void OnDragOver(object sender, DragEventArgs e)
+    {
+        var service = GetFileDropService();
+        if (service == null || !service.IsDragDropEnabled)
+        {
+            e.AcceptedOperation = DataPackageOperation.None;
+            return;
+        }
+
+#if WINDOWS
+        if (_isCurrentDragValid == null)
+        {
+            _isCurrentDragValid = false;
+            try
+            {
+                if (e.PlatformArgs is not null && e.PlatformArgs.DragEventArgs.DataView.Contains(Windows.ApplicationModel.DataTransfer.StandardDataFormats.StorageItems))
+                {
+                    var deferral = e.PlatformArgs.DragEventArgs.GetDeferral();
+                    var items = await e.PlatformArgs.DragEventArgs.DataView.GetStorageItemsAsync();
+                    bool isValid = false;
+                    foreach (var item in items)
+                    {
+                        if (item is Windows.Storage.StorageFile file)
+                        {
+                            string ext = file.FileType.ToLower();
+                            if (ext == ".png" || ext == ".jpg" || ext == ".jpeg" || ext == ".webp" || ext == ".gif")
+                            {
+                                isValid = true;
+                                break;
+                            }
+                        }
+                    }
+                    _isCurrentDragValid = isValid;
+                    deferral.Complete();
+                }
+            }
+            catch { }
+        }
+
+        if (_isCurrentDragValid == true)
+        {
+            e.AcceptedOperation = DataPackageOperation.Copy;
+            service.NotifyDragEnter();
+        }
+        else
+        {
+            e.AcceptedOperation = DataPackageOperation.None;
+            service.NotifyDragLeave(); // Hide overlay if invalid format
+        }
+#else
+        e.AcceptedOperation = DataPackageOperation.Copy;
+        service.NotifyDragEnter();
+#endif
+    }
+
+    private void OnDragLeave(object sender, DragEventArgs e)
+    {
+        _isCurrentDragValid = null;
+        var service = GetFileDropService();
+        if (service != null && service.IsDragDropEnabled)
+        {
+            service.NotifyDragLeave();
+        }
+    }
+}

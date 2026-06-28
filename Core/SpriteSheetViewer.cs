@@ -1,3 +1,4 @@
+/* 
 using Timer = System.Windows.Forms.Timer;
 
 namespace VRCGalleryManager.Core
@@ -156,3 +157,4 @@ namespace VRCGalleryManager.Core
         }
     }
 }
+*/

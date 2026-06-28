@@ -1,9 +1,14 @@
+using ImageFormat = System.Drawing.Imaging.ImageFormat;
+using System.Drawing;
+using Color = System.Drawing.Color;
+using Image = System.Drawing.Image;
+using Bitmap = System.Drawing.Bitmap;
 using System.Drawing.Imaging;
 using System.Text.RegularExpressions;
 
 namespace VRCGalleryManager.Core
 {
-    public class GifToSpriteSheetConverter
+    public class GifToSpriteSheetConverter : IDisposable
     {
         private Image gifImage;
         public Bitmap SpriteSheet { get; private set; }
@@ -166,6 +171,7 @@ namespace VRCGalleryManager.Core
             return outputPath;
         }
 
+        /*
         public async Task<(string gifPath, Bitmap spriteSheet, int frameCount)> ProcessGifFromClipboard()
         {
             IDataObject data = Clipboard.GetDataObject();
@@ -210,6 +216,7 @@ namespace VRCGalleryManager.Core
 
             throw new Exception("No valid GIF data found in the clipboard!");
         }
+        */
 
         private Bitmap CropToSquare(Image img, int size)
         {

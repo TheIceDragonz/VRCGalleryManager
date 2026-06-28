@@ -1,4 +1,3 @@
-using Microsoft.VisualBasic;
 using VRCGalleryManager.Core.Helpers;
 using VRChat.API.Api;
 using VRChat.API.Client;
@@ -6,6 +5,14 @@ using VRChat.API.Model;
 
 namespace VRCGalleryManager.Core
 {
+    public enum VRCAuthStatus
+    {
+        Success,
+        RequiresEmail2FA,
+        RequiresApp2FA,
+        Error
+    }
+
     public class VRCAuth
     {
         private static VRCAuth instance;
@@ -16,6 +23,8 @@ namespace VRCGalleryManager.Core
 
         public bool LoggedIn = false;
         public bool CookieLoaded = false;
+        public CurrentUser CurrentUser { get; set; }
+        public event Action OnAuthStateChanged;
 
         public static readonly string tokenFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "VRCGalleryManager", "authToken.txt");
 
@@ -37,46 +46,71 @@ namespace VRCGalleryManager.Core
             return instance;
         }
 
-        public void VRCAuthentication(string usernameVRC, string passwordVRC)
+        public async Task<VRCAuthStatus> LoginAsync(string usernameVRC, string passwordVRC)
         {
             Config.Username = usernameVRC;
             Config.Password = passwordVRC;
 
             try
             {
-                ApiResponse<CurrentUser> currentUserResp = AuthApi.GetCurrentUserWithHttpInfo();
+                ApiResponse<CurrentUser> currentUserResp = await AuthApi.GetCurrentUserWithHttpInfoAsync();
                 ExtractAuthCookie(currentUserResp);
 
                 if (requiresEmail2FA(currentUserResp))
                 {
-                    string inputAuth = Interaction.InputBox("Enter the code received via email", "Email Authentication", "");
-                    if (!string.IsNullOrEmpty(inputAuth))
-                    {
-                        var resp2fa = AuthApi.Verify2FAEmailCodeWithHttpInfo(new TwoFactorEmailCode(inputAuth));
-                        ExtractAuthCookie(resp2fa);
-                    }
+                    return VRCAuthStatus.RequiresEmail2FA;
                 }
-
                 else if (currentUserResp.RawContent != null && currentUserResp.RawContent.Contains("totp"))
                 {
-                    string inputAuth = Interaction.InputBox("Enter the 2FA code (Authenticator)", "2FA Authentication", "");
-                    if (!string.IsNullOrEmpty(inputAuth))
-                    {
-                        var resp2fa = AuthApi.Verify2FAWithHttpInfo(new TwoFactorAuthCode(inputAuth));
-                        ExtractAuthCookie(resp2fa);
-                    }
+                    return VRCAuthStatus.RequiresApp2FA;
                 }
 
                 SaveCookies();
 
                 LoggedIn = true;
-                CurrentUser currentUser = AuthApi.GetCurrentUser();
-                Console.WriteLine("Logged in as: {0}", currentUser.DisplayName);
+                CurrentUser = await AuthApi.GetCurrentUserAsync();
+                Console.WriteLine("Logged in as: {0}", CurrentUser.DisplayName);
+                
+                OnAuthStateChanged?.Invoke();
+
+                return VRCAuthStatus.Success;
             }
             catch (ApiException ex)
             {
                 Console.WriteLine("API Error: {0}", ex.Message);
-                MessageBox.Show("Invalid credentials or connection error.");
+                return VRCAuthStatus.Error;
+            }
+        }
+
+        public async Task<VRCAuthStatus> Verify2FAAsync(string code, bool isEmail)
+        {
+            try
+            {
+                if (isEmail)
+                {
+                    var resp2fa = await AuthApi.Verify2FAEmailCodeWithHttpInfoAsync(new TwoFactorEmailCode(code));
+                    ExtractAuthCookie(resp2fa);
+                }
+                else
+                {
+                    var resp2fa = await AuthApi.Verify2FAWithHttpInfoAsync(new TwoFactorAuthCode(code));
+                    ExtractAuthCookie(resp2fa);
+                }
+
+                SaveCookies();
+
+                LoggedIn = true;
+                CurrentUser = await AuthApi.GetCurrentUserAsync();
+                Console.WriteLine("Logged in as: {0}", CurrentUser.DisplayName);
+                
+                OnAuthStateChanged?.Invoke();
+
+                return VRCAuthStatus.Success;
+            }
+            catch (ApiException ex)
+            {
+                Console.WriteLine("2FA Verification Error: {0}", ex.Message);
+                return VRCAuthStatus.Error;
             }
         }
 
@@ -179,12 +213,20 @@ namespace VRCGalleryManager.Core
 
             LoggedIn = false;
             CookieLoaded = false;
+            CurrentUser = null;
 
             Config.ApiKey.Clear();
             Config.DefaultHeaders.Clear();
 
             ApiClient = new ApiClient(Config.BasePath);
             AuthApi = new AuthenticationApi(ApiClient, ApiClient, Config);
+
+            OnAuthStateChanged?.Invoke();
+        }
+
+        public void NotifyAuthStateChanged()
+        {
+            OnAuthStateChanged?.Invoke();
         }
     }
 }

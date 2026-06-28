@@ -1,3 +1,0 @@
-System.InvalidOperationException: Operation is not valid due to the current state of the object.
-   at WinRT.ExceptionHelpers.<ThrowExceptionForHR>g__Throw|39_0(Int32 hr)
-

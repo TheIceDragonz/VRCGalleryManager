@@ -1,3 +1,8 @@
+using ImageFormat = System.Drawing.Imaging.ImageFormat;
+using System.Drawing;
+using Color = System.Drawing.Color;
+using Image = System.Drawing.Image;
+using Bitmap = System.Drawing.Bitmap;
 using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;

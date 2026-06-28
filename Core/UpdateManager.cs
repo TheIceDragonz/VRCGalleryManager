@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
@@ -6,7 +6,7 @@ using System.Reflection;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using System.Windows.Forms;
+using Microsoft.Maui.Controls;
 using VRCGalleryManager.Core;
 
 namespace VRCGalleryManager
@@ -30,7 +30,7 @@ namespace VRCGalleryManager
             return !string.Equals(localVersion, latestVersion, StringComparison.OrdinalIgnoreCase);
         }
 
-        public async Task CheckForUpdatesAsync(Button checkUpdateButton)
+        public async Task CheckForUpdatesAsync(NotificationService notificationService, DialogService dialogService, Action<string, bool> updateProgressState)
         {
             string latestVersion;
             string localVersion;
@@ -52,31 +52,28 @@ namespace VRCGalleryManager
 
             if (!isAvailable)
             {
-                NotificationManager.ShowNotification(
+                notificationService.Show(
                     "You are already using the latest version.",
                     "No Update",
                     NotificationType.Info);
                 return;
             }
 
-            var result = MessageBox.Show(
+            var result = await dialogService.ShowConfirmAsync(
+                "Update Available",
                 $"A new version ({latestVersion}) is available.\n" +
                 $"You are currently on version {localVersion}.\n\n" +
                 "Do you want to download and install it?",
-                "Update Available",
-                MessageBoxButtons.YesNo,
-                MessageBoxIcon.Information);
+                "Yes", "No");
 
-            if (result == DialogResult.Yes)
+            if (result)
             {
-                checkUpdateButton.Enabled = false;
-                checkUpdateButton.Text = "Updating (0%)";
-
-                await DownloadAndInstallUpdateAsync(client, checkUpdateButton);
+                updateProgressState("Updating (0%)", false);
+                await DownloadAndInstallUpdateAsync(client, notificationService, updateProgressState);
             }
         }
 
-        private async Task DownloadAndInstallUpdateAsync(HttpClient client, Button checkUpdateButton)
+        private async Task DownloadAndInstallUpdateAsync(HttpClient client, NotificationService notificationService, Action<string, bool> updateProgressState)
         {
             string jsonResponse = await client.GetStringAsync(apiUrl);
             using var doc = JsonDocument.Parse(jsonResponse);
@@ -98,7 +95,7 @@ namespace VRCGalleryManager
 
             if (string.IsNullOrEmpty(installerUrl))
             {
-                NotificationManager.ShowNotification(
+                notificationService.Show(
                     "Update installer not found among assets.",
                     "Error",
                     NotificationType.Error);
@@ -126,10 +123,10 @@ namespace VRCGalleryManager
                     if (totalBytes > 0)
                     {
                         int progress = (int)((totalRead * 100) / totalBytes);
-                        checkUpdateButton.Invoke(new Action(() =>
+                        Application.Current.Dispatcher.Dispatch(() =>
                         {
-                            checkUpdateButton.Text = $"Updating ({progress}%)";
-                        }));
+                            updateProgressState($"Updating ({progress}%)", false);
+                        });
                     }
                 }
             }
@@ -138,7 +135,7 @@ namespace VRCGalleryManager
             {
                 UseShellExecute = true
             });
-            Application.Exit();
+            Application.Current.Quit();
         }
     }
 }

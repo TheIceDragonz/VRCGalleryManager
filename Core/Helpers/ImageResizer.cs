@@ -1,4 +1,9 @@
-﻿using System.Drawing.Drawing2D;
+using ImageFormat = System.Drawing.Imaging.ImageFormat;
+using System.Drawing;
+using Color = System.Drawing.Color;
+using Image = System.Drawing.Image;
+using Bitmap = System.Drawing.Bitmap;
+using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 
 namespace VRCGalleryManager.Core.Helpers

@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using System.Linq;
-using System.Windows.Forms;
 
 namespace VRCGalleryManager.Core.Helpers
 {
@@ -9,16 +8,17 @@ namespace VRCGalleryManager.Core.Helpers
     {
         public static string[] allowedExtensions = { ".png", ".jpg", ".jpeg", ".bmp", ".gif", ".tif", ".tiff", ".ico" };
 
-        public static void SetOpenFileDialogFilter(OpenFileDialog openFileDialog)
-        {
-            string filterExtensions = string.Join(";", allowedExtensions.Select(ext => "*" + ext));
-            openFileDialog.Filter = $"Image Files|{filterExtensions}";
-        }
-
         public static bool IsImageFile(string filePath)
         {
             string ext = Path.GetExtension(filePath)?.ToLower();
             return allowedExtensions.Contains(ext);
+        }
+
+        /*
+        public static void SetOpenFileDialogFilter(OpenFileDialog openFileDialog)
+        {
+            string filterExtensions = string.Join(";", allowedExtensions.Select(ext => "*" + ext));
+            openFileDialog.Filter = $"Image Files|{filterExtensions}";
         }
 
         public static DragDropEffects ProcessDragEnter(DragEventArgs e)
@@ -46,9 +46,10 @@ namespace VRCGalleryManager.Core.Helpers
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show("Error: " + ex.Message);
+                    // MessageBox.Show("Error: " + ex.Message);
                 }
             }
         }
+        */
     }
 }

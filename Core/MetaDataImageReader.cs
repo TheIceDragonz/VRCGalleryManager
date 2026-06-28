@@ -1,8 +1,8 @@
-﻿using Newtonsoft.Json;
-using System.Diagnostics;
 using System.Text.Json;
-using VRCGalleryManager.Design;
-using VRCGalleryManager.Forms;
+using System.IO;
+using System.Text.Json.Serialization;
+using System;
+using System.Collections.Generic;
 
 namespace VRCGalleryManager.Core
 {
@@ -10,27 +10,39 @@ namespace VRCGalleryManager.Core
     {
         public class VrcxData
         {
+            [JsonPropertyName("author")]
             public AuthorInfo Author { get; set; }
+            [JsonPropertyName("world")]
             public WorldInfo World { get; set; }
+            [JsonPropertyName("players")]
             public List<PlayerInfo> Players { get; set; }
         }
 
         public class AuthorInfo
         {
+            [JsonPropertyName("id")]
             public string Id { get; set; }
+            [JsonPropertyName("displayName")]
             public string DisplayName { get; set; }
         }
 
         public class WorldInfo
         {
+            [JsonPropertyName("name")]
             public string Name { get; set; }
+            [JsonPropertyName("id")]
             public string Id { get; set; }
+            [JsonPropertyName("instanceId")]
             public string InstanceId { get; set; }
+            [JsonPropertyName("imageUrl")]
+            public string ImageUrl { get; set; }
         }
 
         public class PlayerInfo
         {
+            [JsonPropertyName("id")]
             public string Id { get; set; }
+            [JsonPropertyName("displayName")]
             public string DisplayName { get; set; }
         }
 
@@ -46,105 +58,16 @@ namespace VRCGalleryManager.Core
                 using var doc = JsonDocument.ParseValue(ref reader);
 
                 string raw = doc.RootElement.GetRawText();
-                return raw.Contains("\"application\":\"VRCX\"")
-                    ? JsonConvert.DeserializeObject<VrcxData>(raw)
-                    : null;
+                if (raw.Contains("\"application\":\"VRCX\"") || raw.Contains("\"application\": \"VRCX\""))
+                {
+                    return JsonSerializer.Deserialize<VrcxData>(raw, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                }
+                return null;
             }
             catch
             {
                 return null;
             }
-        }
-
-        public static async void ApiWorldInfo(VrcxData vrcxData, ApiRequest apiRequest, RoundedPictureBox worldImage, Label worldNameLabel)
-        {
-            try
-            {
-                var worldApi = await apiRequest.GetWorldInfo(vrcxData.World.Id);
-                var finalImageUrl = await HttpImage.GetFinalUrlAsync(worldApi.ThumbnailUrl);
-                worldImage.LoadAsync(finalImageUrl);
-                worldImage.Cursor = Cursors.Hand;
-                worldNameLabel.Text = vrcxData.World.Name;
-            }
-            catch (HttpRequestException httpEx)
-            {
-                System.Diagnostics.Debug.WriteLine($"HTTP error: {httpEx.Message}");
-            }
-            catch (Newtonsoft.Json.JsonException jsonEx)
-            {
-                System.Diagnostics.Debug.WriteLine($"JSON error: {jsonEx.Message}");
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Unexpected error: {ex.Message}");
-            }
-        }
-
-        public static (RoundedLabel, bool, bool) UsersInfo(PlayerInfo player)
-        {
-            bool isfriend = IsFriend(player.Id).Result;
-            bool isme = IsMe(player.Id).Result;
-
-            Color userColor;
-            if (isme) userColor = Settings.MeColor;
-            else if (isfriend) userColor = Settings.FriendColor;
-            else userColor = Color.White;
-
-            RoundedLabel usersName = new RoundedLabel
-            {
-                Text = player.DisplayName,
-                Dock = DockStyle.Top,
-                Height = 30,
-                TextAlign = ContentAlignment.MiddleCenter,
-                ForeColor = userColor,
-                Font = new Font("Arial", 8, FontStyle.Bold),
-                Location = new Point(5, 5),
-                BackColor = Color.FromArgb(24, 27, 31),
-                BorderSize = 0,
-                BorderColor = Color.FromArgb(5, 55, 66),
-            };
-
-            if (!string.IsNullOrEmpty(player.Id))
-            {
-                usersName.Cursor = Cursors.Hand;
-                usersName.MouseEnter += (sender, e) => {
-                    usersName.BorderSize = 2;
-                };
-                usersName.MouseLeave += (sender, e) => {
-                    usersName.BorderSize = 0;
-                };
-
-                usersName.Click += async (s, e) =>
-                {
-                    Process.Start("explorer.exe", "https://vrchat.com/home/user/" + player.Id);
-                };
-            }
-            else
-            {
-                usersName.BackColor = Color.FromArgb(16, 18, 20);
-                usersName.ForeColor = Color.FromArgb(100, 100, 100);
-            }
-
-
-            return (usersName, isfriend, isme);
-        }
-
-        private static Task<bool> IsFriend(string userId)
-        {
-            if (Settings.Friends.Contains(userId))
-            {
-                return Task.FromResult(true);
-            }
-            return Task.FromResult(false);
-        }
-
-        private static Task<bool> IsMe(string userId)
-        {
-            if (Settings.UserId == userId)
-            {
-                return Task.FromResult(true);
-            }
-            return Task.FromResult(false);
         }
     }
 }
