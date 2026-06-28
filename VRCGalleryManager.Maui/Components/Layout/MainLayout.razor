@@ -1,0 +1,16 @@
+@inherits LayoutComponentBase
+
+<div class="page main-page-container">
+    <div class="sidebar main-sidebar-container">
+        <NavMenu />
+    </div>
+
+    <main class="main-content-container">
+        <article class="content w-100 h-100 p-0 m-0 main-article">
+            @Body
+        </article>
+    </main>
+
+    <NotificationDisplay />
+    <DialogDisplay />
+</div>

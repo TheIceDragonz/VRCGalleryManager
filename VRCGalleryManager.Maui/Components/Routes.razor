@@ -1,0 +1,23 @@
+<ErrorBoundary>
+    <ChildContent>
+        <Router AppAssembly="@typeof(MauiProgram).Assembly">
+            <Found Context="routeData">
+                <RouteView RouteData="@routeData" DefaultLayout="@typeof(Layout.MainLayout)" />
+                <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+            </Found>
+            <NotFound>
+                <LayoutView Layout="@typeof(Layout.MainLayout)">
+                    <p>Sorry, there's nothing at this address.</p>
+                </LayoutView>
+            </NotFound>
+        </Router>
+    </ChildContent>
+    <ErrorContent Context="ex">
+        <div class="error-boundary-container">
+            <h3>Unhandled Exception in Blazor UI</h3>
+            <p><strong>Message:</strong> @ex.Message</p>
+            <p><strong>StackTrace:</strong></p>
+            <pre class="error-boundary-pre">@ex.StackTrace</pre>
+        </div>
+    </ErrorContent>
+</ErrorBoundary>

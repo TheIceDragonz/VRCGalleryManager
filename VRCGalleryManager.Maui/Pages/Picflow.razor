@@ -1,0 +1,409 @@
+@page "/picflow"
+@using System.Text.RegularExpressions
+@using System.IO
+@using VRCGalleryManager.Core
+@inject VRCAuth Auth
+@inject NotificationService NotificationService
+@implements IDisposable
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavManager
+@inject DialogService dialogService
+
+<div class="h-100 d-flex flex-column p-3">
+    <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-secondary">
+        <div>
+            <h3 class="mb-0 text-accent d-flex align-items-center gap-2">
+                <img src="/svg/gallery-wide-svgrepo-com.svg" class="media-page-icon" /> Picflow <span class="fs-6 text-muted ms-2">@LogStatus</span>
+            </h3>
+        </div>
+        
+        <div class="d-flex align-items-center gap-2">
+            <span class="text-white-50">@Images.Count Items</span>
+
+            <div class="form-check form-switch d-flex align-items-center mb-0 ms-2 me-2">
+                <input class="form-check-input mt-0 me-2 cursor-pointer" type="checkbox" id="streamSwitch" @bind="IsStreaming" @bind:after="OnStreamingChanged">
+                <label class="form-check-label text-white cursor-pointer" for="streamSwitch">Stream</label>
+            </div>
+            
+            <button class="btn btn-outline-secondary btn-sm" @onclick="Refresh" disabled="@IsStreaming" title="Refresh">
+                <img src="/svg/rotate-right-svgrepo-com.svg" class="btn-icon" style="margin: 0;" />
+            </button>
+            <button class="btn btn-outline-danger btn-sm" @onclick="ClearItems" title="Clear">
+                <img src="/svg/trash-bin-trash-svgrepo-com.svg" class="btn-icon" style="margin: 0;" />
+            </button>
+            <button class="btn btn-info btn-sm" @onclick="ToggleInfo">
+                <img src="/svg/info-circle-svgrepo-com.svg" class="btn-icon" /> Info
+            </button>
+        </div>
+    </div>
+
+    @if (ShowInfo)
+    {
+        <div class="alert alert-info cursor-pointer" role="alert" @onclick="CopyInfoText">
+            <strong>Tip:</strong> Click here to copy <code>--enable-sdk-log-levels</code>. You need to add this to your VRChat launch options for Picflow to read stickers!
+        </div>
+    }
+
+    <div class="flex-grow-1 overflow-auto">
+        <div class="d-flex flex-wrap gap-3">
+            @foreach (var img in Images)
+            {
+                <div class="position-relative picflow-card media-card-container">
+                    @if (string.IsNullOrEmpty(img.Url))
+                    {
+                        <div class="w-100 h-100 d-flex justify-content-center align-items-center">
+                            <div class="spinner-border spinner-border-sm text-secondary" role="status"></div>
+                        </div>
+                    }
+                    else
+                    {
+                        <img src="@img.Url" class="w-100 h-100 object-fit-cover" loading="lazy" />
+                    }
+                    <div class="position-absolute w-100 text-center media-card-label picflow-label">
+                        @img.Username
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(img.Url))
+                    {
+                        <button class="btn btn-success btn-sm rounded-circle position-absolute btn-action media-btn-upload" style="right: 40px;" @onclick="() => ToggleUploadMenu(img)" title="Add (upload)">
+                            <img src="/svg/add-circle-svgrepo-com.svg" class="btn-icon" style="margin: 0; filter: invert(1);" />
+                        </button>
+
+                        <button class="btn btn-dark btn-sm rounded-circle position-absolute btn-action media-btn-open" style="right: 5px;" @onclick="() => OpenImage(img)" title="Viewlink">
+                            <img src="/svg/eye-svgrepo-com.svg" class="btn-icon" style="margin: 0;" />
+                        </button>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@if (UploadMenuImage != null)
+{
+    <div class="position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center dialog-overlay" style="z-index: 1050;" @onclick="CloseUploadMenu">
+        <div class="dialog-panel d-flex flex-column" @onclick:stopPropagation="true" style="min-width: 300px;">
+            <div class="p-4 flex-grow-1 border-bottom border-secondary text-center">
+                <h5 class="fw-bold text-white mb-2">Upload to...</h5>
+                <p class="text-light mb-3 small">Select the category where you want to upload this image.</p>
+                <img src="@UploadMenuImage.Url" class="rounded shadow-sm" style="max-height: 200px; max-width: 100%; object-fit: contain;" />
+            </div>
+            <div class="p-3 d-flex flex-column gap-2 dialog-footer">
+                <button class="btn btn-outline-secondary d-flex align-items-center gap-2" @onclick='() => UploadForCategory(UploadMenuImage, "icons")'><img src="/svg/profile-user-svgrepo-com.svg" style="width:20px;height:20px; filter: invert(0.8);" /> Icons</button>
+                <button class="btn btn-outline-secondary d-flex align-items-center gap-2" @onclick='() => UploadForCategory(UploadMenuImage, "photos")'><img src="/svg/camera-svgrepo-com.svg" style="width:20px;height:20px; filter: invert(0.8);" /> Photos</button>
+                <button class="btn btn-outline-secondary d-flex align-items-center gap-2" @onclick='() => UploadForCategory(UploadMenuImage, "emoji")'><img src="/svg/emoji-funny-circle-svgrepo-com.svg" style="width:20px;height:20px; filter: invert(0.8);" /> Emoji</button>
+                <button class="btn btn-outline-secondary d-flex align-items-center gap-2" @onclick='() => UploadForCategory(UploadMenuImage, "sticker")'><img src="/svg/sticker-smile-square-svgrepo-com.svg" style="width:20px;height:20px; filter: invert(0.8);" /> Sticker</button>
+                <button class="btn btn-outline-secondary d-flex align-items-center gap-2" @onclick='() => UploadForCategory(UploadMenuImage, "prints")'><img src="/svg/gallery-minimalistic-svgrepo-com.svg" style="width:20px;height:20px; filter: invert(0.8);" /> Prints</button>
+                
+                <button class="btn btn-danger mt-2 fw-bold" @onclick="CloseUploadMenu">Cancel</button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private ApiRequest ApiReq;
+    private List<ImageModel> Images = new();
+    private bool IsStreaming = false;
+    private bool ShowInfo = false;
+    private string LogStatus = "";
+    private CancellationTokenSource? _cts;
+    private HashSet<string> _allItems = new();
+
+    private static List<ImageModel> cachedImages = null;
+    private static HashSet<string> cachedAllItems = null;
+    private static string cachedLogStatus = null;
+
+    private static readonly Regex StickerRegex = new Regex(
+        @"User\s+(?<userId>usr_[a-f0-9\-]+)\s+\((?<username>[^)]+)\).*?sticker\s+(?<sticker>inv_[a-f0-9\-]+)",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase
+    );
+
+    public class ImageModel
+    {
+        public string Username { get; set; }
+        public string UserId { get; set; }
+        public string StickerId { get; set; }
+        public string Url { get; set; }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        ApiReq = new ApiRequest(Auth);
+        
+        if (cachedImages != null)
+        {
+            Images = cachedImages;
+            _allItems = cachedAllItems;
+            LogStatus = cachedLogStatus ?? "";
+        }
+        else
+        {
+            cachedImages = Images;
+            cachedAllItems = _allItems;
+            await LoadFromLogs();
+        }
+    }
+
+    private async Task Refresh()
+    {
+        cachedImages = null;
+        cachedAllItems = null;
+        ClearItems();
+        await LoadFromLogs();
+    }
+
+    private void ClearItems()
+    {
+        Images.Clear();
+        _allItems.Clear();
+        LogStatus = "";
+        StateHasChanged();
+    }
+
+    private void ToggleInfo()
+    {
+        ShowInfo = !ShowInfo;
+    }
+
+    private async Task CopyInfoText()
+    {
+        await Microsoft.Maui.ApplicationModel.DataTransfer.Clipboard.Default.SetTextAsync("--enable-sdk-log-levels");
+        ShowInfo = false;
+    }
+
+    private void OnStreamingChanged()
+    {
+        if (IsStreaming)
+        {
+            _cts?.Cancel();
+            _cts = new CancellationTokenSource();
+            _ = StreamLogsAsync(_cts.Token);
+        }
+        else
+        {
+            _cts?.Cancel();
+        }
+    }
+
+    private async Task LoadFromLogs()
+    {
+        _cts?.Cancel();
+        _cts = new CancellationTokenSource();
+        var token = _cts.Token;
+
+        string userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        string vrchatLogPath = Path.Combine(userProfile, "AppData", "LocalLow", "VRChat", "VRChat");
+
+        if (!Directory.Exists(vrchatLogPath))
+        {
+            LogStatus = "| No data found";
+            return;
+        }
+
+        var logFiles = Directory.EnumerateFiles(vrchatLogPath, "output_log_*.txt")
+                                .OrderByDescending(f => File.GetLastWriteTimeUtc(f));
+
+        if (!logFiles.Any())
+        {
+            LogStatus = "| No data found";
+            return;
+        }
+
+        LogStatus = "| Processing...";
+        cachedLogStatus = LogStatus;
+        StateHasChanged();
+
+        foreach (var logFile in logFiles)
+        {
+            token.ThrowIfCancellationRequested();
+
+            try
+            {
+                using var fileStream = new FileStream(logFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                using var reader = new StreamReader(fileStream);
+
+                string? line;
+                while ((line = await reader.ReadLineAsync()) != null)
+                {
+                    token.ThrowIfCancellationRequested();
+                    ProcessLogLine(line);
+                }
+            }
+            catch (IOException) { }
+        }
+
+        LogStatus = "";
+        cachedLogStatus = LogStatus;
+        StateHasChanged();
+    }
+
+    private async Task StreamLogsAsync(CancellationToken token)
+    {
+        string userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        string vrchatLogPath = Path.Combine(userProfile, "AppData", "LocalLow", "VRChat", "VRChat");
+
+        string[] logFiles = Directory.GetFiles(vrchatLogPath, "output_log_*.txt");
+
+        if (logFiles.Length == 0) return;
+
+        string lastLogFile = logFiles.OrderByDescending(f => File.GetLastWriteTime(f)).First();
+
+        try
+        {
+            using FileStream fileStream = new(lastLogFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+            using StreamReader reader = new(fileStream);
+
+            fileStream.Seek(0, SeekOrigin.End);
+
+            while (!token.IsCancellationRequested)
+            {
+                string? line = await reader.ReadLineAsync();
+
+                if (line != null)
+                {
+                    ProcessLogLine(line);
+                    await InvokeAsync(StateHasChanged);
+                }
+                else
+                {
+                    await Task.Delay(500, token);
+                }
+            }
+        }
+        catch (IOException) { }
+    }
+
+    private void ProcessLogLine(string line)
+    {
+        var match = StickerRegex.Match(line);
+        if (match.Success)
+        {
+            string userId = match.Groups["userId"].Value;
+            string username = match.Groups["username"].Value;
+            string sticker = match.Groups["sticker"].Value;
+
+            if (_allItems.Add(sticker))
+            {
+                var imgModel = new ImageModel
+                {
+                    Username = username,
+                    UserId = userId,
+                    StickerId = sticker,
+                    Url = "" // Will fetch asynchronously
+                };
+                Images.Insert(0, imgModel);
+                
+                // Fetch the actual image URL asynchronously
+                _ = FetchStickerUrl(imgModel);
+            }
+        }
+    }
+    
+    private async Task FetchStickerUrl(ImageModel imgModel)
+    {
+        try
+        {
+            var invInfo = await ApiReq.GetInventoryInfo(imgModel.UserId, imgModel.StickerId);
+            if (invInfo != null)
+            {
+                string fileId = invInfo.Metadata?.FileId;
+                if (!string.IsNullOrEmpty(fileId))
+                {
+                    imgModel.Url = $"https://api.vrchat.cloud/api/1/image/{fileId}/1/256";
+                }
+                else if (!string.IsNullOrEmpty(invInfo.ImageUrl))
+                {
+                    string url = invInfo.ImageUrl;
+                    if (url.Contains("/file/"))
+                    {
+                        url = url.Replace("/file/", "/image/").Replace("/file", "/256");
+                    }
+                    imgModel.Url = url;
+                }
+                
+                if (!string.IsNullOrEmpty(imgModel.Url))
+                {
+                    await InvokeAsync(StateHasChanged);
+                }
+            }
+        }
+        catch
+        {
+            // Ignore fetch errors
+        }
+    }
+
+    private ImageModel UploadMenuImage;
+
+    private void ToggleUploadMenu(ImageModel img)
+    {
+        if (UploadMenuImage == img)
+            UploadMenuImage = null;
+        else
+            UploadMenuImage = img;
+    }
+
+    private void CloseUploadMenu()
+    {
+        if (UploadMenuImage != null)
+        {
+            UploadMenuImage = null;
+            StateHasChanged();
+        }
+    }
+
+    private void UploadForCategory(ImageModel img, string route)
+    {
+        UploadMenuImage = null;
+        if (img == null || string.IsNullOrEmpty(img.Url)) return;
+        
+        _ = ProcessUploadRoute(img, route);
+    }
+
+    private async Task ProcessUploadRoute(ImageModel img, string route)
+    {
+        string localPath = await ClipboardHandler.SaveImageFromUrlAsync(img.Url);
+        if (!string.IsNullOrEmpty(localPath))
+        {
+            var encoded = Uri.EscapeDataString(localPath);
+            NavManager.NavigateTo($"/{route}?uploadPath={encoded}");
+        }
+        else
+        {
+            NotificationService.Show("Failed to download image.", "Download Error", NotificationType.Error);
+        }
+    }
+
+    private async Task DeleteImage(ImageModel img)
+    {
+        bool confirm = await dialogService.ShowConfirmAsync("Delete Image", "Are you sure you want to delete this image?", "Delete", "Cancel");
+        if (confirm)
+        {
+            DeleteItem(img);
+        }
+    }
+
+    private void OpenImage(ImageModel img)
+    {
+        Microsoft.Maui.ApplicationModel.MainThread.BeginInvokeOnMainThread(async () =>
+        {
+            if (!string.IsNullOrEmpty(img.Url))
+            {
+                string highResUrl = img.Url.Replace("/image/", "/file/").Replace("/256", "/file");
+                await Microsoft.Maui.ApplicationModel.Browser.OpenAsync(highResUrl, Microsoft.Maui.ApplicationModel.BrowserLaunchMode.SystemPreferred);
+            }
+        });
+    }
+
+    private void DeleteItem(ImageModel img)
+    {
+        Images.Remove(img);
+        _allItems.Remove(img.StickerId);
+    }
+
+    public void Dispose()
+    {
+        _cts?.Cancel();
+    }
+}

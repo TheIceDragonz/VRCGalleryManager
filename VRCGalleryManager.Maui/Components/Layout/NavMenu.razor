@@ -1,0 +1,125 @@
+@using VRCGalleryManager.Core
+@implements IDisposable
+@inject VRCAuth Auth
+
+<div class="top-row flex-shrink-0 p-3 d-flex align-items-center justify-content-center nav-top-row">
+    <a class="navbar-brand m-0 d-flex align-items-center justify-content-center w-100" href="">
+        <img src="/VRCGM.png" class="nav-brand-img" />
+    </a>
+</div>
+
+@if (CurrentUser != null)
+{
+    <div class="profile-card flex-shrink-0 position-relative m-3 nav-profile-card-container">
+        <img src="@(string.IsNullOrEmpty(CurrentUser.ProfilePicOverrideThumbnail) ? CurrentUser.CurrentAvatarThumbnailImageUrl : CurrentUser.ProfilePicOverrideThumbnail)" 
+             class="nav-profile-bg" />
+        
+        <div class="position-absolute w-100 h-100 d-flex flex-column align-items-center justify-content-center nav-profile-content">
+            <img src="@CurrentUser.UserIcon" class="nav-profile-icon" />
+            <span class="mt-1 fw-bold text-truncate w-100 text-center px-2 nav-profile-name">@CurrentUser.DisplayName</span>
+            
+            @if (CurrentUser.Badges != null)
+            {
+                <div class="d-flex justify-content-center gap-1 mt-0">
+                    @foreach (var badgeJson in CurrentUser.Badges.Where(b => b.Showcased).Take(3))
+                    {
+                        <img src="@badgeJson.BadgeImageUrl" class="nav-badge-icon" title="@badgeJson.BadgeName" />
+                    }
+                </div>
+            }
+        </div>
+    </div>
+}
+
+<div class="nav-scrollable flex-grow-1 py-3 px-3 nav-scrollable-container d-flex flex-column">
+    <nav class="flex-column d-flex gap-1 p-2 flex-grow-1 nav-buttons-bg">
+        <div class="nav-item">
+            <NavLink class="nav-link custom-nav-link" href="icons" Match="NavLinkMatch.All">
+                <img src="/svg/profile-user-svgrepo-com.svg" class="nav-icon" /> Icons
+            </NavLink>
+        </div>
+        <div class="nav-item">
+            <NavLink class="nav-link custom-nav-link" href="photos">
+                <img src="/svg/gallery-minimalistic-svgrepo-com.svg" class="nav-icon" /> Photos
+            </NavLink>
+        </div>
+        <div class="nav-item">
+            <NavLink class="nav-link custom-nav-link" href="emoji">
+                <img src="/svg/emoji-funny-circle-svgrepo-com.svg" class="nav-icon" /> Emoji
+            </NavLink>
+        </div>
+        <div class="nav-item">
+            <NavLink class="nav-link custom-nav-link" href="sticker">
+                <img src="/svg/sticker-smile-square-svgrepo-com.svg" class="nav-icon" /> Sticker
+            </NavLink>
+        </div>
+        <div class="nav-item">
+            <NavLink class="nav-link custom-nav-link" href="prints">
+                <img src="/svg/camera-svgrepo-com.svg" class="nav-icon" /> Prints
+            </NavLink>
+        </div>
+        
+        <div class="mt-auto d-flex flex-column gap-1">
+            <div class="nav-item">
+                <NavLink class="nav-link custom-nav-link" href="picflow">
+                    <img src="/svg/traffic-economy-svgrepo-com.svg" class="nav-icon" /> Picflow
+                </NavLink>
+            </div>
+            <div class="nav-item">
+                <NavLink class="nav-link custom-nav-link" href="gallery">
+                    <img src="/svg/gallery-wide-svgrepo-com.svg" class="nav-icon" /> Gallery
+                </NavLink>
+            </div>
+
+            <div class="my-1 border-bottom nav-divider"></div>
+
+            <div class="nav-item">
+                <NavLink class="nav-link custom-nav-link" href="settings">
+                    <img src="/svg/settings-svgrepo-com.svg" class="nav-icon" /> Settings
+                </NavLink>
+            </div>
+        </div>
+    </nav>
+</div>
+
+
+
+@code {
+    private VRChat.API.Model.CurrentUser CurrentUser;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Auth.OnAuthStateChanged += AuthStateChanged;
+        await LoadUser();
+    }
+
+    private async void AuthStateChanged()
+    {
+        await LoadUser();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task LoadUser()
+    {
+        if (Auth.LoggedIn || Auth.CookieLoaded)
+        {
+            try
+            {
+                CurrentUser = await Auth.AuthApi.GetCurrentUserAsync();
+            }
+            catch
+            {
+                CurrentUser = null;
+            }
+        }
+        else
+        {
+            CurrentUser = null;
+        }
+    }
+
+    public void Dispose()
+    {
+        Auth.OnAuthStateChanged -= AuthStateChanged;
+    }
+}

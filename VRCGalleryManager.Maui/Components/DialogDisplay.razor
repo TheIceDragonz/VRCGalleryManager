@@ -1,0 +1,57 @@
+@using global::VRCGalleryManager.Core
+@inject DialogService dialogService
+@implements IDisposable
+
+@if (IsVisible && CurrentRequest != null)
+{
+    <div class="position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center dialog-overlay">
+        <div class="dialog-panel d-flex flex-column">
+            <div class="p-4 flex-grow-1">
+                <h5 class="fw-bold text-white mb-3">@CurrentRequest.Title</h5>
+                <p class="text-light mb-0" style="white-space: pre-wrap;">@CurrentRequest.Message</p>
+            </div>
+            <div class="p-3 d-flex justify-content-end gap-2 dialog-footer">
+                <button class="btn btn-outline-secondary px-4 fw-bold" @onclick="() => Respond(false)">@CurrentRequest.CancelText</button>
+                <button class="btn btn-danger px-4 fw-bold" @onclick="() => Respond(true)">@CurrentRequest.ConfirmText</button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private bool IsVisible = false;
+    private DialogRequest? CurrentRequest;
+
+    protected override void OnInitialized()
+    {
+        dialogService.OnShow += Show;
+        dialogService.OnHide += Hide;
+    }
+
+    private void Show(DialogRequest request)
+    {
+        CurrentRequest = request;
+        IsVisible = true;
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void Hide()
+    {
+        IsVisible = false;
+        CurrentRequest = null;
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void Respond(bool result)
+    {
+        var tcs = CurrentRequest?.Tcs;
+        Hide();
+        tcs?.TrySetResult(result);
+    }
+
+    public void Dispose()
+    {
+        dialogService.OnShow -= Show;
+        dialogService.OnHide -= Hide;
+    }
+}

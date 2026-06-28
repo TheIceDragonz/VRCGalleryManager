@@ -1,0 +1,523 @@
+@page "/gallery"
+@using System.IO
+@using System.Threading
+@using VRCGalleryManager.Core
+@using VRCGalleryManager.Core.Helpers
+@using System.Diagnostics
+@using Microsoft.Maui.Storage
+@inject VRCAuth Auth
+@inject NavigationManager Nav
+
+<div class="h-100 d-flex flex-column p-3">
+    @* TOP TOOLBAR *@
+    <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-secondary">
+        <div>
+            <h3 class="mb-0 text-accent d-flex align-items-center gap-2">
+                <img src="/svg/folder-open-svgrepo-com.svg" class="media-page-icon" /> Gallery
+            </h3>
+            @if (!string.IsNullOrEmpty(CurrentFolder))
+            {
+                <div class="text-white-50 mt-1 small" title="@CurrentFolder">@CurrentFolder</div>
+            }
+        </div>
+
+        <div class="d-flex align-items-center gap-2">
+            <button class="btn btn-outline-secondary btn-sm" @onclick="GoBack" disabled="@(!CanGoBack)" title="Go back">
+                <img src="/svg/back-arrow-svgrepo-com.svg" class="btn-icon" style="margin: 0;" />
+            </button>
+            <button class="btn btn-outline-secondary btn-sm" @onclick="Refresh" disabled="@IsLoading" title="Refresh">
+                <img src="/svg/rotate-right-svgrepo-com.svg" class="btn-icon @(IsLoading ? "spin" : "")" style="margin: 0;" />
+            </button>
+            <button class="btn btn-secondary btn-sm" @onclick="ChangeFolder" title="Change folder">
+                <img src="/svg/folder-open-svgrepo-com.svg" class="btn-icon" /> Change
+            </button>
+
+        </div>
+    </div>
+
+    @* MAIN CONTENT *@
+    <div class="flex-grow-1 overflow-hidden d-flex gap-3" @onclick="CloseUploadMenu">
+        
+        @* GRID *@
+        <div class="flex-grow-1 overflow-auto h-100 pe-2">
+            @if (string.IsNullOrEmpty(RootFolder))
+            {
+                <div class="h-100 d-flex flex-column align-items-center justify-content-center text-white-50">
+                    <img src="/svg/folder-open-svgrepo-com.svg" class="mb-3 opacity-50 folder-svg-icon" />
+                    <h5 class="text-white">No folder selected</h5>
+                    <p>Click <strong>Change</strong> to pick your VRChat screenshots folder.</p>
+                    <button class="btn btn-primary mt-2" @onclick="ChangeFolder">
+                        <img src="/svg/folder-open-svgrepo-com.svg" class="btn-icon filter-invert" /> Select Folder
+                    </button>
+                </div>
+            }
+            else if (Items.Count == 0 && !IsLoading)
+            {
+                <div class="h-100 d-flex flex-column align-items-center justify-content-center text-white-50">
+                    <img src="/svg/folder-open-svgrepo-com.svg" class="mb-3 opacity-50 folder-svg-icon" />
+                    <h5>This folder is empty</h5>
+                </div>
+            }
+            else
+            {
+                <div class="d-flex flex-wrap gap-3 pb-3">
+                    @foreach (var item in Items)
+                    {
+                        <div class="position-relative gallery-icon-card media-card-container @(SelectedImage == item ? "border-primary" : "")"
+                             style="cursor: pointer; @(SelectedImage == item ? "border-color: var(--accent) !important;" : "")"
+                             @onclick="() => OnItemClick(item)"
+                             @ondblclick="() => OnItemDoubleClick(item)"
+                             title="@item.Name">
+
+                            @if (item.IsFolder)
+                            {
+                                <div class="w-100 h-100 d-flex flex-column" style="background-color: var(--bg-hover);">
+                                    @if (!string.IsNullOrEmpty(item.ThumbnailBase64))
+                                    {
+                                        <img src="@item.ThumbnailBase64" class="position-absolute top-0 start-0 w-100 h-100 object-fit-cover" style="filter: brightness(0.4);" />
+                                    }
+                                    <div class="folder-icon position-relative z-1" style="flex: 1; display: flex; align-items: center; justify-content: center;">
+                                        @if (item.IsThumbLoading && string.IsNullOrEmpty(item.ThumbnailBase64))
+                                        {
+                                            <div class="spinner-border spinner-border-sm text-primary"></div>
+                                        }
+                                        else
+                                        {
+                                            <img src="/svg/folder-open-svgrepo-com.svg" class="folder-svg-icon" />
+                                        }
+                                    </div>
+                                    <div class="media-card-label position-absolute w-100 text-truncate text-center z-2">
+                                        @item.Name
+                                    </div>
+                                </div>
+                            }
+                            else
+                            {
+                                @if (!string.IsNullOrEmpty(item.ThumbnailBase64))
+                                {
+                                    <img src="@item.ThumbnailBase64" class="w-100 h-100 object-fit-cover" />
+                                }
+                                else if (item.IsThumbLoading)
+                                {
+                                    <div class="w-100 h-100 d-flex align-items-center justify-content-center">
+                                        <div class="spinner-border spinner-border-sm text-primary"></div>
+                                    </div>
+                                }
+                            }
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+
+        @* DETAILS PANEL *@
+        @if (SelectedImage != null)
+        {
+            <div class="details-panel m-0" style="height: 100%;">
+                
+                @* Preview *@
+                <div class="mb-3">
+                    <img src="@(string.IsNullOrEmpty(SelectedImage.FullBase64) ? SelectedImage.ThumbnailBase64 : SelectedImage.FullBase64)" class="img-preview mb-0" alt="@SelectedImage.Name" />
+                    <div class="text-white-50 small text-truncate mt-2 text-center" title="@SelectedImage.Name">@SelectedImage.Name</div>
+                </div>
+
+                @* VRCX Data *@
+                @if (VrcxData?.World != null)
+                {
+                    <div class="world-info mb-3">
+                        @if (!string.IsNullOrEmpty(VrcxData.World.ImageUrl))
+                        {
+                            <img src="@VrcxData.World.ImageUrl" class="world-img mb-2" @onclick="OpenWorld" title="Open in VRChat" />
+                        }
+                        <div class="world-name mt-0" style="cursor: pointer;" @onclick="OpenWorld" title="Open world page">
+                            @VrcxData.World.Name
+                        </div>
+                        @if (!string.IsNullOrEmpty(VrcxData.World.InstanceId))
+                        {
+                            <div class="text-white-50 small text-truncate mt-1 text-center">Instance: @VrcxData.World.InstanceId</div>
+                        }
+                    </div>
+                }
+
+                @if (VrcxData?.Players != null && VrcxData.Players.Count > 0)
+                {
+                    <div class="mb-3 d-flex flex-column flex-grow-1 min-vh-0">
+                        <div class="text-white-50 small fw-bold text-uppercase mb-2 d-flex align-items-center gap-2">
+                            <img src="/svg/profile-user-svgrepo-com.svg" style="width: 14px; height: 14px; filter: invert(0.5);" />
+                            Players (@VrcxData.Players.Count)
+                        </div>
+                        <div class="overflow-auto flex-grow-1 pe-1" style="max-height: 200px;">
+                            <div class="d-flex flex-column gap-1">
+                                @foreach (var player in VrcxData.Players)
+                                {
+                                    bool isAuthor = VrcxData.Author?.Id == player.Id;
+                                    <div class="bg-secondary bg-opacity-25 rounded p-1 px-2 d-flex align-items-center gap-2 @(isAuthor ? "border border-primary border-opacity-50" : "")">
+                                        <div class="rounded-circle @(isAuthor ? "bg-primary" : "bg-secondary")" style="width: 8px; height: 8px;"></div>
+                                        <div class="text-white small text-truncate flex-grow-1">@player.DisplayName</div>
+                                        @if (isAuthor)
+                                        {
+                                            <span style="font-size: 0.75rem;">📸</span>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+
+                @* Actions *@
+                <div class="mt-auto pt-3 border-top border-secondary">
+                    <button class="btn btn-outline-light btn-sm w-100 mb-2 d-flex align-items-center justify-content-center gap-2" @onclick="OpenSelectedFile">
+                        <img src="/svg/eye-svgrepo-com.svg" class="btn-icon" style="filter: invert(1); margin: 0;" /> Open File
+                    </button>
+                    <div class="position-relative" @onclick:stopPropagation="true">
+                        <button class="btn btn-primary btn-sm w-100 d-flex align-items-center justify-content-center gap-2" @onclick="ToggleUploadMenu">
+                            <img src="/svg/upload-svgrepo-com.svg" class="btn-icon" style="filter: invert(1); margin: 0;" /> Upload...
+                        </button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@if (ShowUploadMenu)
+{
+    <div class="position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center dialog-overlay" style="z-index: 1050;" @onclick="CloseUploadMenu">
+        <div class="dialog-panel d-flex flex-column" @onclick:stopPropagation="true" style="min-width: 300px;">
+            <div class="p-4 flex-grow-1 border-bottom border-secondary text-center">
+                <h5 class="fw-bold text-white mb-2">Upload to...</h5>
+                <p class="text-light mb-3 small">Select the category where you want to upload this image.</p>
+                <img src="@(string.IsNullOrEmpty(SelectedImage.FullBase64) ? SelectedImage.ThumbnailBase64 : SelectedImage.FullBase64)" class="rounded shadow-sm" style="max-height: 200px; max-width: 100%; object-fit: contain;" alt="@SelectedImage.Name" />
+            </div>
+            <div class="p-3 d-flex flex-column gap-2 dialog-footer">
+                <button class="btn btn-outline-secondary d-flex align-items-center gap-2" @onclick='() => UploadForCategory("Icons", "icons")'><img src="/svg/profile-user-svgrepo-com.svg" style="width:20px;height:20px; filter: invert(0.8);" /> Icons</button>
+                <button class="btn btn-outline-secondary d-flex align-items-center gap-2" @onclick='() => UploadForCategory("Photos", "photos")'><img src="/svg/camera-svgrepo-com.svg" style="width:20px;height:20px; filter: invert(0.8);" /> Photos</button>
+                <button class="btn btn-outline-secondary d-flex align-items-center gap-2" @onclick='() => UploadForCategory("Emoji", "emoji")'><img src="/svg/emoji-funny-circle-svgrepo-com.svg" style="width:20px;height:20px; filter: invert(0.8);" /> Emoji</button>
+                <button class="btn btn-outline-secondary d-flex align-items-center gap-2" @onclick='() => UploadForCategory("Sticker", "sticker")'><img src="/svg/sticker-smile-square-svgrepo-com.svg" style="width:20px;height:20px; filter: invert(0.8);" /> Sticker</button>
+                <button class="btn btn-outline-secondary d-flex align-items-center gap-2" @onclick='() => UploadForCategory("Prints", "prints")'><img src="/svg/gallery-minimalistic-svgrepo-com.svg" style="width:20px;height:20px; filter: invert(0.8);" /> Prints</button>
+                
+                <button class="btn btn-danger mt-2 fw-bold" @onclick="CloseUploadMenu">Cancel</button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    // ── State ─────────────────────────────────────────────────────────────
+    private string RootFolder;
+    private string CurrentFolder;
+    private List<GalleryItem> Items = new();
+    private GalleryItem SelectedImage;
+    private MetaDataImageReader.VrcxData VrcxData;
+
+    private static string cachedRootFolder = null;
+    private static string cachedCurrentFolder = null;
+    private static List<GalleryItem> cachedItems = null;
+
+    private bool IsLoading;
+    private bool ShowUploadMenu;
+
+    private CancellationTokenSource _cts;
+
+    private bool CanGoBack =>
+        !string.IsNullOrEmpty(CurrentFolder) &&
+        !string.IsNullOrEmpty(RootFolder) &&
+        !string.Equals(
+            Path.GetFullPath(CurrentFolder).TrimEnd(Path.DirectorySeparatorChar),
+            Path.GetFullPath(RootFolder).TrimEnd(Path.DirectorySeparatorChar),
+            StringComparison.OrdinalIgnoreCase);
+
+    // ── Model ─────────────────────────────────────────────────────────────
+    public class GalleryItem
+    {
+        public bool IsFolder { get; set; }
+        public string Path { get; set; }
+        public string Name { get; set; }
+        public string ThumbnailBase64 { get; set; }
+        public string FullBase64 { get; set; }
+        public bool IsThumbLoading { get; set; }
+    }
+
+    // ── Lifecycle ─────────────────────────────────────────────────────────
+    protected override async Task OnInitializedAsync()
+    {
+        var path = Config.GetPath("PathGallery");
+        if (!string.IsNullOrEmpty(path) && Directory.Exists(path))
+        {
+            if (cachedItems != null && cachedRootFolder == path)
+            {
+                RootFolder = cachedRootFolder;
+                CurrentFolder = cachedCurrentFolder;
+                Items = cachedItems;
+            }
+            else
+            {
+                RootFolder = path;
+                CurrentFolder = path;
+                await LoadFolderAsync();
+            }
+        }
+    }
+
+    // ── Navigation ────────────────────────────────────────────────────────
+    private async Task GoBack()
+    {
+        if (!CanGoBack) return;
+        SelectedImage = null;
+        var parent = Directory.GetParent(CurrentFolder);
+        if (parent != null)
+        {
+            CurrentFolder = parent.FullName;
+            await LoadFolderAsync();
+        }
+    }
+
+    private async Task Refresh() => await LoadFolderAsync();
+
+    private async Task ChangeFolder()
+    {
+        try
+        {
+            var result = await CommunityToolkit.Maui.Storage.FolderPicker.Default.PickAsync(default);
+            if (result.IsSuccessful && result.Folder != null)
+            {
+                string picked = result.Folder.Path;
+                Config.Set("PathGallery", picked);
+                RootFolder = picked;
+                CurrentFolder = picked;
+                SelectedImage = null;
+                await LoadFolderAsync();
+            }
+        }
+        catch { }
+    }
+
+    // ── Folder Loading ─────────────────────────────────────────────────────
+    private async Task LoadFolderAsync()
+    {
+        _cts?.Cancel();
+        _cts = new CancellationTokenSource();
+        var token = _cts.Token;
+
+        IsLoading = true;
+        Items = new List<GalleryItem>();
+        SelectedImage = null;
+        VrcxData = null;
+        StateHasChanged();
+
+        if (string.IsNullOrEmpty(CurrentFolder) || !Directory.Exists(CurrentFolder))
+        {
+            IsLoading = false;
+            StateHasChanged();
+            return;
+        }
+
+        var dirs = Directory.GetDirectories(CurrentFolder);
+        foreach (var dir in dirs)
+        {
+            if (token.IsCancellationRequested) break;
+            Items.Add(new GalleryItem
+            {
+                IsFolder = true,
+                Path = dir,
+                Name = Path.GetFileName(dir),
+                IsThumbLoading = true
+            });
+        }
+
+        var files = Directory.EnumerateFiles(CurrentFolder).Where(IsImageFile).ToList();
+        foreach (var file in files)
+        {
+            if (token.IsCancellationRequested) break;
+            Items.Add(new GalleryItem
+            {
+                IsFolder = false,
+                Path = file,
+                Name = Path.GetFileName(file),
+                IsThumbLoading = true
+            });
+        }
+
+        cachedItems = Items;
+        cachedRootFolder = RootFolder;
+        cachedCurrentFolder = CurrentFolder;
+
+        IsLoading = false;
+        StateHasChanged();
+
+        _ = LoadThumbnailsAsync(token);
+    }
+
+    private async Task LoadThumbnailsAsync(CancellationToken token)
+    {
+        var snapshot = Items.ToList();
+
+        foreach (var item in snapshot)
+        {
+            if (token.IsCancellationRequested) break;
+
+            try
+            {
+                if (item.IsFolder)
+                {
+                    var firstImg = Directory.EnumerateFiles(item.Path)
+                                            .Where(IsImageFile)
+                                            .LastOrDefault();
+                    if (!string.IsNullOrEmpty(firstImg))
+                    {
+                        item.ThumbnailBase64 = await MakeThumbnailBase64Async(firstImg, 200, token);
+                    }
+                    item.IsThumbLoading = false;
+                }
+                else
+                {
+                    item.ThumbnailBase64 = await MakeThumbnailBase64Async(item.Path, 150, token);
+                    item.IsThumbLoading = false;
+                }
+
+                if (!token.IsCancellationRequested)
+                    await InvokeAsync(StateHasChanged);
+            }
+            catch
+            {
+                item.IsThumbLoading = false;
+            }
+        }
+    }
+
+    private static Task<string> MakeThumbnailBase64Async(string path, int maxSize, CancellationToken token)
+        => Task.Run(() =>
+        {
+            if (token.IsCancellationRequested) return null;
+            try
+            {
+#pragma warning disable CA1416
+                using var image = System.Drawing.Image.FromFile(path);
+                if (image.Width <= maxSize && image.Height <= maxSize)
+                {
+                    using var ms = new MemoryStream();
+                    image.Save(ms, System.Drawing.Imaging.ImageFormat.Jpeg);
+                    return $"data:image/jpeg;base64,{Convert.ToBase64String(ms.ToArray())}";
+                }
+                
+                var ratio = (double)maxSize / Math.Max(image.Width, image.Height);
+                var width = (int)(image.Width * ratio);
+                var height = (int)(image.Height * ratio);
+                
+                using var thumb = new System.Drawing.Bitmap(width, height);
+                using (var g = System.Drawing.Graphics.FromImage(thumb))
+                {
+                    g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+                    g.DrawImage(image, 0, 0, width, height);
+                }
+                
+                using var ms2 = new MemoryStream();
+                thumb.Save(ms2, System.Drawing.Imaging.ImageFormat.Jpeg);
+                return $"data:image/jpeg;base64,{Convert.ToBase64String(ms2.ToArray())}";
+#pragma warning restore CA1416
+            }
+            catch { return null; }
+        }, token);
+
+    // ── Item Interaction ──────────────────────────────────────────────────
+    private void OnItemClick(GalleryItem item)
+    {
+        ShowUploadMenu = false;
+
+        if (item.IsFolder)
+        {
+            CurrentFolder = item.Path;
+            _ = LoadFolderAsync();
+        }
+        else
+        {
+            SelectedImage = item;
+            VrcxData = MetaDataImageReader.ExtractVrcxData(item.Path);
+
+            if (string.IsNullOrEmpty(item.FullBase64))
+            {
+                _ = LoadFullPreviewAsync(item);
+            }
+
+            StateHasChanged();
+        }
+    }
+
+    private void OnItemDoubleClick(GalleryItem item)
+    {
+        if (!item.IsFolder)
+            OpenFile(item.Path);
+    }
+
+    private void OpenSelectedFile()
+    {
+        if (SelectedImage != null)
+            OpenFile(SelectedImage.Path);
+    }
+
+    private static void OpenFile(string path)
+    {
+        try
+        {
+            Process.Start(new ProcessStartInfo { FileName = path, UseShellExecute = true });
+        }
+        catch { }
+    }
+
+    private async Task LoadFullPreviewAsync(GalleryItem item)
+    {
+        try
+        {
+            item.FullBase64 = await MakeThumbnailBase64Async(item.Path, 800, _cts.Token);
+            await InvokeAsync(StateHasChanged);
+        }
+        catch { }
+    }
+
+    // ── World link ────────────────────────────────────────────────────────
+    private void OpenWorld()
+    {
+        if (VrcxData?.World?.Id != null)
+        {
+            try
+            {
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = $"https://vrchat.com/home/world/{VrcxData.World.Id}",
+                    UseShellExecute = true
+                });
+            }
+            catch { }
+        }
+    }
+
+    // ── Upload menu ───────────────────────────────────────────────────────
+    private void ToggleUploadMenu() => ShowUploadMenu = !ShowUploadMenu;
+    private void CloseUploadMenu() { if (ShowUploadMenu) ShowUploadMenu = false; }
+
+    private void UploadForCategory(string category, string route)
+    {
+        ShowUploadMenu = false;
+
+        string filePath = SelectedImage?.Path ?? string.Empty;
+        if (!string.IsNullOrEmpty(filePath))
+        {
+            var encoded = Uri.EscapeDataString(filePath);
+            Nav.NavigateTo($"/{route}?uploadPath={encoded}");
+        }
+        else
+        {
+            Nav.NavigateTo($"/{route}");
+        }
+    }
+
+    // ── Helpers ───────────────────────────────────────────────────────────
+    private static bool IsImageFile(string filename)
+    {
+        var ext = Path.GetExtension(filename);
+        return ext.Equals(".png", StringComparison.OrdinalIgnoreCase) ||
+               ext.Equals(".jpg", StringComparison.OrdinalIgnoreCase) ||
+               ext.Equals(".jpeg", StringComparison.OrdinalIgnoreCase);
+    }
+}

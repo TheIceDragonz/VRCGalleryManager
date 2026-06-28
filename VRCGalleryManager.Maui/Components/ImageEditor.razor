@@ -1,0 +1,485 @@
+@using Microsoft.JSInterop
+@using System.Drawing
+@using System.Drawing.Imaging
+@using System.IO
+@using global::VRCGalleryManager.Core.Helpers
+@inject IJSRuntime JSRuntime
+
+<div class="image-editor-container d-flex h-100 bg-main text-white rounded overflow-hidden">
+    <div class="canvas-container flex-grow-1 position-relative d-flex justify-content-center align-items-center bg-black p-4">
+        <canvas id="imageEditorCanvas" width="@CanvasWidth" height="@CanvasHeight" class="editor-canvas-img" style="max-height: 100%; max-width: 100%; object-fit: contain;"></canvas>
+    </div>
+    <div class="editor-sidebar d-flex flex-column flex-shrink-0 bg-panel">
+        <div class="p-3 border-bottom">
+            <div class="d-flex justify-content-center align-items-center">
+                <h4 class="fw-bold text-accent m-0">Image Editor</h4>
+            </div>
+        </div>
+        <div class="p-3 flex-grow-1 overflow-auto editor-sidebar-content">
+            <div class="mb-3">
+                <label class="form-label small text-muted mb-1">Adaptation</label>
+                <div class="d-flex gap-2">
+                    <div class="dropdown w-50">
+                        <button class="btn btn-sm btn-dark w-100 dropdown-toggle text-start d-flex justify-content-between align-items-center editor-dropdown-btn" type="button" @onclick="() => isAdaptationDropdownOpen = !isAdaptationDropdownOpen">
+                            @CurrentAdaptationMode.ToString()
+                        </button>
+                        @if (isAdaptationDropdownOpen)
+                        {
+                            <div class="position-fixed top-0 start-0 w-100 h-100 editor-dropdown-overlay" @onclick="() => isAdaptationDropdownOpen = false"></div>
+                            <ul class="dropdown-menu dropdown-menu-dark w-100 shadow show editor-dropdown-menu">
+                                <li><button class="dropdown-item" @onclick="() => SetAdaptationMode(AdaptationMode.Fit)">Fit</button></li>
+                                <li><button class="dropdown-item" @onclick="() => SetAdaptationMode(AdaptationMode.Fill)">Fill</button></li>
+                                <li><button class="dropdown-item" @onclick="() => SetAdaptationMode(AdaptationMode.Stretch)">Stretch</button></li>
+                            </ul>
+                        }
+                    </div>
+                    <button class="btn btn-sm btn-dark w-50 d-flex justify-content-center align-items-center editor-dropdown-btn" @onclick="Rotate" title="Rotate 90°">
+                        <i class="bi bi-arrow-clockwise me-2"></i> Rotate
+                    </button>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label small text-muted mb-1 d-flex justify-content-between">
+                    <span>Zoom</span> <span>@Math.Round(ZoomFactor * 100)%</span>
+                </label>
+                <input type="range" class="form-range" min="100" max="500" value="@(Math.Round(ZoomFactor * 100))" @oninput="OnZoomInput">
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label small text-muted mb-1">Background Color</label>
+                <div class="d-flex align-items-center gap-2">
+                    <button class="btn btn-sm flex-grow-1 @(IsTransparentBg ? "btn-info" : "btn-outline-secondary")" @onclick="SetTransparentBg">Transparent</button>
+                    <input type="color" class="form-control form-control-color form-control-sm p-1 color-picker-sm" value="@HexBgColor" @oninput="OnBgColorInput" @onclick="OnBgColorClick">
+                </div>
+            </div>
+
+            <div class="card bg-dark mb-3 editor-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div class="form-check form-switch m-0">
+                            <input class="form-check-input" type="checkbox" id="removeBgSwitch" @bind="RemoveBgEnabled" @bind:after="QueueUpdatePreview">
+                            <label class="form-check-label small fw-bold" for="removeBgSwitch">Remove Background</label>
+                        </div>
+                        <input type="color" class="form-control form-control-color form-control-sm p-1 color-picker-sm editor-section-transition @(RemoveBgEnabled ? "" : "editor-section-disabled")" value="@HexRemoveBgColor" @oninput="OnRemoveBgColorInput" disabled="@(!RemoveBgEnabled)">
+                    </div>
+                    
+                    <div class="editor-section-transition @(RemoveBgEnabled ? "" : "editor-section-disabled")">
+                        <div>
+                            <label class="form-label small text-muted mb-1 d-flex justify-content-between">
+                                <span>Tolerance</span> <span>@RemoveBgTolerance</span>
+                            </label>
+                            <input type="range" class="form-range" min="0" max="100" @bind="RemoveBgTolerance" @bind:event="oninput" @bind:after="QueueUpdatePreview" disabled="@(!RemoveBgEnabled)">
+                        </div>
+
+                        <div class="form-check form-switch mt-3 mb-2">
+                            <input class="form-check-input" type="checkbox" id="featherSwitch" @bind="FeatherEnabled" @bind:after="QueueUpdatePreview" disabled="@(!RemoveBgEnabled)">
+                            <label class="form-check-label fw-bold small" for="featherSwitch">Feathering</label>
+                        </div>
+
+                        <div class="editor-section-transition @(FeatherEnabled ? "" : "editor-section-disabled")">
+                            <div class="mb-2">
+                                <label class="form-label small text-muted mb-1 d-flex justify-content-between">
+                                    <span>Choke</span> <span>@ChokeRadius px</span>
+                                </label>
+                                <input type="range" class="form-range" min="0" max="20" @bind="ChokeRadius" @bind:event="oninput" @bind:after="QueueUpdatePreview" disabled="@(!FeatherEnabled)">
+                            </div>
+                            <div>
+                                <label class="form-label small text-muted mb-1 d-flex justify-content-between">
+                                    <span>Blur</span> <span>@FeatherRadius px</span>
+                                </label>
+                                <input type="range" class="form-range" min="0" max="20" @bind="FeatherRadius" @bind:event="oninput" @bind:after="QueueUpdatePreview" disabled="@(!FeatherEnabled)">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        
+        <div class="p-3 bg-hover mt-auto border-top">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="text-muted small fw-bold">SIZE</span>
+                <span class="fw-bold @(SizeMb > 10 ? "text-danger" : "text-accent")">@SizeMb.ToString("0.00") MB</span>
+            </div>
+            <div class="mb-3">
+                <label class="form-label small text-muted mb-1 d-flex justify-content-between">
+                    <span>Export Quality</span> <span>@CompressionQuality%</span>
+                </label>
+                <input type="range" class="form-range" min="10" max="100" value="@CompressionQuality" @oninput="OnQualityInput">
+            </div>
+            <div class="d-flex gap-2 mb-2">
+                <button class="btn btn-sm flex-grow-1 btn-reset" @onclick="Reset">Reset</button>
+                <button class="btn btn-sm btn-outline-danger flex-grow-1" @onclick="OnCancelClick">Cancel</button>
+            </div>
+            <button class="btn btn-sm w-100 fw-bold" @onclick="OnSaveClick" disabled="@(SizeMb > 10)">
+                Upload
+            </button>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public string Base64Image { get; set; }
+    [Parameter] public EventCallback<string> OnSave { get; set; }
+    [Parameter] public EventCallback OnCancel { get; set; }
+    [Parameter] public int TargetWidth { get; set; } = 2048;
+    [Parameter] public int TargetHeight { get; set; } = 2048;
+
+    private int CanvasWidth => 800;
+    private int CanvasHeight => (int)(800f * TargetHeight / TargetWidth);
+
+    private DotNetObjectReference<ImageEditor> dotNetRef;
+    private bool isAdaptationDropdownOpen = false;
+    private Image originalImage;
+    private readonly object _imageLock = new object();
+
+    // State
+    private AdaptationMode CurrentAdaptationMode = AdaptationMode.Fit;
+    private float ZoomFactor = 1.0f;
+    private float PanX = 0f;
+    private float PanY = 0f;
+    private int RotationAngle = 0;
+    
+    private string HexBgColor = "#ffffff";
+    private bool IsTransparentBg = true;
+
+    private bool RemoveBgEnabled = false;
+    private string HexRemoveBgColor = "#ffffff";
+    private int RemoveBgTolerance = 15;
+
+
+    private bool FeatherEnabled = false;
+    private int ChokeRadius = 1;
+    private int FeatherRadius = 2;
+
+    private int CompressionQuality = 100;
+    private double SizeMb = 0;
+
+    private CancellationTokenSource cts = new();
+    private CancellationTokenSource ctsSize = new();
+    private bool isRendering = false;
+    private string lastRenderHash = "";
+    private int _previewVersion = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!string.IsNullOrEmpty(Base64Image))
+        {
+            var parts = Base64Image.Split(',');
+            var base64Data = parts.Length > 1 ? parts[1] : parts[0];
+            byte[] bytes = Convert.FromBase64String(base64Data);
+            using var ms = new MemoryStream(bytes);
+            originalImage = Image.FromStream(ms);
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            dotNetRef = DotNetObjectReference.Create(this);
+            await JSRuntime.InvokeVoidAsync("imageEditor.init", "imageEditorCanvas", dotNetRef);
+            QueueUpdatePreview();
+        }
+    }
+
+    private Color ParseHex(string hex) => ColorTranslator.FromHtml(hex);
+
+    private void SetTransparentBg()
+    {
+        if (!IsTransparentBg)
+        {
+            IsTransparentBg = true;
+            QueueTransformUpdate();
+        }
+    }
+
+    private void OnBgColorClick()
+    {
+        if (IsTransparentBg)
+        {
+            IsTransparentBg = false;
+            QueueTransformUpdate();
+        }
+    }
+
+
+
+    private void Rotate()
+    {
+        RotationAngle = (RotationAngle + 90) % 360;
+        QueueTransformUpdate();
+    }
+
+    private void Reset()
+    {
+        CurrentAdaptationMode = AdaptationMode.Fit;
+        ZoomFactor = 1.0f;
+        PanX = 0f;
+        PanY = 0f;
+        RotationAngle = 0;
+        IsTransparentBg = true;
+        RemoveBgEnabled = false;
+        RemoveBgTolerance = 15;
+        FeatherEnabled = false;
+        ChokeRadius = 1;
+        FeatherRadius = 2;
+        CompressionQuality = 100;
+        QueueUpdatePreview();
+        QueueTransformUpdate();
+    }
+
+    private void OnBgColorInput(ChangeEventArgs e)
+    {
+        HexBgColor = e.Value?.ToString() ?? "#ffffff";
+        IsTransparentBg = false;
+        QueueTransformUpdate();
+    }
+
+    private void OnRemoveBgColorInput(ChangeEventArgs e)
+    {
+        HexRemoveBgColor = e.Value?.ToString() ?? "#ffffff";
+        QueueUpdatePreview();
+    }
+
+    private void OnQualityInput(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out int val))
+        {
+            CompressionQuality = val;
+            QueueUpdatePreview();
+        }
+    }
+
+    private void OnZoomInput(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out int val))
+        {
+            ZoomFactor = val / 100f;
+            QueueTransformUpdate();
+        }
+    }
+
+    private void QueueTransformUpdate()
+    {
+        JSRuntime.InvokeVoidAsync("imageEditor.setTransform", 
+            ZoomFactor, PanX, PanY, RotationAngle, (int)CurrentAdaptationMode, HexBgColor, IsTransparentBg);
+        
+        ctsSize.Cancel();
+        ctsSize = new CancellationTokenSource();
+        _ = CalculateFinalSizeAsync(ctsSize.Token);
+    }
+
+    private void QueueUpdatePreview()
+    {
+        int currentVersion = Interlocked.Increment(ref _previewVersion);
+        cts.Cancel();
+        cts = new CancellationTokenSource();
+        _ = UpdatePreviewAsync(cts.Token, currentVersion);
+        
+        ctsSize.Cancel();
+        ctsSize = new CancellationTokenSource();
+        _ = CalculateFinalSizeAsync(ctsSize.Token);
+    }
+
+    private async Task UpdatePreviewAsync(CancellationToken token, int version)
+    {
+        try
+        {
+            await Task.Delay(60, token); // Debounce
+            if (token.IsCancellationRequested || originalImage == null) return;
+
+            string currentHash = $"{RemoveBgEnabled}_{HexRemoveBgColor}_{RemoveBgTolerance}_{FeatherEnabled}_{ChokeRadius}_{FeatherRadius}_{CompressionQuality}";
+            if (currentHash == lastRenderHash) return;
+
+            if (version == _previewVersion)
+            {
+                isRendering = true;
+                await InvokeAsync(StateHasChanged);
+            }
+
+            Color rmColor = ParseHex(HexRemoveBgColor);
+            float outScale = CompressionQuality / 100f;
+
+            float baseScale = Math.Min((float)CanvasWidth / originalImage.Width, (float)CanvasHeight / originalImage.Height);
+            int previewW = (int)Math.Max(1, originalImage.Width * baseScale);
+            int previewH = (int)Math.Max(1, originalImage.Height * baseScale);
+            
+            int scaledFeather = FeatherEnabled && FeatherRadius > 0 ? (int)Math.Max(1, Math.Round(FeatherRadius * baseScale * outScale)) : 0;
+            int scaledChoke = FeatherEnabled && ChokeRadius > 0 ? (int)Math.Max(1, Math.Round(ChokeRadius * baseScale * outScale)) : 0;
+
+            string b64Preview = await Task.Run(() =>
+            {
+                if (token.IsCancellationRequested) return null;
+                lock (_imageLock)
+                {
+                    if (token.IsCancellationRequested) return null;
+                    using Bitmap bmp = global::VRCGalleryManager.Core.Helpers.ImageEditor.RenderImage(
+                        originalImage, previewW, previewH, AdaptationMode.Stretch, 1.0f, 0f, 0f, 0,
+                        Color.Transparent, RemoveBgEnabled, rmColor, RemoveBgTolerance, false, Color.White, 0, FeatherEnabled, scaledFeather, scaledChoke);
+                    
+                    if (outScale < 1.0f)
+                    {
+                        int smallW = Math.Max(1, (int)(previewW * outScale));
+                        int smallH = Math.Max(1, (int)(previewH * outScale));
+                        using Bitmap smallBmp = new Bitmap(smallW, smallH, PixelFormat.Format32bppArgb);
+                        using (Graphics gSmall = Graphics.FromImage(smallBmp))
+                        {
+                            gSmall.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+                            gSmall.DrawImage(bmp, 0, 0, smallW, smallH);
+                        }
+                        
+                        using Bitmap pixelatedBmp = new Bitmap(previewW, previewH, PixelFormat.Format32bppArgb);
+                        using (Graphics gPixel = Graphics.FromImage(pixelatedBmp))
+                        {
+                            gPixel.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+                            gPixel.DrawImage(smallBmp, 0, 0, previewW, previewH);
+                        }
+                        
+                        using MemoryStream ms = new MemoryStream();
+                        pixelatedBmp.Save(ms, ImageFormat.Png);
+                        return Convert.ToBase64String(ms.ToArray());
+                    }
+                    else
+                    {
+                        using MemoryStream ms = new MemoryStream();
+                        bmp.Save(ms, ImageFormat.Png);
+                        return Convert.ToBase64String(ms.ToArray());
+                    }
+                }
+            });
+
+            if (!token.IsCancellationRequested && b64Preview != null)
+            {
+                await JSRuntime.InvokeVoidAsync("imageEditor.loadImagePreview", "data:image/png;base64," + b64Preview);
+                lastRenderHash = currentHash;
+                // Sync the JS transforms for the newly loaded base image
+                QueueTransformUpdate();
+            }
+        }
+        catch (TaskCanceledException) { }
+        finally
+        {
+            if (version == _previewVersion && isRendering)
+            {
+                isRendering = false;
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+    }
+
+    private async Task CalculateFinalSizeAsync(CancellationToken token)
+    {
+        try
+        {
+            await Task.Delay(500, token); // Heavier debounce for exact size calculation
+            if (token.IsCancellationRequested || originalImage == null) return;
+
+            Color bgColor = IsTransparentBg ? Color.Transparent : ParseHex(HexBgColor);
+            Color rmColor = ParseHex(HexRemoveBgColor);
+            float outScale = CompressionQuality / 100f;
+
+            long sizeBytes = await Task.Run(() =>
+            {
+                if (token.IsCancellationRequested) return 0L;
+                lock (_imageLock)
+                {
+                    if (token.IsCancellationRequested) return 0L;
+                    using Bitmap rendered = global::VRCGalleryManager.Core.Helpers.ImageEditor.RenderImage(
+                        originalImage, TargetWidth, TargetHeight, CurrentAdaptationMode, ZoomFactor, PanX * ((float)TargetWidth / CanvasWidth), PanY * ((float)TargetHeight / CanvasHeight), RotationAngle,
+                        bgColor, RemoveBgEnabled, rmColor, RemoveBgTolerance, false, Color.White, 0, FeatherEnabled, FeatherRadius, ChokeRadius);
+                    
+                    using Bitmap final = new Bitmap(Math.Max(1, (int)(TargetWidth * outScale)), Math.Max(1, (int)(TargetHeight * outScale)), PixelFormat.Format32bppArgb);
+                    using (Graphics g = Graphics.FromImage(final))
+                    {
+                        g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+                        g.DrawImage(rendered, 0, 0, final.Width, final.Height);
+                    }
+                    
+                    using MemoryStream ms = new MemoryStream();
+                    final.Save(ms, ImageFormat.Png);
+                    return ms.Length;
+                }
+            });
+
+            if (!token.IsCancellationRequested && sizeBytes > 0)
+            {
+                SizeMb = sizeBytes / (1024.0 * 1024.0);
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+        catch (TaskCanceledException) { }
+    }
+
+    [JSInvokable]
+    public void OnTransformUpdate(float zoom, float panX, float panY)
+    {
+        ZoomFactor = zoom;
+        PanX = panX;
+        PanY = panY;
+        
+        ctsSize.Cancel();
+        ctsSize = new CancellationTokenSource();
+        _ = CalculateFinalSizeAsync(ctsSize.Token);
+        
+        StateHasChanged();
+    }
+
+
+
+    private async Task OnSaveClick()
+    {
+        // Render final 2048x2048
+        Color bgColor = IsTransparentBg ? Color.Transparent : ParseHex(HexBgColor);
+        Color rmColor = ParseHex(HexRemoveBgColor);
+        float outScale = CompressionQuality / 100f;
+
+        string finalB64 = await Task.Run(() =>
+        {
+            lock (_imageLock)
+            {
+                using Bitmap rendered = global::VRCGalleryManager.Core.Helpers.ImageEditor.RenderImage(
+                    originalImage, TargetWidth, TargetHeight, CurrentAdaptationMode, ZoomFactor, PanX * ((float)TargetWidth / CanvasWidth), PanY * ((float)TargetHeight / CanvasHeight), RotationAngle,
+                    bgColor, RemoveBgEnabled, rmColor, RemoveBgTolerance, false, Color.White, 0, FeatherEnabled, FeatherRadius, ChokeRadius);
+                
+                using Bitmap final = new Bitmap(Math.Max(1, (int)(TargetWidth * outScale)), Math.Max(1, (int)(TargetHeight * outScale)), PixelFormat.Format32bppArgb);
+                using (Graphics g = Graphics.FromImage(final))
+                {
+                    g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+                    g.DrawImage(rendered, 0, 0, final.Width, final.Height);
+                }
+                
+                using MemoryStream ms = new MemoryStream();
+                final.Save(ms, ImageFormat.Png);
+                return Convert.ToBase64String(ms.ToArray());
+            }
+        });
+
+        if (OnSave.HasDelegate)
+        {
+            await OnSave.InvokeAsync("data:image/png;base64," + finalB64);
+        }
+    }
+
+    private void SetAdaptationMode(AdaptationMode mode)
+    {
+        CurrentAdaptationMode = mode;
+        isAdaptationDropdownOpen = false;
+        QueueTransformUpdate();
+    }
+
+    private async Task OnCancelClick()
+    {
+        if (OnCancel.HasDelegate)
+        {
+            await OnCancel.InvokeAsync();
+        }
+    }
+
+    public void Dispose()
+    {
+        dotNetRef?.Dispose();
+        originalImage?.Dispose();
+    }
+}

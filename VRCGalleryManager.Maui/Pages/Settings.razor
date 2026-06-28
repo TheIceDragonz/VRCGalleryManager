@@ -1,0 +1,457 @@
+@page "/settings"
+@using VRCGalleryManager.Core
+@using System.IO
+@using Microsoft.JSInterop
+@using Microsoft.AspNetCore.Components.Web
+@using VRChat.API.Model
+@inject VRCAuth Auth
+@inject IJSRuntime JSRuntime
+@inject DialogService dialogService
+@inject UpdateManager Updater
+@inject NotificationService Notifications
+
+<div class="settings-page container-fluid h-100 p-4 overflow-y-auto">
+    <div class="d-flex flex-column gap-4 max-w-600 mx-auto w-100">
+        <h3 class="mb-1 text-center">Settings</h3>
+        <!-- Login Panel -->
+        <div class="panel d-flex flex-column gap-3">
+            @if (Show2FA)
+            {
+                <h4 class="mb-2 text-accent">Two-Factor Authentication</h4>
+                <p class="text-muted mb-2 text-09rem">@(IsEmail2FA ? "Enter the code sent to your email." : "Enter the code from your Authenticator app.")</p>
+                
+                <div class="mb-4">
+                    <label class="form-label text-muted mb-1">Auth Code</label>
+                    <input type="text" class="form-control" @bind="Code2FA" @onkeydown="On2FAKeyDown" placeholder="123456" />
+                </div>
+                
+                <div class="d-flex gap-2">
+                    <button class="btn btn-outline-secondary w-50 py-2" @onclick="Cancel2FA" disabled="@IsLoggingIn">Cancel</button>
+                    <button class="btn btn-primary w-50 py-2" @onclick="Submit2FA" disabled="@IsLoggingIn">
+                        @if (IsLoggingIn)
+                        {
+                            <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                        }
+                        Verify
+                    </button>
+                </div>
+                
+                @if (!string.IsNullOrEmpty(LoginError))
+                {
+                    <div class="alert alert-danger mt-2 mb-0 p-3 alert-custom-danger">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i> @LoginError
+                    </div>
+                }
+            }
+            else
+            {
+                <h4 class="mb-2 @(IsLoggedIn ? "text-accent" : "text-danger")">
+                    @(IsLoggedIn ? "Logged In" : "VRChat Login")
+                </h4>
+
+                @if (IsLoggedIn && !HasVRCPlus)
+                {
+                    <div class="alert mb-0 p-3 d-flex align-items-center gap-2 alert-vrcplus">
+                        <i class="bi bi-exclamation-triangle-fill"></i>
+                        <span>You need <strong>VRChat Plus</strong> to use this program.</span>
+                    </div>
+                }
+
+                <div class="mb-2">
+                    <label class="form-label text-muted mb-1">Username</label>
+                    <input type="text" class="form-control" @bind="Username" disabled="@IsLoggedIn" @onkeydown="OnUsernameKeyDown" />
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label text-muted mb-1">Password</label>
+                    <div class="input-group">
+                        <input type="@(ShowPassword ? "text" : "password")" class="form-control password-input" @bind="Password" @bind:event="oninput" disabled="@IsLoggedIn" @onkeydown="OnPasswordKeyDown" />
+                        @if (!IsLoggedIn && !string.IsNullOrEmpty(Password))
+                        {
+                            <button class="btn btn-password-toggle p-2" type="button" @onclick="() => ShowPassword = !ShowPassword" title="@(ShowPassword ? "Hide password" : "Show password")">
+                                <img src="/svg/eye-svgrepo-com.svg" class="btn-icon" style="margin-right: 0;" />
+                            </button>
+                        }
+                    </div>
+                </div>
+
+                <button class="btn @(IsLoggedIn ? "btn-outline-danger" : "btn-primary") w-100 py-2" @onclick="ToggleLogin" disabled="@IsLoggingIn">
+                    @if (IsLoggingIn)
+                    {
+                        <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                    }
+                    @(IsLoggedIn ? "Logout" : "Login")
+                </button>
+
+                @if (!string.IsNullOrEmpty(LoginError))
+                {
+                    <div class="alert alert-danger mt-1 mb-0 p-3 alert-custom-danger">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i> @LoginError
+                    </div>
+                }
+            }
+        </div>
+
+        <!-- About Panel -->
+        <div class="panel d-flex flex-column gap-3">
+            <h4 class="mb-2">About</h4>
+                <p class="text-muted mb-0">VRCGalleryManager v2.0</p>
+                <button class="btn w-100" @onclick="OpenGitHub">
+                    <img src="/svg/info-circle-svgrepo-com.svg" class="btn-icon" />Open GitHub Page
+                </button>
+                <button class="btn w-100" @onclick="CheckForUpdates">
+                    <img src="/svg/rotate-right-svgrepo-com.svg" class="btn-icon" />Check for Updates
+                </button>
+                @if (!string.IsNullOrEmpty(UpdateMessage))
+                {
+                    <div class="alert @(HasUpdate ? "alert-info" : "alert-secondary") mb-0 p-2 alert-custom-info">
+                        <i class="bi @(HasUpdate ? "bi-arrow-up-circle-fill" : "bi-check-circle-fill") me-2"></i>@UpdateMessage
+                    </div>
+                }
+            </div>
+        <!-- System Panel -->
+        <div class="panel d-flex flex-column">
+            <h4 class="mb-4">System</h4>
+
+                <div class="d-flex flex-column gap-3 mb-4">
+                    <button class="btn w-100" @onclick="OpenCacheFolder">
+                        <img src="/svg/folder-open-svgrepo-com.svg" class="btn-icon" />Open Cache Folder
+                    </button>
+
+                    <button class="btn w-100" @onclick="OpenVRChatLogs">
+                        <img src="/svg/folder-open-svgrepo-com.svg" class="btn-icon" />Open VRChat Logs
+                    </button>
+
+                    <hr class="my-2 hr-custom" />
+
+                    <button class="btn btn-danger w-100" @onclick="ClearVRChatLogs">
+                        <img src="/svg/trash-bin-trash-svgrepo-com.svg" class="btn-icon" />Clear All VRChat Logs
+                    </button>
+
+                    <button class="btn btn-danger w-100" @onclick="ClearCacheFiles">
+                        <img src="/svg/trash-bin-trash-svgrepo-com.svg" class="btn-icon" />Clear All Cache Files
+                    </button>
+                </div>
+
+                @if (!string.IsNullOrEmpty(SystemMessage))
+                {
+                    <div class="alert @(SystemMessageIsError ? "alert-danger" : "alert-success") mb-3 p-2 alert-custom-info">
+                        <i class="bi @(SystemMessageIsError ? "bi-x-circle-fill" : "bi-check-circle-fill") me-2"></i>@SystemMessage
+                    </div>
+                }
+
+                <h5 class="mt-4 mb-2 text-muted text-09rem">Cache Information</h5>
+                <div class="p-3 rounded cache-info-box">
+                    @CacheInfo
+                </div>
+            </div>
+        </div>
+    </div>
+
+@code {
+    private string Username = "";
+    private string Password = "";
+    private string Code2FA = "";
+    private string LoginError = "";
+    private string CacheInfo = "";
+    private string UpdateMessage = "";
+    private string SystemMessage = "";
+    private bool SystemMessageIsError = false;
+    private bool IsLoggingIn = false;
+    private bool HasVRCPlus = false;
+    private bool HasUpdate = false;
+    private bool ShowPassword = false;
+    private bool Show2FA = false;
+    private bool IsEmail2FA = false;
+
+    private bool IsLoggedIn => Auth.LoggedIn || Auth.CookieLoaded;
+
+    protected override async Task OnInitializedAsync()
+    {
+        UpdateCacheInfo();
+        if (IsLoggedIn)
+        {
+            if (Auth.CurrentUser != null)
+            {
+                ApplyCurrentUser(Auth.CurrentUser);
+            }
+            else
+            {
+                await LoadCurrentUser();
+            }
+        }
+    }
+
+    private void ApplyCurrentUser(CurrentUser user)
+    {
+        Username = user.DisplayName;
+        Password = "password";
+
+        // Check VRChat Plus badge
+        HasVRCPlus = false;
+        if (user.Badges != null)
+        {
+            foreach (var badge in user.Badges)
+            {
+                if (badge.BadgeId == "bdg_754f9935-0f97-49d8-b857-95afb9b673fa")
+                {
+                    HasVRCPlus = true;
+                    break;
+                }
+            }
+        }
+    }
+
+    private async Task LoadCurrentUser()
+    {
+        try
+        {
+            var user = await Auth.AuthApi.GetCurrentUserAsync();
+            Auth.CurrentUser = user;
+            ApplyCurrentUser(user);
+        }
+        catch
+        {
+            // Ignored
+        }
+    }
+
+    private async Task ToggleLogin()
+    {
+        LoginError = "";
+        if (IsLoggedIn)
+        {
+            try { Auth.AuthApi.Logout(); } catch { }
+            finally
+            {
+                Auth.Logout();
+                Username = "";
+                Password = "";
+                HasVRCPlus = false;
+                ShowPassword = false;
+                Show2FA = false;
+                Code2FA = "";
+            }
+        }
+        else
+        {
+            IsLoggingIn = true;
+            StateHasChanged();
+            try
+            {
+                var status = await Auth.LoginAsync(Username, Password);
+                if (status == VRCAuthStatus.RequiresEmail2FA)
+                {
+                    IsEmail2FA = true;
+                    Show2FA = true;
+                }
+                else if (status == VRCAuthStatus.RequiresApp2FA)
+                {
+                    IsEmail2FA = false;
+                    Show2FA = true;
+                }
+                else if (status == VRCAuthStatus.Success)
+                {
+                    await LoadCurrentUser();
+                }
+                else
+                {
+                    LoginError = "Invalid credentials or connection error.";
+                }
+            }
+            catch (Exception ex)
+            {
+                LoginError = ex.Message;
+            }
+            finally
+            {
+                IsLoggingIn = false;
+            }
+        }
+    }
+
+    private async Task Submit2FA()
+    {
+        if (string.IsNullOrWhiteSpace(Code2FA)) return;
+        
+        IsLoggingIn = true;
+        LoginError = "";
+        StateHasChanged();
+        
+        try
+        {
+            var status = await Auth.Verify2FAAsync(Code2FA, IsEmail2FA);
+            if (status == VRCAuthStatus.Success)
+            {
+                Show2FA = false;
+                Code2FA = "";
+                Password = "";
+                await LoadCurrentUser();
+            }
+            else
+            {
+                LoginError = "Invalid 2FA code.";
+            }
+        }
+        catch (Exception ex)
+        {
+            LoginError = ex.Message;
+        }
+        finally
+        {
+            IsLoggingIn = false;
+        }
+    }
+
+    private void Cancel2FA()
+    {
+        Show2FA = false;
+        Code2FA = "";
+        LoginError = "";
+    }
+
+    private async Task On2FAKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter") await Submit2FA();
+    }
+
+    private async Task OnUsernameKeyDown(KeyboardEventArgs e)
+    {
+        if (!IsLoggedIn && e.Key == "Enter") await ToggleLogin();
+    }
+
+    private async Task OnPasswordKeyDown(KeyboardEventArgs e)
+    {
+        if (!IsLoggedIn && e.Key == "Enter") await ToggleLogin();
+    }
+
+    private void OpenGitHub()
+    {
+        System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("https://github.com/TheIceDragonz/VRCGalleryManager") { UseShellExecute = true });
+    }
+
+    private async Task CheckForUpdates()
+    {
+        UpdateMessage = "Checking for updates...";
+        HasUpdate = false;
+        StateHasChanged();
+        
+        try
+        {
+            await Updater.CheckForUpdatesAsync(Notifications, dialogService, (progressText, isError) => 
+            {
+                UpdateMessage = progressText;
+                HasUpdate = !isError;
+                InvokeAsync(StateHasChanged);
+            });
+            
+            // Wait for it to finish or if it didn't update we clear the loading message
+            if (UpdateMessage == "Checking for updates...")
+            {
+                UpdateMessage = "";
+            }
+        }
+        catch (Exception ex)
+        {
+            UpdateMessage = $"Update check failed: {ex.Message}";
+        }
+    }
+
+    private void OpenCacheFolder()
+    {
+        string cacheFolderPath = Path.Combine(Path.GetTempPath(), "VRCGalleryManager");
+        if (Directory.Exists(cacheFolderPath))
+            System.Diagnostics.Process.Start("explorer.exe", cacheFolderPath);
+        else
+            ShowSystemMessage("Cache folder does not exist.", true);
+    }
+
+    private void OpenVRChatLogs()
+    {
+        string vrchatLogPath = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData).Replace("Local", "LocalLow"),
+            "VRChat", "VRChat");
+        if (Directory.Exists(vrchatLogPath))
+            System.Diagnostics.Process.Start("explorer.exe", vrchatLogPath);
+        else
+            ShowSystemMessage("VRChat logs folder does not exist.", true);
+    }
+
+    private async Task ClearVRChatLogs()
+    {
+        string vrchatLogPath = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData).Replace("Local", "LocalLow"),
+            "VRChat", "VRChat");
+
+        string[] logFiles = Directory.Exists(vrchatLogPath)
+            ? Directory.GetFiles(vrchatLogPath, "output_log_*.txt")
+            : Array.Empty<string>();
+
+        if (logFiles.Length == 0)
+        {
+            ShowSystemMessage("No log files found.", true);
+            return;
+        }
+
+        bool confirmed = await JSRuntime.InvokeAsync<bool>("confirm", $"Do you want to delete {logFiles.Length} VRChat log file(s)?");
+        if (confirmed)
+        {
+            foreach (var file in logFiles)
+                try { System.IO.File.Delete(file); } catch { }
+            ShowSystemMessage("All VRChat logs have been successfully deleted!", false);
+        }
+    }
+
+    private async Task ClearCacheFiles()
+    {
+        string cacheFolderPath = Path.Combine(Path.GetTempPath(), "VRCGalleryManager");
+
+        if (!Directory.Exists(cacheFolderPath))
+        {
+            ShowSystemMessage("Cache folder does not exist.", true);
+            return;
+        }
+
+        string[] cacheFiles = Directory.GetFiles(cacheFolderPath);
+        if (cacheFiles.Length == 0)
+        {
+            ShowSystemMessage("No cache files found.", true);
+            return;
+        }
+
+        bool confirmed = await JSRuntime.InvokeAsync<bool>("confirm", "Do you want to delete all cache files?");
+        if (confirmed)
+        {
+            foreach (var file in cacheFiles)
+                try { System.IO.File.Delete(file); } catch { }
+            ShowSystemMessage("All cache files have been successfully deleted!", false);
+            UpdateCacheInfo();
+        }
+    }
+
+    private void ShowSystemMessage(string message, bool isError)
+    {
+        SystemMessage = message;
+        SystemMessageIsError = isError;
+        StateHasChanged();
+    }
+
+    private void UpdateCacheInfo()
+    {
+        string cacheFolder = Path.Combine(Path.GetTempPath(), "VRCGalleryManager");
+        if (!Directory.Exists(cacheFolder))
+        {
+            CacheInfo = "Cache folder not found.";
+            return;
+        }
+        string[] files = Directory.GetFiles(cacheFolder);
+        long totalSize = files.Sum(file => new FileInfo(file).Length);
+
+        string[] units = { "B", "KB", "MB", "GB", "TB" };
+        double size = totalSize;
+        int unitIndex = 0;
+        while (size >= 1024 && unitIndex < units.Length - 1) { size /= 1024; unitIndex++; }
+
+        CacheInfo = $"~ Info Cache ~\n\nFiles: {files.Length}\nTotal Size: {size:0.##} {units[unitIndex]}\nCache Path: {cacheFolder}";
+    }
+}
