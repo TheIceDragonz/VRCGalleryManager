@@ -32,6 +32,13 @@ namespace VRCGalleryManager
 
         public async Task CheckForUpdatesAsync(NotificationService notificationService, DialogService dialogService, Action<string, bool> updateProgressState)
         {
+            if (!OperatingSystem.IsWindows())
+            {
+                updateProgressState("Updates are only supported on Windows.", true);
+                notificationService.Show("Updates are currently only available for the Windows version.", "Unsupported OS", NotificationType.Info);
+                return;
+            }
+
             string latestVersion;
             string localVersion;
 

@@ -74,7 +74,7 @@
         else
         {
             <div class="flex-grow-1 overflow-auto">
-                <div class="d-flex flex-wrap gap-3">
+                <div class="media-grid gap-3">
                     @foreach (var sticker in stickers)
                     {
                         <div class="position-relative sticker-card media-card-container">
@@ -325,12 +325,20 @@
     {
         try
         {
+            string mimeType = "image/png";
+            int semiColonIndex = editedBase64.IndexOf(";");
+            if (editedBase64.StartsWith("data:") && semiColonIndex > 5)
+            {
+                mimeType = editedBase64.Substring(5, semiColonIndex - 5);
+            }
+            string ext = mimeType == "image/jpeg" ? ".jpg" : ".png";
+
             string base64Data = editedBase64.Substring(editedBase64.IndexOf(",") + 1);
             byte[] bytes = Convert.FromBase64String(base64Data);
             
             string tempFolder = Path.Combine(Path.GetTempPath(), "VRCGalleryManager");
             Directory.CreateDirectory(tempFolder);
-            string tempPath = Path.Combine(tempFolder, $"upload_sticker_{Guid.NewGuid()}.png");
+            string tempPath = Path.Combine(tempFolder, $"upload_sticker_{Guid.NewGuid()}{ext}");
             
             await File.WriteAllBytesAsync(tempPath, bytes);
 

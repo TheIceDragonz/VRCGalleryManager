@@ -118,15 +118,21 @@
                         <img src="/svg/folder-open-svgrepo-com.svg" class="btn-icon" />Open Cache Folder
                     </button>
 
-                    <button class="btn w-100" @onclick="OpenVRChatLogs">
-                        <img src="/svg/folder-open-svgrepo-com.svg" class="btn-icon" />Open VRChat Logs
-                    </button>
+                    @if (OperatingSystem.IsWindows())
+                    {
+                        <button class="btn w-100" @onclick="OpenVRChatLogs">
+                            <img src="/svg/folder-open-svgrepo-com.svg" class="btn-icon" />Open VRChat Logs
+                        </button>
+                    }
 
                     <hr class="my-2 hr-custom" />
 
-                    <button class="btn btn-danger w-100" @onclick="ClearVRChatLogs">
-                        <img src="/svg/trash-bin-trash-svgrepo-com.svg" class="btn-icon" />Clear All VRChat Logs
-                    </button>
+                    @if (OperatingSystem.IsWindows())
+                    {
+                        <button class="btn btn-danger w-100" @onclick="ClearVRChatLogs">
+                            <img src="/svg/trash-bin-trash-svgrepo-com.svg" class="btn-icon" />Clear All VRChat Logs
+                        </button>
+                    }
 
                     <button class="btn btn-danger w-100" @onclick="ClearCacheFiles">
                         <img src="/svg/trash-bin-trash-svgrepo-com.svg" class="btn-icon" />Clear All Cache Files
@@ -141,9 +147,35 @@
                 }
 
                 <h5 class="mt-4 mb-2 text-muted text-09rem">Cache Information</h5>
-                <div class="p-3 rounded cache-info-box">
-                    @CacheInfo
-                </div>
+                @if (CacheExists)
+                {
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <div class="p-3 rounded cache-info-box h-100 d-flex align-items-center gap-3">
+                                <i class="bi bi-files text-primary fs-3"></i>
+                                <div class="d-flex flex-column">
+                                    <span class="text-muted small text-uppercase fw-bold">Files</span>
+                                    <span class="fw-bold fs-5">@CacheFilesCount</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="p-3 rounded cache-info-box h-100 d-flex align-items-center gap-3">
+                                <i class="bi bi-hdd-fill text-success fs-3"></i>
+                                <div class="d-flex flex-column">
+                                    <span class="text-muted small text-uppercase fw-bold">Total Size</span>
+                                    <span class="fw-bold fs-5">@CacheTotalSize</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="p-3 rounded cache-info-box text-warning d-flex align-items-center">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i> Cache folder not found.
+                    </div>
+                }
             </div>
         </div>
     </div>
@@ -153,7 +185,9 @@
     private string Password = "";
     private string Code2FA = "";
     private string LoginError = "";
-    private string CacheInfo = "";
+    private int CacheFilesCount = 0;
+    private string CacheTotalSize = "0 B";
+    private bool CacheExists = false;
     private string UpdateMessage = "";
     private string SystemMessage = "";
     private bool SystemMessageIsError = false;
@@ -325,9 +359,9 @@
         if (!IsLoggedIn && e.Key == "Enter") await ToggleLogin();
     }
 
-    private void OpenGitHub()
+    private async Task OpenGitHub()
     {
-        System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("https://github.com/TheIceDragonz/VRCGalleryManager") { UseShellExecute = true });
+        await Microsoft.Maui.ApplicationModel.Launcher.Default.OpenAsync(new Uri("https://github.com/TheIceDragonz/VRCGalleryManager"));
     }
 
     private async Task CheckForUpdates()
@@ -359,6 +393,12 @@
 
     private void OpenCacheFolder()
     {
+        if (!OperatingSystem.IsWindows())
+        {
+            ShowSystemMessage("Opening folders is only supported on Windows.", true);
+            return;
+        }
+
         string cacheFolderPath = Path.Combine(Path.GetTempPath(), "VRCGalleryManager");
         if (Directory.Exists(cacheFolderPath))
             System.Diagnostics.Process.Start("explorer.exe", cacheFolderPath);
@@ -441,10 +481,15 @@
         string cacheFolder = Path.Combine(Path.GetTempPath(), "VRCGalleryManager");
         if (!Directory.Exists(cacheFolder))
         {
-            CacheInfo = "Cache folder not found.";
-            return;
+            try { Directory.CreateDirectory(cacheFolder); } catch { }
         }
+        
+        CacheExists = Directory.Exists(cacheFolder);
+        if (!CacheExists) return;
+        
+        CacheExists = true;
         string[] files = Directory.GetFiles(cacheFolder);
+        CacheFilesCount = files.Length;
         long totalSize = files.Sum(file => new FileInfo(file).Length);
 
         string[] units = { "B", "KB", "MB", "GB", "TB" };
@@ -452,6 +497,6 @@
         int unitIndex = 0;
         while (size >= 1024 && unitIndex < units.Length - 1) { size /= 1024; unitIndex++; }
 
-        CacheInfo = $"~ Info Cache ~\n\nFiles: {files.Length}\nTotal Size: {size:0.##} {units[unitIndex]}\nCache Path: {cacheFolder}";
+        CacheTotalSize = $"{size:0.##} {units[unitIndex]}";
     }
 }

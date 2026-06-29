@@ -1,17 +1,23 @@
-using ImageFormat = System.Drawing.Imaging.ImageFormat;
-using System.Drawing;
-using Color = System.Drawing.Color;
-using Image = System.Drawing.Image;
-using Bitmap = System.Drawing.Bitmap;
-using System.Drawing.Imaging;
+using System;
+using System.IO;
+using System.Net.Http;
+using System.Threading.Tasks;
 using System.Text.RegularExpressions;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
+using SixLabors.ImageSharp.Drawing.Processing;
+using Color = SixLabors.ImageSharp.Color;
+using Point = SixLabors.ImageSharp.Point;
+using Image = SixLabors.ImageSharp.Image;
+using System.Collections.Generic;
 
 namespace VRCGalleryManager.Core
 {
     public class GifToSpriteSheetConverter : IDisposable
     {
-        private Image gifImage;
-        public Bitmap SpriteSheet { get; private set; }
+        private Image<Rgba32> gifImage;
+        public Image<Rgba32> SpriteSheet { get; private set; }
         public int frameCount { get; private set; }
 
         public async Task<string> DownloadImageFromUrl(string url)
@@ -55,7 +61,7 @@ namespace VRCGalleryManager.Core
         private IEnumerable<string> ExtractGifUrlsFromEmbed(string htmlContent)
         {
             string pattern = @"https?:\/\/[^\s""'<>]+\.gif";
-            var matches = System.Text.RegularExpressions.Regex.Matches(htmlContent, pattern);
+            var matches = Regex.Matches(htmlContent, pattern);
 
             foreach (Match match in matches)
             {
@@ -77,31 +83,29 @@ namespace VRCGalleryManager.Core
             SpriteSheet = null;
         }
 
-        public (Bitmap spriteSheet, int frameCount) ConvertGifToSpriteSheet(string gifPath)
+        public (Image<Rgba32> spriteSheet, int frameCount) ConvertGifToSpriteSheet(string gifPath)
         {
             if (loadedGifPath != gifPath || gifImage == null)
             {
                 gifImage?.Dispose();
-                gifImage = Image.FromFile(gifPath);
+                gifImage = Image.Load<Rgba32>(gifPath);
                 loadedGifPath = gifPath;
             }
-            FrameDimension dimension = new FrameDimension(gifImage.FrameDimensionsList[0]);
-            int count = gifImage.GetFrameCount(dimension);
+            int count = gifImage.Frames.Count;
             int maxFrames = Math.Min(count, 64);
             return ConvertGifToSpriteSheet(gifPath, 0, maxFrames - 1);
         }
 
-        public (Bitmap spriteSheet, int frameCount) ConvertGifToSpriteSheet(string gifPath, int startFrame, int endFrame)
+        public (Image<Rgba32> spriteSheet, int frameCount) ConvertGifToSpriteSheet(string gifPath, int startFrame, int endFrame)
         {
             int textureSize = 1024;
             if (loadedGifPath != gifPath || gifImage == null)
             {
                 gifImage?.Dispose();
-                gifImage = Image.FromFile(gifPath);
+                gifImage = Image.Load<Rgba32>(gifPath);
                 loadedGifPath = gifPath;
             }
-            FrameDimension dimension = new FrameDimension(gifImage.FrameDimensionsList[0]);
-            int count = gifImage.GetFrameCount(dimension);
+            int count = gifImage.Frames.Count;
 
             int framesToUse = endFrame - startFrame + 1;
             if (framesToUse <= 0 || framesToUse > 64)
@@ -123,22 +127,17 @@ namespace VRCGalleryManager.Core
             }
 
             SpriteSheet?.Dispose();
-            SpriteSheet = new Bitmap(textureSize, 1024);
+            SpriteSheet = new Image<Rgba32>(textureSize, 1024, Color.Transparent);
 
-            using (Graphics g = Graphics.FromImage(SpriteSheet))
+            for (int i = 0; i < framesToUse; i++)
             {
-                g.Clear(Color.Transparent);
-
-                for (int i = 0; i < framesToUse; i++)
+                var frame = gifImage.Frames.CloneFrame(startFrame + i);
+                using (var squareFrame = CropToSquare(frame, squareSize))
                 {
-                    gifImage.SelectActiveFrame(dimension, startFrame + i);
-                    using (Bitmap squareFrame = CropToSquare(gifImage, squareSize))
-                    {
-                        int col = i % cols;
-                        int row = i / cols;
-
-                        g.DrawImage(squareFrame, col * squareSize, row * squareSize, squareSize, squareSize);
-                    }
+                    int col = i % cols;
+                    int row = i / cols;
+                    
+                    SpriteSheet.Mutate(x => x.DrawImage(squareFrame, new Point(col * squareSize, row * squareSize), 1f));
                 }
             }
 
@@ -152,7 +151,7 @@ namespace VRCGalleryManager.Core
                 throw new InvalidOperationException("No sprite sheet to save.");
 
             Directory.CreateDirectory(Path.GetDirectoryName(outputPath));
-            SpriteSheet.Save(outputPath, ImageFormat.Png);
+            SpriteSheet.SaveAsPng(outputPath);
 
             return outputPath;
         }
@@ -166,82 +165,37 @@ namespace VRCGalleryManager.Core
             Directory.CreateDirectory(tempPath);
 
             string outputPath = Path.Combine(tempPath, $"spritesheet_{Guid.NewGuid()}.png");
-            SpriteSheet.Save(outputPath, ImageFormat.Png);
+            SpriteSheet.SaveAsPng(outputPath);
 
             return outputPath;
         }
 
-        /*
-        public async Task<(string gifPath, Bitmap spriteSheet, int frameCount)> ProcessGifFromClipboard()
-        {
-            IDataObject data = Clipboard.GetDataObject();
-
-            if (data == null)
-                throw new Exception("Clipboard is empty!");
-
-            if (data.GetDataPresent(DataFormats.FileDrop))
-            {
-                string[] files = (string[])data.GetData(DataFormats.FileDrop);
-                string gifFile = files.FirstOrDefault(f => Path.GetExtension(f).ToLower() == ".gif");
-
-                if (gifFile == null)
-                    throw new Exception("No valid GIF file found in the clipboard!");
-
-                var (spriteSheet, frameCount) = ConvertGifToSpriteSheet(gifFile);
-                return (gifFile, spriteSheet, frameCount);
-            }
-
-            if (data.GetDataPresent(DataFormats.Bitmap))
-            {
-                Image clipboardImage = (Image)data.GetData(DataFormats.Bitmap);
-                string tempPath = Path.Combine(Path.GetTempPath(), $"clipboard_image_{Guid.NewGuid()}.gif");
-                clipboardImage.Save(tempPath, ImageFormat.Gif);
-
-                var (spriteSheet, frameCount) = ConvertGifToSpriteSheet(tempPath);
-                return (tempPath, spriteSheet, frameCount);
-            }
-
-            if (data.GetDataPresent(DataFormats.Text))
-            {
-                string url = (string)data.GetData(DataFormats.Text);
-
-                if (string.IsNullOrWhiteSpace(url))
-                    throw new Exception("Invalid URL in the clipboard!");
-
-                string gifPath = await DownloadImageFromUrl(url);
-
-                var (spriteSheet, frameCount) = ConvertGifToSpriteSheet(gifPath);
-                return (gifPath, spriteSheet, frameCount);
-            }
-
-            throw new Exception("No valid GIF data found in the clipboard!");
-        }
-        */
-
-        private Bitmap CropToSquare(Image img, int size)
+        private Image<Rgba32> CropToSquare(Image<Rgba32> img, int size)
         {
             int maxSize = Math.Max(img.Width, img.Height);
-            Bitmap squareImage = new Bitmap(size, size);
+            var squareImage = new Image<Rgba32>(size, size, Color.Transparent);
+            
+            Rectangle srcRect;
 
-            using (Graphics g = Graphics.FromImage(squareImage))
+            if (img.Width > img.Height)
             {
-                g.Clear(Color.Transparent);
-                Rectangle srcRect;
-
-                if (img.Width > img.Height)
-                {
-                    int offset = (img.Width - img.Height) / 2;
-                    srcRect = new Rectangle(offset, 0, img.Height, img.Height);
-                }
-                else
-                {
-                    int offset = (img.Height - img.Width) / 2;
-                    srcRect = new Rectangle(0, offset, img.Width, img.Width);
-                }
-
-                g.DrawImage(img, new Rectangle(0, 0, size, size), srcRect, GraphicsUnit.Pixel);
+                int offset = (img.Width - img.Height) / 2;
+                srcRect = new Rectangle(offset, 0, img.Height, img.Height);
+            }
+            else
+            {
+                int offset = (img.Height - img.Width) / 2;
+                srcRect = new Rectangle(0, offset, img.Width, img.Width);
             }
 
+            // Crop
+            var cropped = img.Clone(x => x.Crop(srcRect));
+            // Resize to target size
+            cropped.Mutate(x => x.Resize(size, size, KnownResamplers.Bicubic));
+            
+            squareImage.Mutate(x => x.DrawImage(cropped, new Point(0, 0), 1f));
+            cropped.Dispose();
+            
             return squareImage;
         }
     }

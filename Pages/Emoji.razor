@@ -75,7 +75,7 @@
         else
         {
             <div class="flex-grow-1 overflow-auto">
-                <div class="d-flex flex-wrap gap-3">
+                <div class="media-grid gap-3">
                     @foreach (var emoji in emojis)
                     {
                         <div class="position-relative emoji-card media-card-container">
@@ -347,12 +347,20 @@
     {
         try
         {
+            string mimeType = "image/png";
+            int semiColonIndex = result.Base64.IndexOf(";");
+            if (result.Base64.StartsWith("data:") && semiColonIndex > 5)
+            {
+                mimeType = result.Base64.Substring(5, semiColonIndex - 5);
+            }
+            string ext = mimeType == "image/jpeg" ? ".jpg" : ".png";
+
             string base64Data = result.Base64.Substring(result.Base64.IndexOf(",") + 1);
             byte[] bytes = Convert.FromBase64String(base64Data);
             
             string tempFolder = Path.Combine(Path.GetTempPath(), "VRCGalleryManager");
             Directory.CreateDirectory(tempFolder);
-            string tempPath = Path.Combine(tempFolder, $"upload_emoji_{Guid.NewGuid()}.png");
+            string tempPath = Path.Combine(tempFolder, $"upload_emoji_{Guid.NewGuid()}{ext}");
             
             await File.WriteAllBytesAsync(tempPath, bytes);
 

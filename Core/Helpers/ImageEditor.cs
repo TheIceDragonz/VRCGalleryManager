@@ -1,14 +1,10 @@
-using ImageFormat = System.Drawing.Imaging.ImageFormat;
-using System.Drawing;
-using Color = System.Drawing.Color;
-using Image = System.Drawing.Image;
-using Bitmap = System.Drawing.Bitmap;
 using System;
-using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.Drawing.Imaging;
 using System.IO;
-using System.Runtime.InteropServices;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
+using SixLabors.ImageSharp.Drawing.Processing;
+using Color = SixLabors.ImageSharp.Color;
 
 namespace VRCGalleryManager.Core.Helpers
 {
@@ -66,10 +62,10 @@ namespace VRCGalleryManager.Core.Helpers
         }
 
         /// <summary>
-        /// Renders the image on a canvas Bitmap using the provided parameters.
+        /// Renders the image on a canvas Image using the provided parameters.
         /// </summary>
-        public static Bitmap RenderImage(
-            Image originalImage,
+        public static Image<Rgba32> RenderImage(
+            Image<Rgba32> originalImage,
             int canvasW,
             int canvasH,
             AdaptationMode mode,
@@ -81,160 +77,98 @@ namespace VRCGalleryManager.Core.Helpers
             bool removeBg = false,
             Color removeBgColor = default,
             int removeBgTolerance = 0,
-            bool addOutline = false,
+            bool addOutline = false, // Ignored in this port as it's not used currently
             Color outlineColor = default,
             int outlineThickness = 0,
             bool featherEdges = false,
             int featherRadius = 0,
-            int chokeRadius = 0)
+            int chokeRadius = 0,
+            System.Threading.CancellationToken token = default)
         {
+            token.ThrowIfCancellationRequested();
+
             // Create target bitmap
-            Bitmap result = new Bitmap(canvasW, canvasH, PixelFormat.Format32bppArgb);
+            Image<Rgba32> result = new Image<Rgba32>(canvasW, canvasH, backgroundColor);
 
-            using (Graphics g = Graphics.FromImage(result))
+            float imageW = originalImage.Width;
+            float imageH = originalImage.Height;
+            if (rotationAngle == 90 || rotationAngle == 270)
             {
-                // Set high quality options
-                g.Clear(backgroundColor);
-                g.InterpolationMode = InterpolationMode.HighQualityBicubic;
-                g.CompositingQuality = CompositingQuality.HighQuality;
-                g.SmoothingMode = SmoothingMode.HighQuality;
-                g.PixelOffsetMode = PixelOffsetMode.HighQuality;
+                imageW = originalImage.Height;
+                imageH = originalImage.Width;
+            }
 
-                float imageW = originalImage.Width;
-                float imageH = originalImage.Height;
-                if (rotationAngle == 90 || rotationAngle == 270)
-                {
-                    imageW = originalImage.Height;
-                    imageH = originalImage.Width;
-                }
+            float baseScale = 1f;
+            if (mode == AdaptationMode.Fit)
+            {
+                baseScale = Math.Min(canvasW / imageW, canvasH / imageH);
+            }
+            else if (mode == AdaptationMode.Fill)
+            {
+                baseScale = Math.Max(canvasW / imageW, canvasH / imageH);
+            }
+            else if (mode == AdaptationMode.Center)
+            {
+                baseScale = 1f;
+            }
 
-                float baseScale = 1f;
-                if (mode == AdaptationMode.Fit)
-                {
-                    baseScale = Math.Min(canvasW / imageW, canvasH / imageH);
-                }
-                else if (mode == AdaptationMode.Fill)
-                {
-                    baseScale = Math.Max(canvasW / imageW, canvasH / imageH);
-                }
-                else if (mode == AdaptationMode.Center)
-                {
-                    baseScale = 1f;
-                }
+            float finalScale = mode == AdaptationMode.Stretch ? 1f : baseScale * zoomFactor;
 
-                // Translate to canvas center + offsets (this makes zoom and pan centered!)
-                g.TranslateTransform(canvasW / 2f + panOffsetX, canvasH / 2f + panOffsetY);
-
+            Image<Rgba32> transformed = originalImage.Clone(x => {
+                token.ThrowIfCancellationRequested();
                 if (mode == AdaptationMode.Stretch)
                 {
                     float scaleX = (canvasW / imageW) * zoomFactor;
                     float scaleY = (canvasH / imageH) * zoomFactor;
-                    g.ScaleTransform(scaleX, scaleY);
+                    x.Resize((int)(originalImage.Width * scaleX), (int)(originalImage.Height * scaleY), KnownResamplers.Bicubic);
                 }
-                else
+                else if (finalScale != 1f)
                 {
-                    float finalScale = baseScale * zoomFactor;
-                    g.ScaleTransform(finalScale, finalScale);
+                    x.Resize((int)Math.Max(1, originalImage.Width * finalScale), (int)Math.Max(1, originalImage.Height * finalScale), KnownResamplers.Bicubic);
                 }
 
-                g.RotateTransform(rotationAngle);
-
-                // Draw centered
-                float drawW = originalImage.Width;
-                float drawH = originalImage.Height;
-                g.TranslateTransform(-drawW / 2f, -drawH / 2f);
-
-                Image imageToDraw = originalImage;
-                bool disposeImageToDraw = false;
-
-                if (removeBg)
+                if (rotationAngle != 0)
                 {
-                    imageToDraw = new Bitmap(originalImage.Width, originalImage.Height, PixelFormat.Format32bppArgb);
-                    disposeImageToDraw = true;
-                    using (Graphics gTemp = Graphics.FromImage(imageToDraw))
+                    x.Rotate(rotationAngle);
+                }
+            });
+
+            if (removeBg)
+            {
+                var rColor = removeBgColor.ToPixel<Rgba32>();
+                transformed.ProcessPixelRows(accessor =>
+                {
+                    for (int y = 0; y < accessor.Height; y++)
                     {
-                        gTemp.InterpolationMode = InterpolationMode.NearestNeighbor;
-                        gTemp.SmoothingMode = SmoothingMode.None;
-                        
-                        using (ImageAttributes attr = new ImageAttributes())
+                        if (y % 16 == 0) token.ThrowIfCancellationRequested();
+                        Span<Rgba32> row = accessor.GetRowSpan(y);
+                        for (int x = 0; x < row.Length; x++)
                         {
-                            Color targetColor = removeBgColor == default ? Color.White : removeBgColor;
-                            Color lowColor = Color.FromArgb(
-                                Math.Max(0, targetColor.R - removeBgTolerance),
-                                Math.Max(0, targetColor.G - removeBgTolerance),
-                                Math.Max(0, targetColor.B - removeBgTolerance)
-                            );
-                            Color highColor = Color.FromArgb(
-                                Math.Min(255, targetColor.R + removeBgTolerance),
-                                Math.Min(255, targetColor.G + removeBgTolerance),
-                                Math.Min(255, targetColor.B + removeBgTolerance)
-                            );
-                            attr.SetColorKey(lowColor, highColor);
-                            
-                            gTemp.DrawImage(originalImage, new Rectangle(0, 0, originalImage.Width, originalImage.Height), 0, 0, originalImage.Width, originalImage.Height, GraphicsUnit.Pixel, attr);
-                        }
-                    }
-                }
-
-                try
-                {
-                    // 1. Draw outline if enabled
-                    if (addOutline && outlineThickness > 0)
-                    {
-                        using (ImageAttributes outlineAttr = new ImageAttributes())
-                        {
-                            Color oc = outlineColor == default ? Color.White : outlineColor;
-                            ColorMatrix colorMatrix = new ColorMatrix(new float[][]
+                            ref Rgba32 pixel = ref row[x];
+                            int rDiff = Math.Abs(pixel.R - rColor.R);
+                            int gDiff = Math.Abs(pixel.G - rColor.G);
+                            int bDiff = Math.Abs(pixel.B - rColor.B);
+                            if (rDiff <= removeBgTolerance && gDiff <= removeBgTolerance && bDiff <= removeBgTolerance)
                             {
-                                new float[] {0, 0, 0, 0, 0},
-                                new float[] {0, 0, 0, 0, 0},
-                                new float[] {0, 0, 0, 0, 0},
-                                new float[] {0, 0, 0, 1, 0},
-                                new float[] {oc.R/255f, oc.G/255f, oc.B/255f, 0, 1}
-                            });
-                            outlineAttr.SetColorMatrix(colorMatrix);
-
-                            int steps = 16;
-                            for (int i = 0; i < steps; i++)
-                            {
-                                double angle = i * 2 * Math.PI / steps;
-                                float ox = (float)(Math.Cos(angle) * outlineThickness);
-                                float oy = (float)(Math.Sin(angle) * outlineThickness);
-
-                                GraphicsState outlineState = g.Save();
-                                g.TranslateTransform(ox, oy, MatrixOrder.Append);
-                                g.DrawImage(
-                                    imageToDraw,
-                                    new Rectangle(0, 0, (int)drawW, (int)drawH),
-                                    0,
-                                    0,
-                                    imageToDraw.Width,
-                                    imageToDraw.Height,
-                                    GraphicsUnit.Pixel,
-                                    outlineAttr
-                                );
-                                g.Restore(outlineState);
+                                pixel.A = 0;
                             }
                         }
                     }
-
-                    // 2. Draw main image
-                    g.DrawImage(imageToDraw, 0, 0, drawW, drawH);
-                }
-                finally
-                {
-                    if (disposeImageToDraw)
-                    {
-                        imageToDraw.Dispose();
-                    }
-                }
+                });
             }
+
+            float drawOffsetX = canvasW / 2f + panOffsetX - transformed.Width / 2f;
+            float drawOffsetY = canvasH / 2f + panOffsetY - transformed.Height / 2f;
+
+            result.Mutate(x => x.DrawImage(transformed, new SixLabors.ImageSharp.Point((int)Math.Round(drawOffsetX), (int)Math.Round(drawOffsetY)), 1f));
 
             // 3. Feather alpha channel if enabled
             if (featherEdges && (featherRadius > 0 || chokeRadius > 0))
             {
-                FeatherAlphaChannel(result, chokeRadius, featherRadius);
+                FeatherAlphaChannel(result, chokeRadius, featherRadius, token);
             }
+
+            transformed.Dispose();
 
             return result;
         }
@@ -244,42 +178,41 @@ namespace VRCGalleryManager.Core.Helpers
         /// Uses a high-precision 2-pass float Chamfer distance transform to calculate rounded (Euclidean-like) distances,
         /// and applies a smoothstep interpolation curve for perfect, banding-free blending (even at high radius).
         /// </summary>
-        public static void FeatherAlphaChannel(Bitmap bmp, int choke, int feather)
+        public static void FeatherAlphaChannel(Image<Rgba32> bmp, int choke, int feather, System.Threading.CancellationToken token = default)
         {
             if (choke < 0) choke = 0;
             if (feather < 0) feather = 0;
             if (choke == 0 && feather == 0) return;
 
+            token.ThrowIfCancellationRequested();
+
             int width = bmp.Width;
             int height = bmp.Height;
-            Rectangle rect = new Rectangle(0, 0, width, height);
-            BitmapData bmpData = bmp.LockBits(rect, ImageLockMode.ReadWrite, PixelFormat.Format32bppArgb);
-
-            int bytes = bmpData.Stride * height;
-            byte[] rgbValues = new byte[bytes];
-            Marshal.Copy(bmpData.Scan0, rgbValues, 0, bytes);
-
-            // Allocate distance array
-            float[] dist = new float[width * height];
-            float maxDist = 999999f;
 
             // Extract original alpha for masking/clamping
-            byte[] origAlpha = new byte[width * height];
-            for (int y = 0; y < height; y++)
-            {
-                int rowOffset = y * bmpData.Stride;
-                int alphaRowOffset = y * width;
-                for (int x = 0; x < width; x++)
-                {
-                    origAlpha[alphaRowOffset + x] = rgbValues[rowOffset + x * 4 + 3];
+            byte[] origAlpha = System.Buffers.ArrayPool<byte>.Shared.Rent(width * height);
+            bmp.ProcessPixelRows(accessor => {
+                for (int y = 0; y < height; y++) {
+                    var row = accessor.GetRowSpan(y);
+                    int rowOffset = y * width;
+                    for (int x = 0; x < width; x++) {
+                        origAlpha[rowOffset + x] = row[x].A;
+                    }
                 }
-            }
+            });
+
+            // Allocate distance array
+            float[] dist = System.Buffers.ArrayPool<float>.Shared.Rent(width * height);
+            float maxDist = 999999f;
+            byte[] alpha = System.Buffers.ArrayPool<byte>.Shared.Rent(width * height);
+            try
+            {
 
             // Pass 1: Forward Pass (top-to-bottom, left-to-right)
             int idx = 0;
             for (int y = 0; y < height; y++)
             {
-                int rowOffset = y * bmpData.Stride;
+                if (y % 16 == 0) token.ThrowIfCancellationRequested();
                 int prevRowOffset = (y - 1) * width;
                 for (int x = 0; x < width; x++, idx++)
                 {
@@ -319,10 +252,9 @@ namespace VRCGalleryManager.Core.Helpers
             }
 
             // Pass 2: Backward Pass (bottom-to-top, right-to-left)
-            byte[] alpha = new byte[width * height];
             for (int y = height - 1; y >= 0; y--)
             {
-                int rowOffset = y * bmpData.Stride;
+                if (y % 16 == 0) token.ThrowIfCancellationRequested();
                 int nextRowOffset = (y + 1) * width;
                 int distRowOffset = y * width;
                 for (int x = width - 1; x >= 0; x--)
@@ -386,11 +318,12 @@ namespace VRCGalleryManager.Core.Helpers
             if (feather > 0)
             {
                 int blurRadius = Math.Clamp(feather / 12, 1, 4);
-                BlurAlpha(alpha, width, height, blurRadius);
+                BlurAlpha(alpha, width, height, blurRadius, token);
 
                 // Clamp to the original alpha shape to prevent any outward expansion
                 for (int i = 0; i < alpha.Length; i++)
                 {
+                    if (i % 1024 == 0) token.ThrowIfCancellationRequested();
                     if (origAlpha[i] == 0)
                     {
                         alpha[i] = 0;
@@ -403,80 +336,95 @@ namespace VRCGalleryManager.Core.Helpers
             }
 
             // Write alpha channel back
-            for (int y = 0; y < height; y++)
-            {
-                int rowOffset = y * bmpData.Stride;
-                int alphaRowOffset = y * width;
-                for (int x = 0; x < width; x++)
-                {
-                    rgbValues[rowOffset + x * 4 + 3] = alpha[alphaRowOffset + x];
+            bmp.ProcessPixelRows(accessor => {
+                for (int y = 0; y < height; y++) {
+                    var row = accessor.GetRowSpan(y);
+                    int rowOffset = y * width;
+                    for (int x = 0; x < width; x++) {
+                        row[x].A = alpha[rowOffset + x];
+                    }
                 }
+            });
             }
-
-            Marshal.Copy(rgbValues, 0, bmpData.Scan0, bytes);
-            bmp.UnlockBits(bmpData);
+            finally
+            {
+                System.Buffers.ArrayPool<byte>.Shared.Return(origAlpha);
+                System.Buffers.ArrayPool<float>.Shared.Return(dist);
+                System.Buffers.ArrayPool<byte>.Shared.Return(alpha);
+            }
         }
 
-        private static void BlurAlpha(byte[] alpha, int width, int height, int radius)
+        private static void BlurAlpha(byte[] alpha, int width, int height, int radius, System.Threading.CancellationToken token = default)
         {
             if (radius <= 0) return;
 
-            byte[] temp = new byte[width * height];
-            int windowSize = 2 * radius + 1;
+            token.ThrowIfCancellationRequested();
 
-            // Horizontal Pass
-            for (int y = 0; y < height; y++)
+            byte[] temp = System.Buffers.ArrayPool<byte>.Shared.Rent(width * height);
+            try
             {
-                int rowOffset = y * width;
-                int sum = 0;
+                int windowSize = 2 * radius + 1;
 
-                // Initialize sum for first window
-                for (int x = -radius; x <= radius; x++)
+                // Horizontal Pass
+                for (int y = 0; y < height; y++)
                 {
-                    sum += alpha[rowOffset + Math.Clamp(x, 0, width - 1)];
+                    if (y % 16 == 0) token.ThrowIfCancellationRequested();
+                    int rowOffset = y * width;
+                    int sum = 0;
+
+                    // Initialize sum for first window
+                    for (int x = -radius; x <= radius; x++)
+                    {
+                        sum += alpha[rowOffset + Math.Clamp(x, 0, width - 1)];
+                    }
+                    temp[rowOffset] = (byte)((sum + windowSize / 2) / windowSize);
+
+                    for (int x = 1; x < width; x++)
+                    {
+                        int leftIdx = rowOffset + Math.Clamp(x - radius - 1, 0, width - 1);
+                        int rightIdx = rowOffset + Math.Clamp(x + radius, 0, width - 1);
+                        sum += alpha[rightIdx] - alpha[leftIdx];
+                        temp[rowOffset + x] = (byte)((sum + windowSize / 2) / windowSize);
+                    }
                 }
-                temp[rowOffset] = (byte)((sum + windowSize / 2) / windowSize);
 
-                for (int x = 1; x < width; x++)
+                // Vertical Pass
+                for (int x = 0; x < width; x++)
                 {
-                    int leftIdx = rowOffset + Math.Clamp(x - radius - 1, 0, width - 1);
-                    int rightIdx = rowOffset + Math.Clamp(x + radius, 0, width - 1);
-                    sum += alpha[rightIdx] - alpha[leftIdx];
-                    temp[rowOffset + x] = (byte)((sum + windowSize / 2) / windowSize);
+                    if (x % 16 == 0) token.ThrowIfCancellationRequested();
+                    int sum = 0;
+
+                    // Initialize sum for first window
+                    for (int y = -radius; y <= radius; y++)
+                    {
+                        sum += temp[Math.Clamp(y, 0, height - 1) * width + x];
+                    }
+                    alpha[x] = (byte)((sum + windowSize / 2) / windowSize);
+
+                    for (int y = 1; y < height; y++)
+                    {
+                        int topIdx = Math.Clamp(y - radius - 1, 0, height - 1) * width + x;
+                        int bottomIdx = Math.Clamp(y + radius, 0, height - 1) * width + x;
+                        sum += temp[bottomIdx] - temp[topIdx];
+                        alpha[y * width + x] = (byte)((sum + windowSize / 2) / windowSize);
+                    }
                 }
             }
-
-            // Vertical Pass
-            for (int x = 0; x < width; x++)
+            finally
             {
-                int sum = 0;
-
-                // Initialize sum for first window
-                for (int y = -radius; y <= radius; y++)
-                {
-                    sum += temp[Math.Clamp(y, 0, height - 1) * width + x];
-                }
-                alpha[x] = (byte)((sum + windowSize / 2) / windowSize);
-
-                for (int y = 1; y < height; y++)
-                {
-                    int topIdx = Math.Clamp(y - radius - 1, 0, height - 1) * width + x;
-                    int bottomIdx = Math.Clamp(y + radius, 0, height - 1) * width + x;
-                    sum += temp[bottomIdx] - temp[topIdx];
-                    alpha[y * width + x] = (byte)((sum + windowSize / 2) / windowSize);
-                }
+                System.Buffers.ArrayPool<byte>.Shared.Return(temp);
             }
         }
 
         /// <summary>
         /// Saves the edited image to a temporary file.
         /// </summary>
-        public static string SaveTempProcessedImage(Bitmap bmp)
+        public static string SaveTempProcessedImage(Image<Rgba32> bmp)
         {
             var tempDir = Path.Combine(Path.GetTempPath(), "VRCGalleryManager");
             Directory.CreateDirectory(tempDir);
             string outPath = Path.Combine(tempDir, $"edited_{Guid.NewGuid():N}.png");
-            bmp.Save(outPath, ImageFormat.Png);
+            bmp.SaveAsPng(outPath);
             return outPath;
         }
     }

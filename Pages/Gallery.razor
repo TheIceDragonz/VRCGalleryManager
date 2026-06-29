@@ -5,6 +5,8 @@
 @using VRCGalleryManager.Core.Helpers
 @using System.Diagnostics
 @using Microsoft.Maui.Storage
+@using SixLabors.ImageSharp
+@using SixLabors.ImageSharp.Processing
 @inject VRCAuth Auth
 @inject NavigationManager Nav
 
@@ -60,7 +62,7 @@
             }
             else
             {
-                <div class="d-flex flex-wrap gap-3 pb-3">
+                <div class="media-grid gap-3 pb-3">
                     @foreach (var item in Items)
                     {
                         <div class="position-relative gallery-icon-card media-card-container @(SelectedImage == item ? "border-primary" : "")"
@@ -326,16 +328,29 @@
             });
         }
 
-        var files = Directory.EnumerateFiles(CurrentFolder).Where(IsImageFile).ToList();
-        foreach (var file in files)
+        try
         {
-            if (token.IsCancellationRequested) break;
+            var files = Directory.EnumerateFiles(CurrentFolder).Where(IsImageFile).ToList();
+            foreach (var file in files)
+            {
+                if (token.IsCancellationRequested) break;
+                Items.Add(new GalleryItem
+                {
+                    IsFolder = false,
+                    Path = file,
+                    Name = Path.GetFileName(file),
+                    IsThumbLoading = true
+                });
+            }
+        }
+        catch (Exception ex)
+        {
             Items.Add(new GalleryItem
             {
                 IsFolder = false,
-                Path = file,
-                Name = Path.GetFileName(file),
-                IsThumbLoading = true
+                Path = "",
+                Name = "Error: " + ex.Message,
+                IsThumbLoading = false
             });
         }
 
@@ -386,18 +401,20 @@
         }
     }
 
-    private static Task<string> MakeThumbnailBase64Async(string path, int maxSize, CancellationToken token)
-        => Task.Run(() =>
+    private static async Task<string> MakeThumbnailBase64Async(string path, int maxSize, CancellationToken token)
+    {
+        if (token.IsCancellationRequested) return null;
+        try
         {
-            if (token.IsCancellationRequested) return null;
-            try
+#if WINDOWS
+            return await Task.Run(() =>
             {
 #pragma warning disable CA1416
-                using var image = System.Drawing.Image.FromFile(path);
+                using var image = SixLabors.ImageSharp.Image.Load<SixLabors.ImageSharp.PixelFormats.Rgba32>(path);
                 if (image.Width <= maxSize && image.Height <= maxSize)
                 {
                     using var ms = new MemoryStream();
-                    image.Save(ms, System.Drawing.Imaging.ImageFormat.Jpeg);
+                    image.SaveAsJpeg(ms);
                     return $"data:image/jpeg;base64,{Convert.ToBase64String(ms.ToArray())}";
                 }
                 
@@ -405,20 +422,39 @@
                 var width = (int)(image.Width * ratio);
                 var height = (int)(image.Height * ratio);
                 
-                using var thumb = new System.Drawing.Bitmap(width, height);
-                using (var g = System.Drawing.Graphics.FromImage(thumb))
-                {
-                    g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
-                    g.DrawImage(image, 0, 0, width, height);
-                }
+                using var thumb = image.Clone(x => x.Resize(width, height, SixLabors.ImageSharp.Processing.KnownResamplers.Bicubic));
                 
                 using var ms2 = new MemoryStream();
-                thumb.Save(ms2, System.Drawing.Imaging.ImageFormat.Jpeg);
+                thumb.SaveAsJpeg(ms2);
                 return $"data:image/jpeg;base64,{Convert.ToBase64String(ms2.ToArray())}";
 #pragma warning restore CA1416
+            }, token);
+#else
+            using var stream = File.OpenRead(path);
+            var image = Microsoft.Maui.Graphics.Platform.PlatformImage.FromStream(stream);
+            if (image != null)
+            {
+                if (image.Width <= maxSize && image.Height <= maxSize)
+                {
+                    using var ms = new MemoryStream();
+                    image.Save(ms);
+                    return $"data:image/png;base64,{Convert.ToBase64String(ms.ToArray())}";
+                }
+
+                var ratio = (double)maxSize / Math.Max(image.Width, image.Height);
+                var width = (int)(image.Width * ratio);
+                var height = (int)(image.Height * ratio);
+                
+                using var resized = image.Downsize((float)width, (float)height, true);
+                using var ms2 = new MemoryStream();
+                resized.Save(ms2);
+                return $"data:image/png;base64,{Convert.ToBase64String(ms2.ToArray())}";
             }
-            catch { return null; }
-        }, token);
+            return null;
+#endif
+        }
+        catch { return null; }
+    }
 
     // ── Item Interaction ──────────────────────────────────────────────────
     private void OnItemClick(GalleryItem item)

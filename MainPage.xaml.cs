@@ -9,6 +9,64 @@ public partial class MainPage : ContentPage
 		InitializeComponent();
 	}
 
+    protected override async void OnAppearing()
+    {
+        base.OnAppearing();
+#if ANDROID
+        await RequestAndroidPermissions();
+#endif
+    }
+
+#if ANDROID
+    private async Task RequestAndroidPermissions()
+    {
+        try
+        {
+            // 1. First, request standard media permissions
+            if (OperatingSystem.IsAndroidVersionAtLeast(33))
+            {
+                var status = await Permissions.CheckStatusAsync<Permissions.Photos>();
+                if (status != PermissionStatus.Granted)
+                {
+                    await Permissions.RequestAsync<Permissions.Photos>();
+                }
+            }
+            else
+            {
+                var status = await Permissions.CheckStatusAsync<Permissions.StorageRead>();
+                if (status != PermissionStatus.Granted)
+                {
+                    await Permissions.RequestAsync<Permissions.StorageRead>();
+                }
+            }
+
+            // 2. Then, request full file access if needed (Android 11+)
+            if (OperatingSystem.IsAndroidVersionAtLeast(30))
+            {
+                if (!Android.OS.Environment.IsExternalStorageManager)
+                {
+                    bool answer = await Application.Current.MainPage.DisplayAlert(
+                        "Permissions Required", 
+                        "To read and display images from your VRChat gallery, the app needs full file access (MANAGE_EXTERNAL_STORAGE). We will redirect you to the settings to enable it.", 
+                        "Go to Settings", "Cancel");
+                        
+                    if (answer)
+                    {
+                        var intent = new Android.Content.Intent(Android.Provider.Settings.ActionManageAppAllFilesAccessPermission);
+                        intent.AddCategory("android.intent.category.DEFAULT");
+                        intent.SetData(Android.Net.Uri.Parse($"package:{Android.App.Application.Context.PackageName}"));
+                        Microsoft.Maui.ApplicationModel.Platform.CurrentActivity?.StartActivity(intent);
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        { 
+            System.Diagnostics.Debug.WriteLine($"Perm Error: {ex.Message}");
+        }
+    }
+#endif
+
     private FileDropService GetFileDropService()
     {
         return Handler?.MauiContext?.Services.GetService<FileDropService>() 

@@ -593,6 +593,20 @@ h6 {
     border-color: var(--border-color) !important;
 }
 
+@media (max-width: 991.98px) {
+
+    .image-editor-container,
+    .emoji-editor-container {
+        flex-direction: column !important;
+    }
+
+    .editor-sidebar {
+        width: 100% !important;
+        max-height: 50% !important;
+        border-left: none !important;
+    }
+}
+
 .editor-sidebar .border-bottom,
 .editor-sidebar .border-top {
     border-color: var(--border-color) !important;
@@ -751,8 +765,22 @@ h6 {
     z-index: 2;
 }
 
+.media-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(var(--grid-min, 150px), 1fr));
+}
+
+.grid-wide {
+    --grid-min: 250px;
+}
+
+.grid-medium {
+    --grid-min: 200px;
+}
+
 .media-card-container {
-    height: 150px;
+    height: auto;
+    width: 100%;
     background-color: #181b1f;
     border-radius: 20px;
     border: 2px solid transparent;
@@ -1112,7 +1140,6 @@ canvas.picking-color {
 }
 
 
-
 /* Emoji Type Dropdown Styles */
 .emoji-type-dropdown-menu {
     position: absolute;
@@ -1170,4 +1197,209 @@ canvas.picking-color {
 
 .dialog-footer {
     background-color: rgba(0, 0, 0, 0.2);
+}
+
+/* Mobile / Android Responsive Layout */
+.android-layout {
+    flex-direction: column;
+}
+
+.android-layout .main-sidebar-container {
+    width: 100%;
+    height: auto;
+    display: grid !important;
+    grid-template-columns: 1fr;
+    grid-template-rows: 75px auto;
+    z-index: 1000;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    background-color: var(--bg-panel);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.android-layout .main-content-container {
+    height: 0;
+    flex: 1;
+}
+
+.android-layout .nav-top-row {
+    display: flex !important;
+    grid-column: 1;
+    grid-row: 1;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 0 !important;
+    height: 75px !important;
+    pointer-events: none;
+    z-index: 5;
+}
+
+.android-layout .nav-top-row .navbar-brand {
+    justify-content: center !important;
+    width: auto !important;
+}
+
+/* Profile Card */
+.android-layout .nav-profile-card-container {
+    grid-column: 1;
+    grid-row: 1;
+    height: 75px !important;
+    width: 100% !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    flex-shrink: 0;
+    position: relative;
+    background: transparent !important;
+}
+
+.android-layout .nav-profile-bg {
+    display: block !important;
+    position: absolute !important;
+    left: auto !important;
+    right: 15px !important;
+    top: 10px !important;
+    width: 90px !important;
+    height: 55px !important;
+    border-radius: var(--radius-md) !important;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3) !important;
+    object-fit: cover !important;
+    filter: none !important;
+}
+
+.android-layout .nav-profile-name {
+    display: none !important;
+}
+
+.android-layout .nav-profile-content .d-flex {
+    display: flex !important;
+    flex-direction: row;
+    align-items: center;
+    gap: 4px !important;
+}
+
+.android-layout .nav-profile-content {
+    position: absolute !important;
+    left: 15px;
+    top: 0;
+    height: 75px !important;
+    flex-direction: row !important;
+    justify-content: flex-start !important;
+    align-items: center !important;
+    padding: 0 !important;
+    width: auto !important;
+    gap: 10px !important;
+}
+
+.android-layout .nav-profile-icon {
+    width: 36px !important;
+    height: 36px !important;
+    border-width: 1px !important;
+    margin-right: 0 !important;
+}
+
+.android-layout .nav-scrollable-container {
+    grid-column: 1;
+    grid-row: 2;
+    padding: 0 5px 10px 5px !important;
+    flex-direction: row !important;
+    overflow-x: auto;
+    overflow-y: hidden;
+    width: 100%;
+    align-items: center;
+}
+
+.android-layout .nav-scrollable-container::-webkit-scrollbar {
+    display: none;
+}
+
+.android-layout .nav-buttons-bg {
+    flex-direction: row !important;
+    width: max-content;
+    height: 100%;
+    padding: 0 10px !important;
+    align-items: center;
+    background-color: transparent !important;
+    gap: 8px !important;
+}
+
+.android-layout .nav-item {
+    margin: 0;
+}
+
+.android-layout .custom-nav-link {
+    height: 60px;
+    line-height: normal;
+    padding: 0 12px;
+    flex-direction: column;
+    justify-content: center;
+    font-size: 0.75rem;
+    gap: 4px;
+    border-radius: 12px;
+    width: 70px;
+}
+
+.android-layout .custom-nav-link .nav-icon {
+    position: static;
+    width: 24px;
+    height: 24px;
+}
+
+.android-layout .nav-bottom-group {
+    margin-top: 0 !important;
+    flex-direction: row !important;
+    align-items: center;
+    gap: 8px !important;
+}
+
+.android-layout .nav-divider {
+    width: 2px;
+    height: 40px;
+    border-bottom: none !important;
+    border-right: 1px solid var(--border-color);
+    margin: 0 5px !important;
+}
+
+.android-layout .details-panel {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    margin-left: 0;
+    z-index: 500;
+    border-radius: 0;
+}
+
+.android-layout .grid-container {
+    grid-template-columns: repeat(auto-fill, minmax(min(100px, 100%), 1fr));
+    gap: 5px;
+    padding: 5px;
+}
+
+.android-layout .gallery-header {
+    margin: 5px;
+}
+
+.android-layout .media-card-container {
+    height: auto;
+    flex-grow: 1;
+    flex-basis: 120px;
+}
+
+/* Adapt Upload, Paste, Reload buttons for mobile (Icon-only) */
+.android-layout .d-flex.justify-content-between.border-bottom {
+    flex-wrap: wrap !important;
+    gap: 10px !important;
+}
+
+.android-layout .d-flex.justify-content-between.border-bottom .btn {
+    font-size: 0 !important;
+    padding: 0.375rem 0.5rem !important;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+}
+
+.android-layout .d-flex.justify-content-between.border-bottom .btn .btn-icon {
+    margin: 0 !important;
 }

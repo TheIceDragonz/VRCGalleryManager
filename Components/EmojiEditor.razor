@@ -1,13 +1,30 @@
 @using Microsoft.JSInterop
-@using System.Drawing
-@using System.Drawing.Imaging
+@using SixLabors.ImageSharp
+@using SixLabors.ImageSharp.PixelFormats
+@using SixLabors.ImageSharp.Processing
 @using System.IO
 @using global::VRCGalleryManager.Core.Helpers
 @using global::VRCGalleryManager.Core
 @inject IJSRuntime JSRuntime
 @inject NotificationService NotificationService
 
-<div class="emoji-editor-container d-flex w-100 h-100 bg-main text-white rounded overflow-hidden">
+<div class="emoji-editor-container position-relative d-flex h-100 bg-main text-white rounded overflow-hidden">
+    @if (isLoading || isUploading)
+    {
+        <div class="position-absolute top-0 start-0 w-100 h-100 d-flex flex-column justify-content-center align-items-center" style="background-color: rgba(0,0,0,0.7); z-index: 1000; backdrop-filter: blur(2px);">
+            <div class="spinner-border text-accent mb-3" style="width: 3rem; height: 3rem;" role="status">
+                <span class="visually-hidden">@(isUploading ? "Processing..." : "Loading...")</span>
+            </div>
+            @if (isUploading)
+            {
+                <span class="text-white fw-bold fs-5">Processing final emoji...</span>
+            }
+            else
+            {
+                <span class="text-white fw-bold fs-5">Loading emoji...</span>
+            }
+        </div>
+    }
     <div class="canvas-container flex-grow-1 position-relative d-flex justify-content-center align-items-center bg-black p-4" style="min-width: 0; min-height: 0;">
         @if (IsAnimatedMode)
         {
@@ -50,7 +67,8 @@
                 <h4 class="fw-bold text-accent m-0">Emoji Editor</h4>
             </div>
         </div>
-        <div class="p-3 flex-grow-1 overflow-auto editor-sidebar-content">
+        <div class="flex-grow-1 overflow-auto d-flex flex-column">
+            <div class="p-3 editor-sidebar-content flex-shrink-0">
 
             
             <div class="mb-2">
@@ -194,9 +212,24 @@
 
                 }
             }
+            </div>
+
+            
+            <div class="d-lg-none mt-auto">
+                @EditorFooter
+            </div>
         </div>
         
-        <div class="p-3 bg-hover mt-auto border-top">
+        <div class="d-none d-lg-block mt-auto border-top" style="background-color: var(--bg-panel);">
+            @EditorFooter
+        </div>
+    </div>
+</div>
+
+@code {
+    private RenderFragment EditorFooter => __builder =>
+    {
+        <div class="p-3 editor-sidebar-footer flex-shrink-0">
             <div class="d-flex justify-content-between align-items-center mb-2">
                 <span class="text-muted small fw-bold">SIZE</span>
                 <span class="fw-bold @(SizeMb > 10 ? "text-danger" : "text-accent")">@SizeMb.ToString("0.00") MB</span>
@@ -214,21 +247,26 @@
                 <button class="btn btn-sm flex-grow-1 btn-reset" @onclick="Reset">Reset</button>
                 <button class="btn btn-sm btn-outline-danger flex-grow-1" @onclick="OnCancelClick">Cancel</button>
             </div>
-            <button class="btn btn-sm w-100 fw-bold" @onclick="OnSaveClick" disabled="@(SizeMb > 10)">
-                Upload
+            <button class="btn btn-sm w-100 fw-bold @(isUploading ? "btn-secondary" : "btn-primary")" @onclick="OnSaveClick" disabled="@(SizeMb > 10 || isUploading)">
+                @if (isUploading)
+                {
+                    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                    <span>Processing...</span>
+                }
+                else
+                {
+                    <span>Upload</span>
+                }
             </button>
         </div>
-    </div>
-</div>
-
-@code {
+    };
     [Parameter] public string Base64Image { get; set; }
     [Parameter] public EventCallback<(string Base64, bool IsAnimated, string AnimStyle, int Frames, int FramesOverTime)> OnSave { get; set; }
     [Parameter] public EventCallback OnCancel { get; set; }
     [Parameter] public bool IsAnimatedMode { get; set; } = false;
 
     private DotNetObjectReference<EmojiEditor> dotNetRef;
-    private Image originalImage;
+    private Image<Rgba32> originalImage;
     private readonly object _imageLock = new object();
 
     // Static State
@@ -301,29 +339,34 @@
     private MemoryStream _imageStream;
 
     private CancellationTokenSource cts = new();
-    private CancellationTokenSource ctsSize = new();
+    private int _previewVersion = 0;
     private string lastRenderHash = "";
+    private bool isLoading = true;
+    private bool isUploading = false;
 
     protected override async Task OnInitializedAsync()
     {
         if (!string.IsNullOrEmpty(Base64Image))
         {
-            var parts = Base64Image.Split(',');
-            var base64Data = parts.Length > 1 ? parts[1] : parts[0];
-            byte[] bytes = Convert.FromBase64String(base64Data);
-
-            TempGifPath = Path.Combine(Path.GetTempPath(), $"temp_emoji_{Guid.NewGuid()}.gif");
-            await File.WriteAllBytesAsync(TempGifPath, bytes);
-
-            _imageStream = new MemoryStream(bytes);
-            originalImage = Image.FromStream(_imageStream);
-            
-            try
+            isLoading = true;
+            await Task.Run(async () =>
             {
-                var dimension = new FrameDimension(originalImage.FrameDimensionsList[0]);
-                TotalFrames = originalImage.GetFrameCount(dimension);
-            }
-            catch { TotalFrames = 1; }
+                var parts = Base64Image.Split(',');
+                var base64Data = parts.Length > 1 ? parts[1] : parts[0];
+                byte[] bytes = Convert.FromBase64String(base64Data);
+
+                TempGifPath = Path.Combine(Path.GetTempPath(), $"temp_emoji_{Guid.NewGuid()}.gif");
+                await File.WriteAllBytesAsync(TempGifPath, bytes);
+
+                _imageStream = new MemoryStream(bytes);
+                originalImage = Image.Load<Rgba32>(_imageStream);
+                
+                try
+                {
+                    TotalFrames = originalImage.Frames.Count;
+                }
+                catch { TotalFrames = 1; }
+            });
 
             if (TotalFrames > 1)
             {
@@ -331,6 +374,21 @@
                 EndFrame = Math.Min(TotalFrames - 1, 63);
                 _ = ExtractGifThumbnailsAsync();
             }
+
+            isLoading = false;
+
+            if (!IsAnimatedMode && dotNetRef != null)
+            {
+                QueueUpdatePreview();
+            }
+            else if (IsAnimatedMode)
+            {
+                UpdateAnimatedPreview();
+            }
+        }
+        else
+        {
+            isLoading = false;
         }
     }
 
@@ -340,11 +398,17 @@
         {
             dotNetRef = DotNetObjectReference.Create(this);
             await JSRuntime.InvokeVoidAsync("imageEditor.init", "emojiEditorCanvas", dotNetRef);
-            QueueUpdatePreview();
+            if (originalImage != null)
+            {
+                QueueUpdatePreview();
+            }
         }
         else if (firstRender && IsAnimatedMode)
         {
-            UpdateAnimatedPreview();
+            if (originalImage != null)
+            {
+                UpdateAnimatedPreview();
+            }
         }
     }
 
@@ -370,14 +434,21 @@
         }
     }
 
-    private Color ParseHex(string hex) => ColorTranslator.FromHtml(hex);
+    private Color ParseHex(string hex)
+    {
+        try {
+            return Color.ParseHex(hex);
+        } catch {
+            return Color.Transparent;
+        }
+    }
 
     private void SetTransparentBg()
     {
         if (!IsTransparentBg)
         {
             IsTransparentBg = true;
-            QueueTransformUpdate();
+            QueueUpdatePreview();
         }
     }
 
@@ -386,7 +457,7 @@
         if (IsTransparentBg)
         {
             IsTransparentBg = false;
-            QueueTransformUpdate();
+            QueueUpdatePreview();
         }
     }
 
@@ -408,7 +479,7 @@
     private void Rotate()
     {
         RotationAngle = (RotationAngle + 90) % 360;
-        QueueTransformUpdate();
+        QueueUpdatePreview();
     }
 
     private void Reset()
@@ -426,14 +497,13 @@
         FeatherRadius = 2;
         CompressionQuality = 100;
         QueueUpdatePreview();
-        QueueTransformUpdate();
     }
 
     private void OnBgColorInput(ChangeEventArgs e)
     {
         HexBgColor = e.Value?.ToString() ?? "#ffffff";
         IsTransparentBg = false;
-        QueueTransformUpdate();
+        QueueUpdatePreview();
     }
 
     private void OnRemoveBgColorInput(ChangeEventArgs e)
@@ -447,7 +517,7 @@
         if (int.TryParse(e.Value?.ToString(), out int val))
         {
             ZoomFactor = val / 100f;
-            QueueTransformUpdate();
+            QueueUpdatePreview();
         }
     }
 
@@ -456,11 +526,6 @@
         if (IsAnimatedMode) return;
         JSRuntime.InvokeVoidAsync("imageEditor.setTransform", 
             ZoomFactor, PanX, PanY, RotationAngle, (int)CurrentAdaptationMode, HexBgColor, IsTransparentBg);
-        
-        ctsSize.Cancel();
-        ctsSize = new CancellationTokenSource();
-        ctsSize = new CancellationTokenSource();
-        _ = CalculateFinalSizeAsync(ctsSize.Token);
     }
 
     private void OnQualityInput(ChangeEventArgs e)
@@ -475,20 +540,17 @@
     private void QueueUpdatePreview()
     {
         if (IsAnimatedMode) return;
+        int currentVersion = Interlocked.Increment(ref _previewVersion);
         cts.Cancel();
         cts = new CancellationTokenSource();
-        _ = UpdatePreviewAsync(cts.Token);
-        
-        ctsSize.Cancel();
-        ctsSize = new CancellationTokenSource();
-        _ = CalculateFinalSizeAsync(ctsSize.Token);
+        _ = UpdatePreviewAsync(cts.Token, currentVersion);
     }
 
-    private async Task UpdatePreviewAsync(CancellationToken token)
+    private async Task UpdatePreviewAsync(CancellationToken token, int version)
     {
         try
         {
-            await Task.Delay(60, token); // Debounce
+            await Task.Delay(250, token); // Debounce
             if (token.IsCancellationRequested || originalImage == null) return;
 
             string currentHash = $"{RemoveBgEnabled}_{HexRemoveBgColor}_{RemoveBgTolerance}_{FeatherEnabled}_{ChokeRadius}_{FeatherRadius}_{CompressionQuality}";
@@ -504,42 +566,48 @@
             int scaledFeather = FeatherEnabled && FeatherRadius > 0 ? (int)Math.Max(1, Math.Round(FeatherRadius * baseScale * outScale)) : 0;
             int scaledChoke = FeatherEnabled && ChokeRadius > 0 ? (int)Math.Max(1, Math.Round(ChokeRadius * baseScale * outScale)) : 0;
 
+            bool useJpeg = !IsTransparentBg && !RemoveBgEnabled;
+
             string b64Preview = await Task.Run(() =>
             {
                 if (token.IsCancellationRequested) return null;
                 lock (_imageLock)
                 {
                     if (token.IsCancellationRequested) return null;
-                    using Bitmap bmp = global::VRCGalleryManager.Core.Helpers.ImageEditor.RenderImage(
-                        originalImage, previewW, previewH, AdaptationMode.Stretch, 1.0f, 0f, 0f, 0,
-                        Color.Transparent, RemoveBgEnabled, rmColor, RemoveBgTolerance, false, Color.White, 0, FeatherEnabled, scaledFeather, scaledChoke);
+                    using Image<Rgba32> bmp = global::VRCGalleryManager.Core.Helpers.ImageEditor.RenderImage(
+                        originalImage, previewW, previewH, CurrentAdaptationMode, ZoomFactor, PanX, PanY, RotationAngle,
+                        IsTransparentBg ? Color.Transparent : ParseHex(HexBgColor), RemoveBgEnabled, rmColor, RemoveBgTolerance, false, Color.White, 0, FeatherEnabled, scaledFeather, scaledChoke, token);
                     
                     if (outScale < 1.0f)
                     {
                         int smallW = Math.Max(1, (int)(previewW * outScale));
                         int smallH = Math.Max(1, (int)(previewH * outScale));
-                        using Bitmap smallBmp = new Bitmap(smallW, smallH, PixelFormat.Format32bppArgb);
-                        using (Graphics gSmall = Graphics.FromImage(smallBmp))
-                        {
-                            gSmall.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
-                            gSmall.DrawImage(bmp, 0, 0, smallW, smallH);
-                        }
                         
-                        using Bitmap pixelatedBmp = new Bitmap(previewW, previewH, PixelFormat.Format32bppArgb);
-                        using (Graphics gPixel = Graphics.FromImage(pixelatedBmp))
-                        {
-                            gPixel.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
-                            gPixel.DrawImage(smallBmp, 0, 0, previewW, previewH);
-                        }
+                        using Image<Rgba32> pixelatedBmp = bmp.Clone(x => {
+                            x.Resize(smallW, smallH, KnownResamplers.Bicubic);
+                            x.Resize(previewW, previewH, KnownResamplers.Bicubic);
+                        });
                         
                         using MemoryStream ms = new MemoryStream();
-                        pixelatedBmp.Save(ms, ImageFormat.Png);
+                        if (useJpeg)
+                            pixelatedBmp.SaveAsJpeg(ms, new SixLabors.ImageSharp.Formats.Jpeg.JpegEncoder { Quality = CompressionQuality });
+                        else
+                            pixelatedBmp.SaveAsPng(ms, new SixLabors.ImageSharp.Formats.Png.PngEncoder { CompressionLevel = SixLabors.ImageSharp.Formats.Png.PngCompressionLevel.BestSpeed });
+                        
+                        float areaRatio = (256f * 256f) / (float)(previewW * previewH);
+                        SizeMb = ((ms.Length * areaRatio) / (1024.0 * 1024.0));
                         return Convert.ToBase64String(ms.ToArray());
                     }
                     else
                     {
                         using MemoryStream ms = new MemoryStream();
-                        bmp.Save(ms, ImageFormat.Png);
+                        if (useJpeg)
+                            bmp.SaveAsJpeg(ms, new SixLabors.ImageSharp.Formats.Jpeg.JpegEncoder { Quality = CompressionQuality });
+                        else
+                            bmp.SaveAsPng(ms, new SixLabors.ImageSharp.Formats.Png.PngEncoder { CompressionLevel = SixLabors.ImageSharp.Formats.Png.PngCompressionLevel.BestSpeed });
+                        
+                        float areaRatio = (256f * 256f) / (float)(previewW * previewH);
+                        SizeMb = ((ms.Length * areaRatio) / (1024.0 * 1024.0));
                         return Convert.ToBase64String(ms.ToArray());
                     }
                 }
@@ -547,12 +615,13 @@
 
             if (!token.IsCancellationRequested && b64Preview != null)
             {
-                await JSRuntime.InvokeVoidAsync("imageEditor.loadImagePreview", "data:image/png;base64," + b64Preview);
+                string mimeType = useJpeg ? "image/jpeg" : "image/png";
+                await JSRuntime.InvokeVoidAsync("imageEditor.loadImagePreview", $"data:{mimeType};base64," + b64Preview);
                 lastRenderHash = currentHash;
                 QueueTransformUpdate();
             }
         }
-        catch (TaskCanceledException) { }
+        catch (OperationCanceledException) { }
     }
 
     private void UpdateAnimatedPreview()
@@ -574,18 +643,13 @@
         using var converter = new GifToSpriteSheetConverter();
         var result = converter.ConvertGifToSpriteSheet(TempGifPath, StartFrame, EndFrame);
         
-        using var safeBitmap = new Bitmap(result.spriteSheet.Width, result.spriteSheet.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-        using (var g = Graphics.FromImage(safeBitmap))
-        {
-            g.Clear(Color.Transparent);
-            g.DrawImageUnscaled(result.spriteSheet, 0, 0);
-        }
+        using var safeBitmap = result.spriteSheet.Clone();
 
         using MemoryStream ms = new MemoryStream();
-        safeBitmap.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
+        safeBitmap.SaveAsPng(ms, new SixLabors.ImageSharp.Formats.Png.PngEncoder { CompressionLevel = SixLabors.ImageSharp.Formats.Png.PngCompressionLevel.BestSpeed });
         AnimatedPreviewBase64 = "data:image/png;base64," + Convert.ToBase64String(ms.ToArray());
         
-        SizeMb = ms.Length / (1024.0 * 1024.0);
+        SizeMb = ms.Length / (1024.0 * 1024.0);;
         
         _ = InvokeAsync(StateHasChanged);
         
@@ -606,23 +670,20 @@
                 lock (_imageLock)
                 {
                     if (originalImage == null) return;
-                    var dimension = new FrameDimension(originalImage.FrameDimensionsList[0]);
                     int count = Math.Min(TotalFrames, 256); // Extract up to 256 thumbnails for the timeline
                     for (int i = 0; i < count; i++)
                     {
-                        originalImage.SelectActiveFrame(dimension, i);
-                        using Bitmap thumb = new Bitmap(64, 64);
-                        using (Graphics g = Graphics.FromImage(thumb))
-                        {
-                            g.Clear(Color.Transparent);
-                            g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+                        using Image<Rgba32> thumb = new Image<Rgba32>(64, 64, Color.Transparent);
+                        using Image<Rgba32> clone = originalImage.Clone(x => {
                             int minDim = Math.Min(originalImage.Width, originalImage.Height);
                             int srcX = (originalImage.Width - minDim) / 2;
                             int srcY = (originalImage.Height - minDim) / 2;
-                            g.DrawImage(originalImage, new Rectangle(0, 0, 64, 64), new Rectangle(srcX, srcY, minDim, minDim), GraphicsUnit.Pixel);
-                        }
+                            x.Crop(new Rectangle(srcX, srcY, minDim, minDim));
+                            x.Resize(64, 64, KnownResamplers.Bicubic);
+                        });
+                        thumb.Mutate(x => x.DrawImage(clone, new Point(0, 0), 1f));
                         using MemoryStream ms = new MemoryStream();
-                        thumb.Save(ms, ImageFormat.Png);
+                        thumb.SaveAsPng(ms, new SixLabors.ImageSharp.Formats.Png.PngEncoder { CompressionLevel = SixLabors.ImageSharp.Formats.Png.PngCompressionLevel.BestSpeed });;
                         thumbnails.Add("data:image/png;base64," + Convert.ToBase64String(ms.ToArray()));
                     }
                 }
@@ -685,48 +746,7 @@
             FramesOverTime = val;
     }
 
-    private async Task CalculateFinalSizeAsync(CancellationToken token)
-    {
-        try
-        {
-            await Task.Delay(500, token); // Heavier debounce for exact size calculation
-            if (token.IsCancellationRequested || originalImage == null) return;
 
-            Color bgColor = IsTransparentBg ? Color.Transparent : ParseHex(HexBgColor);
-            Color rmColor = ParseHex(HexRemoveBgColor);
-            float outScale = CompressionQuality / 100f;
-
-            long sizeBytes = await Task.Run(() =>
-            {
-                if (token.IsCancellationRequested) return 0L;
-                lock (_imageLock)
-                {
-                    if (token.IsCancellationRequested) return 0L;
-                    using Bitmap rendered = global::VRCGalleryManager.Core.Helpers.ImageEditor.RenderImage(
-                        originalImage, 256, 256, CurrentAdaptationMode, ZoomFactor, PanX, PanY, RotationAngle,
-                        bgColor, RemoveBgEnabled, rmColor, RemoveBgTolerance, false, Color.White, 0, FeatherEnabled, FeatherRadius, ChokeRadius);
-                    
-                    using Bitmap final = new Bitmap(Math.Max(1, (int)(256 * outScale)), Math.Max(1, (int)(256 * outScale)), PixelFormat.Format32bppArgb);
-                    using (Graphics g = Graphics.FromImage(final))
-                    {
-                        g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
-                        g.DrawImage(rendered, 0, 0, final.Width, final.Height);
-                    }
-                    
-                    using MemoryStream ms = new MemoryStream();
-                    final.Save(ms, ImageFormat.Png);
-                    return ms.Length;
-                }
-            });
-
-            if (!token.IsCancellationRequested && sizeBytes > 0)
-            {
-                SizeMb = sizeBytes / (1024.0 * 1024.0);
-                await InvokeAsync(StateHasChanged);
-            }
-        }
-        catch (TaskCanceledException) { }
-    }
 
     [JSInvokable]
     public void OnTransformUpdate(float zoom, float panX, float panY)
@@ -737,10 +757,6 @@
         PanX = panX;
         PanY = panY;
         
-        ctsSize.Cancel();
-        ctsSize = new CancellationTokenSource();
-        _ = CalculateFinalSizeAsync(ctsSize.Token);
-        
         StateHasChanged();
     }
 
@@ -748,51 +764,68 @@
 
     private async Task OnSaveClick()
     {
+        if (isUploading) return;
+
         if (SelectedEmojiType == "Select Type...")
         {
             NotificationService.Show("Please select a Preset Type before proceeding!", "Type Required", NotificationType.Error);
             return;
         }
 
-        string styleToPass = SelectedEmojiType;
+        isUploading = true;
+        await InvokeAsync(StateHasChanged);
+        await Task.Delay(50); // Yield to allow UI update
 
-        if (IsAnimatedMode)
+        try
         {
+            string styleToPass = SelectedEmojiType;
+
+            if (IsAnimatedMode)
+            {
+                if (OnSave.HasDelegate)
+                {
+                    await OnSave.InvokeAsync((AnimatedPreviewBase64, IsAnimatedMode, styleToPass, FinalFrameCount, FramesOverTime));
+                }
+                return;
+            }
+
+            Color bgColor = IsTransparentBg ? Color.Transparent : ParseHex(HexBgColor);
+            Color rmColor = ParseHex(HexRemoveBgColor);
+            float outScale = CompressionQuality / 100f;
+
+            bool useJpeg = !IsTransparentBg && !RemoveBgEnabled;
+
+            string finalB64 = await Task.Run(() =>
+            {
+                lock (_imageLock)
+                {
+                    using Image<Rgba32> rendered = global::VRCGalleryManager.Core.Helpers.ImageEditor.RenderImage(
+                        originalImage, 256, 256, CurrentAdaptationMode, ZoomFactor, PanX, PanY, RotationAngle,
+                        bgColor, RemoveBgEnabled, rmColor, RemoveBgTolerance, false, Color.White, 0, FeatherEnabled, FeatherRadius, ChokeRadius);
+                    
+                    int outW = Math.Max(1, (int)(256 * outScale));
+                    int outH = Math.Max(1, (int)(256 * outScale));
+                    rendered.Mutate(x => x.Resize(outW, outH, KnownResamplers.Bicubic));
+                    
+                    using MemoryStream ms = new MemoryStream();
+                    if (useJpeg)
+                        rendered.SaveAsJpeg(ms, new SixLabors.ImageSharp.Formats.Jpeg.JpegEncoder { Quality = CompressionQuality });
+                    else
+                        rendered.SaveAsPng(ms, new SixLabors.ImageSharp.Formats.Png.PngEncoder { CompressionLevel = SixLabors.ImageSharp.Formats.Png.PngCompressionLevel.BestSpeed });
+                    return Convert.ToBase64String(ms.ToArray());
+                }
+            });
+
             if (OnSave.HasDelegate)
             {
-                await OnSave.InvokeAsync((AnimatedPreviewBase64, IsAnimatedMode, styleToPass, FinalFrameCount, FramesOverTime));
+                string mimeType = useJpeg ? "image/jpeg" : "image/png";
+                await OnSave.InvokeAsync(($"data:{mimeType};base64," + finalB64, IsAnimatedMode, styleToPass, FinalFrameCount, FramesOverTime));
             }
-            return;
         }
-
-        Color bgColor = IsTransparentBg ? Color.Transparent : ParseHex(HexBgColor);
-        Color rmColor = ParseHex(HexRemoveBgColor);
-        float outScale = CompressionQuality / 100f;
-
-        string finalB64 = await Task.Run(() =>
+        finally
         {
-            lock (_imageLock)
-            {
-                using Bitmap rendered = global::VRCGalleryManager.Core.Helpers.ImageEditor.RenderImage(
-                    originalImage, 256, 256, CurrentAdaptationMode, ZoomFactor, PanX, PanY, RotationAngle,
-                    bgColor, RemoveBgEnabled, rmColor, RemoveBgTolerance, false, Color.White, 0, FeatherEnabled, FeatherRadius, ChokeRadius);
-                
-                using Bitmap final = new Bitmap(Math.Max(1, (int)(256 * outScale)), Math.Max(1, (int)(256 * outScale)), PixelFormat.Format32bppArgb);
-                using (Graphics g = Graphics.FromImage(final))
-                {
-                    g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
-                    g.DrawImage(rendered, 0, 0, final.Width, final.Height);
-                }
-                
-                using MemoryStream ms = new MemoryStream();
-                final.Save(ms, ImageFormat.Png);
-                return Convert.ToBase64String(ms.ToArray());
-            }
-        });
-
-        if (OnSave.HasDelegate)
-        {
-            await OnSave.InvokeAsync(("data:image/png;base64," + finalB64, IsAnimatedMode, styleToPass, FinalFrameCount, FramesOverTime));
+            isUploading = false;
+            await InvokeAsync(StateHasChanged);
         }
     }
 

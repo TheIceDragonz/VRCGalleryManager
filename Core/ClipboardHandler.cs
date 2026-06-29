@@ -1,15 +1,17 @@
-using Bitmap = System.Drawing.Bitmap;
-using PixelFormat = System.Drawing.Imaging.PixelFormat;
-using Graphics = System.Drawing.Graphics;
-using Image = System.Drawing.Image;
-using ImageFormat = System.Drawing.Imaging.ImageFormat;
+
 using System;
-using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.Drawing.Imaging;
 using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
+using SixLabors.ImageSharp.Drawing.Processing;
+using Color = SixLabors.ImageSharp.Color;
+using Point = SixLabors.ImageSharp.Point;
+using Image = SixLabors.ImageSharp.Image;
+using System;
+using System.Linq;
 
 namespace VRCGalleryManager.Core
 {
@@ -77,15 +79,12 @@ namespace VRCGalleryManager.Core
                         using var ras = await imageStreamRef.OpenReadAsync();
                         using var stream = ras.AsStreamForRead();
                         
-                        using var src = Image.FromStream(stream, true, true);
-                        using var bmp = new Bitmap(src.Width, src.Height, PixelFormat.Format32bppArgb);
-                        using (var g = Graphics.FromImage(bmp))
-                        {
-                            g.CompositingMode = CompositingMode.SourceCopy;
-                            g.DrawImage(src, 0, 0);
-                        }
+                        using var src = Image.Load<Rgba32>(stream);
+                        using var bmp = new Image<Rgba32>(src.Width, src.Height, Color.Transparent);
+                        bmp.Mutate(x => x.DrawImage(src, new Point(0, 0), 1f));
+                        
                         string filePath = GetTempFilePath("Clipboard-Image");
-                        bmp.Save(filePath, ImageFormat.Png);
+                        bmp.SaveAsPng(filePath);
 
                         uploadImage?.Invoke(filePath);
                         return filePath;
@@ -171,15 +170,12 @@ namespace VRCGalleryManager.Core
                 else
                 {
                     using var stream = await res.Content.ReadAsStreamAsync();
-                    using var src = Image.FromStream(stream, true, true);
-                    using var bmp = new Bitmap(src.Width, src.Height, PixelFormat.Format32bppArgb);
-                    using (var g = Graphics.FromImage(bmp))
-                    {
-                        g.CompositingMode = CompositingMode.SourceCopy;
-                        g.DrawImage(src, 0, 0);
-                    }
+                    using var src = Image.Load<Rgba32>(stream);
+                    using var bmp = new Image<Rgba32>(src.Width, src.Height, Color.Transparent);
+                    bmp.Mutate(x => x.DrawImage(src, new Point(0, 0), 1f));
+                    
                     string filePath = GetTempFilePath("Downloaded-Image");
-                    bmp.Save(filePath, ImageFormat.Png);
+                    bmp.SaveAsPng(filePath);
                     return filePath;
                 }
             }

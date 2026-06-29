@@ -9,16 +9,6 @@ public static class MauiProgram
 {
 	public static MauiApp CreateMauiApp()
 	{
-		AppDomain.CurrentDomain.FirstChanceException += (sender, eventArgs) =>
-		{
-			try
-			{
-				string path = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "crash.log");
-				System.IO.File.AppendAllText(path, eventArgs.Exception.ToString() + "\n\n");
-			}
-			catch { }
-		};
-
 		AppDomain.CurrentDomain.UnhandledException += (sender, eventArgs) =>
 		{
 			try

@@ -1,6 +1,6 @@
 @inherits LayoutComponentBase
 
-<div class="page main-page-container">
+<div class="page main-page-container @(Microsoft.Maui.Devices.DeviceInfo.Current.Platform == Microsoft.Maui.Devices.DevicePlatform.Android ? "android-layout" : "")">
     <div class="sidebar main-sidebar-container">
         <NavMenu />
     </div>

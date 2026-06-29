@@ -67,7 +67,7 @@
         else
         {
             <div class="flex-grow-1 overflow-auto">
-                <div class="d-flex flex-wrap gap-3">
+                <div class="media-grid grid-medium gap-3">
                     @foreach (var print in prints)
                     {
                         <div class="position-relative print-card media-card-container">
@@ -314,13 +314,21 @@
     {
         try
         {
+            string mimeType = "image/png";
+            int semiColonIndex = base64Result.IndexOf(";");
+            if (base64Result.StartsWith("data:") && semiColonIndex > 5)
+            {
+                mimeType = base64Result.Substring(5, semiColonIndex - 5);
+            }
+            string ext = mimeType == "image/jpeg" ? ".jpg" : ".png";
+
             var headerParts = base64Result.Split(',');
             var base64Data = headerParts.Length > 1 ? headerParts[1] : headerParts[0];
             byte[] bytes = Convert.FromBase64String(base64Data);
             
             string tempFolder = Path.Combine(Path.GetTempPath(), "VRCGalleryManager");
             Directory.CreateDirectory(tempFolder);
-            string tempPath = Path.Combine(tempFolder, $"upload_print_{Guid.NewGuid()}.png");
+            string tempPath = Path.Combine(tempFolder, $"upload_print_{Guid.NewGuid()}{ext}");
             
             await File.WriteAllBytesAsync(tempPath, bytes);
 

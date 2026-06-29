@@ -1,7 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk.Razor">
 
     <PropertyGroup>
-        <TargetFrameworks>net8.0-windows10.0.19041.0</TargetFrameworks>
+        <TargetFrameworks>net8.0-android;net8.0-windows10.0.19041.0</TargetFrameworks>
+        <EmbedAssembliesIntoApk Condition="'$(Configuration)' == 'Release'">true</EmbedAssembliesIntoApk>
         <!-- Uncomment to also build the tizen app. You will need to install tizen by following this: https://github.com/Samsung/Tizen.NET -->
         <!-- <TargetFrameworks>$(TargetFrameworks);net8.0-tizen</TargetFrameworks> -->
 
@@ -40,10 +41,10 @@
 
     <ItemGroup>
         <!-- App Icon -->
-        <MauiIcon Include="Resources\AppIcon\appicon.svg" Color="#FFFFFF" BaseSize="1536,1536" />
+        <MauiIcon Include="Resources\AppIcon\vrcgm.png" Color="#FFFFFF" />
 
         <!-- Splash Screen -->
-        <MauiSplashScreen Include="Resources\AppIcon\appicon.svg" Color="#FFFFFF" BaseSize="1536,1536" />
+        <MauiSplashScreen Include="Resources\AppIcon\vrcgm.png" Color="#FFFFFF" />
 
         <!-- Images -->
         <MauiImage Include="Resources\Images\*" />
@@ -66,7 +67,8 @@
         <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
         <PackageReference Include="Otp.NET" Version="1.4.1" />
         <PackageReference Include="Polly" Version="8.7.0" />
-        <PackageReference Include="System.Drawing.Common" Version="8.0.0" />
+        <PackageReference Include="SixLabors.ImageSharp" Version="3.1.5" />
+        <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="2.1.4" />
     </ItemGroup>
 
 </Project>

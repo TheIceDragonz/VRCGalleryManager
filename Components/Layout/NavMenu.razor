@@ -59,17 +59,23 @@
             </NavLink>
         </div>
         
-        <div class="mt-auto d-flex flex-column gap-1">
-            <div class="nav-item">
-                <NavLink class="nav-link custom-nav-link" href="picflow">
-                    <img src="/svg/traffic-economy-svgrepo-com.svg" class="nav-icon" /> Picflow
-                </NavLink>
-            </div>
-            <div class="nav-item">
-                <NavLink class="nav-link custom-nav-link" href="gallery">
-                    <img src="/svg/gallery-wide-svgrepo-com.svg" class="nav-icon" /> Gallery
-                </NavLink>
-            </div>
+        <div class="mt-auto d-flex flex-column gap-1 nav-bottom-group">
+            @if (OperatingSystem.IsWindows())
+            {
+                <div class="nav-item">
+                    <NavLink class="nav-link custom-nav-link" href="picflow">
+                        <img src="/svg/traffic-economy-svgrepo-com.svg" class="nav-icon" /> Picflow
+                    </NavLink>
+                </div>
+            }
+            @if (!OperatingSystem.IsAndroid())
+            {
+                <div class="nav-item">
+                    <NavLink class="nav-link custom-nav-link" href="gallery">
+                        <img src="/svg/gallery-wide-svgrepo-com.svg" class="nav-icon" /> Gallery
+                    </NavLink>
+                </div>
+            }
 
             <div class="my-1 border-bottom nav-divider"></div>
 

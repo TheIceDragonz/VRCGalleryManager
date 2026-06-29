@@ -4,6 +4,9 @@ window.imageEditor = {
     dotNetRef: null,
     isDragging: false,
     isColorPicking: false,
+    isPinching: false,
+    pinchStartDistance: 0,
+    pinchStartZoom: 1,
     dragStartX: 0,
     dragStartY: 0,
     width: 0,
@@ -25,9 +28,16 @@ window.imageEditor = {
         this.height = this.canvas.height;
 
         this.canvas.addEventListener('mousedown', this.onMouseDown.bind(this));
-        window.addEventListener('mousemove', this.onMouseMove.bind(this));
+        window.addEventListener('mousemove', this.onMouseMove.bind(this), { passive: false });
         window.addEventListener('mouseup', this.onMouseUp.bind(this));
+        
+        this.canvas.addEventListener('touchstart', this.onTouchStart.bind(this), { passive: false });
+        window.addEventListener('touchmove', this.onTouchMove.bind(this), { passive: false });
+        window.addEventListener('touchend', this.onTouchEnd.bind(this));
+        window.addEventListener('touchcancel', this.onTouchEnd.bind(this));
+
         this.canvas.addEventListener('wheel', this.onWheel.bind(this), { passive: false });
+        this.canvas.style.touchAction = 'none';
     },
 
     loadImagePreview: function (base64Image) {
@@ -164,6 +174,9 @@ window.imageEditor = {
     },
 
     onMouseDown: function (e) {
+        if (e.preventDefault && e.type === 'mousedown') {
+            // don't prevent default on mousedown to allow focus, but we can do it if needed
+        }
         if (this.isColorPicking) {
             const rect = this.canvas.getBoundingClientRect();
             const scaleX = this.canvas.width / rect.width;
@@ -221,6 +234,56 @@ window.imageEditor = {
         clearTimeout(this.syncTimer);
         if (this.dotNetRef) {
             this.dotNetRef.invokeMethodAsync('OnTransformUpdate', this.zoom, this.panX, this.panY);
+        }
+    },
+
+    getPinchDistance: function(t1, t2) {
+        const dx = t1.clientX - t2.clientX;
+        const dy = t1.clientY - t2.clientY;
+        return Math.sqrt(dx * dx + dy * dy);
+    },
+
+    onTouchStart: function(e) {
+        if (e.touches.length === 1) {
+            if (e.cancelable) e.preventDefault();
+            this.onMouseDown(e.touches[0]);
+        } else if (e.touches.length === 2) {
+            if (e.cancelable) e.preventDefault();
+            this.isDragging = false; // Cancel drag if pinching
+            this.isPinching = true;
+            this.pinchStartDistance = this.getPinchDistance(e.touches[0], e.touches[1]);
+            this.pinchStartZoom = this.zoom;
+        }
+    },
+
+    onTouchMove: function(e) {
+        if (this.isPinching && e.touches.length === 2) {
+            if (e.cancelable) e.preventDefault();
+            const currentDist = this.getPinchDistance(e.touches[0], e.touches[1]);
+            const zoomFactor = currentDist / this.pinchStartDistance;
+            let newZoom = Math.max(1.0, Math.min(this.pinchStartZoom * zoomFactor, 5.0));
+            this.zoom = newZoom;
+            this.clampPan();
+            this.draw();
+            this.queueSync();
+        } else if (this.isDragging && e.touches.length === 1) {
+            if (e.cancelable) e.preventDefault();
+            this.onMouseMove(e.touches[0]);
+        }
+    },
+
+    onTouchEnd: function(e) {
+        if (e.touches.length < 2) {
+            this.isPinching = false;
+            if (e.touches.length === 1) {
+                // If one finger remains, it could turn into a drag, but to avoid jump we reset drag start
+                this.dragStartX = e.touches[0].clientX;
+                this.dragStartY = e.touches[0].clientY;
+                this.isDragging = true;
+            }
+        }
+        if (e.touches.length === 0) {
+            this.onMouseUp();
         }
     },
 
