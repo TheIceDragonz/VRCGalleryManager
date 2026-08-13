@@ -80,7 +80,7 @@
                         <div class="position-relative sticker-card media-card-container">
                             <img src="@sticker.ImageUrl" class="w-100 h-100 object-fit-cover" />
                             
-                            <button class="btn btn-dark btn-sm rounded-circle position-absolute btn-action media-btn-open" @onclick="() => OpenImage(sticker)" title="Open in browser">
+                            <button class="btn btn-dark btn-sm rounded-circle position-absolute btn-action media-btn-open" @onclick="() => OpenImage(sticker)" title="View Image">
                                 <img src="/svg/eye-svgrepo-com.svg" class="btn-icon" style="margin: 0;" />
                             </button>
                             
@@ -95,12 +95,15 @@
     }
 </div>
 
+<VRCGalleryManager.Components.ImageViewer @ref="imageViewer" OnDeleteRequested="HandleViewerDelete" />
+
 @code {
     private ApiRequest apiRequest;
     private bool isLoading = true;
     private bool isRefreshing = false;
     private int imageCount = 0;
     private List<StickerItem> stickers = new();
+    private VRCGalleryManager.Components.ImageViewer imageViewer;
     
     private static List<StickerItem> cachedStickers = null;
     private static int cachedImageCount = 0;
@@ -193,14 +196,17 @@
 
     private void OpenImage(StickerItem item)
     {
-        Microsoft.Maui.ApplicationModel.MainThread.BeginInvokeOnMainThread(async () =>
-        {
-            if (!string.IsNullOrEmpty(item.ImageUrl))
-            {
-                string highResUrl = item.ImageUrl.Replace("/image/", "/file/").Replace("/256", "/file");
-                await Microsoft.Maui.ApplicationModel.Browser.OpenAsync(highResUrl, Microsoft.Maui.ApplicationModel.BrowserLaunchMode.SystemPreferred);
-            }
-        });
+        var viewerItems = stickers.Select(s => new VRCGalleryManager.Components.ImageViewer.ViewerItem {
+            HighResSource = s.ImageUrl.Replace("/image/", "/file/").Replace("/256", "/file"),
+            LowResSource = s.ImageUrl,
+            Title = "Sticker"
+        }).ToList();
+        
+        var currentUrl = item.ImageUrl.Replace("/image/", "/file/").Replace("/256", "/file");
+        var index = viewerItems.FindIndex(i => i.HighResSource == currentUrl);
+        if (index == -1) index = 0;
+        
+        imageViewer.Open(viewerItems, index);
     }
 
     private async Task DeleteSticker(StickerItem item)
@@ -402,5 +408,19 @@
             StateHasChanged();
         });
     }
-
+    private async Task HandleViewerDelete(int index)
+    {
+        var targetList = stickers;
+        if (index >= 0 && index < targetList.Count)
+        {
+            var item = targetList[index];
+            await DeleteSticker(item);
+            if (!targetList.Contains(item))
+            {
+                imageViewer.Close();
+            }
+        }
+    }
 }
+
+

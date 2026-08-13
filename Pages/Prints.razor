@@ -73,7 +73,7 @@
                         <div class="position-relative print-card media-card-container">
                             <img src="@print.ImageUrl" class="w-100 h-100 object-fit-cover" />
                             
-                            <button class="btn btn-dark btn-sm rounded-circle position-absolute btn-action media-btn-open" @onclick="() => OpenImage(print)" title="Open in browser">
+                            <button class="btn btn-dark btn-sm rounded-circle position-absolute btn-action media-btn-open" @onclick="() => OpenImage(print)" title="View Image">
                                 <img src="/svg/eye-svgrepo-com.svg" class="btn-icon" style="margin: 0;" />
                             </button>
                             
@@ -88,12 +88,15 @@
     }
 </div>
 
+<VRCGalleryManager.Components.ImageViewer @ref="imageViewer" OnDeleteRequested="HandleViewerDelete" />
+
 @code {
     private ApiRequest apiRequest;
     private bool isLoading = true;
     private bool isRefreshing = false;
     private int imageCount = 0;
     private List<PrintItem> prints = new();
+    private VRCGalleryManager.Components.ImageViewer imageViewer;
     
     private static List<PrintItem> cachedPrints = null;
     private static int cachedImageCount = 0;
@@ -186,14 +189,17 @@
 
     private void OpenImage(PrintItem item)
     {
-        Microsoft.Maui.ApplicationModel.MainThread.BeginInvokeOnMainThread(async () =>
-        {
-            if (!string.IsNullOrEmpty(item.ImageUrl))
-            {
-                string highResUrl = item.ImageUrl.Replace("/image/", "/file/").Replace("/256", "/file");
-                await Microsoft.Maui.ApplicationModel.Browser.OpenAsync(highResUrl, Microsoft.Maui.ApplicationModel.BrowserLaunchMode.SystemPreferred);
-            }
-        });
+        var viewerItems = prints.Select(p => new VRCGalleryManager.Components.ImageViewer.ViewerItem {
+            HighResSource = p.ImageUrl.Replace("/image/", "/file/").Replace("/256", "/file"),
+            LowResSource = p.ImageUrl,
+            Title = "Print"
+        }).ToList();
+        
+        var currentUrl = item.ImageUrl.Replace("/image/", "/file/").Replace("/256", "/file");
+        var index = viewerItems.FindIndex(i => i.HighResSource == currentUrl);
+        if (index == -1) index = 0;
+        
+        imageViewer.Open(viewerItems, index);
     }
 
     private async Task DeletePrint(PrintItem item)
@@ -393,4 +399,16 @@
         });
     }
 
+    private async Task HandleViewerDelete(int index)
+    {
+        if (index >= 0 && index < prints.Count)
+        {
+            var item = prints[index];
+            await DeletePrint(item);
+            if (!prints.Contains(item))
+            {
+                imageViewer.Close();
+            }
+        }
+    }
 }

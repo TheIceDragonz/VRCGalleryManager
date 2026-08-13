@@ -170,7 +170,7 @@
                 @* Actions *@
                 <div class="mt-auto pt-3 border-top border-secondary">
                     <button class="btn btn-outline-light btn-sm w-100 mb-2 d-flex align-items-center justify-content-center gap-2" @onclick="OpenSelectedFile">
-                        <img src="/svg/eye-svgrepo-com.svg" class="btn-icon" style="filter: invert(1); margin: 0;" /> Open File
+                        <img src="/svg/eye-svgrepo-com.svg" class="btn-icon" style="filter: invert(1); margin: 0;" /> View Image
                     </button>
                     <div class="position-relative" @onclick:stopPropagation="true">
                         <button class="btn btn-primary btn-sm w-100 d-flex align-items-center justify-content-center gap-2" @onclick="ToggleUploadMenu">
@@ -205,6 +205,8 @@
     </div>
 }
 
+<VRCGalleryManager.Components.ImageViewer @ref="imageViewer" />
+
 @code {
     // ── State ─────────────────────────────────────────────────────────────
     private string RootFolder;
@@ -221,6 +223,7 @@
     private bool ShowUploadMenu;
 
     private CancellationTokenSource _cts;
+    private VRCGalleryManager.Components.ImageViewer imageViewer;
 
     private bool CanGoBack =>
         !string.IsNullOrEmpty(CurrentFolder) &&
@@ -492,11 +495,30 @@
             OpenFile(SelectedImage.Path);
     }
 
-    private static void OpenFile(string path)
+    private void OpenFile(string path)
     {
         try
         {
-            Process.Start(new ProcessStartInfo { FileName = path, UseShellExecute = true });
+            var viewerItems = Items.Where(x => !x.IsFolder).Select(x => new VRCGalleryManager.Components.ImageViewer.ViewerItem {
+                HighResSource = x.Path,
+                LowResSource = x.ThumbnailBase64,
+                Title = x.Name
+            }).ToList();
+            
+            var index = viewerItems.FindIndex(i => i.HighResSource == path);
+            if (index == -1)
+            {
+                var item = Items.FirstOrDefault(x => x.Path == path);
+                viewerItems = new List<VRCGalleryManager.Components.ImageViewer.ViewerItem> {
+                    new VRCGalleryManager.Components.ImageViewer.ViewerItem {
+                        HighResSource = path,
+                        LowResSource = item?.ThumbnailBase64,
+                        Title = item?.Name ?? System.IO.Path.GetFileName(path)
+                    }
+                };
+                index = 0;
+            }
+            imageViewer.Open(viewerItems, index);
         }
         catch { }
     }
@@ -557,3 +579,5 @@
                ext.Equals(".jpeg", StringComparison.OrdinalIgnoreCase);
     }
 }
+
+

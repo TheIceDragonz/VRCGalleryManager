@@ -36,7 +36,7 @@
                 <img src="/svg/rotate-right-svgrepo-com.svg" class="btn-icon" style="margin: 0;" />
             </button>
             <button class="btn btn-outline-danger btn-sm" @onclick="ClearItems" title="Clear">
-                <img src="/svg/trash-bin-trash-svgrepo-com.svg" class="btn-icon" style="margin: 0;" />
+                <img src="/svg/broom-svgrepo-com.svg" class="btn-icon" style="margin: 0;" />
             </button>
             <button class="btn btn-info btn-sm" @onclick="ToggleInfo">
                 <img src="/svg/info-circle-svgrepo-com.svg" class="btn-icon" /> Info
@@ -97,7 +97,7 @@
                             <img src="/svg/add-circle-svgrepo-com.svg" class="btn-icon" style="margin: 0; filter: invert(1);" />
                         </button>
 
-                        <button class="btn btn-dark btn-sm rounded-circle position-absolute btn-action media-btn-open" style="right: 5px;" @onclick="() => OpenImage(img)" title="Viewlink">
+                        <button class="btn btn-dark btn-sm rounded-circle position-absolute btn-action media-btn-open" style="right: 5px;" @onclick="() => OpenImage(img)" title="View Image">
                             <img src="/svg/eye-svgrepo-com.svg" class="btn-icon" style="margin: 0;" />
                         </button>
                     }
@@ -109,7 +109,7 @@
 
 @if (UploadMenuImage != null)
 {
-    <div class="position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center dialog-overlay" style="z-index: 1050;" @onclick="CloseUploadMenu">
+    <div class="position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center dialog-overlay" style="z-index: 10000;" @onclick="CloseUploadMenu">
         <div class="dialog-panel d-flex flex-column" @onclick:stopPropagation="true" style="min-width: 300px;">
             <div class="p-4 flex-grow-1 border-bottom border-secondary text-center">
                 <h5 class="fw-bold text-white mb-2">Upload to...</h5>
@@ -138,6 +138,8 @@
         </div>
     </div>
 }
+
+<VRCGalleryManager.Components.ImageViewer @ref="imageViewer" OnUploadRequested="HandleViewerUpload" />
 
 @code {
     private ApiRequest ApiReq;
@@ -184,6 +186,7 @@
     }
 
     private bool CropPrints = true;
+    private VRCGalleryManager.Components.ImageViewer imageViewer;
 
     protected override async Task OnInitializedAsync()
     {
@@ -542,24 +545,17 @@
 
     private void OpenImage(ImageModel img)
     {
-        Microsoft.Maui.ApplicationModel.MainThread.BeginInvokeOnMainThread(async () =>
-        {
-            if (!string.IsNullOrEmpty(img.Url))
-            {
-                string highResUrl = img.Url.Replace("/image/", "/file/").Replace("/256", "/file");
-                bool cropBorder = img.Category == ItemCategory.Print && CropPrints;
-                string localPath = await ClipboardHandler.SaveImageFromUrlAsync(highResUrl, cropBorder);
-
-                if (!string.IsNullOrEmpty(localPath))
-                {
-                    System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo 
-                    { 
-                        FileName = localPath, 
-                        UseShellExecute = true 
-                    });
-                }
-            }
-        });
+        var viewerItems = Images.Select(i => new VRCGalleryManager.Components.ImageViewer.ViewerItem {
+            HighResSource = i.Url.Replace("/image/", "/file/").Replace("/256", "/file"),
+            LowResSource = i.Url,
+            Title = $"{i.Username} - {i.Category}"
+        }).ToList();
+        
+        var currentUrl = img.Url.Replace("/image/", "/file/").Replace("/256", "/file");
+        var index = viewerItems.FindIndex(i => i.HighResSource == currentUrl);
+        if (index == -1) index = 0;
+        
+        imageViewer.Open(viewerItems, index);
     }
 
     private void DeleteItem(ImageModel img)
@@ -572,4 +568,15 @@
     {
         _cts?.Cancel();
     }
+    private void HandleViewerUpload(int index)
+    {
+        var targetList = Images;
+        if (index >= 0 && index < targetList.Count)
+        {
+            var item = targetList[index];
+            ToggleUploadMenu(item);
+        }
+    }
 }
+
+

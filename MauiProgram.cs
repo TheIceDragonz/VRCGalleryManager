@@ -1,7 +1,6 @@
 using CommunityToolkit.Maui;
 using Microsoft.Extensions.Logging;
 using VRCGalleryManager.Core;
-using VRCGalleryManager.Core;
 
 namespace VRCGalleryManager;
 

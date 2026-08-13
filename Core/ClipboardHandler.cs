@@ -126,7 +126,9 @@ namespace VRCGalleryManager.Core
             try
             {
                 var request = new HttpRequestMessage(HttpMethod.Get, url);
-                request.Headers.Add("User-Agent", "VRCGalleryManager/1.0"); // VRChat API requires User-Agent
+                request.Headers.TryAddWithoutValidation("User-Agent", "VRCGalleryManager/1.0.0 contact@vrcgallerymanager.com");
+                request.Headers.Add("Accept", "*/*");
+                request.Headers.Add("Origin", "https://vrchat.com");
                 
                 if (url.Contains("vrchat.cloud"))
                 {
@@ -143,14 +145,12 @@ namespace VRCGalleryManager.Core
                 if (!res.IsSuccessStatusCode)
                 {
                     string errorBody = await res.Content.ReadAsStringAsync();
-                    System.Diagnostics.Debug.WriteLine($"Download failed! Status: {res.StatusCode}, Body: {errorBody}");
-                    return null;
+                    throw new Exception($"HTTP {res.StatusCode}: {errorBody}");
                 }
                 
-                if (ct == null || !ct.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
+                if (ct == null || (!ct.StartsWith("image/", StringComparison.OrdinalIgnoreCase) && !ct.Equals("application/octet-stream", StringComparison.OrdinalIgnoreCase)))
                 {
-                    System.Diagnostics.Debug.WriteLine($"Download failed! Invalid content type: {ct}");
-                    return null;
+                    throw new Exception($"Invalid content type: {ct}");
                 }
 
                 string cleanUrl = url.Split('?')[0];
@@ -191,11 +191,43 @@ namespace VRCGalleryManager.Core
             catch (Exception ex)
             {
                 Console.WriteLine($"Error downloading image: {ex.Message}");
-                return null;
+                throw;
             }
         }
 
         private static string GetTempFilePath(string prefix)
             => Path.Combine(TempDirectory, $"{prefix}_{Guid.NewGuid():N}.png");
+
+        public static async Task<bool> CopyImageToClipboardAsync(string filePath)
+        {
+#if WINDOWS
+            try
+            {
+                return await Microsoft.Maui.ApplicationModel.MainThread.InvokeOnMainThreadAsync(async () =>
+                {
+                    var file = await Windows.Storage.StorageFile.GetFileFromPathAsync(filePath);
+                    var dataPackage = new Windows.ApplicationModel.DataTransfer.DataPackage();
+                    dataPackage.SetBitmap(Windows.Storage.Streams.RandomAccessStreamReference.CreateFromFile(file));
+                    Windows.ApplicationModel.DataTransfer.Clipboard.SetContent(dataPackage);
+                    Windows.ApplicationModel.DataTransfer.Clipboard.Flush();
+                    return true;
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error copying to clipboard: {ex.Message}");
+                return false;
+            }
+#else
+            return false;
+#endif
+        }
     }
 }
+
+
+
+
+
+
+

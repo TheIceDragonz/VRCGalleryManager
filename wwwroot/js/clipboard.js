@@ -19,5 +19,29 @@ window.clipboardInterop = {
             console.error("Failed to read from clipboard:", error);
             return null;
         }
+    },
+    writeImageFromUrl: async function (url) {
+        try {
+            const response = await fetch(url);
+            const blob = await response.blob();
+            await navigator.clipboard.write([
+                new ClipboardItem({
+                    [blob.type]: blob
+                })
+            ]);
+            return true;
+        } catch (error) {
+            console.error("Failed to copy image to clipboard:", error);
+            return false;
+        }
+    },
+    writeText: async function (text) {
+        try {
+            await navigator.clipboard.writeText(text);
+            return true;
+        } catch (error) {
+            console.error("Failed to copy text to clipboard:", error);
+            return false;
+        }
     }
 };
