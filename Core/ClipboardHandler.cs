@@ -121,7 +121,7 @@ namespace VRCGalleryManager.Core
             }
         }
 
-        public static async Task<string> SaveImageFromUrlAsync(string url)
+        public static async Task<string> SaveImageFromUrlAsync(string url, bool cropPrintBorder = false)
         {
             try
             {
@@ -171,6 +171,15 @@ namespace VRCGalleryManager.Core
                 {
                     using var stream = await res.Content.ReadAsStreamAsync();
                     using var src = Image.Load<Rgba32>(stream);
+
+                    if (cropPrintBorder && src.Width == 2048 && src.Height == 1440)
+                    {
+                        var point = new Point(64, 69);
+                        var size = new SixLabors.ImageSharp.Size(1920, 1080);
+                        var rectangle = new SixLabors.ImageSharp.Rectangle(point, size);
+                        src.Mutate(x => x.Crop(rectangle));
+                    }
+
                     using var bmp = new Image<Rgba32>(src.Width, src.Height, Color.Transparent);
                     bmp.Mutate(x => x.DrawImage(src, new Point(0, 0), 1f));
                     

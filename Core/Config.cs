@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
@@ -48,17 +48,7 @@ namespace VRCGalleryManager.Core
 
         public static void Set(string key, string value)
         {
-            if (!string.IsNullOrWhiteSpace(value))
-            {
-                var fullPath = Path.GetFullPath(value);
-                var normalized = fullPath.Replace(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
-                _settings[key] = normalized;
-            }
-            else
-            {
-                _settings[key] = value;
-            }
-
+            _settings[key] = value;
             SaveAllSettings();
         }
 

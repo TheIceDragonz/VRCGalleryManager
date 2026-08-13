@@ -279,6 +279,25 @@ namespace VRCGalleryManager.Core
             return apiData;
         }
 
+        public async Task<ApiDataPrint> GetPrintInfo(string printId)
+        {
+            ApiDataPrint apiData = new ApiDataPrint();
+            try
+            {
+                var response = await printsApi.GetPrintAsync(printId);
+
+                apiData.IdImageUploaded = response.Id;
+                apiData.AuthorId = response.AuthorId ?? "";
+                apiData.AuthorName = response.AuthorName ?? "";
+                apiData.FileId = response.Files?.FileId ?? "";
+            }
+            catch (ApiException ex)
+            {
+                Console.WriteLine($"Error fetching print info: {ex.Message}");
+            }
+            return apiData;
+        }
+
         public async Task<ApiData> UploadImage(string path, string maskTag, TagType tag, string animationStyle)
         {
             ApiData apiData = new ApiData();
@@ -471,6 +490,25 @@ namespace VRCGalleryManager.Core
                 Console.WriteLine($"Error: {ex.Message}");
                 return null;
             }
+        }
+        private static Dictionary<string, string> _userNameCache = new Dictionary<string, string>();
+
+        public async Task<string> GetUserName(string userId)
+        {
+            if (string.IsNullOrEmpty(userId)) return "Unknown User";
+            if (_userNameCache.TryGetValue(userId, out string name)) return name;
+
+            try
+            {
+                var user = await usersApi.GetUserAsync(userId);
+                if (user != null && !string.IsNullOrEmpty(user.DisplayName))
+                {
+                    _userNameCache[userId] = user.DisplayName;
+                    return user.DisplayName;
+                }
+            }
+            catch { }
+            return "Unknown User";
         }
     }
 }

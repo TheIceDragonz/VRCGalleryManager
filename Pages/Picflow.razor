@@ -9,6 +9,8 @@
 @inject NavigationManager NavManager
 @inject DialogService dialogService
 
+
+
 <div class="h-100 d-flex flex-column p-3">
     <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-secondary">
         <div>
@@ -23,6 +25,11 @@
             <div class="form-check form-switch d-flex align-items-center mb-0 ms-2 me-2">
                 <input class="form-check-input mt-0 me-2 cursor-pointer" type="checkbox" id="streamSwitch" @bind="IsStreaming" @bind:after="OnStreamingChanged">
                 <label class="form-check-label text-white cursor-pointer" for="streamSwitch">Stream</label>
+            </div>
+            
+            <div class="form-check form-switch d-flex align-items-center mb-0 ms-2 me-2" title="Automatically remove white borders from Prints when uploading">
+                <input class="form-check-input mt-0 me-2 cursor-pointer" type="checkbox" id="cropBorderSwitch" checked="@CropPrints" @onchange="OnCropPrintsChanged">
+                <label class="form-check-label text-white cursor-pointer" for="cropBorderSwitch">Crop Prints</label>
             </div>
             
             <button class="btn btn-outline-secondary btn-sm" @onclick="Refresh" disabled="@IsStreaming" title="Refresh">
@@ -40,15 +47,29 @@
     @if (ShowInfo)
     {
         <div class="alert alert-info cursor-pointer" role="alert" @onclick="CopyInfoText">
-            <strong>Tip:</strong> Click here to copy <code>--enable-sdk-log-levels</code>. You need to add this to your VRChat launch options for Picflow to read stickers!
+            <strong>Tip:</strong> Click here to copy <code>--enable-sdk-log-levels</code>. You need to add this to your VRChat launch options for Picflow to read stickers, emojis and prints!
         </div>
     }
 
+    <div class="mb-3 d-flex gap-1 p-1 rounded-pill shadow-sm mx-auto" style="width: fit-content; background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255,255,255,0.1);">
+        <button class="btn btn-sm rounded-pill px-3 @GetCategoryBtnClass(null)" @onclick="() => SetCategory(null)">All</button>
+        <button class="btn btn-sm rounded-pill px-3 @GetCategoryBtnClass(ItemCategory.Sticker)" @onclick="() => SetCategory(ItemCategory.Sticker)">Stickers</button>
+        <button class="btn btn-sm rounded-pill px-3 @GetCategoryBtnClass(ItemCategory.Emoji)" @onclick="() => SetCategory(ItemCategory.Emoji)">Emojis</button>
+        <button class="btn btn-sm rounded-pill px-3 @GetCategoryBtnClass(ItemCategory.Print)" @onclick="() => SetCategory(ItemCategory.Print)">Prints</button>
+    </div>
+
+    <style>
+        .btn-hover-light { opacity: 0.25; transition: all 0.2s; }
+        .btn-hover-light:hover { opacity: 1 !important; background: rgba(255,255,255,0.1); }
+        .print-card-ratio { aspect-ratio: 2048 / 1440; }
+        .photo-card-ratio { aspect-ratio: 16 / 9; }
+    </style>
+
     <div class="flex-grow-1 overflow-auto">
-        <div class="media-grid gap-3">
-            @foreach (var img in Images)
+        <div class="media-grid gap-3 align-items-center">
+            @foreach (var img in FilteredImages)
             {
-                <div class="position-relative picflow-card media-card-container">
+                <div class="position-relative media-card-container overflow-hidden @(img.Category == ItemCategory.Print ? (CropPrints ? "photo-card-ratio" : "print-card-ratio") : "picflow-card")">
                     @if (string.IsNullOrEmpty(img.Url))
                     {
                         <div class="w-100 h-100 d-flex justify-content-center align-items-center">
@@ -57,7 +78,14 @@
                     }
                     else
                     {
-                        <img src="@img.Url" class="w-100 h-100 object-fit-cover" loading="lazy" />
+                        if (img.Category == ItemCategory.Print && CropPrints)
+                        {
+                            <img src="@img.Url" style="width: 106.66%; height: 133.33%; object-fit: fill; position: absolute; top: -6.38%; left: -3.33%;" loading="lazy" />
+                        }
+                        else
+                        {
+                            <img src="@img.Url" class="w-100 h-100 object-fit-cover" loading="lazy" />
+                        }
                     }
                     <div class="position-absolute w-100 text-center media-card-label picflow-label">
                         @img.Username
@@ -86,7 +114,17 @@
             <div class="p-4 flex-grow-1 border-bottom border-secondary text-center">
                 <h5 class="fw-bold text-white mb-2">Upload to...</h5>
                 <p class="text-light mb-3 small">Select the category where you want to upload this image.</p>
-                <img src="@UploadMenuImage.Url" class="rounded shadow-sm" style="max-height: 200px; max-width: 100%; object-fit: contain;" />
+                
+                @if (UploadMenuImage.Category == ItemCategory.Print && CropPrints)
+                {
+                    <div class="overflow-hidden position-relative d-inline-block rounded shadow-sm mx-auto" style="height: 200px; aspect-ratio: 16/9;">
+                        <img src="@UploadMenuImage.Url" style="width: 106.66%; height: 133.33%; object-fit: fill; position: absolute; top: -6.38%; left: -3.33%;" />
+                    </div>
+                }
+                else
+                {
+                    <img src="@UploadMenuImage.Url" class="rounded shadow-sm" style="max-height: 200px; max-width: 100%; object-fit: contain;" />
+                }
             </div>
             <div class="p-3 d-flex flex-column gap-2 dialog-footer">
                 <button class="btn btn-outline-secondary d-flex align-items-center gap-2" @onclick='() => UploadForCategory(UploadMenuImage, "icons")'><img src="/svg/profile-user-svgrepo-com.svg" style="width:20px;height:20px; filter: invert(0.8);" /> Icons</button>
@@ -109,6 +147,11 @@
     private string LogStatus = "";
     private CancellationTokenSource? _cts;
     private HashSet<string> _allItems = new();
+    private ItemCategory? SelectedCategory = null;
+
+    private IEnumerable<ImageModel> FilteredImages => SelectedCategory.HasValue 
+        ? Images.Where(i => i.Category == SelectedCategory.Value) 
+        : Images;
 
     private static List<ImageModel> cachedImages = null;
     private static HashSet<string> cachedAllItems = null;
@@ -119,16 +162,32 @@
         RegexOptions.Compiled | RegexOptions.IgnoreCase
     );
 
+    private static readonly Regex EmojiRegex = new Regex(
+        @"https://api\.vrchat\.cloud/api/1/user/(?<userId>usr_[a-f0-9\-]+)/inventory/(?<emoji>inv_[a-f0-9\-]+)",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase
+    );
+
+    private static readonly Regex PrintRegex = new Regex(
+        @"https://api\.vrchat\.cloud/api/1/prints/(?<print>prnt?_[a-f0-9\-]+)",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase
+    );
+
+    public enum ItemCategory { Sticker, Emoji, Print }
+
     public class ImageModel
     {
-        public string Username { get; set; }
-        public string UserId { get; set; }
-        public string StickerId { get; set; }
+        public string Username { get; set; } = "Unknown";
+        public string UserId { get; set; } = "";
+        public string ItemId { get; set; }
         public string Url { get; set; }
+        public ItemCategory Category { get; set; }
     }
+
+    private bool CropPrints = true;
 
     protected override async Task OnInitializedAsync()
     {
+        CropPrints = Config.Get("CropWhiteBorder", "true") == "true";
         ApiReq = new ApiRequest(Auth);
         
         if (cachedImages != null)
@@ -161,6 +220,30 @@
         StateHasChanged();
     }
 
+    private string GetCategoryBtnClass(ItemCategory? cat)
+    {
+        if (SelectedCategory == cat)
+            return "btn-primary fw-bold";
+        
+        if (SelectedCategory == null)
+            return "text-white border-0"; // Normal brightness if "All" is active
+
+        return "text-white border-0 btn-hover-light"; // Darkened if another category is active
+    }
+
+    private void SetCategory(ItemCategory? category)
+    {
+        if (SelectedCategory == category && category != null)
+        {
+            SelectedCategory = null;
+        }
+        else
+        {
+            SelectedCategory = category;
+        }
+        StateHasChanged();
+    }
+
     private void ToggleInfo()
     {
         ShowInfo = !ShowInfo;
@@ -170,6 +253,15 @@
     {
         await Microsoft.Maui.ApplicationModel.DataTransfer.Clipboard.Default.SetTextAsync("--enable-sdk-log-levels");
         ShowInfo = false;
+    }
+
+    private void OnCropPrintsChanged(ChangeEventArgs e)
+    {
+        if (e.Value is bool val)
+        {
+            CropPrints = val;
+            Config.Set("CropWhiteBorder", val ? "true" : "false");
+        }
     }
 
     private void OnStreamingChanged()
@@ -276,56 +368,118 @@
 
     private void ProcessLogLine(string line)
     {
-        var match = StickerRegex.Match(line);
-        if (match.Success)
+        var stickerMatch = StickerRegex.Match(line);
+        if (stickerMatch.Success)
         {
-            string userId = match.Groups["userId"].Value;
-            string username = match.Groups["username"].Value;
-            string sticker = match.Groups["sticker"].Value;
+            string userId = stickerMatch.Groups["userId"].Value;
+            string username = stickerMatch.Groups["username"].Value;
+            string itemId = stickerMatch.Groups["sticker"].Value;
+            TryAddItem(itemId, userId, username, ItemCategory.Sticker);
+            return;
+        }
 
-            if (_allItems.Add(sticker))
+        var emojiMatch = EmojiRegex.Match(line);
+        if (emojiMatch.Success)
+        {
+            string userId = emojiMatch.Groups["userId"].Value;
+            string itemId = emojiMatch.Groups["emoji"].Value;
+            TryAddItem(itemId, userId, "Emoji User", ItemCategory.Emoji);
+            return;
+        }
+
+        var printMatch = PrintRegex.Match(line);
+        if (printMatch.Success)
+        {
+            string itemId = printMatch.Groups["print"].Value;
+            TryAddItem(itemId, "", "Print Author", ItemCategory.Print);
+            return;
+        }
+    }
+
+    private void TryAddItem(string itemId, string userId, string username, ItemCategory category)
+    {
+        if (_allItems.Add(itemId))
+        {
+            var imgModel = new ImageModel
             {
-                var imgModel = new ImageModel
-                {
-                    Username = username,
-                    UserId = userId,
-                    StickerId = sticker,
-                    Url = "" // Will fetch asynchronously
-                };
-                Images.Insert(0, imgModel);
-                
-                // Fetch the actual image URL asynchronously
-                _ = FetchStickerUrl(imgModel);
-            }
+                Username = username,
+                UserId = userId,
+                ItemId = itemId,
+                Url = "", // Will fetch asynchronously
+                Category = category
+            };
+            Images.Insert(0, imgModel);
+            
+            // Fetch the actual image URL asynchronously
+            _ = FetchImageUrl(imgModel);
         }
     }
     
-    private async Task FetchStickerUrl(ImageModel imgModel)
+    private async Task FetchImageUrl(ImageModel imgModel)
     {
         try
         {
-            var invInfo = await ApiReq.GetInventoryInfo(imgModel.UserId, imgModel.StickerId);
-            if (invInfo != null)
+            if (imgModel.Category == ItemCategory.Sticker || imgModel.Category == ItemCategory.Emoji)
             {
-                string fileId = invInfo.Metadata?.FileId;
-                if (!string.IsNullOrEmpty(fileId))
+                var invInfo = await ApiReq.GetInventoryInfo(imgModel.UserId, imgModel.ItemId);
+                if (invInfo != null)
                 {
-                    imgModel.Url = $"https://api.vrchat.cloud/api/1/image/{fileId}/1/256";
-                }
-                else if (!string.IsNullOrEmpty(invInfo.ImageUrl))
-                {
-                    string url = invInfo.ImageUrl;
-                    if (url.Contains("/file/"))
+                    if (imgModel.Category == ItemCategory.Emoji && (invInfo.Tags == null || !invInfo.Tags.Contains("Custom Emoji")))
                     {
-                        url = url.Replace("/file/", "/image/").Replace("/file", "/256");
+                        Images.Remove(imgModel);
+                        await InvokeAsync(StateHasChanged);
+                        return;
                     }
-                    imgModel.Url = url;
+                    
+                    if (imgModel.Category == ItemCategory.Emoji)
+                    {
+                        imgModel.Username = await ApiReq.GetUserName(imgModel.UserId);
+                    }
+
+                    string fileId = invInfo.Metadata?.FileId;
+                    if (!string.IsNullOrEmpty(fileId))
+                    {
+                        imgModel.Url = $"https://api.vrchat.cloud/api/1/image/{fileId}/1/256";
+                    }
+                    else if (!string.IsNullOrEmpty(invInfo.ImageUrl))
+                    {
+                        string url = invInfo.ImageUrl;
+                        if (url.Contains("/file/"))
+                        {
+                            url = url.Replace("/file/", "/image/").Replace("/file", "/256");
+                        }
+                        imgModel.Url = url;
+                    }
                 }
-                
-                if (!string.IsNullOrEmpty(imgModel.Url))
+                else
                 {
+                    Images.Remove(imgModel);
                     await InvokeAsync(StateHasChanged);
+                    return;
                 }
+            }
+            else if (imgModel.Category == ItemCategory.Print)
+            {
+                var printInfo = await ApiReq.GetPrintInfo(imgModel.ItemId);
+                if (printInfo != null && !string.IsNullOrEmpty(printInfo.FileId))
+                {
+                    if (!string.IsNullOrEmpty(printInfo.AuthorName))
+                    {
+                        imgModel.Username = printInfo.AuthorName;
+                    }
+                    imgModel.Url = $"https://api.vrchat.cloud/api/1/image/{printInfo.FileId}/1/256";
+                }
+                else
+                {
+                    Images.Remove(imgModel);
+                    await InvokeAsync(StateHasChanged);
+                    return;
+                }
+            }
+
+            if (!string.IsNullOrEmpty(imgModel.Url))
+            {
+                await InvokeAsync(StateHasChanged);
             }
         }
         catch
@@ -363,7 +517,9 @@
 
     private async Task ProcessUploadRoute(ImageModel img, string route)
     {
-        string localPath = await ClipboardHandler.SaveImageFromUrlAsync(img.Url);
+        string highResUrl = img.Url.Replace("/image/", "/file/").Replace("/256", "/file");
+        bool cropBorder = img.Category == ItemCategory.Print && CropPrints;
+        string localPath = await ClipboardHandler.SaveImageFromUrlAsync(highResUrl, cropBorder);
         if (!string.IsNullOrEmpty(localPath))
         {
             var encoded = Uri.EscapeDataString(localPath);
@@ -391,7 +547,17 @@
             if (!string.IsNullOrEmpty(img.Url))
             {
                 string highResUrl = img.Url.Replace("/image/", "/file/").Replace("/256", "/file");
-                await Microsoft.Maui.ApplicationModel.Browser.OpenAsync(highResUrl, Microsoft.Maui.ApplicationModel.BrowserLaunchMode.SystemPreferred);
+                bool cropBorder = img.Category == ItemCategory.Print && CropPrints;
+                string localPath = await ClipboardHandler.SaveImageFromUrlAsync(highResUrl, cropBorder);
+
+                if (!string.IsNullOrEmpty(localPath))
+                {
+                    System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo 
+                    { 
+                        FileName = localPath, 
+                        UseShellExecute = true 
+                    });
+                }
             }
         });
     }
@@ -399,7 +565,7 @@
     private void DeleteItem(ImageModel img)
     {
         Images.Remove(img);
-        _allItems.Remove(img.StickerId);
+        _allItems.Remove(img.ItemId);
     }
 
     public void Dispose()
