@@ -21,7 +21,7 @@
             @if (CurrentUser.Badges != null)
             {
                 <div class="d-flex justify-content-center gap-1 mt-0">
-                    @foreach (var badgeJson in CurrentUser.Badges.Where(b => b.Showcased).Take(3))
+                    @foreach (var badgeJson in CurrentUser.Badges.Where(b => b.Showcased).Take(4))
                     {
                         <img src="@badgeJson.BadgeImageUrl" class="nav-badge-icon" title="@badgeJson.BadgeName" />
                     }
