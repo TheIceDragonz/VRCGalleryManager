@@ -37,7 +37,7 @@
         <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-secondary">
             <div>
                 <h3 class="mb-0 text-accent d-flex align-items-center gap-2">
-                    <img src="/svg/gallery-minimalistic-svgrepo-com.svg" class="media-page-icon" /> Prints
+                    <img src="/svg/camera-svgrepo-com.svg" class="media-page-icon" /> Prints
                 </h3>
             </div>
             <div class="d-flex align-items-center gap-2">
@@ -80,6 +80,13 @@
                             <button class="btn btn-danger btn-sm rounded-circle position-absolute btn-action media-btn-delete" @onclick="() => DeletePrint(print)" title="Delete">
                                 <img src="/svg/trash-bin-trash-svgrepo-com.svg" class="btn-icon" style="margin: 0;" />
                             </button>
+                            
+                            @if (!string.IsNullOrEmpty(print.AuthorName))
+                            {
+                                <div class="position-absolute w-100 text-center media-card-label picflow-label fw-bold @(!string.IsNullOrEmpty(print.AuthorId) ? "cursor-pointer" : "") @(!string.IsNullOrEmpty(print.AuthorId) && print.AuthorId == Auth.CurrentUser?.Id ? "text-accent" : (!string.IsNullOrEmpty(print.AuthorId) && Auth.CurrentUser?.Friends?.Contains(print.AuthorId) == true ? "text-warning" : ""))" @onclick="() => OpenUserInBrowser(print.AuthorId)" title="@(!string.IsNullOrEmpty(print.AuthorId) ? "Open Profile in Browser" : "")">
+                                    @print.AuthorName
+                                </div>
+                            }
                         </div>
                     }
                 </div>
@@ -110,6 +117,8 @@
     {
         public string Id { get; set; }
         public string ImageUrl { get; set; }
+        public string AuthorName { get; set; }
+        public string AuthorId { get; set; }
     }
 
     [SupplyParameterFromQuery]
@@ -160,13 +169,17 @@
                     JObject jsonObject = JObject.Parse(json);
                     string id = jsonObject["id"]?.ToString();
                     string fileId = jsonObject["files"]?["fileId"]?.ToString();
+                    string authorName = jsonObject["authorName"]?.ToString();
+                    string authorId = jsonObject["authorId"]?.ToString();
                     
                     if (!string.IsNullOrEmpty(id) && !string.IsNullOrEmpty(fileId))
                     {
                         prints.Add(new PrintItem
                         {
                             Id = id,
-                            ImageUrl = $"https://api.vrchat.cloud/api/1/image/{fileId}/1/256"
+                            ImageUrl = $"https://api.vrchat.cloud/api/1/image/{fileId}/1/256",
+                            AuthorName = authorName,
+                            AuthorId = authorId
                         });
                     }
                 }
@@ -409,6 +422,22 @@
             {
                 imageViewer.Close();
             }
+        }
+    }
+
+    private void OpenUserInBrowser(string userId)
+    {
+        if (!string.IsNullOrEmpty(userId))
+        {
+            try
+            {
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = $"https://vrchat.com/home/user/{userId}",
+                    UseShellExecute = true
+                });
+            }
+            catch { }
         }
     }
 }

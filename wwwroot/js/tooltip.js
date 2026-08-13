@@ -19,18 +19,21 @@ document.addEventListener("DOMContentLoaded", () => {
             
             const tooltipText = target.getAttribute('data-tooltip');
             if (tooltipText && tooltipText.trim() !== "") {
+                if (activeTarget === target) return; // Prevent recalculating if already active
+
                 activeTarget = target;
                 tooltipEl.textContent = tooltipText;
                 
                 // Measure dimensions
                 tooltipEl.style.display = 'block';
                 const rect = target.getBoundingClientRect();
-                const tooltipRect = tooltipEl.getBoundingClientRect();
+                const tooltipWidth = tooltipEl.offsetWidth;
+                const tooltipHeight = tooltipEl.offsetHeight;
                 tooltipEl.style.display = '';
                 
                 // Calculate position (default: above the element)
-                let top = rect.top - tooltipRect.height - 10;
-                let left = rect.left + (rect.width / 2) - (tooltipRect.width / 2);
+                let top = rect.top - tooltipHeight - 10;
+                let left = rect.left + (rect.width / 2) - (tooltipWidth / 2);
                 
                 // Flip to bottom if not enough space at the top
                 if (top < 10) {
@@ -43,8 +46,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 
                 // Keep within horizontal bounds
                 if (left < 10) left = 10;
-                if (left + tooltipRect.width > window.innerWidth - 10) {
-                    left = window.innerWidth - tooltipRect.width - 10;
+                if (left + tooltipWidth > window.innerWidth - 10) {
+                    left = window.innerWidth - tooltipWidth - 10;
                 }
                 
                 tooltipEl.style.top = `${top}px`;

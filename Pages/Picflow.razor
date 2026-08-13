@@ -15,7 +15,7 @@
     <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-secondary">
         <div>
             <h3 class="mb-0 text-accent d-flex align-items-center gap-2">
-                <img src="/svg/gallery-wide-svgrepo-com.svg" class="media-page-icon" /> Picflow <span class="fs-6 text-muted ms-2">@LogStatus</span>
+                <img src="/svg/traffic-economy-svgrepo-com.svg" class="media-page-icon" /> Picflow <span class="fs-6 text-muted ms-2">@LogStatus</span>
             </h3>
         </div>
         
@@ -87,7 +87,7 @@
                             <img src="@img.Url" class="w-100 h-100 object-fit-cover" loading="lazy" />
                         }
                     }
-                    <div class="position-absolute w-100 text-center media-card-label picflow-label">
+                    <div class="position-absolute w-100 text-center media-card-label picflow-label fw-bold @(!string.IsNullOrEmpty(img.UserId) ? "cursor-pointer" : "") @(!string.IsNullOrEmpty(img.UserId) && img.UserId == Auth.CurrentUser?.Id ? "text-accent" : (!string.IsNullOrEmpty(img.UserId) && Auth.CurrentUser?.Friends?.Contains(img.UserId) == true ? "text-warning" : ""))" @onclick="() => OpenUserInBrowser(img.UserId)" title="@(!string.IsNullOrEmpty(img.UserId) ? "Open Profile in Browser" : "")">
                         @img.Username
                     </div>
 
@@ -128,10 +128,10 @@
             </div>
             <div class="p-3 d-flex flex-column gap-2 dialog-footer">
                 <button class="btn btn-outline-secondary d-flex align-items-center gap-2" @onclick='() => UploadForCategory(UploadMenuImage, "icons")'><img src="/svg/profile-user-svgrepo-com.svg" style="width:20px;height:20px; filter: invert(0.8);" /> Icons</button>
-                <button class="btn btn-outline-secondary d-flex align-items-center gap-2" @onclick='() => UploadForCategory(UploadMenuImage, "photos")'><img src="/svg/camera-svgrepo-com.svg" style="width:20px;height:20px; filter: invert(0.8);" /> Photos</button>
+                <button class="btn btn-outline-secondary d-flex align-items-center gap-2" @onclick='() => UploadForCategory(UploadMenuImage, "photos")'><img src="/svg/gallery-minimalistic-svgrepo-com.svg" style="width:20px;height:20px; filter: invert(0.8);" /> Photos</button>
                 <button class="btn btn-outline-secondary d-flex align-items-center gap-2" @onclick='() => UploadForCategory(UploadMenuImage, "emoji")'><img src="/svg/emoji-funny-circle-svgrepo-com.svg" style="width:20px;height:20px; filter: invert(0.8);" /> Emoji</button>
                 <button class="btn btn-outline-secondary d-flex align-items-center gap-2" @onclick='() => UploadForCategory(UploadMenuImage, "sticker")'><img src="/svg/sticker-smile-square-svgrepo-com.svg" style="width:20px;height:20px; filter: invert(0.8);" /> Sticker</button>
-                <button class="btn btn-outline-secondary d-flex align-items-center gap-2" @onclick='() => UploadForCategory(UploadMenuImage, "prints")'><img src="/svg/gallery-minimalistic-svgrepo-com.svg" style="width:20px;height:20px; filter: invert(0.8);" /> Prints</button>
+                <button class="btn btn-outline-secondary d-flex align-items-center gap-2" @onclick='() => UploadForCategory(UploadMenuImage, "prints")'><img src="/svg/camera-svgrepo-com.svg" style="width:20px;height:20px; filter: invert(0.8);" /> Prints</button>
                 
                 <button class="btn btn-danger mt-2 fw-bold" @onclick="CloseUploadMenu">Cancel</button>
             </div>
@@ -470,6 +470,10 @@
                     {
                         imgModel.Username = printInfo.AuthorName;
                     }
+                    if (!string.IsNullOrEmpty(printInfo.AuthorId))
+                    {
+                        imgModel.UserId = printInfo.AuthorId;
+                    }
                     imgModel.Url = $"https://api.vrchat.cloud/api/1/image/{printInfo.FileId}/1/256";
                 }
                 else
@@ -575,6 +579,22 @@
         {
             var item = targetList[index];
             ToggleUploadMenu(item);
+        }
+    }
+
+    private void OpenUserInBrowser(string userId)
+    {
+        if (!string.IsNullOrEmpty(userId))
+        {
+            try
+            {
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = $"https://vrchat.com/home/user/{userId}",
+                    UseShellExecute = true
+                });
+            }
+            catch { }
         }
     }
 }

@@ -15,7 +15,7 @@
     <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-secondary">
         <div>
             <h3 class="mb-0 text-accent d-flex align-items-center gap-2">
-                <img src="/svg/folder-open-svgrepo-com.svg" class="media-page-icon" /> Gallery
+                <img src="/svg/gallery-wide-svgrepo-com.svg" class="media-page-icon" /> Gallery
             </h3>
             @if (!string.IsNullOrEmpty(CurrentFolder))
             {
@@ -155,7 +155,7 @@
                                     bool isAuthor = VrcxData.Author?.Id == player.Id;
                                     <div class="bg-secondary bg-opacity-25 rounded p-1 px-2 d-flex align-items-center gap-2 @(isAuthor ? "border border-primary border-opacity-50" : "")">
                                         <div class="rounded-circle @(isAuthor ? "bg-primary" : "bg-secondary")" style="width: 8px; height: 8px;"></div>
-                                        <div class="text-white small text-truncate flex-grow-1">@player.DisplayName</div>
+                                        <div class="@(player.Id == Auth.CurrentUser?.Id ? "text-accent" : (Auth.CurrentUser?.Friends?.Contains(player.Id) == true ? "text-warning" : "text-white")) small text-truncate flex-grow-1 fw-bold" style="cursor: pointer;" @onclick="() => OpenUserInBrowser(player.Id)" title="Open Profile in Browser">@player.DisplayName</div>
                                         @if (isAuthor)
                                         {
                                             <span style="font-size: 0.75rem;">📸</span>
@@ -194,10 +194,10 @@
             </div>
             <div class="p-3 d-flex flex-column gap-2 dialog-footer">
                 <button class="btn btn-outline-secondary d-flex align-items-center gap-2" @onclick='() => UploadForCategory("Icons", "icons")'><img src="/svg/profile-user-svgrepo-com.svg" style="width:20px;height:20px; filter: invert(0.8);" /> Icons</button>
-                <button class="btn btn-outline-secondary d-flex align-items-center gap-2" @onclick='() => UploadForCategory("Photos", "photos")'><img src="/svg/camera-svgrepo-com.svg" style="width:20px;height:20px; filter: invert(0.8);" /> Photos</button>
+                <button class="btn btn-outline-secondary d-flex align-items-center gap-2" @onclick='() => UploadForCategory("Photos", "photos")'><img src="/svg/gallery-minimalistic-svgrepo-com.svg" style="width:20px;height:20px; filter: invert(0.8);" /> Photos</button>
                 <button class="btn btn-outline-secondary d-flex align-items-center gap-2" @onclick='() => UploadForCategory("Emoji", "emoji")'><img src="/svg/emoji-funny-circle-svgrepo-com.svg" style="width:20px;height:20px; filter: invert(0.8);" /> Emoji</button>
                 <button class="btn btn-outline-secondary d-flex align-items-center gap-2" @onclick='() => UploadForCategory("Sticker", "sticker")'><img src="/svg/sticker-smile-square-svgrepo-com.svg" style="width:20px;height:20px; filter: invert(0.8);" /> Sticker</button>
-                <button class="btn btn-outline-secondary d-flex align-items-center gap-2" @onclick='() => UploadForCategory("Prints", "prints")'><img src="/svg/gallery-minimalistic-svgrepo-com.svg" style="width:20px;height:20px; filter: invert(0.8);" /> Prints</button>
+                <button class="btn btn-outline-secondary d-flex align-items-center gap-2" @onclick='() => UploadForCategory("Prints", "prints")'><img src="/svg/camera-svgrepo-com.svg" style="width:20px;height:20px; filter: invert(0.8);" /> Prints</button>
                 
                 <button class="btn btn-danger mt-2 fw-bold" @onclick="CloseUploadMenu">Cancel</button>
             </div>
@@ -543,6 +543,22 @@
                 Process.Start(new ProcessStartInfo
                 {
                     FileName = $"https://vrchat.com/home/world/{VrcxData.World.Id}",
+                    UseShellExecute = true
+                });
+            }
+            catch { }
+        }
+    }
+
+    private void OpenUserInBrowser(string userId)
+    {
+        if (!string.IsNullOrEmpty(userId))
+        {
+            try
+            {
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = $"https://vrchat.com/home/user/{userId}",
                     UseShellExecute = true
                 });
             }

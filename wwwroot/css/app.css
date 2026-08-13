@@ -675,11 +675,11 @@ h6 {
 }
 
 .text-accent {
-    color: var(--accent);
+    color: var(--accent) !important;
 }
 
 .text-danger {
-    color: var(--danger);
+    color: var(--danger) !important;
 }
 
 .text-09rem {
