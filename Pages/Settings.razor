@@ -246,7 +246,11 @@
         }
         catch
         {
-            // Ignored
+            // If token is invalid or expired, log out automatically
+            Auth.Logout();
+            SystemMessage = "Session expired. Please log in again.";
+            SystemMessageIsError = true;
+            StateHasChanged();
         }
     }
 

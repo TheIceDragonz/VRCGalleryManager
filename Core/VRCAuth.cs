@@ -64,6 +64,14 @@ namespace VRCGalleryManager.Core
                 {
                     return VRCAuthStatus.RequiresApp2FA;
                 }
+                else if (currentUserResp.RawContent != null && currentUserResp.RawContent.Contains("\"error\""))
+                {
+                    return VRCAuthStatus.Error;
+                }
+                else if (currentUserResp.Data == null || string.IsNullOrEmpty(currentUserResp.Data.Id))
+                {
+                    return VRCAuthStatus.Error;
+                }
 
                 SaveCookies();
 
@@ -118,6 +126,19 @@ namespace VRCGalleryManager.Core
         {
             if (resp == null || resp.Headers == null) return;
 
+            var cookiesDict = new Dictionary<string, string>();
+            
+            if (Config.DefaultHeaders.TryGetValue("Cookie", out string existingCookies))
+            {
+                var parts = existingCookies.Split(';');
+                foreach(var p in parts)
+                {
+                    var kv = p.Trim().Split(new[] { '=' }, 2);
+                    if (kv.Length == 2)
+                        cookiesDict[kv[0]] = kv[1];
+                }
+            }
+
             foreach (var key in resp.Headers.Keys)
             {
                 if (key.Equals("Set-Cookie", StringComparison.OrdinalIgnoreCase))
@@ -125,21 +146,35 @@ namespace VRCGalleryManager.Core
                     var cookies = resp.Headers[key];
                     foreach (var cookieHeader in cookies)
                     {
-                        if (cookieHeader.StartsWith("auth="))
+                        var parts = cookieHeader.Split(';');
+                        var firstPart = parts[0].Trim();
+                        var kv = firstPart.Split(new[] { '=' }, 2);
+                        if (kv.Length == 2)
                         {
-                            var parts = cookieHeader.Split(';');
-                            var authPart = parts.FirstOrDefault(p => p.Trim().StartsWith("auth="));
-                            if (authPart != null)
-                            {
-                                string token = authPart.Trim().Substring(5);
-                                Config.ApiKey["auth"] = token;
-                                Config.AddApiKeyPrefix("auth", "auth");
-                                Console.WriteLine("Auth cookie extracted.");
-                                return;
-                            }
+                            cookiesDict[kv[0]] = kv[1];
                         }
                     }
                 }
+            }
+
+            if (cookiesDict.Count > 0)
+            {
+                var cookieString = string.Join("; ", cookiesDict.Select(kv => $"{kv.Key}={kv.Value}"));
+                if (Config.DefaultHeaders.ContainsKey("Cookie"))
+                    Config.DefaultHeaders["Cookie"] = cookieString;
+                else
+                    Config.DefaultHeaders.Add("Cookie", cookieString);
+                
+                if (cookiesDict.TryGetValue("auth", out string authTok))
+                {
+                    if (Config.ApiKey.ContainsKey("auth"))
+                        Config.ApiKey["auth"] = authTok;
+                    else
+                        Config.AddApiKey("auth", authTok);
+                    Config.AddApiKeyPrefix("auth", "auth");
+                }
+                
+                Console.WriteLine("Cookies extracted and updated.");
             }
         }
 
@@ -152,16 +187,16 @@ namespace VRCGalleryManager.Core
         {
             try
             {
-                if (Config.ApiKey.TryGetValue("auth", out string token))
+                if (Config.DefaultHeaders.TryGetValue("Cookie", out string cookieString))
                 {
                     string folder = Path.GetDirectoryName(tokenFilePath);
                     if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
 
-                    string encryptedToken = CryptAuth.Encrypt(token);
+                    string encryptedToken = CryptAuth.Encrypt(cookieString);
                     System.IO.File.WriteAllText(tokenFilePath, encryptedToken);
 
                     CookieLoaded = true;
-                    Console.WriteLine("Session token saved successfully.");
+                    Console.WriteLine("Session cookies saved successfully.");
                 }
             }
             catch (Exception ex)
@@ -177,19 +212,29 @@ namespace VRCGalleryManager.Core
                 if (System.IO.File.Exists(tokenFilePath))
                 {
                     string encrypted = System.IO.File.ReadAllText(tokenFilePath);
-                    string token = CryptAuth.Decrypt(encrypted);
+                    string cookieString = CryptAuth.Decrypt(encrypted);
 
-                    if (!string.IsNullOrEmpty(token))
+                    if (!string.IsNullOrEmpty(cookieString))
                     {
-                        if (Config.ApiKey.ContainsKey("auth"))
-                            Config.ApiKey["auth"] = token;
-                        else
-                            Config.AddApiKey("auth", token);
+                        if (!cookieString.Contains("="))
+                        {
+                            cookieString = $"auth={cookieString}";
+                        }
 
                         if (Config.DefaultHeaders.ContainsKey("Cookie"))
-                            Config.DefaultHeaders["Cookie"] = $"auth={token}";
+                            Config.DefaultHeaders["Cookie"] = cookieString;
                         else
-                            Config.DefaultHeaders.Add("Cookie", $"auth={token}");
+                            Config.DefaultHeaders.Add("Cookie", cookieString);
+
+                        var authPart = cookieString.Split(';').FirstOrDefault(p => p.Trim().StartsWith("auth="));
+                        if (authPart != null)
+                        {
+                            string token = authPart.Trim().Substring(5);
+                            if (Config.ApiKey.ContainsKey("auth"))
+                                Config.ApiKey["auth"] = token;
+                            else
+                                Config.AddApiKey("auth", token);
+                        }
 
                         CookieLoaded = true;
 

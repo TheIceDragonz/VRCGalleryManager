@@ -1403,3 +1403,4 @@ canvas.picking-color {
 .android-layout .d-flex.justify-content-between.border-bottom .btn .btn-icon {
     margin: 0 !important;
 }
+.disabled-nav { pointer-events: none; opacity: 0.5; filter: grayscale(100%); }

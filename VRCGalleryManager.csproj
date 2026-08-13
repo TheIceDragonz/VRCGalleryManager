@@ -27,7 +27,7 @@
         <ApplicationTitle>VRCGalleryManager</ApplicationTitle>
 
         <!-- App Identifier -->
-        <ApplicationId>com.companyname.vrcgallerymanager.maui</ApplicationId>
+        <ApplicationId>com.theicedragonz.vrcgallerymanager</ApplicationId>
         <ApplicationIcon>Icon.ico</ApplicationIcon>
 
         <!-- Versions -->

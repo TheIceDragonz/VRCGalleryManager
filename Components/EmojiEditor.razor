@@ -26,6 +26,14 @@
         </div>
     }
     <div class="canvas-container flex-grow-1 position-relative d-flex justify-content-center align-items-center bg-black p-4" style="min-width: 0; min-height: 0;">
+        @if (isRendering)
+        {
+            <div class="position-absolute top-0 start-0 w-100 h-100 d-flex flex-column justify-content-center align-items-center" style="background-color: rgba(0,0,0,0.5); z-index: 10;">
+                <div class="spinner-border text-accent mb-2" style="width: 2rem; height: 2rem;" role="status">
+                    <span class="visually-hidden">Calculating...</span>
+                </div>
+            </div>
+        }
         @if (IsAnimatedMode)
         {
             <div class="d-flex flex-column align-items-center w-100 h-100" style="min-width: 0; min-height: 0;">
@@ -343,6 +351,7 @@
     private string lastRenderHash = "";
     private bool isLoading = true;
     private bool isUploading = false;
+    private bool isRendering = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -556,6 +565,12 @@
             string currentHash = $"{RemoveBgEnabled}_{HexRemoveBgColor}_{RemoveBgTolerance}_{FeatherEnabled}_{ChokeRadius}_{FeatherRadius}_{CompressionQuality}";
             if (currentHash == lastRenderHash) return;
 
+            if (version == _previewVersion)
+            {
+                isRendering = true;
+                await InvokeAsync(StateHasChanged);
+            }
+
             Color rmColor = ParseHex(HexRemoveBgColor);
             float outScale = CompressionQuality / 100f;
 
@@ -622,9 +637,17 @@
             }
         }
         catch (OperationCanceledException) { }
+        finally
+        {
+            if (version == _previewVersion && isRendering)
+            {
+                isRendering = false;
+                await InvokeAsync(StateHasChanged);
+            }
+        }
     }
 
-    private void UpdateAnimatedPreview()
+    private async void UpdateAnimatedPreview()
     {
         if (StartFrame > EndFrame)
         {
@@ -640,18 +663,31 @@
             FinalFrameCount = 64;
         }
 
-        using var converter = new GifToSpriteSheetConverter();
-        var result = converter.ConvertGifToSpriteSheet(TempGifPath, StartFrame, EndFrame);
-        
-        using var safeBitmap = result.spriteSheet.Clone();
+        isRendering = true;
+        await InvokeAsync(StateHasChanged);
+        await Task.Delay(50); // Yield to allow UI to show spinner
 
-        using MemoryStream ms = new MemoryStream();
-        safeBitmap.SaveAsPng(ms, new SixLabors.ImageSharp.Formats.Png.PngEncoder { CompressionLevel = SixLabors.ImageSharp.Formats.Png.PngCompressionLevel.BestSpeed });
-        AnimatedPreviewBase64 = "data:image/png;base64," + Convert.ToBase64String(ms.ToArray());
-        
-        SizeMb = ms.Length / (1024.0 * 1024.0);;
-        
-        _ = InvokeAsync(StateHasChanged);
+        try
+        {
+            await Task.Run(() => 
+            {
+                using var converter = new GifToSpriteSheetConverter();
+                var result = converter.ConvertGifToSpriteSheet(TempGifPath, StartFrame, EndFrame);
+                
+                using var safeBitmap = result.spriteSheet.Clone();
+
+                using MemoryStream ms = new MemoryStream();
+                safeBitmap.SaveAsPng(ms, new SixLabors.ImageSharp.Formats.Png.PngEncoder { CompressionLevel = SixLabors.ImageSharp.Formats.Png.PngCompressionLevel.BestSpeed });
+                AnimatedPreviewBase64 = "data:image/png;base64," + Convert.ToBase64String(ms.ToArray());
+                
+                SizeMb = ms.Length / (1024.0 * 1024.0);
+            });
+        }
+        finally
+        {
+            isRendering = false;
+            await InvokeAsync(StateHasChanged);
+        }
         
         // Wait for Blazor to update the DOM with new data-frames and data-fps before calling initAll
         _ = Task.Run(async () => {

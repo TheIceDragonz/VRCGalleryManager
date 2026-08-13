@@ -34,27 +34,27 @@
 <div class="nav-scrollable flex-grow-1 py-3 px-3 nav-scrollable-container d-flex flex-column">
     <nav class="flex-column d-flex gap-1 p-2 flex-grow-1 nav-buttons-bg">
         <div class="nav-item">
-            <NavLink class="nav-link custom-nav-link" href="icons" Match="NavLinkMatch.All">
+            <NavLink class="@($"nav-link custom-nav-link {VrcPlusDisabledClass}")" href="icons" Match="NavLinkMatch.All">
                 <img src="/svg/profile-user-svgrepo-com.svg" class="nav-icon" /> Icons
             </NavLink>
         </div>
         <div class="nav-item">
-            <NavLink class="nav-link custom-nav-link" href="photos">
+            <NavLink class="@($"nav-link custom-nav-link {VrcPlusDisabledClass}")" href="photos">
                 <img src="/svg/gallery-minimalistic-svgrepo-com.svg" class="nav-icon" /> Photos
             </NavLink>
         </div>
         <div class="nav-item">
-            <NavLink class="nav-link custom-nav-link" href="emoji">
+            <NavLink class="@($"nav-link custom-nav-link {VrcPlusDisabledClass}")" href="emoji">
                 <img src="/svg/emoji-funny-circle-svgrepo-com.svg" class="nav-icon" /> Emoji
             </NavLink>
         </div>
         <div class="nav-item">
-            <NavLink class="nav-link custom-nav-link" href="sticker">
+            <NavLink class="@($"nav-link custom-nav-link {VrcPlusDisabledClass}")" href="sticker">
                 <img src="/svg/sticker-smile-square-svgrepo-com.svg" class="nav-icon" /> Sticker
             </NavLink>
         </div>
         <div class="nav-item">
-            <NavLink class="nav-link custom-nav-link" href="prints">
+            <NavLink class="@($"nav-link custom-nav-link {VrcPlusDisabledClass}")" href="prints">
                 <img src="/svg/camera-svgrepo-com.svg" class="nav-icon" /> Prints
             </NavLink>
         </div>
@@ -63,7 +63,7 @@
             @if (OperatingSystem.IsWindows())
             {
                 <div class="nav-item">
-                    <NavLink class="nav-link custom-nav-link" href="picflow">
+                    <NavLink class="@($"nav-link custom-nav-link {VrcPlusDisabledClass}")" href="picflow">
                         <img src="/svg/traffic-economy-svgrepo-com.svg" class="nav-icon" /> Picflow
                     </NavLink>
                 </div>
@@ -71,7 +71,7 @@
             @if (!OperatingSystem.IsAndroid())
             {
                 <div class="nav-item">
-                    <NavLink class="nav-link custom-nav-link" href="gallery">
+                    <NavLink class="@($"nav-link custom-nav-link {DisabledClass}")" href="gallery">
                         <img src="/svg/gallery-wide-svgrepo-com.svg" class="nav-icon" /> Gallery
                     </NavLink>
                 </div>
@@ -92,6 +92,10 @@
 
 @code {
     private VRChat.API.Model.CurrentUser CurrentUser;
+    private bool IsLoggedIn => CurrentUser != null;
+    private bool HasVrcPlus => IsLoggedIn && CurrentUser.Tags != null && CurrentUser.Tags.Contains("system_supporter");
+    private string DisabledClass => IsLoggedIn ? "" : "disabled-nav";
+    private string VrcPlusDisabledClass => HasVrcPlus ? "" : "disabled-nav";
 
     protected override async Task OnInitializedAsync()
     {
@@ -116,6 +120,7 @@
             catch
             {
                 CurrentUser = null;
+                Auth.Logout();
             }
         }
         else

@@ -24,6 +24,14 @@
         </div>
     }
     <div class="canvas-container flex-grow-1 position-relative d-flex justify-content-center align-items-center bg-black p-4" style="min-height: 0;">
+        @if (isRendering)
+        {
+            <div class="position-absolute top-0 start-0 w-100 h-100 d-flex flex-column justify-content-center align-items-center" style="background-color: rgba(0,0,0,0.5); z-index: 10;">
+                <div class="spinner-border text-accent mb-2" style="width: 2rem; height: 2rem;" role="status">
+                    <span class="visually-hidden">Calculating...</span>
+                </div>
+            </div>
+        }
         <canvas id="imageEditorCanvas" width="@CanvasWidth" height="@CanvasHeight" class="editor-canvas-img" style="max-height: 100%; max-width: 100%; object-fit: contain;"></canvas>
     </div>
     <div class="editor-sidebar d-flex flex-column flex-shrink-0 bg-panel">
