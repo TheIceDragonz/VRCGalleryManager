@@ -26,8 +26,14 @@
                 </div>
                 
                 <div class="d-flex gap-2">
-                    <button class="btn btn-outline-secondary w-50 py-2" @onclick="Cancel2FA" disabled="@IsLoggingIn">Cancel</button>
-                    <button class="btn btn-primary w-50 py-2" @onclick="Submit2FA" disabled="@IsLoggingIn">
+                    <button class="btn btn-outline-secondary flex-fill py-2" @onclick="Cancel2FA" disabled="@IsLoggingIn">Cancel</button>
+                    @if (IsEmail2FA)
+                    {
+                        <button class="btn btn-outline-primary flex-fill py-2" @onclick="Resend2FA" disabled="@IsLoggingIn" title="Resend Email Code">
+                            <i class="bi bi-arrow-clockwise"></i>
+                        </button>
+                    }
+                    <button class="btn btn-primary flex-fill py-2" @onclick="Submit2FA" disabled="@IsLoggingIn">
                         @if (IsLoggingIn)
                         {
                             <span class="spinner-border spinner-border-sm me-2" role="status"></span>
@@ -221,7 +227,7 @@
         Username = user.DisplayName;
         Password = "password";
 
-        // Check VRChat Plus badge
+        // Check VRChat Plus badge or tag
         HasVRCPlus = false;
         if (user.Badges != null)
         {
@@ -233,6 +239,11 @@
                     break;
                 }
             }
+        }
+        
+        if (!HasVRCPlus && user.Tags != null && user.Tags.Contains("system_supporter"))
+        {
+            HasVRCPlus = true;
         }
     }
 
@@ -246,11 +257,65 @@
         }
         catch
         {
-            // If token is invalid or expired, log out automatically
-            Auth.Logout();
-            SystemMessage = "Session expired. Please log in again.";
-            SystemMessageIsError = true;
-            StateHasChanged();
+            // If token is invalid or expired (e.g. IP change), check if we have saved credentials for auto-relogin
+            var creds = Auth.LoadCredentials();
+            if (creds != null)
+            {
+                Username = creds.Value.username;
+                Password = creds.Value.password;
+                
+                Auth.ClearAuthCookieOnly();
+                
+                try
+                {
+                    var status = await Auth.LoginAsync(Username, Password);
+                    if (status == VRCAuthStatus.RequiresEmail2FA)
+                    {
+                        IsEmail2FA = true;
+                        Show2FA = true;
+                        SystemMessage = "IP changed. A new 2FA code was sent to your email.";
+                        SystemMessageIsError = false;
+                        StateHasChanged();
+                    }
+                    else if (status == VRCAuthStatus.RequiresApp2FA)
+                    {
+                        IsEmail2FA = false;
+                        Show2FA = true;
+                        SystemMessage = "IP changed. Please enter your Authenticator code.";
+                        SystemMessageIsError = false;
+                        StateHasChanged();
+                    }
+                    else if (status == VRCAuthStatus.Success)
+                    {
+                        // Auto-relogin completely successful
+                        var user = await Auth.AuthApi.GetCurrentUserAsync();
+                        Auth.CurrentUser = user;
+                        ApplyCurrentUser(user);
+                        StateHasChanged();
+                    }
+                    else
+                    {
+                        Auth.Logout();
+                        SystemMessage = "Session expired and auto-login failed. Please log in again.";
+                        SystemMessageIsError = true;
+                        StateHasChanged();
+                    }
+                }
+                catch
+                {
+                    Auth.Logout();
+                    SystemMessage = "Session expired. Please log in again.";
+                    SystemMessageIsError = true;
+                    StateHasChanged();
+                }
+            }
+            else
+            {
+                Auth.Logout();
+                SystemMessage = "Session expired. Please log in again.";
+                SystemMessageIsError = true;
+                StateHasChanged();
+            }
         }
     }
 
@@ -290,6 +355,7 @@
                 }
                 else if (status == VRCAuthStatus.Success)
                 {
+                    Auth.SaveCredentials(Username, Password);
                     await LoadCurrentUser();
                 }
                 else
@@ -321,6 +387,7 @@
             var status = await Auth.Verify2FAAsync(Code2FA, IsEmail2FA);
             if (status == VRCAuthStatus.Success)
             {
+                Auth.SaveCredentials(Username, Password);
                 Show2FA = false;
                 Code2FA = "";
                 Password = "";
@@ -346,6 +413,50 @@
         Show2FA = false;
         Code2FA = "";
         LoginError = "";
+    }
+
+    private async Task Resend2FA()
+    {
+        IsLoggingIn = true;
+        LoginError = "";
+        StateHasChanged();
+        
+        try
+        {
+            // Clear temporary headers so VRChat treats this as a fresh login request (and thus sends a new code)
+            Auth.Config.ApiKey.Clear();
+            Auth.Config.DefaultHeaders.Clear();
+            Auth.ApiClient = new VRChat.API.Client.ApiClient(Auth.Config.BasePath);
+            Auth.AuthApi = new VRChat.API.Api.AuthenticationApi(Auth.ApiClient, Auth.ApiClient, Auth.Config);
+
+            var status = await Auth.LoginAsync(Username, Password);
+            if (status == VRCAuthStatus.RequiresEmail2FA)
+            {
+                // Just notify that a new code has been sent
+                Notifications.Show("New code sent to your email!", "2FA", VRCGalleryManager.Core.NotificationType.Success);
+            }
+            else if (status == VRCAuthStatus.Success)
+            {
+                // Somehow they logged in without 2FA (e.g. they turned it off in the meantime)
+                Auth.SaveCredentials(Username, Password);
+                Show2FA = false;
+                Code2FA = "";
+                Password = "";
+                await LoadCurrentUser();
+            }
+            else
+            {
+                LoginError = "Unexpected status when resending code.";
+            }
+        }
+        catch (Exception ex)
+        {
+            LoginError = ex.Message;
+        }
+        finally
+        {
+            IsLoggingIn = false;
+        }
     }
 
     private async Task On2FAKeyDown(KeyboardEventArgs e)

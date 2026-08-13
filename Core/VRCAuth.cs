@@ -1,4 +1,4 @@
-using VRCGalleryManager.Core.Helpers;
+using Microsoft.Maui.Storage;
 using VRChat.API.Api;
 using VRChat.API.Client;
 using VRChat.API.Model;
@@ -26,7 +26,7 @@ namespace VRCGalleryManager.Core
         public CurrentUser CurrentUser { get; set; }
         public event Action OnAuthStateChanged;
 
-        public static readonly string tokenFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "VRCGalleryManager", "authToken.txt");
+
 
         private VRCAuth()
         {
@@ -189,14 +189,9 @@ namespace VRCGalleryManager.Core
             {
                 if (Config.DefaultHeaders.TryGetValue("Cookie", out string cookieString))
                 {
-                    string folder = Path.GetDirectoryName(tokenFilePath);
-                    if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
-
-                    string encryptedToken = CryptAuth.Encrypt(cookieString);
-                    System.IO.File.WriteAllText(tokenFilePath, encryptedToken);
-
+                    Task.Run(async () => await SecureStorage.Default.SetAsync("auth_cookie", cookieString)).Wait();
                     CookieLoaded = true;
-                    Console.WriteLine("Session cookies saved successfully.");
+                    Console.WriteLine("Session cookies saved securely.");
                 }
             }
             catch (Exception ex)
@@ -209,37 +204,32 @@ namespace VRCGalleryManager.Core
         {
             try
             {
-                if (System.IO.File.Exists(tokenFilePath))
+                string cookieString = Task.Run(async () => await SecureStorage.Default.GetAsync("auth_cookie")).GetAwaiter().GetResult();
+
+                if (!string.IsNullOrEmpty(cookieString))
                 {
-                    string encrypted = System.IO.File.ReadAllText(tokenFilePath);
-                    string cookieString = CryptAuth.Decrypt(encrypted);
-
-                    if (!string.IsNullOrEmpty(cookieString))
+                    if (!cookieString.Contains("="))
                     {
-                        if (!cookieString.Contains("="))
-                        {
-                            cookieString = $"auth={cookieString}";
-                        }
-
-                        if (Config.DefaultHeaders.ContainsKey("Cookie"))
-                            Config.DefaultHeaders["Cookie"] = cookieString;
-                        else
-                            Config.DefaultHeaders.Add("Cookie", cookieString);
-
-                        var authPart = cookieString.Split(';').FirstOrDefault(p => p.Trim().StartsWith("auth="));
-                        if (authPart != null)
-                        {
-                            string token = authPart.Trim().Substring(5);
-                            if (Config.ApiKey.ContainsKey("auth"))
-                                Config.ApiKey["auth"] = token;
-                            else
-                                Config.AddApiKey("auth", token);
-                        }
-
-                        CookieLoaded = true;
-
-                        AuthApi = new AuthenticationApi(ApiClient, ApiClient, Config);
+                        cookieString = $"auth={cookieString}";
                     }
+
+                    if (Config.DefaultHeaders.ContainsKey("Cookie"))
+                        Config.DefaultHeaders["Cookie"] = cookieString;
+                    else
+                        Config.DefaultHeaders.Add("Cookie", cookieString);
+
+                    var authPart = cookieString.Split(';').FirstOrDefault(p => p.Trim().StartsWith("auth="));
+                    if (authPart != null)
+                    {
+                        string token = authPart.Trim().Substring(5);
+                        if (Config.ApiKey.ContainsKey("auth"))
+                            Config.ApiKey["auth"] = token;
+                        else
+                            Config.AddApiKey("auth", token);
+                    }
+
+                    CookieLoaded = true;
+                    AuthApi = new AuthenticationApi(ApiClient, ApiClient, Config);
                 }
             }
             catch (Exception ex)
@@ -249,11 +239,59 @@ namespace VRCGalleryManager.Core
             }
         }
 
-        public void Logout()
+        public void SaveCredentials(string username, string password)
         {
-            if (System.IO.File.Exists(tokenFilePath))
+            try
             {
-                System.IO.File.Delete(tokenFilePath);
+                Task.Run(async () => {
+                    await SecureStorage.Default.SetAsync("auth_username", username);
+                    await SecureStorage.Default.SetAsync("auth_password", password);
+                }).Wait();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Save credentials error: {ex.Message}");
+            }
+        }
+
+        public (string username, string password)? LoadCredentials()
+        {
+            try
+            {
+                string username = Task.Run(async () => await SecureStorage.Default.GetAsync("auth_username")).GetAwaiter().GetResult();
+                string password = Task.Run(async () => await SecureStorage.Default.GetAsync("auth_password")).GetAwaiter().GetResult();
+                
+                if (!string.IsNullOrEmpty(username) && !string.IsNullOrEmpty(password))
+                {
+                    return (username, password);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Load credentials error: {ex.Message}");
+            }
+            return null;
+        }
+
+        public void ClearAuthCookieOnly()
+        {
+            if (Config.DefaultHeaders.TryGetValue("Cookie", out string cookieString))
+            {
+                var parts = cookieString.Split(';');
+                var newParts = parts.Where(p => !p.Trim().StartsWith("auth=")).ToList();
+                Config.DefaultHeaders["Cookie"] = string.Join(";", newParts);
+            }
+            Config.ApiKey.Remove("auth");
+        }
+
+        public void Logout(bool keepCredentials = false)
+        {
+            SecureStorage.Default.Remove("auth_cookie");
+
+            if (!keepCredentials)
+            {
+                SecureStorage.Default.Remove("auth_username");
+                SecureStorage.Default.Remove("auth_password");
             }
 
             LoggedIn = false;
