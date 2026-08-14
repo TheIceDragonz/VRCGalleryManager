@@ -709,7 +709,7 @@
                     int count = Math.Min(TotalFrames, 256); // Extract up to 256 thumbnails for the timeline
                     for (int i = 0; i < count; i++)
                     {
-                        using Image<Rgba32> thumb = new Image<Rgba32>(64, 64, Color.Transparent);
+                        using Image<Rgba32> thumb = new Image<Rgba32>(64, 64);
                         using Image<Rgba32> clone = originalImage.Clone(x => {
                             int minDim = Math.Min(originalImage.Width, originalImage.Height);
                             int srcX = (originalImage.Width - minDim) / 2;

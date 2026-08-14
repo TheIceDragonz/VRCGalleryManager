@@ -88,7 +88,8 @@ namespace VRCGalleryManager.Core.Helpers
             token.ThrowIfCancellationRequested();
 
             // Create target bitmap
-            Image<Rgba32> result = new Image<Rgba32>(canvasW, canvasH, backgroundColor);
+            Image<Rgba32> result = new Image<Rgba32>(canvasW, canvasH);
+            result.Mutate(x => x.BackgroundColor(backgroundColor));
 
             float imageW = originalImage.Width;
             float imageH = originalImage.Height;

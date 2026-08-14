@@ -127,7 +127,7 @@ namespace VRCGalleryManager.Core
             }
 
             SpriteSheet?.Dispose();
-            SpriteSheet = new Image<Rgba32>(textureSize, 1024, Color.Transparent);
+            SpriteSheet = new Image<Rgba32>(textureSize, 1024);
 
             for (int i = 0; i < framesToUse; i++)
             {
@@ -173,7 +173,7 @@ namespace VRCGalleryManager.Core
         private Image<Rgba32> CropToSquare(Image<Rgba32> img, int size)
         {
             int maxSize = Math.Max(img.Width, img.Height);
-            var squareImage = new Image<Rgba32>(size, size, Color.Transparent);
+            var squareImage = new Image<Rgba32>(size, size);
             
             Rectangle srcRect;
 

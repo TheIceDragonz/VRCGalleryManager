@@ -26,7 +26,7 @@ namespace VRCGalleryManager.Core.Helpers
             int resizedH = (int)(origH * scale);
             int side = Math.Max(resizedW, resizedH);
             
-            using var bmp = new Image<Rgba32>(side, side, Color.Transparent);
+            using var bmp = new Image<Rgba32>(side, side);
             original.Mutate(x => x.Resize(resizedW, resizedH, KnownResamplers.Bicubic));
             
             int offsetX = (side - resizedW) / 2;
@@ -50,7 +50,7 @@ namespace VRCGalleryManager.Core.Helpers
             if (input.Width <= 2024 && input.Height <= 2024)
             {
                 var outPath = Path.Combine(tempDir, $"converted_{Guid.NewGuid()}.png");
-                using var bmp = new Image<Rgba32>(input.Width, input.Height, Color.Transparent);
+                using var bmp = new Image<Rgba32>(input.Width, input.Height);
                 bmp.Mutate(x => x.DrawImage(input, new Point(0, 0), 1f));
                 bmp.SaveAsPng(outPath);
                 return outPath;
@@ -62,7 +62,7 @@ namespace VRCGalleryManager.Core.Helpers
             int offsetX = (canvasW - newW) / 2, offsetY = (canvasH - newH) / 2;
             
             var outPathResized = Path.Combine(tempDir, $"resized_{Guid.NewGuid()}.png");
-            using var bmpResized = new Image<Rgba32>(canvasW, canvasH, Color.Transparent);
+            using var bmpResized = new Image<Rgba32>(canvasW, canvasH);
             input.Mutate(x => x.Resize(newW, newH, KnownResamplers.Bicubic));
             bmpResized.Mutate(x => x.DrawImage(input, new Point(offsetX, offsetY), 1f));
             bmpResized.SaveAsPng(outPathResized);
