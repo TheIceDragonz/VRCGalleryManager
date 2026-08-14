@@ -626,7 +626,7 @@
             return;
         }
 
-        bool confirmed = await JSRuntime.InvokeAsync<bool>("confirm", $"Do you want to delete {logFiles.Length} VRChat log file(s)?");
+        bool confirmed = await dialogService.ShowConfirmAsync("Clear Logs", $"Do you want to delete {logFiles.Length} VRChat log file(s)?", "Delete", "Cancel");
         if (confirmed)
         {
             foreach (var file in logFiles)
@@ -652,7 +652,7 @@
             return;
         }
 
-        bool confirmed = await JSRuntime.InvokeAsync<bool>("confirm", "Do you want to delete all cache files?");
+        bool confirmed = await dialogService.ShowConfirmAsync("Clear Cache", "Do you want to delete all cache files?", "Delete", "Cancel");
         if (confirmed)
         {
             foreach (var file in cacheFiles)
