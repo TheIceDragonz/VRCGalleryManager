@@ -1537,6 +1537,7 @@ canvas.picking-color {
     justify-content: center;
     padding: 60px;
     position: relative;
+    touch-action: none;
 }
 
 .viewer-img {
@@ -1545,6 +1546,7 @@ canvas.picking-color {
     object-fit: contain;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
     transition: opacity 0.3s;
+    touch-action: none;
 }
 
 .image-viewer-counter {
