@@ -321,13 +321,13 @@
                                             .LastOrDefault();
                     if (!string.IsNullOrEmpty(firstImg))
                     {
-                        item.ThumbnailBase64 = await MakeThumbnailBase64Async(firstImg, 400, token);
+                        item.ThumbnailBase64 = await MakeThumbnailBase64Async(firstImg, 256, token);
                     }
                     item.IsThumbLoading = false;
                 }
                 else
                 {
-                    item.ThumbnailBase64 = await MakeThumbnailBase64Async(item.Path, 400, token);
+                    item.ThumbnailBase64 = await MakeThumbnailBase64Async(item.Path, 256, token);
                     item.IsThumbLoading = false;
                 }
 

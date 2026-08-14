@@ -165,7 +165,7 @@
                     icons.Add(new IconItem
                     {
                         Id = id,
-                        ImageUrl = $"https://api.vrchat.cloud/api/1/file/{id}/1/file"
+                        ImageUrl = $"https://api.vrchat.cloud/api/1/image/{id}/1/256"
                     });
                 }
             }
@@ -188,12 +188,13 @@
     private void OpenImage(IconItem item)
     {
         var viewerItems = icons.Select(i => new VRCGalleryManager.Components.ImageViewer.ViewerItem {
-            HighResSource = i.ImageUrl,
+            HighResSource = i.ImageUrl.Replace("/image/", "/file/").Replace("/256", "/file"),
             LowResSource = i.ImageUrl,
             Title = "Icon"
         }).ToList();
         
-        var index = viewerItems.FindIndex(i => i.HighResSource == item.ImageUrl);
+        var currentUrl = item.ImageUrl.Replace("/image/", "/file/").Replace("/256", "/file");
+        var index = viewerItems.FindIndex(i => i.HighResSource == currentUrl);
         if (index == -1) index = 0;
         
         imageViewer.Open(viewerItems, index);
