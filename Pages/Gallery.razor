@@ -41,7 +41,7 @@
     <div class="flex-grow-1 overflow-hidden d-flex gap-3" @onclick="CloseUploadMenu">
         
         @* GRID *@
-        <div class="flex-grow-1 overflow-auto h-100 pe-2">
+        <div class="flex-grow-1 overflow-auto h-100 pe-2" @key="CurrentFolder">
             @if (string.IsNullOrEmpty(RootFolder))
             {
                 <div class="h-100 d-flex flex-column align-items-center justify-content-center text-white-50">
@@ -65,10 +65,9 @@
                 <div class="media-grid gap-3 pb-3">
                     @foreach (var item in Items)
                     {
-                        <div class="position-relative gallery-icon-card media-card-container @(SelectedImage == item ? "border-primary" : "")"
-                             style="cursor: pointer; @(SelectedImage == item ? "border-color: var(--accent) !important;" : "")"
-                             @onclick="() => OnItemClick(item)"
-                             @ondblclick="() => OnItemDoubleClick(item)"
+                        <div class="position-relative gallery-icon-card media-card-container"
+                             style="@(item.IsFolder ? "cursor: pointer;" : "")"
+                             @onclick="() => { if(item.IsFolder) OnItemClick(item); }"
                              title="@item.Name">
 
                             @if (item.IsFolder)
@@ -98,6 +97,13 @@
                                 @if (!string.IsNullOrEmpty(item.ThumbnailBase64))
                                 {
                                     <img src="@item.ThumbnailBase64" class="w-100 h-100 object-fit-cover" />
+                                    <button class="btn btn-success btn-sm rounded-circle position-absolute btn-action media-btn-upload" style="right: 40px;" @onclick:stopPropagation="true" @onclick="() => { SelectedImage = item; ToggleUploadMenu(); }" title="Upload">
+                                        <img src="/svg/add-circle-svgrepo-com.svg" class="btn-icon" style="margin: 0; filter: invert(1);" />
+                                    </button>
+
+                                    <button class="btn btn-dark btn-sm rounded-circle position-absolute btn-action media-btn-open" style="right: 5px;" @onclick:stopPropagation="true" @onclick="() => OpenFile(item.Path)" title="View Image">
+                                        <img src="/svg/eye-svgrepo-com.svg" class="btn-icon" style="margin: 0;" />
+                                    </button>
                                 }
                                 else if (item.IsThumbLoading)
                                 {
@@ -112,80 +118,13 @@
             }
         </div>
 
-        @* DETAILS PANEL *@
-        @if (SelectedImage != null)
-        {
-            <div class="details-panel m-0" style="height: 100%;">
-                
-                @* Preview *@
-                <div class="mb-3">
-                    <img src="@(string.IsNullOrEmpty(SelectedImage.FullBase64) ? SelectedImage.ThumbnailBase64 : SelectedImage.FullBase64)" class="img-preview mb-0" alt="@SelectedImage.Name" />
-                    <div class="text-white-50 small text-truncate mt-2 text-center" title="@SelectedImage.Name">@SelectedImage.Name</div>
-                </div>
 
-                @* VRCX Data *@
-                @if (VrcxData?.World != null)
-                {
-                    <div class="world-info mb-3">
-                        @if (!string.IsNullOrEmpty(VrcxData.World.ImageUrl))
-                        {
-                            <img src="@VrcxData.World.ImageUrl" class="world-img mb-2" @onclick="OpenWorld" title="Open in VRChat" />
-                        }
-                        <div class="world-name mt-0" style="cursor: pointer;" @onclick="OpenWorld" title="Open world page">
-                            @VrcxData.World.Name
-                        </div>
-                        @if (!string.IsNullOrEmpty(VrcxData.World.InstanceId))
-                        {
-                            <div class="text-white-50 small text-truncate mt-1 text-center">Instance: @VrcxData.World.InstanceId</div>
-                        }
-                    </div>
-                }
-
-                @if (VrcxData?.Players != null && VrcxData.Players.Count > 0)
-                {
-                    <div class="mb-3 d-flex flex-column flex-grow-1 min-vh-0">
-                        <div class="text-white-50 small fw-bold text-uppercase mb-2 d-flex align-items-center gap-2">
-                            <img src="/svg/profile-user-svgrepo-com.svg" style="width: 14px; height: 14px; filter: invert(80%) sepia(48%) saturate(1454%) hue-rotate(159deg) brightness(101%) contrast(97%);" />
-                            Players (@VrcxData.Players.Count)
-                        </div>
-                        <div class="overflow-auto flex-grow-1 pe-1" style="max-height: 200px;">
-                            <div class="d-flex flex-column gap-1">
-                                @foreach (var player in VrcxData.Players)
-                                {
-                                    bool isAuthor = VrcxData.Author?.Id == player.Id;
-                                    <div class="bg-secondary bg-opacity-25 rounded p-1 px-2 d-flex align-items-center gap-2 @(isAuthor ? "border border-primary border-opacity-50" : "")">
-                                        <div class="rounded-circle @(isAuthor ? "bg-primary" : "bg-secondary")" style="width: 8px; height: 8px;"></div>
-                                        <div class="@(player.Id == Auth.CurrentUser?.Id ? "text-accent" : (Auth.CurrentUser?.Friends?.Contains(player.Id) == true ? "text-warning" : "text-white")) small text-truncate flex-grow-1 fw-bold" style="cursor: pointer;" @onclick="() => OpenUserInBrowser(player.Id)" title="Open Profile in Browser">@player.DisplayName</div>
-                                        @if (isAuthor)
-                                        {
-                                            <span style="font-size: 0.75rem;">📸</span>
-                                        }
-                                    </div>
-                                }
-                            </div>
-                        </div>
-                    </div>
-                }
-
-                @* Actions *@
-                <div class="mt-auto pt-3 border-top border-secondary">
-                    <button class="btn btn-outline-light btn-sm w-100 mb-2 d-flex align-items-center justify-content-center gap-2" @onclick="OpenSelectedFile">
-                        <img src="/svg/eye-svgrepo-com.svg" class="btn-icon" style="filter: invert(80%) sepia(48%) saturate(1454%) hue-rotate(159deg) brightness(101%) contrast(97%); margin: 0;" /> View Image
-                    </button>
-                    <div class="position-relative" @onclick:stopPropagation="true">
-                        <button class="btn btn-primary btn-sm w-100 d-flex align-items-center justify-content-center gap-2" @onclick="ToggleUploadMenu">
-                            <img src="/svg/upload-svgrepo-com.svg" class="btn-icon" style="filter: invert(80%) sepia(48%) saturate(1454%) hue-rotate(159deg) brightness(101%) contrast(97%); margin: 0;" /> Upload...
-                        </button>
-                    </div>
-                </div>
-            </div>
-        }
     </div>
 </div>
 
 @if (ShowUploadMenu)
 {
-    <div class="position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center dialog-overlay" style="z-index: 1050;" @onclick="CloseUploadMenu">
+    <div class="position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center dialog-overlay" style="z-index: 10000;" @onclick="CloseUploadMenu">
         <div class="dialog-panel d-flex flex-column" @onclick:stopPropagation="true" style="min-width: 300px;">
             <div class="p-4 flex-grow-1 border-bottom border-secondary text-center">
                 <h5 class="fw-bold text-white mb-2">Upload to...</h5>
@@ -205,7 +144,7 @@
     </div>
 }
 
-<VRCGalleryManager.Components.ImageViewer @ref="imageViewer" />
+<VRCGalleryManager.Components.ImageViewer @ref="imageViewer" OnUploadRequested="HandleViewerUpload" />
 
 @code {
     // ── State ─────────────────────────────────────────────────────────────
@@ -213,7 +152,6 @@
     private string CurrentFolder;
     private List<GalleryItem> Items = new();
     private GalleryItem SelectedImage;
-    private MetaDataImageReader.VrcxData VrcxData;
 
     private static string cachedRootFolder = null;
     private static string cachedCurrentFolder = null;
@@ -308,7 +246,6 @@
         IsLoading = true;
         Items = new List<GalleryItem>();
         SelectedImage = null;
-        VrcxData = null;
         StateHasChanged();
 
         if (string.IsNullOrEmpty(CurrentFolder) || !Directory.Exists(CurrentFolder))
@@ -472,21 +409,12 @@
         else
         {
             SelectedImage = item;
-            VrcxData = MetaDataImageReader.ExtractVrcxData(item.Path);
-
-            if (string.IsNullOrEmpty(item.FullBase64))
-            {
-                _ = LoadFullPreviewAsync(item);
-            }
-
-            StateHasChanged();
         }
     }
 
     private void OnItemDoubleClick(GalleryItem item)
     {
-        if (!item.IsFolder)
-            OpenFile(item.Path);
+        // Disabled opening on click as requested
     }
 
     private void OpenSelectedFile()
@@ -523,6 +451,18 @@
         catch { }
     }
 
+    private void OpenInExplorer(string filePath)
+    {
+        try
+        {
+            if (File.Exists(filePath))
+            {
+                System.Diagnostics.Process.Start("explorer.exe", $"/select,\"{filePath}\"");
+            }
+        }
+        catch { }
+    }
+
     private async Task LoadFullPreviewAsync(GalleryItem item)
     {
         try
@@ -533,42 +473,22 @@
         catch { }
     }
 
-    // ── World link ────────────────────────────────────────────────────────
-    private void OpenWorld()
-    {
-        if (VrcxData?.World?.Id != null)
-        {
-            try
-            {
-                Process.Start(new ProcessStartInfo
-                {
-                    FileName = $"https://vrchat.com/home/world/{VrcxData.World.Id}",
-                    UseShellExecute = true
-                });
-            }
-            catch { }
-        }
-    }
 
-    private void OpenUserInBrowser(string userId)
-    {
-        if (!string.IsNullOrEmpty(userId))
-        {
-            try
-            {
-                Process.Start(new ProcessStartInfo
-                {
-                    FileName = $"https://vrchat.com/home/user/{userId}",
-                    UseShellExecute = true
-                });
-            }
-            catch { }
-        }
-    }
 
     // ── Upload menu ───────────────────────────────────────────────────────
     private void ToggleUploadMenu() => ShowUploadMenu = !ShowUploadMenu;
     private void CloseUploadMenu() { if (ShowUploadMenu) ShowUploadMenu = false; }
+
+    private void HandleViewerUpload(int index)
+    {
+        var targetList = Items.Where(x => !x.IsFolder).ToList();
+        if (index >= 0 && index < targetList.Count)
+        {
+            SelectedImage = targetList[index];
+            ShowUploadMenu = true;
+            StateHasChanged();
+        }
+    }
 
     private void UploadForCategory(string category, string route)
     {

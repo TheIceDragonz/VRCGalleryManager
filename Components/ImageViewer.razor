@@ -2,6 +2,7 @@
 @using System.Threading.Tasks
 @inject IJSRuntime JS
 @inject VRCGalleryManager.Core.NotificationService NotificationService
+@inject VRCGalleryManager.Core.VRCAuth Auth
 
 @if (IsVisible)
 {
@@ -40,9 +41,12 @@
         </div>
 
         <div class="image-viewer-bottom-bar" @onclick:stopPropagation="true">
-            <button class="btn btn-icon-only btn-viewer-action" title="Download / Open Location" @onclick="DownloadCurrent">
-                <img src="/svg/download-svgrepo-com.svg" style="filter: invert(1);" />
-            </button>
+            @if (CurrentItem?.HighResSource?.StartsWith("http") == false)
+            {
+                <button class="btn btn-icon-only btn-viewer-action" title="Open Location" @onclick="OpenLocationCurrent">
+                    <img src="/svg/folder-open-svgrepo-com.svg" style="filter: invert(1);" />
+                </button>
+            }
             <button class="btn btn-icon-only btn-viewer-action" title="Copy Image" @onclick="CopyCurrent">
                 <img src="/svg/copy-svgrepo-com.svg" style="filter: invert(1);" />
             </button>
@@ -52,6 +56,7 @@
                     <img src="/svg/link-svgrepo-com.svg" style="filter: invert(1);" />
                 </button>
             }
+
             @if (OnDeleteRequested.HasDelegate)
             {
                 <button class="btn btn-icon-only btn-viewer-action" title="Delete" @onclick="DeleteCurrent">
@@ -64,7 +69,61 @@
                     <img src="/svg/add-circle-svgrepo-com.svg" style="filter: invert(47%) sepia(87%) saturate(464%) hue-rotate(97deg) brightness(96%) contrast(87%);" />
                 </button>
             }
+            @if (CurrentVrcxData != null && (CurrentVrcxData.World != null || (CurrentVrcxData.Players != null && CurrentVrcxData.Players.Count > 0)))
+            {
+                <button class="btn btn-icon-only btn-viewer-action @(ShowInfoPanel ? "active" : "")" title="Toggle Info Panel" @onclick="ToggleInfoPanel">
+                    <img src="/svg/info-circle-svgrepo-com.svg" style="filter: invert(1);" />
+                </button>
+            }
         </div>
+
+        @if (ShowInfoPanel && CurrentVrcxData != null && (CurrentVrcxData.World != null || (CurrentVrcxData.Players != null && CurrentVrcxData.Players.Count > 0)))
+        {
+            <div class="image-viewer-info-panel" @onclick:stopPropagation="true">
+                @if (CurrentVrcxData.World != null)
+                {
+                    <div class="world-info-viewer mb-3">
+                        @if (!string.IsNullOrEmpty(CurrentVrcxData.World.ImageUrl))
+                        {
+                            <img src="@CurrentVrcxData.World.ImageUrl" class="world-img mb-2" />
+                        }
+                        <div class="world-name mt-0" style="cursor: pointer;" @onclick="() => OpenWorld(CurrentVrcxData.World.Id)" title="Open world page">
+                            @CurrentVrcxData.World.Name
+                        </div>
+
+                    </div>
+                }
+
+                @if (CurrentVrcxData.Players != null && CurrentVrcxData.Players.Count > 0)
+                {
+                    <div class="d-flex flex-column flex-grow-1" style="min-height: 0;">
+                        <div class="text-white-50 small fw-bold text-uppercase mb-2 d-flex align-items-center gap-2 flex-shrink-0">
+                            <img src="/svg/profile-user-svgrepo-com.svg" style="width: 14px; height: 14px; filter: invert(80%) sepia(48%) saturate(1454%) hue-rotate(159deg) brightness(101%) contrast(97%);" />
+                            Players (@CurrentVrcxData.Players.Count)
+                        </div>
+                        <div class="overflow-auto flex-grow-1 pe-1">
+                            <div class="d-flex flex-column gap-1">
+                                @foreach (var player in CurrentVrcxData.Players
+                                    .OrderByDescending(p => p.Id == Auth.CurrentUser?.Id)
+                                    .ThenByDescending(p => Auth.CurrentUser?.Friends?.Contains(p.Id) == true)
+                                    .ThenBy(p => p.DisplayName))
+                                {
+                                    bool isAuthor = CurrentVrcxData.Author?.Id == player.Id;
+                                    <div class="bg-secondary bg-opacity-25 rounded p-1 px-2 d-flex align-items-center gap-2 @(isAuthor ? "border border-primary border-opacity-50" : "")">
+                                        <div class="rounded-circle @(isAuthor ? "bg-primary" : "bg-secondary")" style="width: 8px; height: 8px;"></div>
+                                        <div class="@(player.Id == Auth.CurrentUser?.Id ? "text-accent" : (Auth.CurrentUser?.Friends?.Contains(player.Id) == true ? "text-warning" : "text-white")) small text-truncate flex-grow-1 fw-bold" style="cursor: pointer;" @onclick="() => OpenUserInBrowser(player.Id)" title="Open Profile in Browser">@player.DisplayName</div>
+                                        @if (isAuthor)
+                                        {
+                                            <img src="/svg/camera-svgrepo-com.svg" style="width: 14px; height: 14px; filter: invert(80%) sepia(48%) saturate(1454%) hue-rotate(159deg) brightness(101%) contrast(97%);" title="Author" />
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
 
         @if (Items != null && Items.Count > 1)
         {
@@ -88,6 +147,13 @@
         public string HighResSource { get; set; }
         public string LowResSource { get; set; }
         public string Title { get; set; }
+    }
+    
+    private VRCGalleryManager.Core.ApiRequest ApiReq;
+
+    protected override void OnInitialized()
+    {
+        ApiReq = new VRCGalleryManager.Core.ApiRequest(Auth);
     }
     
     [Parameter] public EventCallback OnClosed { get; set; }
@@ -127,7 +193,11 @@
     private string CurrentHighResSource = null;
     private bool isHighResLoaded = false;
     private CancellationTokenSource _cts;
+    private VRCGalleryManager.Core.MetaDataImageReader.VrcxData CurrentVrcxData;
+    private bool ShowInfoPanel = false;
     
+    private void ToggleInfoPanel() => ShowInfoPanel = !ShowInfoPanel;
+
     public void Open(IReadOnlyList<ViewerItem> items, int startIndex)
     {
         Items = items;
@@ -206,6 +276,7 @@
         
         isHighResLoaded = false;
         CurrentHighResSource = null;
+        CurrentVrcxData = null;
         StateHasChanged();
         
         try
@@ -230,6 +301,21 @@
                 if (!token.IsCancellationRequested)
                 {
                     CurrentHighResSource = base64;
+                    CurrentVrcxData = VRCGalleryManager.Core.MetaDataImageReader.ExtractVrcxData(path);
+                    
+                    if (CurrentVrcxData?.World != null && string.IsNullOrEmpty(CurrentVrcxData.World.ImageUrl) && !string.IsNullOrEmpty(CurrentVrcxData.World.Id))
+                    {
+                        _ = FetchWorldImageAsync(CurrentVrcxData.World.Id);
+                    }
+
+                    if (CurrentVrcxData != null && (CurrentVrcxData.World != null || (CurrentVrcxData.Players != null && CurrentVrcxData.Players.Count > 0)))
+                    {
+                        ShowInfoPanel = true;
+                    }
+                    else
+                    {
+                        ShowInfoPanel = false;
+                    }
                 }
             }
         }
@@ -244,6 +330,23 @@
         
         if (!token.IsCancellationRequested)
             StateHasChanged();
+    }
+    
+    private async Task FetchWorldImageAsync(string worldId)
+    {
+        try
+        {
+            var worldInfo = await ApiReq.GetWorldInfo(worldId);
+            if (worldInfo != null && !string.IsNullOrEmpty(worldInfo.ImageUrl))
+            {
+                if (CurrentVrcxData != null && CurrentVrcxData.World != null && CurrentVrcxData.World.Id == worldId)
+                {
+                    CurrentVrcxData.World.ImageUrl = worldInfo.ThumbnailUrl ?? worldInfo.ImageUrl;
+                    await InvokeAsync(StateHasChanged);
+                }
+            }
+        }
+        catch { }
     }
     
     private async Task DownloadCurrent()
@@ -289,6 +392,22 @@
         catch (Exception ex)
         {
             NotificationService.Show($"Download failed: {ex.Message}", "Error", VRCGalleryManager.Core.NotificationType.Error);
+        }
+    }
+
+    private void OpenLocationCurrent()
+    {
+        var src = CurrentItem?.HighResSource;
+        if (!string.IsNullOrEmpty(src) && !src.StartsWith("http"))
+        {
+            try
+            {
+                if (System.IO.File.Exists(src))
+                {
+                    System.Diagnostics.Process.Start("explorer.exe", $"/select,\"{src}\"");
+                }
+            }
+            catch { }
         }
     }
 
@@ -348,6 +467,38 @@
         if (OnUploadRequested.HasDelegate)
         {
             await OnUploadRequested.InvokeAsync(CurrentIndex);
+        }
+    }
+
+    private void OpenWorld(string worldId)
+    {
+        if (!string.IsNullOrEmpty(worldId))
+        {
+            try
+            {
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = $"https://vrchat.com/home/world/{worldId}",
+                    UseShellExecute = true
+                });
+            }
+            catch { }
+        }
+    }
+
+    private void OpenUserInBrowser(string userId)
+    {
+        if (!string.IsNullOrEmpty(userId))
+        {
+            try
+            {
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = $"https://vrchat.com/home/user/{userId}",
+                    UseShellExecute = true
+                });
+            }
+            catch { }
         }
     }
 }

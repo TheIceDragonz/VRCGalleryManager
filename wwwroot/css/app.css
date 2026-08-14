@@ -293,18 +293,7 @@ h6 {
     /* Ensure padding trick works correctly */
 }
 
-.image-overlay {
-    position: absolute;
-    bottom: 8px;
-    right: 8px;
-    opacity: 0;
-    transition: opacity var(--transition-fast);
-    z-index: 3;
-}
 
-.grid-item:hover .image-overlay {
-    opacity: 1;
-}
 
 .details-panel {
     width: 280px;
@@ -339,12 +328,6 @@ h6 {
 .world-img {
     width: 100%;
     border-radius: 8px;
-    cursor: pointer;
-    transition: transform var(--transition-fast);
-}
-
-.world-img:hover {
-    transform: scale(1.03);
 }
 
 .world-name {
@@ -858,6 +841,26 @@ h6 {
 }
 
 .media-btn-upload .btn-icon {
+    filter: brightness(0) invert(1) !important;
+}
+
+.media-btn-folder {
+    bottom: 5px;
+    right: 73px;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    opacity: 1;
+    background-color: #3b2a08 !important;
+    border-color: #593f0c !important;
+}
+
+.media-btn-folder:hover {
+    background-color: #593f0c !important;
+    border-color: #7d5911 !important;
+}
+
+.media-btn-folder .btn-icon {
     filter: brightness(0) invert(1) !important;
 }
 
@@ -1613,3 +1616,47 @@ canvas.picking-color {
     width: 24px;
     height: 24px;
 }
+
+.image-viewer-info-panel {
+    position: absolute;
+    top: 80px;
+    right: 80px;
+    bottom: 80px;
+    width: 320px;
+    background: rgba(15, 15, 20, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    z-index: 10000;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    animation: slideInRight 0.3s forwards;
+}
+
+.world-info-viewer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: rgba(255,255,255,0.05);
+    padding: 15px;
+    border-radius: 8px;
+}
+
+@keyframes slideInRight {
+    from { transform: translateX(50px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+.btn-viewer-action.active {
+    background: rgba(106, 227, 249, 0.2);
+    border-color: var(--accent) !important;
+}
+
+/* Picflow Styles */
+.btn-hover-light { opacity: 0.25; transition: all 0.2s; }
+.btn-hover-light:hover { opacity: 1 !important; background: rgba(255,255,255,0.1); }
+.print-card-ratio { aspect-ratio: 2048 / 1440; }
+.photo-card-ratio { aspect-ratio: 16 / 9; }
