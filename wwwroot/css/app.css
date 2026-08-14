@@ -975,6 +975,7 @@ h6 {
 
 /* Icons */
 .icon-droplet-card {
+    aspect-ratio: 1 / 1;
     border-radius: 50% 50% 20px 50% !important;
     overflow: hidden;
 }

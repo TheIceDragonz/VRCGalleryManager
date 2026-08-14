@@ -13,13 +13,13 @@
 <div class="h-100 d-flex flex-column p-3">
     @* TOP TOOLBAR *@
     <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-secondary">
-        <div>
+        <div class="d-flex align-items-center">
             <h3 class="mb-0 text-accent d-flex align-items-center gap-2">
                 <img src="/svg/gallery-wide-svgrepo-com.svg" class="media-page-icon" /> Gallery
             </h3>
             @if (!string.IsNullOrEmpty(CurrentFolder))
             {
-                <div class="text-white-50 mt-1 small" title="@CurrentFolder">@CurrentFolder</div>
+                <span class="text-white-50 ms-3 small mb-0" title="@CurrentFolder">@CurrentFolder</span>
             }
         </div>
 

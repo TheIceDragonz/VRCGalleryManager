@@ -38,18 +38,10 @@
             <div>
                 <h3 class="mb-0 text-accent d-flex align-items-center gap-2">
                     <img src="/svg/profile-user-svgrepo-com.svg" class="media-page-icon" /> Icons
+                    <span class="@(imageCount >= 64 ? "badge bg-danger fs-6 ms-2" : "text-white-50 fs-6 ms-2")">@imageCount/64</span>
                 </h3>
             </div>
             <div class="d-flex align-items-center gap-2">
-                @if (imageCount >= 64)
-                {
-                    <span class="badge bg-danger">Limit Reached (@imageCount/64)</span>
-                }
-                else
-                {
-                    <span class="text-white-50">@imageCount/64 Icons</span>
-                }
-                
                 <button class="btn btn-outline-secondary btn-sm" @onclick="RefreshList" disabled="@isRefreshing" title="Refresh">
                     <img src="/svg/rotate-right-svgrepo-com.svg" class="btn-icon @(isRefreshing ? "spin" : "")" style="margin: 0;" />
                 </button>

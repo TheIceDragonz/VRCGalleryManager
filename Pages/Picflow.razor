@@ -15,24 +15,14 @@
     <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-secondary">
         <div>
             <h3 class="mb-0 text-accent d-flex align-items-center gap-2">
-                <img src="/svg/traffic-economy-svgrepo-com.svg" class="media-page-icon" /> Picflow <span class="fs-6 text-muted ms-2">@LogStatus</span>
+                <img src="/svg/traffic-economy-svgrepo-com.svg" class="media-page-icon" /> Picflow
+                <span class="text-white-50 fs-6 ms-2">@Images.Count</span>
+                <span class="fs-6 text-muted ms-2">@LogStatus</span>
             </h3>
         </div>
         
         <div class="d-flex align-items-center gap-2">
-            <span class="text-white-50">@Images.Count Items</span>
-
-            <div class="form-check form-switch d-flex align-items-center mb-0 ms-2 me-2">
-                <input class="form-check-input mt-0 me-2 cursor-pointer" type="checkbox" id="streamSwitch" @bind="IsStreaming" @bind:after="OnStreamingChanged">
-                <label class="form-check-label text-white cursor-pointer" for="streamSwitch">Stream</label>
-            </div>
-            
-            <div class="form-check form-switch d-flex align-items-center mb-0 ms-2 me-2" title="Automatically remove white borders from Prints when uploading">
-                <input class="form-check-input mt-0 me-2 cursor-pointer" type="checkbox" id="cropBorderSwitch" checked="@CropPrints" @onchange="OnCropPrintsChanged">
-                <label class="form-check-label text-white cursor-pointer" for="cropBorderSwitch">Crop Prints</label>
-            </div>
-            
-            <button class="btn btn-outline-secondary btn-sm" @onclick="Refresh" disabled="@IsStreaming" title="Refresh">
+            <button class="btn btn-outline-secondary btn-sm" @onclick="Refresh" disabled="@IsStreamingProp" title="Refresh">
                 <img src="/svg/rotate-right-svgrepo-com.svg" class="btn-icon" style="margin: 0;" />
             </button>
             <button class="btn btn-outline-danger btn-sm" @onclick="ClearItems" title="Clear">
@@ -51,11 +41,25 @@
         </div>
     }
 
-    <div class="mb-3 d-flex gap-1 p-1 rounded-pill shadow-sm mx-auto" style="width: fit-content; background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255,255,255,0.1);">
-        <button class="btn btn-sm rounded-pill px-3 @GetCategoryBtnClass(null)" @onclick="() => SetCategory(null)">All</button>
-        <button class="btn btn-sm rounded-pill px-3 @GetCategoryBtnClass(ItemCategory.Sticker)" @onclick="() => SetCategory(ItemCategory.Sticker)">Stickers</button>
-        <button class="btn btn-sm rounded-pill px-3 @GetCategoryBtnClass(ItemCategory.Emoji)" @onclick="() => SetCategory(ItemCategory.Emoji)">Emojis</button>
-        <button class="btn btn-sm rounded-pill px-3 @GetCategoryBtnClass(ItemCategory.Print)" @onclick="() => SetCategory(ItemCategory.Print)">Prints</button>
+    <div class="mb-3 d-flex gap-1 p-1 rounded-pill shadow-sm mx-auto align-items-center" style="width: fit-content; background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255,255,255,0.1); padding-right: 1.25rem !important;">
+        <div class="d-flex gap-1">
+            <button class="btn btn-sm rounded-pill px-3 @GetCategoryBtnClass(null)" @onclick="() => SetCategory(null)">All</button>
+            <button class="btn btn-sm rounded-pill px-3 @GetCategoryBtnClass(ItemCategory.Sticker)" @onclick="() => SetCategory(ItemCategory.Sticker)">Stickers</button>
+            <button class="btn btn-sm rounded-pill px-3 @GetCategoryBtnClass(ItemCategory.Emoji)" @onclick="() => SetCategory(ItemCategory.Emoji)">Emojis</button>
+            <button class="btn btn-sm rounded-pill px-3 @GetCategoryBtnClass(ItemCategory.Print)" @onclick="() => SetCategory(ItemCategory.Print)">Prints</button>
+        </div>
+        
+        <div class="bg-secondary opacity-50 mx-2" style="width: 1px; height: 24px;"></div>
+        
+        <div class="form-check form-switch d-flex align-items-center mb-0 ms-1 me-2" title="Automatically load new items in real-time as they appear in logs">
+            <input class="form-check-input mt-0 me-2 cursor-pointer" type="checkbox" id="streamSwitch" @bind="IsStreamingProp" @bind:after="OnStreamingChanged">
+            <label class="form-check-label text-white cursor-pointer small fw-bold" for="streamSwitch">Stream</label>
+        </div>
+        
+        <div class="form-check form-switch d-flex align-items-center mb-0 me-1" title="Automatically remove white borders from Prints when uploading">
+            <input class="form-check-input mt-0 me-2 cursor-pointer" type="checkbox" id="cropBorderSwitch" checked="@CropPrints" @onchange="OnCropPrintsChanged">
+            <label class="form-check-label text-white cursor-pointer small fw-bold" for="cropBorderSwitch">Crop Prints</label>
+        </div>
     </div>
 
 
@@ -139,10 +143,8 @@
 @code {
     private ApiRequest ApiReq;
     private List<ImageModel> Images = new();
-    private bool IsStreaming = false;
     private bool ShowInfo = false;
     private string LogStatus = "";
-    private CancellationTokenSource? _cts;
     private HashSet<string> _allItems = new();
     private ItemCategory? SelectedCategory = null;
 
@@ -153,6 +155,15 @@
     private static List<ImageModel> cachedImages = null;
     private static HashSet<string> cachedAllItems = null;
     private static string cachedLogStatus = null;
+    private static bool isStreamingStatic = false;
+    private static CancellationTokenSource? staticCts;
+    private static event Action StateChanged;
+
+    private bool IsStreamingProp 
+    {
+        get => isStreamingStatic;
+        set => isStreamingStatic = value;
+    }
 
     private static readonly Regex StickerRegex = new Regex(
         @"User\s+(?<userId>usr_[a-f0-9\-]+)\s+\((?<username>[^)]+)\).*?sticker\s+(?<sticker>inv_[a-f0-9\-]+)",
@@ -188,6 +199,8 @@
         CropPrints = Config.Get("CropWhiteBorder", "true") == "true";
         ApiReq = new ApiRequest(Auth);
         
+        StateChanged += NotifyStateChanged;
+
         if (cachedImages != null)
         {
             Images = cachedImages;
@@ -200,6 +213,11 @@
             cachedAllItems = _allItems;
             await LoadFromLogs();
         }
+    }
+
+    private void NotifyStateChanged()
+    {
+        try { InvokeAsync(StateHasChanged); } catch { }
     }
 
     private async Task Refresh()
@@ -264,23 +282,24 @@
 
     private void OnStreamingChanged()
     {
-        if (IsStreaming)
+        if (isStreamingStatic)
         {
-            _cts?.Cancel();
-            _cts = new CancellationTokenSource();
-            _ = StreamLogsAsync(_cts.Token);
+            staticCts?.Cancel();
+            staticCts = new CancellationTokenSource();
+            _ = StreamLogsAsync(staticCts.Token);
         }
         else
         {
-            _cts?.Cancel();
+            staticCts?.Cancel();
         }
     }
 
     private async Task LoadFromLogs()
     {
-        _cts?.Cancel();
-        _cts = new CancellationTokenSource();
-        var token = _cts.Token;
+        staticCts?.Cancel();
+        isStreamingStatic = false;
+        staticCts = new CancellationTokenSource();
+        var token = staticCts.Token;
 
         string userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
         string vrchatLogPath = Path.Combine(userProfile, "AppData", "LocalLow", "VRChat", "VRChat");
@@ -353,7 +372,7 @@
                 if (line != null)
                 {
                     ProcessLogLine(line);
-                    await InvokeAsync(StateHasChanged);
+                    StateChanged?.Invoke();
                 }
                 else
                 {
@@ -425,7 +444,7 @@
                     if (imgModel.Category == ItemCategory.Emoji && (invInfo.Tags == null || !invInfo.Tags.Contains("Custom Emoji")))
                     {
                         Images.Remove(imgModel);
-                        await InvokeAsync(StateHasChanged);
+                        StateChanged?.Invoke();
                         return;
                     }
                     
@@ -452,7 +471,7 @@
                 else
                 {
                     Images.Remove(imgModel);
-                    await InvokeAsync(StateHasChanged);
+                    StateChanged?.Invoke();
                     return;
                 }
             }
@@ -474,14 +493,14 @@
                 else
                 {
                     Images.Remove(imgModel);
-                    await InvokeAsync(StateHasChanged);
+                    StateChanged?.Invoke();
                     return;
                 }
             }
 
             if (!string.IsNullOrEmpty(imgModel.Url))
             {
-                await InvokeAsync(StateHasChanged);
+                StateChanged?.Invoke();
             }
         }
         catch
@@ -565,7 +584,7 @@
 
     public void Dispose()
     {
-        _cts?.Cancel();
+        StateChanged -= NotifyStateChanged;
     }
     private void HandleViewerUpload(int index)
     {
