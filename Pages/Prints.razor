@@ -29,7 +29,24 @@
     @if (editingBase64Image != null)
     {
         <div class="flex-grow-1 media-page-container">
-            <VRCGalleryManager.Components.ImageEditor Base64Image="@editingBase64Image" TargetWidth="1920" TargetHeight="1080" OnSave="OnEditorSave" OnCancel="OnEditorCancel" />
+            <VRCGalleryManager.Components.ImageEditor Base64Image="@editingBase64Image" TargetWidth="1920" TargetHeight="1080" OnSave="OnEditorSave" OnCancel="OnEditorCancel">
+                <EditorBottomContent>
+                    @if (OperatingSystem.IsWindows())
+                    {
+                        <div class="rounded-pill d-flex align-items-center mx-auto" style="background: rgba(0, 0, 0, 0.5); border: 1px solid rgba(255, 255, 255, 0.12); width: 100%; max-width: 400px; padding: 0.5rem 1.2rem; box-shadow: 0 4px 15px rgba(0,0,0,0.4);">
+                            <img src="/svg/write-f-svgrepo-com.svg" style="width: 16px; height: 16px; filter: invert(0.6);" class="me-2 flex-shrink-0" />
+                            <input type="text" class="form-control text-white border-0 bg-transparent shadow-none p-0 m-0 w-100" @bind="printNote" placeholder="Add a custom note..." style="outline: none; font-size: 0.95rem;" />
+                        </div>
+                    }
+                </EditorBottomContent>
+                <EditorExtraContent>
+                    @if (!OperatingSystem.IsWindows())
+                    {
+                        <label class="form-label small text-muted mb-1">Print Note</label>
+                        <input type="text" class="form-control form-control-sm bg-dark text-white border-secondary" @bind="printNote" placeholder="Custom print note..." />
+                    }
+                </EditorExtraContent>
+            </VRCGalleryManager.Components.ImageEditor>
         </div>
     }
     else
@@ -110,6 +127,7 @@
 
     private string editingBase64Image = null;
     private bool isDragging = false;
+    private string printNote = "";
 
     private static string PRINTS_TAG = "print";
 
@@ -351,12 +369,13 @@
             
             await File.WriteAllBytesAsync(tempPath, bytes);
 
-            await apiRequest.UploadImage(tempPath, "", TagType.Print, "");
+            await apiRequest.UploadPrint(tempPath, printNote);
 
             try { File.Delete(tempPath); } catch { }
 
             await RefreshList();
             editingBase64Image = null;
+            printNote = "";
         }
         catch (Exception ex)
         {
@@ -367,6 +386,7 @@
     private void OnEditorCancel()
     {
         editingBase64Image = null;
+        printNote = "";
     }
 
     public void Dispose()
