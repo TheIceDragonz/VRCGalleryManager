@@ -209,6 +209,22 @@
     protected override async Task OnInitializedAsync()
     {
         UpdateCacheInfo();
+
+        if (Auth.Is2FARequired)
+        {
+            var creds = Auth.LoadCredentials();
+            if (creds != null)
+            {
+                Username = creds.Value.username;
+                Password = creds.Value.password;
+            }
+            IsEmail2FA = Auth.IsEmail2FA;
+            Show2FA = true;
+            SystemMessage = "Authentication required. Please enter the new 2FA code.";
+            SystemMessageIsError = false;
+            return;
+        }
+
         if (IsLoggedIn)
         {
             if (Auth.CurrentUser != null)
@@ -255,67 +271,45 @@
             Auth.CurrentUser = user;
             ApplyCurrentUser(user);
         }
-        catch
+        catch (VRChat.API.Client.ApiException ex) when (ex.ErrorCode == 401)
         {
-            // If token is invalid or expired (e.g. IP change), check if we have saved credentials for auto-relogin
             var creds = Auth.LoadCredentials();
             if (creds != null)
             {
                 Username = creds.Value.username;
                 Password = creds.Value.password;
-                
-                Auth.ClearAuthCookieOnly();
-                
-                try
-                {
-                    var status = await Auth.LoginAsync(Username, Password);
-                    if (status == VRCAuthStatus.RequiresEmail2FA)
-                    {
-                        IsEmail2FA = true;
-                        Show2FA = true;
-                        SystemMessage = "IP changed. A new 2FA code was sent to your email.";
-                        SystemMessageIsError = false;
-                        StateHasChanged();
-                    }
-                    else if (status == VRCAuthStatus.RequiresApp2FA)
-                    {
-                        IsEmail2FA = false;
-                        Show2FA = true;
-                        SystemMessage = "IP changed. Please enter your Authenticator code.";
-                        SystemMessageIsError = false;
-                        StateHasChanged();
-                    }
-                    else if (status == VRCAuthStatus.Success)
-                    {
-                        // Auto-relogin completely successful
-                        var user = await Auth.AuthApi.GetCurrentUserAsync();
-                        Auth.CurrentUser = user;
-                        ApplyCurrentUser(user);
-                        StateHasChanged();
-                    }
-                    else
-                    {
-                        Auth.Logout();
-                        SystemMessage = "Session expired and auto-login failed. Please log in again.";
-                        SystemMessageIsError = true;
-                        StateHasChanged();
-                    }
-                }
-                catch
-                {
-                    Auth.Logout();
-                    SystemMessage = "Session expired. Please log in again.";
-                    SystemMessageIsError = true;
-                    StateHasChanged();
-                }
+            }
+            
+            bool success = await Auth.TryAutoReloginAsync();
+            if (success)
+            {
+                var user = await Auth.AuthApi.GetCurrentUserAsync();
+                Auth.CurrentUser = user;
+                ApplyCurrentUser(user);
+                StateHasChanged();
+            }
+            else if (Auth.Is2FARequired)
+            {
+                IsEmail2FA = Auth.IsEmail2FA;
+                Show2FA = true;
+                SystemMessage = "IP changed. Please enter your 2FA code.";
+                SystemMessageIsError = false;
+                StateHasChanged();
             }
             else
             {
-                Auth.Logout();
-                SystemMessage = "Session expired. Please log in again.";
+                Auth.Logout(keepCredentials: true);
+                SystemMessage = "Session expired and auto-login failed. Please log in again.";
                 SystemMessageIsError = true;
                 StateHasChanged();
             }
+        }
+        catch
+        {
+            Auth.Logout(keepCredentials: true);
+            SystemMessage = "Session expired. Please log in again.";
+            SystemMessageIsError = true;
+            StateHasChanged();
         }
     }
 

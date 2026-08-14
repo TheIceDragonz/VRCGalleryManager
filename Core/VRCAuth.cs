@@ -26,6 +26,11 @@ namespace VRCGalleryManager.Core
         public CurrentUser CurrentUser { get; set; }
         public event Action OnAuthStateChanged;
 
+        public bool Is2FARequired = false;
+        public bool IsEmail2FA = false;
+        public event Action On2FARequiredEvent;
+        public void Notify2FARequired() => On2FARequiredEvent?.Invoke();
+
 
 
         private VRCAuth()
@@ -284,6 +289,35 @@ namespace VRCGalleryManager.Core
             Config.ApiKey.Remove("auth");
         }
 
+        public async Task<bool> TryAutoReloginAsync()
+        {
+            var creds = LoadCredentials();
+            if (creds == null) return false;
+
+            ClearAuthCookieOnly();
+            
+            try
+            {
+                var status = await LoginAsync(creds.Value.username, creds.Value.password);
+                if (status == VRCAuthStatus.Success)
+                {
+                    Is2FARequired = false;
+                    return true;
+                }
+                else if (status == VRCAuthStatus.RequiresEmail2FA || status == VRCAuthStatus.RequiresApp2FA)
+                {
+                    Is2FARequired = true;
+                    IsEmail2FA = status == VRCAuthStatus.RequiresEmail2FA;
+                    Notify2FARequired();
+                    return false;
+                }
+            }
+            catch
+            {
+            }
+            return false;
+        }
+
         public void Logout(bool keepCredentials = false)
         {
             SecureStorage.Default.Remove("auth_cookie");
@@ -297,6 +331,7 @@ namespace VRCGalleryManager.Core
             LoggedIn = false;
             CookieLoaded = false;
             CurrentUser = null;
+            Is2FARequired = false;
 
             Config.ApiKey.Clear();
             Config.DefaultHeaders.Clear();

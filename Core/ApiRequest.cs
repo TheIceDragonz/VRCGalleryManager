@@ -97,6 +97,41 @@ namespace VRCGalleryManager.Core
             public string? LoopStyle { get; set; }
         }
 
+        public async Task<T> ExecuteWithReloginAsync<T>(Func<Task<T>> apiCall)
+        {
+            try
+            {
+                return await apiCall();
+            }
+            catch (ApiException ex) when (ex.ErrorCode == 401)
+            {
+                bool reloggedIn = await Auth.TryAutoReloginAsync();
+                if (reloggedIn)
+                {
+                    return await apiCall();
+                }
+                throw;
+            }
+        }
+
+        public async Task ExecuteWithReloginAsync(Func<Task> apiCall)
+        {
+            try
+            {
+                await apiCall();
+            }
+            catch (ApiException ex) when (ex.ErrorCode == 401)
+            {
+                bool reloggedIn = await Auth.TryAutoReloginAsync();
+                if (reloggedIn)
+                {
+                    await apiCall();
+                    return;
+                }
+                throw;
+            }
+        }
+
         public async Task<ApiData> GetApiData(string tag)
         {
             ApiData apiData = new ApiData();
@@ -105,7 +140,7 @@ namespace VRCGalleryManager.Core
             {
                 if (tag == "sticker")
                 {
-                    var inventory = await inventoryApi.GetInventoryAsync(
+                    var inventory = await ExecuteWithReloginAsync(() => inventoryApi.GetInventoryAsync(
                         n: 100,
                         offset: 0,
                         types: InventoryItemType.Sticker,
@@ -113,7 +148,7 @@ namespace VRCGalleryManager.Core
                         flags: InventoryFlag.Ugc,
                         archived: false,
                         order: "newest_created"
-                    );
+                    ));
 
                     foreach (var image in inventory.Data)
                     {
@@ -122,7 +157,7 @@ namespace VRCGalleryManager.Core
                 }
                 else if (!tag.Contains("print"))
                 {
-                    var images = await filesApi.GetFilesAsync(tag, null, 100);
+                    var images = await ExecuteWithReloginAsync(() => filesApi.GetFilesAsync(tag, null, 100));
 
                     foreach (var image in images)
                     {
@@ -131,8 +166,8 @@ namespace VRCGalleryManager.Core
                 }
                 else
                 {
-                    var user = await Auth.AuthApi.GetCurrentUserAsync();
-                    var images = await printsApi.GetUserPrintsAsync(user.Id, 100, 0);
+                    var user = await ExecuteWithReloginAsync(() => Auth.AuthApi.GetCurrentUserAsync());
+                    var images = await ExecuteWithReloginAsync(() => printsApi.GetUserPrintsAsync(user.Id, 100, 0));
 
                     foreach (var image in images)
                     {
@@ -162,7 +197,7 @@ namespace VRCGalleryManager.Core
 
             try
             {
-                var imageUploaded = await filesApi.CreateFileAsync(createFileRequest);
+                var imageUploaded = await ExecuteWithReloginAsync(() => filesApi.CreateFileAsync(createFileRequest));
                 apiData.IdImageUploaded = imageUploaded.Id;
 
                 Debug.WriteLine(imageUploaded);
@@ -213,7 +248,7 @@ namespace VRCGalleryManager.Core
 
             try
             {
-                var response = await filesApi.UploadImageAsync(
+                var response = await ExecuteWithReloginAsync(() => filesApi.UploadImageAsync(
                     fileParam,
                     vrcPurpose,
                     vrcAnim,
@@ -221,7 +256,7 @@ namespace VRCGalleryManager.Core
                     vrcFramesOverTime,
                     null,
                     vrcMask
-                );
+                ));
                 apiData.IdImageUploaded = response.Id;
                 apiData.Tags = response.Tags != null ? string.Join(", ", response.Tags) : "";
                 if (tag == TagType.EmojiAnimated && !apiData.Tags.Contains("animated"))
@@ -260,11 +295,11 @@ namespace VRCGalleryManager.Core
                 
                 var fileParam = new FileParameter(Path.GetFileName(path), mimeType, stream);
 
-                var response = await printsApi.UploadPrintAsync(
+                var response = await ExecuteWithReloginAsync(() => printsApi.UploadPrintAsync(
                     fileParam,
                     DateTime.UtcNow,
                     note
-                );
+                ));
 
                 apiData.IdImageUploaded = response.Id;
                 apiData.AuthorId = response.AuthorId ?? "";
@@ -284,7 +319,7 @@ namespace VRCGalleryManager.Core
             ApiDataPrint apiData = new ApiDataPrint();
             try
             {
-                var response = await printsApi.GetPrintAsync(printId);
+                var response = await ExecuteWithReloginAsync(() => printsApi.GetPrintAsync(printId));
 
                 apiData.IdImageUploaded = response.Id;
                 apiData.AuthorId = response.AuthorId ?? "";
@@ -331,7 +366,7 @@ namespace VRCGalleryManager.Core
                 ImageMask? vrcMask = Enum.TryParse<ImageMask>(maskTag, true, out var m) ? m : (ImageMask?)null;
                 ImageAnimationStyle? vrcAnim = Enum.TryParse<ImageAnimationStyle>(animationStyle, true, out var a) ? a : null;
 
-                var response = await filesApi.UploadImageAsync(
+                var response = await ExecuteWithReloginAsync(() => filesApi.UploadImageAsync(
                     fileParam,
                     vrcPurpose,
                     vrcAnim,
@@ -339,7 +374,7 @@ namespace VRCGalleryManager.Core
                     null,
                     null,
                     vrcMask
-                );
+                ));
 
                 apiData.IdImageUploaded = response.Id;
                 apiData.Tags = response.Tags != null ? string.Join(", ", response.Tags) : "";
@@ -365,11 +400,11 @@ namespace VRCGalleryManager.Core
             {
                 if (id.StartsWith("inv_"))
                 {
-                    await inventoryApi.DeleteOwnInventoryItemAsync(id);
+                    await ExecuteWithReloginAsync(() => inventoryApi.DeleteOwnInventoryItemAsync(id));
                 }
                 else
                 {
-                    await filesApi.DeleteFileAsync(id);
+                    await ExecuteWithReloginAsync(() => filesApi.DeleteFileAsync(id));
                 }
             }
             catch (ApiException ex)
@@ -386,7 +421,7 @@ namespace VRCGalleryManager.Core
 
             try
             {
-                await printsApi.DeletePrintAsync(id);
+                await ExecuteWithReloginAsync(() => printsApi.DeletePrintAsync(id));
             }
             catch (ApiException ex)
             {
@@ -401,8 +436,8 @@ namespace VRCGalleryManager.Core
         {
             try
             {
-                var user = await Auth.AuthApi.GetCurrentUserAsync();
-                await usersApi.UpdateUserAsync(user.Id, new  UpdateUserRequest { UserIcon = urlImage });
+                var user = await ExecuteWithReloginAsync(() => Auth.AuthApi.GetCurrentUserAsync());
+                await ExecuteWithReloginAsync(() => usersApi.UpdateUserAsync(user.Id, new UpdateUserRequest { UserIcon = urlImage }));
             }
             catch (ApiException ex)
             {
@@ -413,8 +448,8 @@ namespace VRCGalleryManager.Core
         {
             try
             {
-                var user = await Auth.AuthApi.GetCurrentUserAsync();
-                await usersApi.UpdateUserAsync(user.Id, new UpdateUserRequest { ProfilePicOverride = urlImage });
+                var user = await ExecuteWithReloginAsync(() => Auth.AuthApi.GetCurrentUserAsync());
+                await ExecuteWithReloginAsync(() => usersApi.UpdateUserAsync(user.Id, new UpdateUserRequest { ProfilePicOverride = urlImage }));
             }
             catch (ApiException ex)
             {
@@ -428,7 +463,7 @@ namespace VRCGalleryManager.Core
 
             try
             {
-                var world = await worldApi.GetWorldAsync(worldId);
+                var world = await ExecuteWithReloginAsync(() => worldApi.GetWorldAsync(worldId));
                 apiDataWorld.Id = world.Id;
                 apiDataWorld.Name = world.Name;
                 apiDataWorld.Description = world.Description;
@@ -451,7 +486,7 @@ namespace VRCGalleryManager.Core
 
             try
             {
-                var inventoryResponse = await inventoryApi.GetUserInventoryItemWithHttpInfoAsync(userId, inventoryId);
+                var inventoryResponse = await ExecuteWithReloginAsync(() => inventoryApi.GetUserInventoryItemWithHttpInfoAsync(userId, inventoryId));
                 if (inventoryResponse == null || inventoryResponse.Data == null)
                 {
                     return null;
@@ -500,7 +535,7 @@ namespace VRCGalleryManager.Core
 
             try
             {
-                var user = await usersApi.GetUserAsync(userId);
+                var user = await ExecuteWithReloginAsync(() => usersApi.GetUserAsync(userId));
                 if (user != null && !string.IsNullOrEmpty(user.DisplayName))
                 {
                     _userNameCache[userId] = user.DisplayName;
