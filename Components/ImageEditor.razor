@@ -50,6 +50,13 @@
         </div>
         <div class="flex-grow-1 overflow-auto d-flex flex-column">
             <div class="p-3 editor-sidebar-content flex-shrink-0">
+                @if (EditorExtraContent != null)
+                {
+                    <div class="mb-3">
+                        @EditorExtraContent
+                    </div>
+                }
+
                 <div class="mb-3">
                 <label class="form-label small text-muted mb-1">Adaptation</label>
                 <div class="d-flex gap-2">
@@ -128,13 +135,6 @@
                     </div>
                 </div>
             </div>
-
-            @if (EditorExtraContent != null)
-            {
-                <div class="mb-3">
-                    @EditorExtraContent
-                </div>
-            }
 
             </div>
 

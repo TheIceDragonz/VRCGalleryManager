@@ -119,34 +119,8 @@
         <div class="panel d-flex flex-column">
             <h4 class="mb-4">System</h4>
 
-                <div class="d-flex flex-column gap-3 mb-4">
-                    <button class="btn w-100" @onclick="OpenCacheFolder">
-                        <img src="/svg/folder-open-svgrepo-com.svg" class="btn-icon" />Open Cache Folder
-                    </button>
-
-                    @if (OperatingSystem.IsWindows())
-                    {
-                        <button class="btn w-100" @onclick="OpenVRChatLogs">
-                            <img src="/svg/folder-open-svgrepo-com.svg" class="btn-icon" />Open VRChat Logs
-                        </button>
-                    }
-
-                    <hr class="my-2 hr-custom" />
-
-                    @if (OperatingSystem.IsWindows())
-                    {
-                        <button class="btn btn-danger w-100" @onclick="ClearVRChatLogs">
-                            <img src="/svg/trash-bin-trash-svgrepo-com.svg" class="btn-icon" />Clear All VRChat Logs
-                        </button>
-                    }
-
-                    <button class="btn btn-danger w-100" @onclick="ClearCacheFiles">
-                        <img src="/svg/trash-bin-trash-svgrepo-com.svg" class="btn-icon" />Clear All Cache Files
-                    </button>
-                </div>
-
-                <h5 class="mt-4 mb-3 text-muted fw-bold text-uppercase" style="letter-spacing: 0.5px; font-size: 0.8rem;">Application Behavior</h5>
-                <div class="d-flex flex-column mb-4 rounded panel border-0" style="background-color: var(--bg-hover); padding: 0;">
+                <h5 class="mt-0 mb-3 text-muted fw-bold text-uppercase" style="letter-spacing: 0.5px; font-size: 0.8rem;">Application Behavior</h5>
+                <div class="d-flex flex-column mb-4 rounded panel shadow-none border-0" style="background-color: var(--bg-hover); padding: 0;">
                     
                     <!-- Start with Windows -->
                     <div class="d-flex align-items-center justify-content-between p-3 border-bottom" style="border-color: var(--border-color) !important;">
@@ -162,7 +136,7 @@
                             </div>
                         </div>
                         <div class="form-check form-switch fs-4 m-0">
-                            <input class="form-check-input" type="checkbox" id="startWithWindows" @bind="StartWithWindows">
+                            <input class="form-check-input cursor-pointer" type="checkbox" id="startWithWindows" @bind="StartWithWindows">
                         </div>
                     </div>
                     
@@ -180,7 +154,7 @@
                             </div>
                         </div>
                         <div class="form-check form-switch fs-4 m-0">
-                            <input class="form-check-input" type="checkbox" id="startInBackground" @bind="StartInBackground" disabled="@(!StartWithWindows)">
+                            <input class="form-check-input cursor-pointer" type="checkbox" id="startInBackground" @bind="StartInBackground" disabled="@(!StartWithWindows)">
                         </div>
                     </div>
 
@@ -198,10 +172,36 @@
                             </div>
                         </div>
                         <div class="form-check form-switch fs-4 m-0">
-                            <input class="form-check-input" type="checkbox" id="minimizeToTray" @bind="MinimizeToTray">
+                            <input class="form-check-input cursor-pointer" type="checkbox" id="minimizeToTray" @bind="MinimizeToTray">
                         </div>
                     </div>
 
+                </div>
+
+                <h5 class="mt-4 mb-3 text-muted fw-bold text-uppercase" style="letter-spacing: 0.5px; font-size: 0.8rem;">Storage & Logs</h5>
+                <div class="d-flex flex-column gap-2 mb-4">
+                    <div class="d-flex gap-2">
+                        <button class="btn flex-fill text-nowrap" @onclick="OpenCacheFolder">
+                            <img src="/svg/folder-open-svgrepo-com.svg" class="btn-icon" />Open Cache
+                        </button>
+                        @if (OperatingSystem.IsWindows())
+                        {
+                            <button class="btn flex-fill text-nowrap" @onclick="OpenVRChatLogs">
+                                <img src="/svg/folder-open-svgrepo-com.svg" class="btn-icon" />Open Logs
+                            </button>
+                        }
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-danger flex-fill text-nowrap" @onclick="ClearCacheFiles">
+                            <img src="/svg/trash-bin-trash-svgrepo-com.svg" class="btn-icon" />Clear Cache
+                        </button>
+                        @if (OperatingSystem.IsWindows())
+                        {
+                            <button class="btn btn-danger flex-fill text-nowrap" @onclick="ClearVRChatLogs">
+                                <img src="/svg/trash-bin-trash-svgrepo-com.svg" class="btn-icon" />Clear Logs
+                            </button>
+                        }
+                    </div>
                 </div>
 
                 @if (!string.IsNullOrEmpty(SystemMessage))
@@ -290,7 +290,7 @@
     {
         _startWithWindows = Config.Get("StartWithWindows", "false") == "true";
         _startInBackground = Config.Get("StartInBackground", "false") == "true";
-        _minimizeToTray = Config.Get("MinimizeToTray", "false") == "true";
+        _minimizeToTray = Config.Get("MinimizeToTray", "true") == "true";
 
         UpdateCacheInfo();
 

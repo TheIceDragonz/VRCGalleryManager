@@ -55,6 +55,7 @@ public partial class App : Application
                 {
                     ToolTipText = "VRCGalleryManager",
                     IconSource = new FileImageSource { File = "icon.ico" },
+                    NoLeftClickDelay = true,
                     LeftClickCommand = new Command(() =>
                     {
                         BringWindowToFront(window);
@@ -80,7 +81,7 @@ public partial class App : Application
                 {
                     appWindow.Closing += (sender, args) =>
                     {
-                        if (Config.Get("MinimizeToTray", "false") == "true")
+                        if (Config.Get("MinimizeToTray", "true") == "true")
                         {
                             args.Cancel = true;
                             appWindow.Hide();
