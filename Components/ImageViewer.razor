@@ -5,7 +5,7 @@
 
 @if (IsVisible)
 {
-    <div class="image-viewer-overlay" @onclick="Close">
+    <div class="image-viewer-overlay" @onclick="Close" tabindex="0" @onkeydown="HandleKeyDown" @ref="overlayRef" style="outline: none;">
         
         <div class="image-viewer-top-bar" @onclick:stopPropagation="true">
             <div class="image-viewer-title" title="@(CurrentItem?.Title)">
@@ -98,7 +98,31 @@
     public IReadOnlyList<ViewerItem> Items { get; private set; }
     public int CurrentIndex { get; private set; }
     
+    private ElementReference overlayRef;
+    private bool _hasFocused = false;
     private ElementReference imageContainerRef;
+
+    private void HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (Items == null || Items.Count <= 1)
+        {
+            if (e.Key == "Escape") Close();
+            return;
+        }
+
+        if (e.Key == "ArrowLeft" || e.Key == "ArrowUp")
+        {
+            Prev();
+        }
+        else if (e.Key == "ArrowRight" || e.Key == "ArrowDown")
+        {
+            Next();
+        }
+        else if (e.Key == "Escape")
+        {
+            Close();
+        }
+    }
     private ViewerItem CurrentItem => Items != null && Items.Count > 0 && CurrentIndex >= 0 && CurrentIndex < Items.Count ? Items[CurrentIndex] : null;
     private string CurrentHighResSource = null;
     private bool isHighResLoaded = false;
@@ -109,17 +133,26 @@
         Items = items;
         CurrentIndex = startIndex;
         IsVisible = true;
+        _hasFocused = false;
         _ = LoadCurrentImageAsync();
         StateHasChanged();
     }
     
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (IsVisible && !firstRender)
+        if (IsVisible)
         {
-            try {
-                await JS.InvokeVoidAsync("imageViewerZoom.init", imageContainerRef);
-            } catch { }
+            if (!_hasFocused)
+            {
+                _hasFocused = true;
+                try { await overlayRef.FocusAsync(); } catch { }
+            }
+            if (!firstRender)
+            {
+                try {
+                    await JS.InvokeVoidAsync("imageViewerZoom.init", imageContainerRef);
+                } catch { }
+            }
         }
     }
     
