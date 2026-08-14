@@ -145,6 +145,22 @@
                     </button>
                 </div>
 
+                <h5 class="mt-4 mb-2 text-muted text-09rem">Application Behavior</h5>
+                <div class="d-flex flex-column gap-2 mb-4 p-3 rounded cache-info-box">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="startWithWindows" @bind="StartWithWindows">
+                        <label class="form-check-label fw-bold" for="startWithWindows">Start with Windows</label>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="startInBackground" @bind="StartInBackground">
+                        <label class="form-check-label fw-bold" for="startInBackground">Start in background</label>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="minimizeToTray" @bind="MinimizeToTray">
+                        <label class="form-check-label fw-bold" for="minimizeToTray">Minimize to tray on close</label>
+                    </div>
+                </div>
+
                 @if (!string.IsNullOrEmpty(SystemMessage))
                 {
                     <div class="alert @(SystemMessageIsError ? "alert-danger" : "alert-success") mb-3 p-2 alert-custom-info">
@@ -204,10 +220,35 @@
     private bool Show2FA = false;
     private bool IsEmail2FA = false;
 
+    private bool _startWithWindows;
+    private bool StartWithWindows
+    {
+        get => _startWithWindows;
+        set { _startWithWindows = value; Config.Set("StartWithWindows", value ? "true" : "false"); WindowsStartupHelper.SetStartup(value); }
+    }
+
+    private bool _startInBackground;
+    private bool StartInBackground
+    {
+        get => _startInBackground;
+        set { _startInBackground = value; Config.Set("StartInBackground", value ? "true" : "false"); }
+    }
+
+    private bool _minimizeToTray;
+    private bool MinimizeToTray
+    {
+        get => _minimizeToTray;
+        set { _minimizeToTray = value; Config.Set("MinimizeToTray", value ? "true" : "false"); }
+    }
+
     private bool IsLoggedIn => Auth.LoggedIn || Auth.CookieLoaded;
 
     protected override async Task OnInitializedAsync()
     {
+        _startWithWindows = Config.Get("StartWithWindows", "false") == "true";
+        _startInBackground = Config.Get("StartInBackground", "false") == "true";
+        _minimizeToTray = Config.Get("MinimizeToTray", "false") == "true";
+
         UpdateCacheInfo();
 
         if (Auth.Is2FARequired)
