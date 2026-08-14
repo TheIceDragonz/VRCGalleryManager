@@ -42,6 +42,10 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <Content Include="icon.ico">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+    </ItemGroup>    <ItemGroup>
         <!-- App Icon -->
         <MauiIcon Include="Resources\AppIcon\vrcgm.png" Color="#FFFFFF" />
 

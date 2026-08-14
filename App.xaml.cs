@@ -27,6 +27,29 @@ public partial class App : Application
         {
             try
             {
+                var menuFlyout = new MenuFlyout();
+
+                var openItem = new MenuFlyoutItem 
+                { 
+                    Text = "Open", 
+                    Command = new Command(() => BringWindowToFront(window)) 
+                };
+                menuFlyout.Add(openItem);
+
+                var exitItem = new MenuFlyoutItem 
+                { 
+                    Text = "Quit", 
+                    Command = new Command(() => 
+                    {
+                        Application.Current?.Dispatcher.Dispatch(() =>
+                        {
+                            trayIcon?.Dispose();
+                            Application.Current.Quit();
+                        });
+                    }) 
+                };
+                menuFlyout.Add(exitItem);
+
                 // Init tray icon
                 trayIcon = new H.NotifyIcon.TaskbarIcon
                 {
@@ -37,6 +60,9 @@ public partial class App : Application
                         BringWindowToFront(window);
                     })
                 };
+
+                FlyoutBase.SetContextFlyout(trayIcon, menuFlyout);
+                trayIcon.ForceCreate();
             }
             catch { }
 
@@ -78,18 +104,32 @@ public partial class App : Application
     }
 
 #if WINDOWS
+    [System.Runtime.InteropServices.DllImport("user32.dll")]
+    private static extern bool SetForegroundWindow(IntPtr hWnd);
+
+    [System.Runtime.InteropServices.DllImport("user32.dll")]
+    private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+    private const int SW_RESTORE = 9;
+
     private void BringWindowToFront(Window window)
     {
-        var winuiWindow = window.Handler?.PlatformView as Microsoft.UI.Xaml.Window;
-        if (winuiWindow != null)
+        Application.Current?.Dispatcher.Dispatch(() =>
         {
-            var appWindow = GetAppWindow(winuiWindow);
-            if (appWindow != null)
+            var winuiWindow = window.Handler?.PlatformView as Microsoft.UI.Xaml.Window;
+            if (winuiWindow != null)
             {
-                appWindow.Show();
-                winuiWindow.Activate();
+                var appWindow = GetAppWindow(winuiWindow);
+                if (appWindow != null)
+                {
+                    appWindow.Show();
+                    winuiWindow.Activate();
+                    
+                    IntPtr hwnd = WinRT.Interop.WindowNative.GetWindowHandle(winuiWindow);
+                    ShowWindow(hwnd, SW_RESTORE);
+                    SetForegroundWindow(hwnd);
+                }
             }
-        }
+        });
     }
 
     private Microsoft.UI.Windowing.AppWindow GetAppWindow(Microsoft.UI.Xaml.Window window)
