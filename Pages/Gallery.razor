@@ -145,7 +145,7 @@
                 {
                     <div class="mb-3 d-flex flex-column flex-grow-1 min-vh-0">
                         <div class="text-white-50 small fw-bold text-uppercase mb-2 d-flex align-items-center gap-2">
-                            <img src="/svg/profile-user-svgrepo-com.svg" style="width: 14px; height: 14px; filter: invert(0.5);" />
+                            <img src="/svg/profile-user-svgrepo-com.svg" style="width: 14px; height: 14px; filter: invert(80%) sepia(48%) saturate(1454%) hue-rotate(159deg) brightness(101%) contrast(97%);" />
                             Players (@VrcxData.Players.Count)
                         </div>
                         <div class="overflow-auto flex-grow-1 pe-1" style="max-height: 200px;">
@@ -170,11 +170,11 @@
                 @* Actions *@
                 <div class="mt-auto pt-3 border-top border-secondary">
                     <button class="btn btn-outline-light btn-sm w-100 mb-2 d-flex align-items-center justify-content-center gap-2" @onclick="OpenSelectedFile">
-                        <img src="/svg/eye-svgrepo-com.svg" class="btn-icon" style="filter: invert(1); margin: 0;" /> View Image
+                        <img src="/svg/eye-svgrepo-com.svg" class="btn-icon" style="filter: invert(80%) sepia(48%) saturate(1454%) hue-rotate(159deg) brightness(101%) contrast(97%); margin: 0;" /> View Image
                     </button>
                     <div class="position-relative" @onclick:stopPropagation="true">
                         <button class="btn btn-primary btn-sm w-100 d-flex align-items-center justify-content-center gap-2" @onclick="ToggleUploadMenu">
-                            <img src="/svg/upload-svgrepo-com.svg" class="btn-icon" style="filter: invert(1); margin: 0;" /> Upload...
+                            <img src="/svg/upload-svgrepo-com.svg" class="btn-icon" style="filter: invert(80%) sepia(48%) saturate(1454%) hue-rotate(159deg) brightness(101%) contrast(97%); margin: 0;" /> Upload...
                         </button>
                     </div>
                 </div>
@@ -193,11 +193,11 @@
                 <img src="@(string.IsNullOrEmpty(SelectedImage.FullBase64) ? SelectedImage.ThumbnailBase64 : SelectedImage.FullBase64)" class="rounded shadow-sm" style="max-height: 200px; max-width: 100%; object-fit: contain;" alt="@SelectedImage.Name" />
             </div>
             <div class="p-3 d-flex flex-column gap-2 dialog-footer">
-                <button class="btn btn-outline-secondary d-flex align-items-center gap-2" @onclick='() => UploadForCategory("Icons", "icons")'><img src="/svg/profile-user-svgrepo-com.svg" style="width:20px;height:20px; filter: invert(0.8);" /> Icons</button>
-                <button class="btn btn-outline-secondary d-flex align-items-center gap-2" @onclick='() => UploadForCategory("Photos", "photos")'><img src="/svg/gallery-minimalistic-svgrepo-com.svg" style="width:20px;height:20px; filter: invert(0.8);" /> Photos</button>
-                <button class="btn btn-outline-secondary d-flex align-items-center gap-2" @onclick='() => UploadForCategory("Emoji", "emoji")'><img src="/svg/emoji-funny-circle-svgrepo-com.svg" style="width:20px;height:20px; filter: invert(0.8);" /> Emoji</button>
-                <button class="btn btn-outline-secondary d-flex align-items-center gap-2" @onclick='() => UploadForCategory("Sticker", "sticker")'><img src="/svg/sticker-smile-square-svgrepo-com.svg" style="width:20px;height:20px; filter: invert(0.8);" /> Sticker</button>
-                <button class="btn btn-outline-secondary d-flex align-items-center gap-2" @onclick='() => UploadForCategory("Prints", "prints")'><img src="/svg/camera-svgrepo-com.svg" style="width:20px;height:20px; filter: invert(0.8);" /> Prints</button>
+                <button class="btn btn-outline-secondary d-flex align-items-center gap-2" @onclick='() => UploadForCategory("Icons", "icons")'><img src="/svg/profile-user-svgrepo-com.svg" style="width:20px;height:20px; filter: invert(80%) sepia(48%) saturate(1454%) hue-rotate(159deg) brightness(101%) contrast(97%);" /> Icons</button>
+                <button class="btn btn-outline-secondary d-flex align-items-center gap-2" @onclick='() => UploadForCategory("Photos", "photos")'><img src="/svg/gallery-minimalistic-svgrepo-com.svg" style="width:20px;height:20px; filter: invert(80%) sepia(48%) saturate(1454%) hue-rotate(159deg) brightness(101%) contrast(97%);" /> Photos</button>
+                <button class="btn btn-outline-secondary d-flex align-items-center gap-2" @onclick='() => UploadForCategory("Emoji", "emoji")'><img src="/svg/emoji-funny-circle-svgrepo-com.svg" style="width:20px;height:20px; filter: invert(80%) sepia(48%) saturate(1454%) hue-rotate(159deg) brightness(101%) contrast(97%);" /> Emoji</button>
+                <button class="btn btn-outline-secondary d-flex align-items-center gap-2" @onclick='() => UploadForCategory("Sticker", "sticker")'><img src="/svg/sticker-smile-square-svgrepo-com.svg" style="width:20px;height:20px; filter: invert(80%) sepia(48%) saturate(1454%) hue-rotate(159deg) brightness(101%) contrast(97%);" /> Sticker</button>
+                <button class="btn btn-outline-secondary d-flex align-items-center gap-2" @onclick='() => UploadForCategory("Prints", "prints")'><img src="/svg/camera-svgrepo-com.svg" style="width:20px;height:20px; filter: invert(80%) sepia(48%) saturate(1454%) hue-rotate(159deg) brightness(101%) contrast(97%);" /> Prints</button>
                 
                 <button class="btn btn-danger mt-2 fw-bold" @onclick="CloseUploadMenu">Cancel</button>
             </div>
