@@ -697,6 +697,18 @@ namespace VRChat.API.Model
         public string UserIcon { get; set; }
 
         /// <summary>
+        /// Gets or Sets ProfileEffect
+        /// </summary>
+        [DataMember(Name = "profileEffect", EmitDefaultValue = false)]
+        public string ProfileEffect { get; set; }
+
+        /// <summary>
+        /// Gets or Sets IconFrame
+        /// </summary>
+        [DataMember(Name = "iconFrame", EmitDefaultValue = false)]
+        public string IconFrame { get; set; }
+
+        /// <summary>
         /// An array of two-factor authentication methods available to use to with two factor authentication.
         /// </summary>
         [DataMember(Name = "requiresTwoFactorAuth", IsRequired = false, EmitDefaultValue = true)]

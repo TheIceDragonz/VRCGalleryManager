@@ -1,5 +1,6 @@
 @using VRCGalleryManager.Core
 @using VRChat.API.Client
+@using Newtonsoft.Json.Linq
 @implements IDisposable
 @inject VRCAuth Auth
 @inject NavigationManager NavManager
@@ -16,8 +17,19 @@
         <img src="@(string.IsNullOrEmpty(CurrentUser.ProfilePicOverrideThumbnail) ? CurrentUser.CurrentAvatarThumbnailImageUrl : CurrentUser.ProfilePicOverrideThumbnail)" 
              class="nav-profile-bg" />
         
-        <div class="position-absolute w-100 h-100 d-flex flex-column align-items-center justify-content-center nav-profile-content">
-            <img src="@CurrentUser.UserIcon" class="nav-profile-icon" />
+        @if (!string.IsNullOrEmpty(ProfileEffectUrl))
+        {
+            <img src="@ProfileEffectUrl" class="nav-profile-effect" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1;" />
+        }
+        
+        <div class="position-absolute w-100 h-100 d-flex flex-column align-items-center justify-content-center nav-profile-content" style="z-index: 2;">
+            <div class="position-relative d-flex align-items-center justify-content-center">
+                <img src="@CurrentUser.UserIcon" class="nav-profile-icon" />
+                @if (!string.IsNullOrEmpty(IconFrameUrl))
+                {
+                    <img src="@IconFrameUrl" class="nav-icon-frame" style="position: absolute; top: -15%; left: -15%; width: 130%; height: 130%; pointer-events: none;" />
+                }
+            </div>
             <span class="mt-1 fw-bold text-truncate w-100 text-center px-2 nav-profile-name">@CurrentUser.DisplayName</span>
             
             @if (CurrentUser.Badges != null)
@@ -94,6 +106,8 @@
 
 @code {
     private VRChat.API.Model.CurrentUser CurrentUser;
+    private string ProfileEffectUrl;
+    private string IconFrameUrl;
     private bool IsLoggedIn => CurrentUser != null;
     private bool HasVrcPlus => IsLoggedIn && CurrentUser.Tags != null && CurrentUser.Tags.Contains("system_supporter");
     private string DisabledClass => IsLoggedIn ? "" : "disabled-nav";
@@ -126,6 +140,7 @@
             try
             {
                 CurrentUser = await Auth.AuthApi.GetCurrentUserAsync();
+                await LoadCosmetics();
             }
             catch (ApiException ex) when (ex.ErrorCode == 401)
             {
@@ -133,6 +148,7 @@
                 if (success)
                 {
                     CurrentUser = await Auth.AuthApi.GetCurrentUserAsync();
+                    await LoadCosmetics();
                 }
                 else
                 {
@@ -152,7 +168,68 @@
         else
         {
             CurrentUser = null;
+            ProfileEffectUrl = null;
+            IconFrameUrl = null;
         }
+    }
+
+    private async Task LoadCosmetics()
+    {
+        ProfileEffectUrl = null;
+        IconFrameUrl = null;
+        if (CurrentUser == null) return;
+        
+        using var client = new System.Net.Http.HttpClient();
+        client.BaseAddress = new Uri("https://api.vrchat.cloud/api/1/");
+        if (Auth.Config.DefaultHeaders.TryGetValue("Cookie", out string cookie))
+        {
+            client.DefaultRequestHeaders.Add("Cookie", cookie);
+        }
+        client.DefaultRequestHeaders.Add("User-Agent", "VRCGalleryManager");
+        
+        try
+        {
+            if (!string.IsNullOrEmpty(CurrentUser.ProfileEffect))
+            {
+                var response = await client.GetAsync("cosmetics/index/profileEffect");
+                if (response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    var arr = JArray.Parse(content);
+                    var item = arr.FirstOrDefault(x => x["id"]?.ToString() == CurrentUser.ProfileEffect);
+                    if (item != null)
+                    {
+                        var assets = item["metadata"]?["assets"] as JArray;
+                        var anim = assets?.FirstOrDefault(a => a["type"]?.ToString() == "mainAnimation");
+                        if (anim != null)
+                            ProfileEffectUrl = anim["url"]?.ToString();
+                    }
+                }
+            }
+        }
+        catch { }
+        
+        try
+        {
+            if (!string.IsNullOrEmpty(CurrentUser.IconFrame))
+            {
+                var response = await client.GetAsync("cosmetics/index/iconFrame");
+                if (response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    var arr = JArray.Parse(content);
+                    var item = arr.FirstOrDefault(x => x["id"]?.ToString() == CurrentUser.IconFrame);
+                    if (item != null)
+                    {
+                        var assets = item["metadata"]?["assets"] as JArray;
+                        var anim = assets?.FirstOrDefault(a => a["type"]?.ToString() == "mainAnimation");
+                        if (anim != null)
+                            IconFrameUrl = anim["url"]?.ToString();
+                    }
+                }
+            }
+        }
+        catch { }
     }
 
     public void Dispose()

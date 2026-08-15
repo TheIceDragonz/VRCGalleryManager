@@ -377,6 +377,18 @@ namespace VRChat.API.Model
         public string UserIcon { get; set; }
 
         /// <summary>
+        /// Gets or Sets ProfileEffect
+        /// </summary>
+        [DataMember(Name = "profileEffect", EmitDefaultValue = false)]
+        public string ProfileEffect { get; set; }
+
+        /// <summary>
+        /// Gets or Sets IconFrame
+        /// </summary>
+        [DataMember(Name = "iconFrame", EmitDefaultValue = false)]
+        public string IconFrame { get; set; }
+
+        /// <summary>
         /// -| A users unique name, used during login. This is different from &#x60;displayName&#x60; which is what shows up in-game. A users &#x60;username&#x60; can never be changed.&#39; **DEPRECATED:** VRChat API no longer return usernames of other users. [See issue by Tupper for more information](https://github.com/pypy-vrc/VRCX/issues/429).
         /// </summary>
         /// <value>-| A users unique name, used during login. This is different from &#x60;displayName&#x60; which is what shows up in-game. A users &#x60;username&#x60; can never be changed.&#39; **DEPRECATED:** VRChat API no longer return usernames of other users. [See issue by Tupper for more information](https://github.com/pypy-vrc/VRCX/issues/429).</value>
