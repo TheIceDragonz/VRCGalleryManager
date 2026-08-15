@@ -119,64 +119,67 @@
         <div class="panel d-flex flex-column">
             <h4 class="mb-4">System</h4>
 
-                <h5 class="mt-0 mb-3 text-muted fw-bold text-uppercase" style="letter-spacing: 0.5px; font-size: 0.8rem;">Application Behavior</h5>
-                <div class="d-flex flex-column mb-4 rounded panel shadow-none border-0" style="background-color: var(--bg-hover); padding: 0;">
-                    
-                    <!-- Start with Windows -->
-                    <div class="d-flex align-items-center justify-content-between p-3 border-bottom" style="border-color: var(--border-color) !important;">
-                        <div class="d-flex align-items-center gap-3">
-                            <div class="p-2 rounded d-flex align-items-center justify-content-center" style="background-color: var(--bg-active); width: 40px; height: 40px;">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="var(--accent)" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M22 2L11.2 3.6V11.6H22V2ZM10 3.8L2 5V11.6H10V3.8ZM2 12.4V19L10 20.2V12.4H2ZM11.2 12.4V20.4L22 22V12.4H11.2Z"/>
-                                </svg>
+                @if (!OperatingSystem.IsAndroid())
+                {
+                    <h5 class="mt-0 mb-3 text-muted fw-bold text-uppercase" style="letter-spacing: 0.5px; font-size: 0.8rem;">Application Behavior</h5>
+                    <div class="d-flex flex-column mb-4 rounded panel shadow-none border-0" style="background-color: var(--bg-hover); padding: 0;">
+                        
+                        <!-- Start with Windows -->
+                        <div class="d-flex align-items-center justify-content-between p-3 border-bottom" style="border-color: var(--border-color) !important;">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="p-2 rounded d-flex align-items-center justify-content-center" style="background-color: var(--bg-active); width: 40px; height: 40px;">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="var(--accent)" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M22 2L11.2 3.6V11.6H22V2ZM10 3.8L2 5V11.6H10V3.8ZM2 12.4V19L10 20.2V12.4H2ZM11.2 12.4V20.4L22 22V12.4H11.2Z"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1 text-white fw-bold">Start with Windows</h6>
+                                    <div class="text-muted" style="font-size: 0.85rem;">Automatically launch the app when your PC boots</div>
+                                </div>
                             </div>
-                            <div>
-                                <h6 class="mb-1 text-white fw-bold">Start with Windows</h6>
-                                <div class="text-muted" style="font-size: 0.85rem;">Automatically launch the app when your PC boots</div>
-                            </div>
-                        </div>
-                        <div class="form-check form-switch fs-4 m-0">
-                            <input class="form-check-input cursor-pointer" type="checkbox" id="startWithWindows" @bind="StartWithWindows">
-                        </div>
-                    </div>
-                    
-                    <!-- Start in Background -->
-                    <div class="d-flex align-items-center justify-content-between p-3 border-bottom" style="border-color: var(--border-color) !important;">
-                        <div class="d-flex align-items-center gap-3">
-                            <div class="p-2 rounded d-flex align-items-center justify-content-center" style="background-color: var(--bg-active); width: 40px; height: 40px;">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="var(--accent)" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/>
-                                </svg>
-                            </div>
-                            <div>
-                                <h6 class="mb-1 text-white fw-bold">Start in Background</h6>
-                                <div class="text-muted" style="font-size: 0.85rem;">Launch silently into the system tray without showing the window</div>
+                            <div class="form-check form-switch fs-4 m-0">
+                                <input class="form-check-input cursor-pointer" type="checkbox" id="startWithWindows" @bind="StartWithWindows">
                             </div>
                         </div>
-                        <div class="form-check form-switch fs-4 m-0">
-                            <input class="form-check-input cursor-pointer" type="checkbox" id="startInBackground" @bind="StartInBackground" disabled="@(!StartWithWindows)">
+                        
+                        <!-- Start in Background -->
+                        <div class="d-flex align-items-center justify-content-between p-3 border-bottom" style="border-color: var(--border-color) !important;">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="p-2 rounded d-flex align-items-center justify-content-center" style="background-color: var(--bg-active); width: 40px; height: 40px;">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="var(--accent)" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1 text-white fw-bold">Start in Background</h6>
+                                    <div class="text-muted" style="font-size: 0.85rem;">Launch silently into the system tray without showing the window</div>
+                                </div>
+                            </div>
+                            <div class="form-check form-switch fs-4 m-0">
+                                <input class="form-check-input cursor-pointer" type="checkbox" id="startInBackground" @bind="StartInBackground" disabled="@(!StartWithWindows)">
+                            </div>
                         </div>
-                    </div>
 
-                    <!-- Minimize to Tray -->
-                    <div class="d-flex align-items-center justify-content-between p-3">
-                        <div class="d-flex align-items-center gap-3">
-                            <div class="p-2 rounded d-flex align-items-center justify-content-center" style="background-color: var(--bg-active); width: 40px; height: 40px;">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="var(--accent)" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M21 3H3v18h18V3zM9 13H5l7-7 7 7h-4v4H9v-4z"/>
-                                </svg>
+                        <!-- Minimize to Tray -->
+                        <div class="d-flex align-items-center justify-content-between p-3">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="p-2 rounded d-flex align-items-center justify-content-center" style="background-color: var(--bg-active); width: 40px; height: 40px;">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="var(--accent)" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M21 3H3v18h18V3zM9 13H5l7-7 7 7h-4v4H9v-4z"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1 text-white fw-bold">Minimize to Tray</h6>
+                                    <div class="text-muted" style="font-size: 0.85rem;">Hide to the system tray instead of closing the application</div>
+                                </div>
                             </div>
-                            <div>
-                                <h6 class="mb-1 text-white fw-bold">Minimize to Tray</h6>
-                                <div class="text-muted" style="font-size: 0.85rem;">Hide to the system tray instead of closing the application</div>
+                            <div class="form-check form-switch fs-4 m-0">
+                                <input class="form-check-input cursor-pointer" type="checkbox" id="minimizeToTray" @bind="MinimizeToTray">
                             </div>
                         </div>
-                        <div class="form-check form-switch fs-4 m-0">
-                            <input class="form-check-input cursor-pointer" type="checkbox" id="minimizeToTray" @bind="MinimizeToTray">
-                        </div>
-                    </div>
 
-                </div>
+                    </div>
+                }
 
                 <h5 class="mt-4 mb-3 text-muted fw-bold text-uppercase" style="letter-spacing: 0.5px; font-size: 0.8rem;">Storage & Logs</h5>
                 <div class="d-flex flex-column gap-2 mb-4">
