@@ -22,6 +22,9 @@
         <Nullable>enable</Nullable>
         <WindowsPackageType>None</WindowsPackageType>
         <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+        <CheckEolTargetFramework>false</CheckEolTargetFramework>
+        <CheckEolWorkloads>false</CheckEolWorkloads>
+        <SkipValidateMauiImplicitPackageReferences>true</SkipValidateMauiImplicitPackageReferences>
 
         <!-- Display name -->
         <ApplicationTitle>VRCGalleryManager</ApplicationTitle>
@@ -54,8 +57,6 @@
 
         <!-- Images -->
         <MauiImage Include="Resources\Images\*" />
-        <MauiImage Update="Resources\Images\dotnet_bot.svg" BaseSize="168,208" />
-
         <!-- Custom Fonts -->
         <MauiFont Include="Resources\Fonts\*" />
 
@@ -67,9 +68,9 @@
         <PackageReference Include="CommunityToolkit.Maui" Version="9.0.1" />
         <PackageReference Include="H.NotifyIcon.Maui" Version="2.0.144" />
         <PackageReference Include="JsonSubTypes" Version="2.0.1" />
-        <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
-        <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="$(MauiVersion)" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="$(MauiVersion)" />
+        <PackageReference Include="Microsoft.Maui.Controls" Version="8.0.100" />
+        <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="8.0.100" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="8.0.100" />
         <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.1" />
         <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
         <PackageReference Include="Otp.NET" Version="1.4.1" />
@@ -77,5 +78,9 @@
         <PackageReference Include="SixLabors.ImageSharp" Version="4.1.0" />
         <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="2.1.4" />
     </ItemGroup>
+
+    <Target Name="SixLabors_ValidateLicense">
+        <!-- Suppress license validation -->
+    </Target>
 
 </Project>

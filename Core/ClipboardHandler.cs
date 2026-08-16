@@ -1,6 +1,6 @@
-
 using System;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using SixLabors.ImageSharp;
@@ -10,8 +10,6 @@ using SixLabors.ImageSharp.Drawing.Processing;
 using Color = SixLabors.ImageSharp.Color;
 using Point = SixLabors.ImageSharp.Point;
 using Image = SixLabors.ImageSharp.Image;
-using System;
-using System.Linq;
 
 namespace VRCGalleryManager.Core
 {

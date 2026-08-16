@@ -1,10 +1,7 @@
-using System.Diagnostics;
 using VRCGalleryManager.Core.DTO;
 using VRChat.API.Api;
 using VRChat.API.Client;
 using VRChat.API.Model;
-// using VRCGalleryManager.Forms;
-using System.Data;
 using System.Text.Json;
 
 namespace VRCGalleryManager.Core
@@ -199,8 +196,6 @@ namespace VRCGalleryManager.Core
             {
                 var imageUploaded = await ExecuteWithReloginAsync(() => filesApi.CreateFileAsync(createFileRequest));
                 apiData.IdImageUploaded = imageUploaded.Id;
-
-                Debug.WriteLine(imageUploaded);
             }
             catch (ApiException ex)
             {
