@@ -230,7 +230,7 @@
 
     private void ClearItems()
     {
-        Images.Clear();
+        InvokeAsync(() => { Images.Clear(); StateHasChanged(); });
         _allItems.Clear();
         LogStatus = "";
         StateHasChanged();
@@ -425,7 +425,11 @@
                 Url = "", // Will fetch asynchronously
                 Category = category
             };
-            Images.Insert(0, imgModel);
+            
+            InvokeAsync(() => {
+                Images.Insert(0, imgModel);
+                StateHasChanged();
+            });
             
             // Fetch the actual image URL asynchronously
             _ = FetchImageUrl(imgModel);
@@ -436,6 +440,31 @@
     {
         try
         {
+            var cachedItem = PicflowDatabase.GetItem(imgModel.ItemId);
+            if (cachedItem != null)
+            {
+                if (cachedItem.Url == "INVALID")
+                {
+                    InvokeAsync(() => { Images.Remove(imgModel); StateHasChanged(); });
+                    return;
+                }
+                
+                if (!string.IsNullOrEmpty(cachedItem.Url))
+                {
+                    imgModel.Url = cachedItem.Url;
+                    if (!string.IsNullOrEmpty(cachedItem.Username))
+                    {
+                        imgModel.Username = cachedItem.Username;
+                    }
+                    if (!string.IsNullOrEmpty(cachedItem.UserId))
+                    {
+                        imgModel.UserId = cachedItem.UserId;
+                    }
+                    StateChanged?.Invoke();
+                    return;
+                }
+            }
+
             if (imgModel.Category == ItemCategory.Sticker || imgModel.Category == ItemCategory.Emoji)
             {
                 var invInfo = await ApiReq.GetInventoryInfo(imgModel.UserId, imgModel.ItemId);
@@ -443,8 +472,8 @@
                 {
                     if (imgModel.Category == ItemCategory.Emoji && (invInfo.Tags == null || !invInfo.Tags.Contains("Custom Emoji")))
                     {
-                        Images.Remove(imgModel);
-                        StateChanged?.Invoke();
+                        PicflowDatabase.SaveItem(imgModel.ItemId, "", "", "INVALID", (int)imgModel.Category);
+                        InvokeAsync(() => { Images.Remove(imgModel); StateHasChanged(); });
                         return;
                     }
                     
@@ -470,7 +499,8 @@
                 }
                 else
                 {
-                    Images.Remove(imgModel);
+                    PicflowDatabase.SaveItem(imgModel.ItemId, "", "", "INVALID", (int)imgModel.Category);
+                    InvokeAsync(() => { Images.Remove(imgModel); StateHasChanged(); });
                     StateChanged?.Invoke();
                     return;
                 }
@@ -492,7 +522,8 @@
                 }
                 else
                 {
-                    Images.Remove(imgModel);
+                    PicflowDatabase.SaveItem(imgModel.ItemId, "", "", "INVALID", (int)imgModel.Category);
+                    InvokeAsync(() => { Images.Remove(imgModel); StateHasChanged(); });
                     StateChanged?.Invoke();
                     return;
                 }
@@ -500,12 +531,15 @@
 
             if (!string.IsNullOrEmpty(imgModel.Url))
             {
+                PicflowDatabase.SaveItem(imgModel.ItemId, imgModel.Username, imgModel.UserId, imgModel.Url, (int)imgModel.Category);
                 StateChanged?.Invoke();
             }
         }
         catch
         {
-            // Ignore fetch errors
+            // If it completely fails (e.g. 404), cache it as invalid so we don't retry forever
+            PicflowDatabase.SaveItem(imgModel.ItemId, "", "", "INVALID", (int)imgModel.Category);
+            InvokeAsync(() => { Images.Remove(imgModel); StateHasChanged(); });
         }
     }
 
@@ -612,5 +646,3 @@
         }
     }
 }
-
-

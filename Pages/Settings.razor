@@ -244,6 +244,38 @@
                         <i class="bi bi-exclamation-triangle-fill me-2"></i> Cache folder not found.
                     </div>
                 }
+                
+                @if (OperatingSystem.IsWindows())
+                {
+                    <h5 class="mt-4 mb-2 text-muted text-09rem">Picflow Database</h5>
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <div class="p-3 rounded cache-info-box h-100 d-flex align-items-center gap-3">
+                                <i class="bi bi-database-fill text-info fs-3"></i>
+                                <div class="d-flex flex-column">
+                                    <span class="text-muted small text-uppercase fw-bold">Total Saved</span>
+                                    <span class="fw-bold fs-5">@PicflowDbTotal</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="p-3 rounded cache-info-box h-100 d-flex flex-column justify-content-center gap-1">
+                                <div class="d-flex justify-content-between">
+                                    <span class="small text-muted">Stickers</span><span class="small fw-bold">@PicflowDbStickers</span>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <span class="small text-muted">Emojis</span><span class="small fw-bold">@PicflowDbEmojis</span>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <span class="small text-muted">Prints</span><span class="small fw-bold">@PicflowDbPrints</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="btn btn-outline-danger w-100" @onclick="ClearPicflowDb" disabled="@(PicflowDbTotal == 0)">
+                        <img src="/svg/trash-bin-trash-svgrepo-com.svg" class="btn-icon" /> Clear Picflow Database
+                    </button>
+                }
             </div>
         </div>
     </div>
@@ -265,6 +297,11 @@
     private bool ShowPassword = false;
     private bool Show2FA = false;
     private bool IsEmail2FA = false;
+
+    private int PicflowDbTotal = 0;
+    private int PicflowDbStickers = 0;
+    private int PicflowDbEmojis = 0;
+    private int PicflowDbPrints = 0;
 
     private bool _startWithWindows;
     private bool StartWithWindows
@@ -681,18 +718,48 @@
         }
         
         CacheExists = Directory.Exists(cacheFolder);
-        if (!CacheExists) return;
+        if (CacheExists)
+        {
+            string[] files = Directory.GetFiles(cacheFolder);
+            CacheFilesCount = files.Length;
+            long totalSize = files.Sum(file => new FileInfo(file).Length);
+
+            string[] units = { "B", "KB", "MB", "GB", "TB" };
+            double size = totalSize;
+            int unitIndex = 0;
+            while (size >= 1024 && unitIndex < units.Length - 1) { size /= 1024; unitIndex++; }
+
+            CacheTotalSize = $"{size:0.##} {units[unitIndex]}";
+        }
+        else
+        {
+            CacheFilesCount = 0;
+            CacheTotalSize = "0 B";
+        }
+
+        UpdatePicflowDbStats();
+    }
+
+    private void UpdatePicflowDbStats()
+    {
+        PicflowDatabase.Load();
+        var allItems = PicflowDatabase.GetAll().Values;
+        PicflowDbTotal = allItems.Count;
         
-        CacheExists = true;
-        string[] files = Directory.GetFiles(cacheFolder);
-        CacheFilesCount = files.Length;
-        long totalSize = files.Sum(file => new FileInfo(file).Length);
+        // 0 = Sticker, 1 = Emoji, 2 = Print (assuming Picflow.ItemCategory maps to 0, 1, 2)
+        PicflowDbStickers = allItems.Count(x => x.CategoryInt == 0);
+        PicflowDbEmojis = allItems.Count(x => x.CategoryInt == 1);
+        PicflowDbPrints = allItems.Count(x => x.CategoryInt == 2);
+    }
 
-        string[] units = { "B", "KB", "MB", "GB", "TB" };
-        double size = totalSize;
-        int unitIndex = 0;
-        while (size >= 1024 && unitIndex < units.Length - 1) { size /= 1024; unitIndex++; }
-
-        CacheTotalSize = $"{size:0.##} {units[unitIndex]}";
+    private async Task ClearPicflowDb()
+    {
+        bool confirmed = await dialogService.ShowConfirmAsync("Clear Picflow DB", "Are you sure you want to delete all saved items from the Picflow database?", "Delete", "Cancel");
+        if (confirmed)
+        {
+            PicflowDatabase.Clear();
+            UpdatePicflowDbStats();
+            ShowSystemMessage("Picflow database has been successfully cleared!", false);
+        }
     }
 }
