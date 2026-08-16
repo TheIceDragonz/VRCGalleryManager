@@ -86,6 +86,44 @@ namespace VRCGalleryManager.Core
                 return null;
             }
         }
+
+        private static VrcxData? TryParseVrcxJson(ReadOnlySpan<byte> span)
+        {
+            int searchStart = 0;
+            ReadOnlySpan<byte> vrcxMarker = "VRCX"u8;
+
+            while (searchStart < span.Length)
+            {
+                int braceIdx = span.Slice(searchStart).IndexOf((byte)'{');
+                if (braceIdx < 0) break;
+
+                int jsonStart = searchStart + braceIdx;
+                
+                if (span.Slice(jsonStart).IndexOf(vrcxMarker) < 0)
+                {
+                    break;
+                }
+
+                try
+                {
+                    var reader = new Utf8JsonReader(span.Slice(jsonStart), isFinalBlock: false, state: default);
+                    using var doc = JsonDocument.ParseValue(ref reader);
+                    string raw = doc.RootElement.GetRawText();
+                    if (raw.Contains("\"application\":\"VRCX\"") || raw.Contains("\"application\": \"VRCX\""))
+                    {
+                        return JsonSerializer.Deserialize<VrcxData>(raw, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                    }
+                }
+                catch
+                {
+                    // Continue search if JSON was malformed at this point
+                }
+
+                searchStart = jsonStart + 1;
+            }
+
+            return null;
+        }
     }
 }
 
