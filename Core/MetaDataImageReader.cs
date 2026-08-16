@@ -3,6 +3,7 @@ using System.IO;
 using System.Text.Json.Serialization;
 using System;
 using System.Collections.Generic;
+using System.Buffers;
 
 namespace VRCGalleryManager.Core
 {
@@ -48,20 +49,36 @@ namespace VRCGalleryManager.Core
 
         public static VrcxData? ExtractVrcxData(string filePath)
         {
+            if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath)) return null;
+
             try
             {
-                var bytes = File.ReadAllBytes(filePath);
-                int idx = Array.IndexOf(bytes, (byte)'{');
-                if (idx < 0) return null;
+                using var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                
+                int maxRead = (int)Math.Min(stream.Length, 512 * 1024);
+                byte[] buffer = ArrayPool<byte>.Shared.Rent(maxRead);
 
-                var reader = new Utf8JsonReader(bytes.AsSpan(idx), isFinalBlock: true, state: default);
-                using var doc = JsonDocument.ParseValue(ref reader);
-
-                string raw = doc.RootElement.GetRawText();
-                if (raw.Contains("\"application\":\"VRCX\"") || raw.Contains("\"application\": \"VRCX\""))
+                try
                 {
-                    return JsonSerializer.Deserialize<VrcxData>(raw, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                    int bytesRead = stream.Read(buffer, 0, maxRead);
+                    var data = TryParseVrcxJson(buffer.AsSpan(0, bytesRead));
+                    if (data != null) return data;
+
+                    // If not found in header and file is larger, check tail
+                    if (stream.Length > maxRead)
+                    {
+                        int tailSize = (int)Math.Min(stream.Length - maxRead, 64 * 1024);
+                        stream.Seek(-tailSize, SeekOrigin.End);
+                        int tailRead = stream.Read(buffer, 0, tailSize);
+                        data = TryParseVrcxJson(buffer.AsSpan(0, tailRead));
+                        if (data != null) return data;
+                    }
                 }
+                finally
+                {
+                    ArrayPool<byte>.Shared.Return(buffer);
+                }
+
                 return null;
             }
             catch
@@ -71,3 +88,4 @@ namespace VRCGalleryManager.Core
         }
     }
 }
+

@@ -16,6 +16,7 @@ namespace VRCGalleryManager.Core
 {
     public class GifToSpriteSheetConverter : IDisposable
     {
+        private static readonly HttpClient _httpClient = new HttpClient(new HttpClientHandler { AllowAutoRedirect = true });
         private Image<Rgba32> gifImage;
         public Image<Rgba32> SpriteSheet { get; private set; }
         public int frameCount { get; private set; }
@@ -27,31 +28,28 @@ namespace VRCGalleryManager.Core
 
             string tempFilePath = Path.Combine(directoryPath, $"downloaded_image_{Guid.NewGuid()}.gif");
 
-            using (HttpClient client = new HttpClient(new HttpClientHandler { AllowAutoRedirect = true }))
+            if (url.ToLower().EndsWith(".gif"))
             {
-                if (url.ToLower().EndsWith(".gif"))
+                byte[] imageBytes = await _httpClient.GetByteArrayAsync(url);
+                await File.WriteAllBytesAsync(tempFilePath, imageBytes);
+                return tempFilePath;
+            }
+
+            string htmlContent = await _httpClient.GetStringAsync(url);
+
+            var gifUrls = ExtractGifUrlsFromEmbed(htmlContent);
+
+            foreach (var gifUrl in gifUrls)
+            {
+                try
                 {
-                    byte[] imageBytes = await client.GetByteArrayAsync(url);
+                    byte[] imageBytes = await _httpClient.GetByteArrayAsync(gifUrl);
                     await File.WriteAllBytesAsync(tempFilePath, imageBytes);
                     return tempFilePath;
                 }
-
-                string htmlContent = await client.GetStringAsync(url);
-
-                var gifUrls = ExtractGifUrlsFromEmbed(htmlContent);
-
-                foreach (var gifUrl in gifUrls)
+                catch
                 {
-                    try
-                    {
-                        byte[] imageBytes = await client.GetByteArrayAsync(gifUrl);
-                        await File.WriteAllBytesAsync(tempFilePath, imageBytes);
-                        return tempFilePath;
-                    }
-                    catch
-                    {
-                        continue;
-                    }
+                    continue;
                 }
             }
 

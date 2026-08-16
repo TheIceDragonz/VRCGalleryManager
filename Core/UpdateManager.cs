@@ -14,12 +14,18 @@ namespace VRCGalleryManager
     public class UpdateManager
     {
         private static readonly string apiUrl = "https://api.github.com/repos/TheIceDragonz/VRCGalleryManager/releases/latest";
+        private static readonly HttpClient _httpClient = CreateHttpClient();
+
+        private static HttpClient CreateHttpClient()
+        {
+            var client = new HttpClient();
+            client.DefaultRequestHeaders.UserAgent.ParseAdd("VRCGalleryManager");
+            return client;
+        }
 
         public async Task<(bool isAvailable, string latestVersion, string localVersion)> IsUpdateAvailableAsync()
         {
-            using var client = new HttpClient();
-            client.DefaultRequestHeaders.UserAgent.ParseAdd("VRCGalleryManager");
-            string jsonResponse = await client.GetStringAsync(apiUrl);
+            string jsonResponse = await _httpClient.GetStringAsync(apiUrl);
             using var doc = JsonDocument.Parse(jsonResponse);
             var root = doc.RootElement;
             string latestVersion = Regex.Replace(root.GetProperty("tag_name").GetString() ?? "", @"[^\d\.]", "");
@@ -46,10 +52,7 @@ namespace VRCGalleryManager
             string latestVersion;
             string localVersion;
 
-            using var client = new HttpClient();
-            client.DefaultRequestHeaders.UserAgent.ParseAdd("VRCGalleryManager");
-
-            string jsonResponse = await client.GetStringAsync(apiUrl);
+            string jsonResponse = await _httpClient.GetStringAsync(apiUrl);
             using (var doc = JsonDocument.Parse(jsonResponse))
             {
                 var root = doc.RootElement;
@@ -89,10 +92,7 @@ namespace VRCGalleryManager
 
         public async Task DownloadAndInstallUpdateAsync(NotificationService notificationService, Action<string, int, bool> updateProgressState)
         {
-            using var client = new HttpClient();
-            client.DefaultRequestHeaders.UserAgent.ParseAdd("VRCGalleryManager");
-
-            string jsonResponse = await client.GetStringAsync(apiUrl);
+            string jsonResponse = await _httpClient.GetStringAsync(apiUrl);
             using var doc = JsonDocument.Parse(jsonResponse);
             var releaseJson = doc.RootElement;
 
@@ -123,7 +123,7 @@ namespace VRCGalleryManager
             Directory.CreateDirectory(tempFolder);
             string tempFilePath = Path.Combine(tempFolder, Path.GetFileName(installerUrl)!);
 
-            using var response = await client.GetAsync(installerUrl, HttpCompletionOption.ResponseHeadersRead);
+            using var response = await _httpClient.GetAsync(installerUrl, HttpCompletionOption.ResponseHeadersRead);
             response.EnsureSuccessStatusCode();
             var totalBytes = response.Content.Headers.ContentLength ?? -1L;
 

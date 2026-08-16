@@ -189,11 +189,10 @@
     {
         CropPrints = Config.Get("CropWhiteBorder", "true") == "true";
 
-
         var cachedImg = CacheService.Get<List<ImageModel>>("PicflowImages");
         if (cachedImg != null)
         {
-            Images = new List<ImageModel>(cachedImg);
+            Images = cachedImg;
             _allItems = CacheService.Get<HashSet<string>>("PicflowAllItems") ?? new HashSet<string>();
             LogStatus = CacheService.Get<string>("PicflowLogStatus") ?? "";
         }
@@ -335,6 +334,8 @@
 
         LogStatus = "";
         CacheService.Set("PicflowLogStatus", LogStatus);
+        CacheService.Set("PicflowImages", Images);
+        CacheService.Set("PicflowAllItems", _allItems);
         StateHasChanged();
     }
 
@@ -605,10 +606,14 @@
     {
         Images.Remove(img);
         _allItems.Remove(img.ItemId);
+        CacheService.Set("PicflowImages", Images);
+        CacheService.Set("PicflowAllItems", _allItems);
     }
 
     public void Dispose()
     {
+        CacheService.Set("PicflowImages", Images);
+        CacheService.Set("PicflowAllItems", _allItems);
     }
     private void HandleViewerUpload(int index)
     {

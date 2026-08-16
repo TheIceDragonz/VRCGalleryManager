@@ -212,55 +212,22 @@
 
     private async Task DeleteEmoji(EmojiItem item)
     {
-        bool confirm = await dialogService.ShowConfirmAsync("Delete Emoji", "Are you sure you want to delete this emoji?", "Delete", "Cancel");
-        if (confirm)
-        {
-            try
-            {
-                await apiRequest.DeleteApiData(item.Id);
-                emojis.Remove(item);
-                imageCount--;
-                CacheService.Set("Emojis", new List<EmojiItem>(emojis));
-                CacheService.Set("EmojisCount", imageCount);
-                StateHasChanged();
-                NotificationService.Show("Emoji deleted successfully.", "Deleted", NotificationType.Success);
-            }
-            catch (Exception ex)
-            {
-                NotificationService.Show(ex.Message, "Delete Failed", NotificationType.Error);
-            }
-        }
+        await ConfirmAndDeleteItemAsync(item, item.Id, "Emoji", emojis, "Emojis", "EmojisCount", id => apiRequest.DeleteApiData(id));
     }
 
     private async Task OnEditorSave((string Base64, bool IsAnimated, string AnimStyle, int Frames, int FramesOverTime) result)
     {
         try
         {
-            string mimeType = "image/png";
-            int semiColonIndex = result.Base64.IndexOf(";");
-            if (result.Base64.StartsWith("data:") && semiColonIndex > 5)
-            {
-                mimeType = result.Base64.Substring(5, semiColonIndex - 5);
-            }
-            string ext = mimeType == "image/jpeg" ? ".jpg" : ".png";
+            string tempPath = await SaveBase64ToTempFileAsync(result.Base64, "upload_emoji");
 
-            string base64Data = result.Base64.Substring(result.Base64.IndexOf(",") + 1);
-            byte[] bytes = Convert.FromBase64String(base64Data);
-            
-            string tempFolder = Path.Combine(Path.GetTempPath(), "VRCGalleryManager");
-            Directory.CreateDirectory(tempFolder);
-            string tempPath = Path.Combine(tempFolder, $"upload_emoji_{Guid.NewGuid()}{ext}");
-            
-            await File.WriteAllBytesAsync(tempPath, bytes);
-
-            ApiRequest.ApiData emoji;
             if (result.IsAnimated)
             {
-                emoji = await apiRequest.UploadImage(tempPath, EMOJI_MASK_TAG, TagType.EmojiAnimated, result.AnimStyle.ToLower(), result.Frames, result.FramesOverTime);
+                await apiRequest.UploadImage(tempPath, EMOJI_MASK_TAG, TagType.EmojiAnimated, result.AnimStyle.ToLower(), result.Frames, result.FramesOverTime);
             }
             else
             {
-                emoji = await apiRequest.UploadImage(tempPath, EMOJI_MASK_TAG, TagType.Emoji, result.AnimStyle?.ToLower() ?? "");
+                await apiRequest.UploadImage(tempPath, EMOJI_MASK_TAG, TagType.Emoji, result.AnimStyle?.ToLower() ?? "");
             }
 
             try { File.Delete(tempPath); } catch { }
@@ -277,16 +244,7 @@
 
     private async Task HandleViewerDelete(int index)
     {
-        var targetList = emojis;
-        if (index >= 0 && index < targetList.Count)
-        {
-            var item = targetList[index];
-            await DeleteEmoji(item);
-            if (!targetList.Contains(item))
-            {
-                imageViewer.Close();
-            }
-        }
+        await HandleViewerDeleteAsync(index, emojis, DeleteEmoji, imageViewer);
     }
 }
 

@@ -181,50 +181,15 @@
 
     private async Task DeletePhoto(PhotoItem item)
     {
-        bool confirm = await dialogService.ShowConfirmAsync("Delete Photo", "Are you sure you want to delete this photo?", "Delete", "Cancel");
-        if (confirm)
-        {
-            try
-            {
-                await apiRequest.DeleteApiData(item.Id);
-                photos.Remove(item);
-                imageCount--;
-                CacheService.Set("Photos", new List<PhotoItem>(photos));
-                CacheService.Set("PhotosCount", imageCount);
-                StateHasChanged();
-                NotificationService.Show("Photo deleted successfully.", "Deleted", NotificationType.Success);
-            }
-            catch (Exception ex)
-            {
-                NotificationService.Show(ex.Message, "Delete Failed", NotificationType.Error);
-            }
-        }
+        await ConfirmAndDeleteItemAsync(item, item.Id, "Photo", photos, "Photos", "PhotosCount", id => apiRequest.DeleteApiData(id));
     }
 
     private async Task OnEditorSave(string base64Result)
     {
         try
         {
-            string mimeType = "image/png";
-            int semiColonIndex = base64Result.IndexOf(";");
-            if (base64Result.StartsWith("data:") && semiColonIndex > 5)
-            {
-                mimeType = base64Result.Substring(5, semiColonIndex - 5);
-            }
-            string ext = mimeType == "image/jpeg" ? ".jpg" : ".png";
-
-            var headerParts = base64Result.Split(',');
-            var base64Data = headerParts.Length > 1 ? headerParts[1] : headerParts[0];
-            byte[] bytes = Convert.FromBase64String(base64Data);
-            
-            string tempFolder = Path.Combine(Path.GetTempPath(), "VRCGalleryManager");
-            Directory.CreateDirectory(tempFolder);
-            string tempPath = Path.Combine(tempFolder, $"upload_photo_{Guid.NewGuid()}{ext}");
-            
-            await File.WriteAllBytesAsync(tempPath, bytes);
-
+            string tempPath = await SaveBase64ToTempFileAsync(base64Result, "upload_photo");
             await apiRequest.UploadImage(tempPath, PHOTOS_MASK_TYPE, TagType.Gallery, "");
-
             try { File.Delete(tempPath); } catch { }
 
             await RefreshList();
@@ -265,14 +230,6 @@
 
     private async Task HandleViewerDelete(int index)
     {
-        if (index >= 0 && index < photos.Count)
-        {
-            var item = photos[index];
-            await DeletePhoto(item);
-            if (!photos.Contains(item))
-            {
-                imageViewer.Close();
-            }
-        }
+        await HandleViewerDeleteAsync(index, photos, DeletePhoto, imageViewer);
     }
 }

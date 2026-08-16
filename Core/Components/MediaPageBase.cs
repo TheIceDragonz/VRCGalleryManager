@@ -155,6 +155,70 @@ namespace VRCGalleryManager.Core.Components
             editingBase64Image = null;
         }
 
+        protected async Task<string> SaveBase64ToTempFileAsync(string base64String, string filePrefix = "upload")
+        {
+            string mimeType = "image/png";
+            int semiColonIndex = base64String.IndexOf(";");
+            if (base64String.StartsWith("data:") && semiColonIndex > 5)
+            {
+                mimeType = base64String.Substring(5, semiColonIndex - 5);
+            }
+            string ext = mimeType == "image/jpeg" ? ".jpg" : ".png";
+
+            int commaIndex = base64String.IndexOf(",");
+            string base64Data = commaIndex >= 0 ? base64String.Substring(commaIndex + 1) : base64String;
+            byte[] bytes = Convert.FromBase64String(base64Data);
+
+            string tempFolder = Path.Combine(Path.GetTempPath(), "VRCGalleryManager");
+            Directory.CreateDirectory(tempFolder);
+            string tempPath = Path.Combine(tempFolder, $"{filePrefix}_{Guid.NewGuid():N}{ext}");
+
+            await File.WriteAllBytesAsync(tempPath, bytes);
+            return tempPath;
+        }
+
+        protected async Task ConfirmAndDeleteItemAsync<T>(
+            T item,
+            string itemId,
+            string itemName,
+            List<T> itemList,
+            string cacheKey,
+            string countCacheKey,
+            Func<string, Task> deleteApiCall)
+        {
+            bool confirm = await dialogService.ShowConfirmAsync($"Delete {itemName}", $"Are you sure you want to delete this {itemName.ToLower()}?", "Delete", "Cancel");
+            if (confirm)
+            {
+                try
+                {
+                    await deleteApiCall(itemId);
+                    itemList.Remove(item);
+                    imageCount--;
+                    CacheService.Set(cacheKey, new List<T>(itemList));
+                    CacheService.Set(countCacheKey, imageCount);
+                    StateHasChanged();
+                    NotificationService.Show($"{itemName} deleted successfully.", "Deleted", NotificationType.Success);
+                }
+                catch (Exception ex)
+                {
+                    NotificationService.Show(ex.Message, "Delete Failed", NotificationType.Error);
+                }
+            }
+        }
+
+        protected async Task HandleViewerDeleteAsync<T>(int index, List<T> itemList, Func<T, Task> deleteAction, VRCGalleryManager.Components.ImageViewer imageViewer)
+        {
+            if (index >= 0 && index < itemList.Count)
+            {
+                var item = itemList[index];
+                await deleteAction(item);
+                if (!itemList.Contains(item))
+                {
+                    imageViewer?.Close();
+                }
+            }
+        }
+
         public virtual void Dispose()
         {
             FileDropService.OnDragEnter -= HandleDragEnter;

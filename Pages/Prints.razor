@@ -212,50 +212,15 @@
 
     private async Task DeletePrint(PrintItem item)
     {
-        bool confirm = await dialogService.ShowConfirmAsync("Delete Print", "Are you sure you want to delete this print?", "Delete", "Cancel");
-        if (confirm)
-        {
-            try
-            {
-                await apiRequest.DeleteApiDataPrint(item.Id);
-                prints.Remove(item);
-                imageCount--;
-                CacheService.Set("Prints", new List<PrintItem>(prints));
-                CacheService.Set("PrintsCount", imageCount);
-                StateHasChanged();
-                NotificationService.Show("Print deleted successfully.", "Deleted", NotificationType.Success);
-            }
-            catch (Exception ex)
-            {
-                NotificationService.Show(ex.Message, "Delete Failed", NotificationType.Error);
-            }
-        }
+        await ConfirmAndDeleteItemAsync(item, item.Id, "Print", prints, "Prints", "PrintsCount", id => apiRequest.DeleteApiDataPrint(id));
     }
 
     private async Task OnEditorSave(string base64Result)
     {
         try
         {
-            string mimeType = "image/png";
-            int semiColonIndex = base64Result.IndexOf(";");
-            if (base64Result.StartsWith("data:") && semiColonIndex > 5)
-            {
-                mimeType = base64Result.Substring(5, semiColonIndex - 5);
-            }
-            string ext = mimeType == "image/jpeg" ? ".jpg" : ".png";
-
-            var headerParts = base64Result.Split(',');
-            var base64Data = headerParts.Length > 1 ? headerParts[1] : headerParts[0];
-            byte[] bytes = Convert.FromBase64String(base64Data);
-            
-            string tempFolder = Path.Combine(Path.GetTempPath(), "VRCGalleryManager");
-            Directory.CreateDirectory(tempFolder);
-            string tempPath = Path.Combine(tempFolder, $"upload_print_{Guid.NewGuid()}{ext}");
-            
-            await File.WriteAllBytesAsync(tempPath, bytes);
-
+            string tempPath = await SaveBase64ToTempFileAsync(base64Result, "upload_print");
             await apiRequest.UploadPrint(tempPath, printNote);
-
             try { File.Delete(tempPath); } catch { }
 
             await RefreshList();
@@ -276,15 +241,7 @@
 
     private async Task HandleViewerDelete(int index)
     {
-        if (index >= 0 && index < prints.Count)
-        {
-            var item = prints[index];
-            await DeletePrint(item);
-            if (!prints.Contains(item))
-            {
-                imageViewer.Close();
-            }
-        }
+        await HandleViewerDeleteAsync(index, prints, DeletePrint, imageViewer);
     }
 
     private void OpenUserInBrowser(string userId)

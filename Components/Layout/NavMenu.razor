@@ -117,6 +117,11 @@
     private string DisabledClass => IsLoggedIn ? "" : "disabled-nav";
     private string VrcPlusDisabledClass => HasVrcPlus ? "" : "disabled-nav";
 
+    private static readonly System.Net.Http.HttpClient _cosmeticsHttpClient = new System.Net.Http.HttpClient
+    {
+        BaseAddress = new Uri("https://api.vrchat.cloud/api/1/")
+    };
+
     protected override async Task OnInitializedAsync()
     {
         Auth.OnAuthStateChanged += AuthStateChanged;
@@ -127,7 +132,7 @@
     private void Handle2FARequired()
     {
         InvokeAsync(() => {
-            NavManager.NavigateTo("settings");
+            NavManager.NavigateTo("/settings");
         });
     }
 
@@ -183,19 +188,18 @@
         IconFrameUrl = null;
         if (CurrentUser == null) return;
         
-        using var client = new System.Net.Http.HttpClient();
-        client.BaseAddress = new Uri("https://api.vrchat.cloud/api/1/");
-        if (Auth.Config.DefaultHeaders.TryGetValue("Cookie", out string cookie))
-        {
-            client.DefaultRequestHeaders.Add("Cookie", cookie);
-        }
-        client.DefaultRequestHeaders.Add("User-Agent", "VRCGalleryManager");
-        
         try
         {
             if (!string.IsNullOrEmpty(CurrentUser.ProfileEffect))
             {
-                var response = await client.GetAsync("cosmetics/index/profileEffect");
+                using var request = new System.Net.Http.HttpRequestMessage(System.Net.Http.HttpMethod.Get, "cosmetics/index/profileEffect");
+                request.Headers.TryAddWithoutValidation("User-Agent", "VRCGalleryManager");
+                if (Auth.Config.DefaultHeaders.TryGetValue("Cookie", out string cookie))
+                {
+                    request.Headers.TryAddWithoutValidation("Cookie", cookie);
+                }
+
+                var response = await _cosmeticsHttpClient.SendAsync(request);
                 if (response.IsSuccessStatusCode)
                 {
                     var content = await response.Content.ReadAsStringAsync();
@@ -217,7 +221,14 @@
         {
             if (!string.IsNullOrEmpty(CurrentUser.IconFrame))
             {
-                var response = await client.GetAsync("cosmetics/index/iconFrame");
+                using var request = new System.Net.Http.HttpRequestMessage(System.Net.Http.HttpMethod.Get, "cosmetics/index/iconFrame");
+                request.Headers.TryAddWithoutValidation("User-Agent", "VRCGalleryManager");
+                if (Auth.Config.DefaultHeaders.TryGetValue("Cookie", out string cookie))
+                {
+                    request.Headers.TryAddWithoutValidation("Cookie", cookie);
+                }
+
+                var response = await _cosmeticsHttpClient.SendAsync(request);
                 if (response.IsSuccessStatusCode)
                 {
                     var content = await response.Content.ReadAsStringAsync();

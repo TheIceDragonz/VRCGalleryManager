@@ -180,49 +180,15 @@
 
     private async Task DeleteSticker(StickerItem item)
     {
-        bool confirm = await dialogService.ShowConfirmAsync("Delete Sticker", "Are you sure you want to delete this sticker?", "Delete", "Cancel");
-        if (confirm)
-        {
-            try
-            {
-                await apiRequest.DeleteApiData(item.Id);
-                stickers.Remove(item);
-                imageCount--;
-                CacheService.Set("Stickers", new List<StickerItem>(stickers));
-                CacheService.Set("StickersCount", imageCount);
-                StateHasChanged();
-                NotificationService.Show("Sticker deleted successfully.", "Deleted", NotificationType.Success);
-            }
-            catch (Exception ex)
-            {
-                NotificationService.Show(ex.Message, "Delete Failed", NotificationType.Error);
-            }
-        }
+        await ConfirmAndDeleteItemAsync(item, item.Id, "Sticker", stickers, "Stickers", "StickersCount", id => apiRequest.DeleteApiData(id));
     }
 
     private async Task OnEditorSave(string editedBase64)
     {
         try
         {
-            string mimeType = "image/png";
-            int semiColonIndex = editedBase64.IndexOf(";");
-            if (editedBase64.StartsWith("data:") && semiColonIndex > 5)
-            {
-                mimeType = editedBase64.Substring(5, semiColonIndex - 5);
-            }
-            string ext = mimeType == "image/jpeg" ? ".jpg" : ".png";
-
-            string base64Data = editedBase64.Substring(editedBase64.IndexOf(",") + 1);
-            byte[] bytes = Convert.FromBase64String(base64Data);
-            
-            string tempFolder = Path.Combine(Path.GetTempPath(), "VRCGalleryManager");
-            Directory.CreateDirectory(tempFolder);
-            string tempPath = Path.Combine(tempFolder, $"upload_sticker_{Guid.NewGuid()}{ext}");
-            
-            await File.WriteAllBytesAsync(tempPath, bytes);
-
+            string tempPath = await SaveBase64ToTempFileAsync(editedBase64, "upload_sticker");
             await apiRequest.UploadImage(tempPath, STICKER_MASK_TYPE, TagType.Sticker, null, 0, 0);
-
             try { File.Delete(tempPath); } catch { }
 
             await RefreshList();
@@ -236,16 +202,7 @@
 
     private async Task HandleViewerDelete(int index)
     {
-        var targetList = stickers;
-        if (index >= 0 && index < targetList.Count)
-        {
-            var item = targetList[index];
-            await DeleteSticker(item);
-            if (!targetList.Contains(item))
-            {
-                imageViewer.Close();
-            }
-        }
+        await HandleViewerDeleteAsync(index, stickers, DeleteSticker, imageViewer);
     }
 }
 

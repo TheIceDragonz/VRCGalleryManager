@@ -179,53 +179,18 @@
 
     private async Task DeleteIcon(IconItem item)
     {
-        bool confirm = await dialogService.ShowConfirmAsync("Delete Icon", "Are you sure you want to delete this icon?", "Delete", "Cancel");
-        if (confirm)
-        {
-            try
-            {
-                await apiRequest.DeleteApiData(item.Id);
-                icons.Remove(item);
-                imageCount--;
-                CacheService.Set("Icons", new List<IconItem>(icons));
-                CacheService.Set("IconsCount", imageCount);
-                StateHasChanged();
-                NotificationService.Show("Icon deleted successfully.", "Deleted", NotificationType.Success);
-            }
-            catch (Exception ex)
-            {
-                NotificationService.Show(ex.Message, "Delete Failed", NotificationType.Error);
-            }
-        }
+        await ConfirmAndDeleteItemAsync(item, item.Id, "Icon", icons, "Icons", "IconsCount", id => apiRequest.DeleteApiData(id));
     }
 
     private async Task OnEditorSave(string base64Result)
     {
         try
         {
-            string mimeType = "image/png";
-            int semiColonIndex = base64Result.IndexOf(";");
-            if (base64Result.StartsWith("data:") && semiColonIndex > 5)
-            {
-                mimeType = base64Result.Substring(5, semiColonIndex - 5);
-            }
-            string ext = mimeType == "image/jpeg" ? ".jpg" : ".png";
-
-            var headerParts = base64Result.Split(',');
-            var base64Data = headerParts.Length > 1 ? headerParts[1] : headerParts[0];
-            byte[] bytes = Convert.FromBase64String(base64Data);
-            
-            string tempFolder = Path.Combine(Path.GetTempPath(), "VRCGalleryManager");
-            Directory.CreateDirectory(tempFolder);
-            string tempPath = Path.Combine(tempFolder, $"upload_icon_{Guid.NewGuid()}{ext}");
-            
-            await File.WriteAllBytesAsync(tempPath, bytes);
-
+            string tempPath = await SaveBase64ToTempFileAsync(base64Result, "upload_icon");
             await apiRequest.UploadImage(tempPath, ICONS_MASK_TYPE, TagType.Icon, "");
-
             try { File.Delete(tempPath); } catch { }
 
-            // Attendi che l'API di VRChat indicizzi l'immagine prima di ricaricare la lista
+            // Wait for VRChat API indexing
             await Task.Delay(2000);
             await RefreshList();
             editingBase64Image = null;
@@ -261,16 +226,7 @@
 
     private async Task HandleViewerDelete(int index)
     {
-        var targetList = icons;
-        if (index >= 0 && index < targetList.Count)
-        {
-            var item = targetList[index];
-            await DeleteIcon(item);
-            if (!targetList.Contains(item))
-            {
-                imageViewer.Close();
-            }
-        }
+        await HandleViewerDeleteAsync(index, icons, DeleteIcon, imageViewer);
     }
 }
 

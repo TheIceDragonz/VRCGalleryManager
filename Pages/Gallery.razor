@@ -304,36 +304,67 @@
     private async Task LoadThumbnailsAsync(CancellationToken token)
     {
         var snapshot = Items.ToList();
+        if (snapshot.Count == 0) return;
 
-        foreach (var item in snapshot)
+        int degreeOfParallelism = Math.Clamp(Environment.ProcessorCount, 2, 6);
+        var parallelOptions = new ParallelOptions
         {
-            if (token.IsCancellationRequested) break;
+            MaxDegreeOfParallelism = degreeOfParallelism,
+            CancellationToken = token
+        };
 
-            try
+        long lastUpdateTicks = DateTime.UtcNow.Ticks;
+        int completedCount = 0;
+
+        try
+        {
+            await Parallel.ForEachAsync(snapshot, parallelOptions, async (item, ct) =>
             {
-                if (item.IsFolder)
+                try
                 {
-                    var firstImg = Directory.EnumerateFiles(item.Path)
-                                            .Where(IsImageFile)
-                                            .LastOrDefault();
-                    if (!string.IsNullOrEmpty(firstImg))
+                    if (item.IsFolder)
                     {
-                        item.ThumbnailBase64 = await MakeThumbnailBase64Async(firstImg, 256, token);
+                        var firstImg = Directory.EnumerateFiles(item.Path)
+                                                .Where(IsImageFile)
+                                                .LastOrDefault();
+                        if (!string.IsNullOrEmpty(firstImg))
+                        {
+                            item.ThumbnailBase64 = await MakeThumbnailBase64Async(firstImg, 256, ct);
+                        }
+                        item.IsThumbLoading = false;
                     }
-                    item.IsThumbLoading = false;
+                    else
+                    {
+                        item.ThumbnailBase64 = await MakeThumbnailBase64Async(item.Path, 256, ct);
+                        item.IsThumbLoading = false;
+                    }
                 }
-                else
+                catch
                 {
-                    item.ThumbnailBase64 = await MakeThumbnailBase64Async(item.Path, 256, token);
                     item.IsThumbLoading = false;
                 }
 
-                if (!token.IsCancellationRequested)
-                    await InvokeAsync(StateHasChanged);
-            }
-            catch
+                int count = Interlocked.Increment(ref completedCount);
+                long nowTicks = DateTime.UtcNow.Ticks;
+                long prevTicks = Interlocked.Read(ref lastUpdateTicks);
+
+                // Throttle StateHasChanged to at most once per 100ms or every 10 items
+                if (count == snapshot.Count || count % 10 == 0 || (nowTicks - prevTicks) > TimeSpan.TicksPerMillisecond * 100)
+                {
+                    Interlocked.Exchange(ref lastUpdateTicks, nowTicks);
+                    if (!ct.IsCancellationRequested)
+                    {
+                        await InvokeAsync(StateHasChanged);
+                    }
+                }
+            });
+        }
+        catch (OperationCanceledException) { }
+        finally
+        {
+            if (!token.IsCancellationRequested)
             {
-                item.IsThumbLoading = false;
+                await InvokeAsync(StateHasChanged);
             }
         }
     }
