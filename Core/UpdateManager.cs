@@ -23,18 +23,35 @@ namespace VRCGalleryManager
             return client;
         }
 
+        private (bool isAvailable, string latestVersion, string localVersion)? _cachedUpdate;
+        private DateTime _lastCheckTime = DateTime.MinValue;
+
         public async Task<(bool isAvailable, string latestVersion, string localVersion)> IsUpdateAvailableAsync()
         {
-            string jsonResponse = await _httpClient.GetStringAsync(apiUrl);
-            using var doc = JsonDocument.Parse(jsonResponse);
-            var root = doc.RootElement;
-            string latestVersion = Regex.Replace(root.GetProperty("tag_name").GetString() ?? "", @"[^\d\.]", "");
-            string localVersion = Assembly.GetExecutingAssembly()
-                .GetCustomAttribute<AssemblyFileVersionAttribute>()?
-                .Version ?? throw new InvalidOperationException("Local version not found");
+            if (_cachedUpdate.HasValue && (DateTime.UtcNow - _lastCheckTime).TotalMinutes < 5)
+            {
+                return _cachedUpdate.Value;
+            }
 
-            bool isAvailable = !string.Equals(localVersion, latestVersion, StringComparison.OrdinalIgnoreCase);
-            return (isAvailable, latestVersion, localVersion);
+            try
+            {
+                string jsonResponse = await _httpClient.GetStringAsync(apiUrl);
+                using var doc = JsonDocument.Parse(jsonResponse);
+                var root = doc.RootElement;
+                string latestVersion = Regex.Replace(root.GetProperty("tag_name").GetString() ?? "", @"[^\d\.]", "");
+                string localVersion = Assembly.GetExecutingAssembly()
+                    .GetCustomAttribute<AssemblyFileVersionAttribute>()?
+                    .Version ?? "1.0.0";
+
+                bool isAvailable = !string.Equals(localVersion, latestVersion, StringComparison.OrdinalIgnoreCase);
+                _cachedUpdate = (isAvailable, latestVersion, localVersion);
+                _lastCheckTime = DateTime.UtcNow;
+                return (isAvailable, latestVersion, localVersion);
+            }
+            catch
+            {
+                return (false, "", "");
+            }
         }
 
         public async Task CheckForUpdatesAsync(NotificationService notificationService, DialogService dialogService, Action<string, int, bool> updateProgressState, bool silentIfNotAvailable = false)

@@ -144,6 +144,60 @@ namespace VRCGalleryManager.Core
             }
         }
 
+        public async Task<List<VRChat.API.Model.File>> GetFilesAsync(string tag)
+        {
+            try
+            {
+                var files = await ExecuteWithReloginAsync(() => filesApi.GetFilesAsync(tag, null, 100));
+                return files ?? new List<VRChat.API.Model.File>();
+            }
+            catch (ApiException ex)
+            {
+                Console.WriteLine($"Error fetching files for {tag}: {ex.Message}");
+                return new List<VRChat.API.Model.File>();
+            }
+        }
+
+        public async Task<List<Print>> GetPrintsAsync()
+        {
+            try
+            {
+                var user = await ExecuteWithReloginAsync(() => Auth.AuthApi.GetCurrentUserAsync());
+                if (user == null || string.IsNullOrEmpty(user.Id)) return new List<Print>();
+
+                var prints = await ExecuteWithReloginAsync(() => printsApi.GetUserPrintsAsync(user.Id, 100, 0));
+                return prints ?? new List<Print>();
+            }
+            catch (ApiException ex)
+            {
+                Console.WriteLine($"Error fetching prints: {ex.Message}");
+                return new List<Print>();
+            }
+        }
+
+        public async Task<List<InventoryItem>> GetStickersAsync()
+        {
+            try
+            {
+                var inventory = await ExecuteWithReloginAsync(() => inventoryApi.GetInventoryAsync(
+                    n: 100,
+                    offset: 0,
+                    types: InventoryItemType.Sticker,
+                    tags: "Custom Sticker",
+                    flags: InventoryFlag.Ugc,
+                    archived: false,
+                    order: "newest_created"
+                ));
+
+                return inventory?.Data ?? new List<InventoryItem>();
+            }
+            catch (ApiException ex)
+            {
+                Console.WriteLine($"Error fetching stickers: {ex.Message}");
+                return new List<InventoryItem>();
+            }
+        }
+
         public async Task<ApiData> GetApiData(string tag)
         {
             ApiData apiData = new ApiData();
@@ -152,25 +206,15 @@ namespace VRCGalleryManager.Core
             {
                 if (tag == "sticker")
                 {
-                    var inventory = await ExecuteWithReloginAsync(() => inventoryApi.GetInventoryAsync(
-                        n: 100,
-                        offset: 0,
-                        types: InventoryItemType.Sticker,
-                        tags: "Custom Sticker",
-                        flags: InventoryFlag.Ugc,
-                        archived: false,
-                        order: "newest_created"
-                    ));
-
-                    foreach (var image in inventory.Data)
+                    var items = await GetStickersAsync();
+                    foreach (var image in items)
                     {
                         apiData.JsonImage.Add(image.ToJson());
                     }
                 }
                 else if (!tag.Contains("print"))
                 {
-                    var images = await ExecuteWithReloginAsync(() => filesApi.GetFilesAsync(tag, null, 100));
-
+                    var images = await GetFilesAsync(tag);
                     foreach (var image in images)
                     {
                         apiData.JsonImage.Add(image.ToJson());
@@ -178,9 +222,7 @@ namespace VRCGalleryManager.Core
                 }
                 else
                 {
-                    var user = await ExecuteWithReloginAsync(() => Auth.AuthApi.GetCurrentUserAsync());
-                    var images = await ExecuteWithReloginAsync(() => printsApi.GetUserPrintsAsync(user.Id, 100, 0));
-
+                    var images = await GetPrintsAsync();
                     foreach (var image in images)
                     {
                         apiData.JsonImage.Add(image.ToJson());
@@ -189,14 +231,7 @@ namespace VRCGalleryManager.Core
             }
             catch (ApiException ex)
             {
-                if (ex.ErrorCode == 404 && ex.Message.Contains("Emoji Not Found"))
-                {
-                    //apiData.Icon = "";
-                }
-                else
-                {
-                    Console.WriteLine($"Error: {ex.Message}");
-                }
+                Console.WriteLine($"Error: {ex.Message}");
             }
 
             return apiData;

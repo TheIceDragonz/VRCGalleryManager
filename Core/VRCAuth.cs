@@ -90,7 +90,7 @@ namespace VRCGalleryManager.Core
 
                 var user = await AuthApi.GetCurrentUserAsync();
                 
-                SaveCookies();
+                await SaveCookiesAsync();
                 LoggedIn = true;
                 CurrentUser = user;
                 Console.WriteLine("Logged in as: {0}", CurrentUser.DisplayName);
@@ -138,7 +138,7 @@ namespace VRCGalleryManager.Core
 
                 var user = await AuthApi.GetCurrentUserAsync();
                 
-                SaveCookies();
+                await SaveCookiesAsync();
                 LoggedIn = true;
                 CurrentUser = user;
                 Console.WriteLine("Logged in as: {0}", CurrentUser.DisplayName);
@@ -215,13 +215,13 @@ namespace VRCGalleryManager.Core
             return resp.RawContent != null && resp.RawContent.Contains("emailOtp");
         }
 
-        public void SaveCookies()
+        public async Task SaveCookiesAsync()
         {
             try
             {
                 if (Config.DefaultHeaders.TryGetValue("Cookie", out string cookieString))
                 {
-                    Task.Run(async () => await SecureStorage.Default.SetAsync("auth_cookie", cookieString)).Wait();
+                    await SecureStorage.Default.SetAsync("auth_cookie", cookieString);
                     CookieLoaded = true;
                     Console.WriteLine("Session cookies saved securely.");
                 }
@@ -230,6 +230,52 @@ namespace VRCGalleryManager.Core
             {
                 Console.WriteLine($"Save error: {ex.Message}");
             }
+        }
+
+        public void SaveCookies()
+        {
+            _ = SaveCookiesAsync();
+        }
+
+        public async Task<bool> LoadCookiesAsync()
+        {
+            try
+            {
+                string cookieString = await SecureStorage.Default.GetAsync("auth_cookie");
+
+                if (!string.IsNullOrEmpty(cookieString))
+                {
+                    if (!cookieString.Contains("="))
+                    {
+                        cookieString = $"auth={cookieString}";
+                    }
+
+                    if (Config.DefaultHeaders.ContainsKey("Cookie"))
+                        Config.DefaultHeaders["Cookie"] = cookieString;
+                    else
+                        Config.DefaultHeaders.Add("Cookie", cookieString);
+
+                    var authPart = cookieString.Split(';').FirstOrDefault(p => p.Trim().StartsWith("auth="));
+                    if (authPart != null)
+                    {
+                        string token = authPart.Trim().Substring(5);
+                        if (Config.ApiKey.ContainsKey("auth"))
+                            Config.ApiKey["auth"] = token;
+                        else
+                            Config.AddApiKey("auth", token);
+                    }
+
+                    CookieLoaded = true;
+                    AuthApi = new AuthenticationApi(ApiClient, ApiClient, Config);
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Load error: {ex.Message}");
+                CookieLoaded = false;
+            }
+            return false;
         }
 
         public void LoadCookies()
@@ -271,19 +317,41 @@ namespace VRCGalleryManager.Core
             }
         }
 
-        public void SaveCredentials(string username, string password)
+        public async Task SaveCredentialsAsync(string username, string password)
         {
             try
             {
-                Task.Run(async () => {
-                    await SecureStorage.Default.SetAsync("auth_username", username);
-                    await SecureStorage.Default.SetAsync("auth_password", password);
-                }).Wait();
+                await SecureStorage.Default.SetAsync("auth_username", username);
+                await SecureStorage.Default.SetAsync("auth_password", password);
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Save credentials error: {ex.Message}");
             }
+        }
+
+        public void SaveCredentials(string username, string password)
+        {
+            _ = SaveCredentialsAsync(username, password);
+        }
+
+        public async Task<(string username, string password)?> LoadCredentialsAsync()
+        {
+            try
+            {
+                string username = await SecureStorage.Default.GetAsync("auth_username");
+                string password = await SecureStorage.Default.GetAsync("auth_password");
+                
+                if (!string.IsNullOrEmpty(username) && !string.IsNullOrEmpty(password))
+                {
+                    return (username, password);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Load credentials error: {ex.Message}");
+            }
+            return null;
         }
 
         public (string username, string password)? LoadCredentials()
@@ -328,7 +396,7 @@ namespace VRCGalleryManager.Core
 
         public async Task<bool> TryAutoReloginAsync()
         {
-            var creds = LoadCredentials();
+            var creds = await LoadCredentialsAsync();
             if (creds == null) return false;
 
             await _reloginSemaphore.WaitAsync();

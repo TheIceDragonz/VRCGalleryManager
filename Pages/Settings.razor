@@ -361,9 +361,13 @@
         _startInBackground = Config.Get("StartInBackground", "false") == "true";
         _minimizeToTray = Config.Get("MinimizeToTray", "true") == "true";
 
-        UpdateCacheInfo();
-        UpdateVRChatLogsInfo();
-        UpdatePicflowDbStats();
+        _ = Task.Run(() =>
+        {
+            UpdateCacheInfo();
+            UpdateVRChatLogsInfo();
+            UpdatePicflowDbStats();
+            InvokeAsync(StateHasChanged);
+        });
 
         if (OperatingSystem.IsWindows())
         {
@@ -382,7 +386,7 @@
 
         if (Auth.Is2FARequired)
         {
-            var creds = Auth.LoadCredentials();
+            var creds = await Auth.LoadCredentialsAsync();
             if (creds != null)
             {
                 Username = creds.Value.username;
@@ -448,7 +452,7 @@
                 IsLoggingIn = true;
                 StateHasChanged();
 
-                var creds = Auth.LoadCredentials();
+                var creds = await Auth.LoadCredentialsAsync();
                 if (creds != null)
                 {
                     Username = creds.Value.username;
@@ -529,7 +533,7 @@
                 }
                 else if (status == VRCAuthStatus.Success)
                 {
-                    Auth.SaveCredentials(Username, Password);
+                    await Auth.SaveCredentialsAsync(Username, Password);
                     await LoadCurrentUser();
                 }
                 else
@@ -561,7 +565,7 @@
             var status = await Auth.Verify2FAAsync(Code2FA, IsEmail2FA);
             if (status == VRCAuthStatus.Success)
             {
-                Auth.SaveCredentials(Username, Password);
+                await Auth.SaveCredentialsAsync(Username, Password);
                 Show2FA = false;
                 Code2FA = "";
                 Password = "";

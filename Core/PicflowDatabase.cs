@@ -23,6 +23,9 @@ namespace VRCGalleryManager.Core
         
         private static Dictionary<string, CachedItem> _db = new Dictionary<string, CachedItem>();
         private static readonly object _lock = new object();
+        private static System.Threading.Timer? _debounceTimer;
+        private static readonly object _saveLock = new object();
+        private static bool _isDirty = false;
 
         static PicflowDatabase()
         {
@@ -56,6 +59,28 @@ namespace VRCGalleryManager.Core
                     _db = new Dictionary<string, CachedItem>();
                 }
             }
+        }
+
+        public static void ScheduleSave()
+        {
+            lock (_saveLock)
+            {
+                _isDirty = true;
+                _debounceTimer?.Dispose();
+                _debounceTimer = new System.Threading.Timer(_ => Flush(), null, 500, System.Threading.Timeout.Infinite);
+            }
+        }
+
+        public static void Flush()
+        {
+            lock (_saveLock)
+            {
+                if (!_isDirty) return;
+                _isDirty = false;
+                _debounceTimer?.Dispose();
+                _debounceTimer = null;
+            }
+            Save();
         }
 
         public static void Save()
@@ -109,7 +134,7 @@ namespace VRCGalleryManager.Core
 
             if (isNewOrUpdated)
             {
-                Save();
+                ScheduleSave();
             }
         }
 
@@ -127,7 +152,7 @@ namespace VRCGalleryManager.Core
             {
                 _db.Clear();
             }
-            Save();
+            Flush();
         }
     }
 }

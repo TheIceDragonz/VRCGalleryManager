@@ -127,24 +127,17 @@
 
         try
         {
-            var data = await apiRequest.GetApiData(ICONS_TAG);
+            var fileList = await apiRequest.GetFilesAsync(ICONS_TAG);
+            imageCount = fileList.Count;
+            CacheService.Set("IconsCount", imageCount);
             
-            if (data?.JsonImage != null)
+            foreach (var file in fileList)
             {
-                imageCount = data.JsonImage.Count;
-                CacheService.Set("IconsCount", imageCount);
-                
-                foreach (string json in data.JsonImage)
+                icons.Add(new IconItem
                 {
-                    JObject jsonObject = JObject.Parse(json);
-                    string id = jsonObject["id"]?.ToString();
-                    
-                    icons.Add(new IconItem
-                    {
-                        Id = id,
-                        ImageUrl = ApiRequest.ImageThumbnailUrl(id)
-                    });
-                }
+                    Id = file.Id,
+                    ImageUrl = ApiRequest.ImageThumbnailUrl(file.Id)
+                });
             }
             
             CacheService.Set("Icons", new List<IconItem>(icons));

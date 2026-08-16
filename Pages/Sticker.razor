@@ -127,25 +127,23 @@
 
         try
         {
-            var data = await apiRequest.GetApiData(STICKER_TAG);
-            
-            if (data?.JsonImage != null)
+            var stickerList = await apiRequest.GetStickersAsync();
+            imageCount = stickerList.Count;
+            CacheService.Set("StickersCount", imageCount);
+
+            foreach (var item in stickerList)
             {
-                imageCount = data.JsonImage.Count;
-                CacheService.Set("StickersCount", imageCount);
-                foreach (string json in data.JsonImage)
+                string fileId = item.Metadata?.FileId ?? item.Id;
+                string imgUrl = !string.IsNullOrEmpty(item.Metadata?.FileId)
+                    ? ApiRequest.ImageThumbnailUrl(item.Metadata.FileId)
+                    : item.ImageUrl;
+                
+                stickers.Add(new StickerItem
                 {
-                    JObject jsonObject = JObject.Parse(json);
-                    string id = jsonObject["id"]?.ToString();
-                    string fileId = jsonObject["metadata"]?["fileId"]?.ToString() ?? id; // Fallback to id
-                    
-                    stickers.Add(new StickerItem
-                    {
-                        Id = id,
-                        ImageUrl = ApiRequest.ImageThumbnailUrl(fileId),
-                        FileUrl = $"https://api.vrchat.cloud/api/1/file/{fileId}/1/file"
-                    });
-                }
+                    Id = item.Id,
+                    ImageUrl = imgUrl,
+                    FileUrl = $"https://api.vrchat.cloud/api/1/file/{fileId}/1/file"
+                });
             }
             
             CacheService.Set("Stickers", new List<StickerItem>(stickers));

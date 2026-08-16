@@ -148,36 +148,26 @@
 
         try
         {
-            var data = await apiRequest.GetApiData(TagType.Emoji.ToString().ToLower());
+            var fileList = await apiRequest.GetFilesAsync("emoji");
+            imageCount = fileList.Count;
+            CacheService.Set("EmojisCount", imageCount);
             
-            if (data?.JsonImage != null)
+            foreach (var file in fileList)
             {
-                imageCount = data.JsonImage.Count;
-                CacheService.Set("EmojisCount", imageCount);
+                bool isAnimated = file.Tags != null && file.Tags.Contains("animated");
+                int frames = file.Frames > 0 ? file.Frames : 1;
+                int framesOverTime = file.FramesOverTime > 0 ? file.FramesOverTime : 15;
                 
-                foreach (string json in data.JsonImage)
+                emojis.Add(new EmojiItem
                 {
-                    JObject jsonObject = JObject.Parse(json);
-                    string id = jsonObject["id"]?.ToString();
-                    string tags = jsonObject["tags"]?.ToString() ?? "";
-                    bool isAnimated = tags.Contains("animated");
-                    
-                    int.TryParse(jsonObject["frames"]?.ToString(), out int frames);
-                    int.TryParse(jsonObject["framesOverTime"]?.ToString(), out int framesOverTime);
-                    if (frames <= 0) frames = 1;
-                    if (framesOverTime <= 0) framesOverTime = 15;
-                    
-                    emojis.Add(new EmojiItem
-                    {
-                        Id = id,
-                        Name = jsonObject["name"]?.ToString(),
-                        IsAnimated = isAnimated,
-                        Frames = frames,
-                        FramesOverTime = framesOverTime,
-                        ImageUrl = ApiRequest.ImageThumbnailUrl(id),
-                        FileUrl = $"https://api.vrchat.cloud/api/1/file/{id}/1/file"
-                    });
-                }
+                    Id = file.Id,
+                    Name = file.Name,
+                    IsAnimated = isAnimated,
+                    Frames = frames,
+                    FramesOverTime = framesOverTime,
+                    ImageUrl = ApiRequest.ImageThumbnailUrl(file.Id),
+                    FileUrl = $"https://api.vrchat.cloud/api/1/file/{file.Id}/1/file"
+                });
             }
             
             CacheService.Set("Emojis", new List<EmojiItem>(emojis));

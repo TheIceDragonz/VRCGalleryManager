@@ -153,30 +153,22 @@
 
         try
         {
-            var data = await apiRequest.GetApiData(PRINTS_TAG);
-            
-            if (data?.JsonImage != null)
+            var printList = await apiRequest.GetPrintsAsync();
+            imageCount = printList.Count;
+            CacheService.Set("PrintsCount", imageCount);
+
+            foreach (var print in printList)
             {
-                imageCount = data.JsonImage.Count;
-                CacheService.Set("PrintsCount", imageCount);
-                foreach (string json in data.JsonImage)
+                string fileId = print.Files?.FileId;
+                if (!string.IsNullOrEmpty(print.Id) && !string.IsNullOrEmpty(fileId))
                 {
-                    JObject jsonObject = JObject.Parse(json);
-                    string id = jsonObject["id"]?.ToString();
-                    string fileId = jsonObject["files"]?["fileId"]?.ToString();
-                    string authorName = jsonObject["authorName"]?.ToString();
-                    string authorId = jsonObject["authorId"]?.ToString();
-                    
-                    if (!string.IsNullOrEmpty(id) && !string.IsNullOrEmpty(fileId))
+                    prints.Add(new PrintItem
                     {
-                        prints.Add(new PrintItem
-                        {
-                            Id = id,
-                            ImageUrl = ApiRequest.ImageThumbnailUrl(fileId),
-                            AuthorName = authorName,
-                            AuthorId = authorId
-                        });
-                    }
+                        Id = print.Id,
+                        ImageUrl = ApiRequest.ImageThumbnailUrl(fileId),
+                        AuthorName = print.AuthorName,
+                        AuthorId = print.AuthorId
+                    });
                 }
             }
             
