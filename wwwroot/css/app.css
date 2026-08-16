@@ -19,6 +19,14 @@
 
     --transition-fast: 0.15s ease-in-out;
     --transition-normal: 0.3s ease-in-out;
+
+    /* SVG Icon Filter Color Tokens */
+    --filter-accent: invert(80%) sepia(48%) saturate(1454%) hue-rotate(159deg) brightness(101%) contrast(97%);
+    --filter-danger: invert(53%) sepia(89%) saturate(1786%) hue-rotate(320deg) brightness(102%) contrast(101%);
+    --filter-success: invert(47%) sepia(87%) saturate(464%) hue-rotate(97deg) brightness(96%) contrast(87%);
+    --filter-white: brightness(0) invert(1);
+    --filter-muted: invert(0.6);
+    --filter-dark: invert(0);
 }
 
 html,
@@ -356,7 +364,7 @@ h6 {
 .btn-icon {
     width: 20px;
     height: 20px;
-    filter: invert(80%) sepia(48%) saturate(1454%) hue-rotate(159deg) brightness(101%) contrast(97%);
+    filter: var(--filter-accent);
     vertical-align: text-bottom;
     margin-right: 8px;
     pointer-events: none;
@@ -368,24 +376,23 @@ h6 {
 .btn:hover .btn-icon,
 .btn:active .btn-icon,
 .btn:focus .btn-icon {
-    filter: brightness(0) invert(1);
+    filter: var(--filter-white);
 }
 
 .btn-danger .btn-icon,
 .btn-outline-danger .btn-icon {
-    filter: invert(52%) sepia(41%) saturate(3015%) hue-rotate(320deg) brightness(102%) contrast(101%);
+    filter: var(--filter-danger);
 }
 
 .btn-danger:hover .btn-icon,
 .btn-outline-danger:hover .btn-icon {
-    filter: brightness(0) invert(1);
+    filter: var(--filter-white);
 }
 
 .folder-svg-icon {
     width: 48px;
     height: 48px;
-    filter: invert(96%) sepia(3%) saturate(1015%) hue-rotate(176deg) brightness(96%) contrast(93%);
-    /* #e1e7ec */
+    filter: var(--filter-accent);
 }
 
 .main-page-container {
@@ -552,7 +559,7 @@ h6 {
 }
 
 .custom-nav-link.active .nav-icon {
-    filter: brightness(0) invert(1);
+    filter: var(--filter-white);
 }
 
 .nav-icon {
@@ -560,7 +567,7 @@ h6 {
     left: 0.5rem;
     width: 20px;
     height: 20px;
-    filter: invert(80%) sepia(48%) saturate(1454%) hue-rotate(159deg) brightness(101%) contrast(97%);
+    filter: var(--filter-accent);
     transition: filter var(--transition-fast);
     pointer-events: none;
     user-select: none;
@@ -751,7 +758,7 @@ h6 {
 }
 
 .filter-invert-accent {
-    filter: invert(80%) sepia(48%) saturate(1454%) hue-rotate(159deg) brightness(101%) contrast(97%);
+    filter: var(--filter-accent);
 }
 
 .skeleton-shimmer-rounded {
@@ -769,7 +776,7 @@ h6 {
 .media-page-icon {
     width: 28px;
     height: 28px;
-    filter: invert(80%) sepia(48%) saturate(1454%) hue-rotate(159deg) brightness(101%) contrast(97%);
+    filter: var(--filter-accent);
 }
 
 .media-input-file {
@@ -870,7 +877,7 @@ h6 {
 }
 
 .media-btn-upload .btn-icon {
-    filter: brightness(0) invert(1) !important;
+    filter: var(--filter-white) !important;
 }
 
 .media-btn-folder {
@@ -890,7 +897,7 @@ h6 {
 }
 
 .media-btn-folder .btn-icon {
-    filter: brightness(0) invert(1) !important;
+    filter: var(--filter-white) !important;
 }
 
 /* Notification Styles */
@@ -1026,7 +1033,7 @@ h6 {
 }
 
 .dropdown-item:hover img {
-    filter: invert(80%) sepia(48%) saturate(1454%) hue-rotate(159deg) brightness(101%) contrast(97%) !important;
+    filter: var(--filter-accent) !important;
 }
 
 /* Picflow */
@@ -1672,13 +1679,13 @@ canvas.picking-color {
     background: rgba(15, 15, 20, 0.85);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255,255,255,0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 12px;
     padding: 1rem;
     display: flex;
     flex-direction: column;
     z-index: 10000;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
     animation: slideInRight 0.3s forwards;
 }
 
@@ -1686,14 +1693,21 @@ canvas.picking-color {
     display: flex;
     flex-direction: column;
     align-items: center;
-    background-color: rgba(255,255,255,0.05);
+    background-color: rgba(255, 255, 255, 0.05);
     padding: 15px;
     border-radius: 8px;
 }
 
 @keyframes slideInRight {
-    from { transform: translateX(50px); opacity: 0; }
-    to { transform: translateX(0); opacity: 1; }
+    from {
+        transform: translateX(50px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
 }
 
 .btn-viewer-action.active {
@@ -1702,7 +1716,45 @@ canvas.picking-color {
 }
 
 /* Picflow Styles */
-.btn-hover-light { opacity: 0.25; transition: all 0.2s; }
-.btn-hover-light:hover { opacity: 1 !important; background: rgba(255,255,255,0.1); }
-.print-card-ratio { aspect-ratio: 2048 / 1440; }
-.photo-card-ratio { aspect-ratio: 16 / 9; }
+.btn-hover-light {
+    opacity: 0.25;
+    transition: all 0.2s;
+}
+
+.btn-hover-light:hover {
+    opacity: 1 !important;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.print-card-ratio {
+    aspect-ratio: 2048 / 1440;
+}
+
+.photo-card-ratio {
+    aspect-ratio: 16 / 9;
+}
+
+/* SVG Icon Filter Utilities */
+.icon-accent {
+    filter: var(--filter-accent);
+}
+
+.icon-danger {
+    filter: var(--filter-danger);
+}
+
+.icon-success {
+    filter: var(--filter-success);
+}
+
+.icon-white {
+    filter: var(--filter-white);
+}
+
+.icon-muted {
+    filter: var(--filter-muted);
+}
+
+.icon-dark {
+    filter: var(--filter-dark);
+}

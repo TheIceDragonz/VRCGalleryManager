@@ -13,14 +13,14 @@
                 @(CurrentItem?.Title)
             </div>
             <button class="btn btn-icon-only btn-viewer-close" @onclick="Close" title="Close">
-                <img src="/svg/close-bold-svgrepo-com.svg" style="filter: invert(1);" />
+                <img src="/svg/close-bold-svgrepo-com.svg" class="icon-white" />
             </button>
         </div>
 
         @if (Items != null && Items.Count > 1)
         {
             <button class="btn btn-icon-only btn-nav left" @onclick="Prev" @onclick:stopPropagation="true" disabled="@(CurrentIndex == 0)">
-                <img src="/svg/back-arrow-svgrepo-com.svg" style="filter: invert(1);" />
+                <img src="/svg/back-arrow-svgrepo-com.svg" class="icon-white" />
             </button>
         }
 
@@ -44,41 +44,41 @@
             @if (CurrentItem?.HighResSource?.StartsWith("http") == false)
             {
                 <button class="btn btn-icon-only btn-viewer-action" title="Open Location" @onclick="OpenLocationCurrent">
-                    <img src="/svg/folder-open-svgrepo-com.svg" style="filter: invert(1);" />
+                    <img src="/svg/folder-open-svgrepo-com.svg" class="icon-white" />
                 </button>
             }
             <button class="btn btn-icon-only btn-viewer-action" title="Copy Image" @onclick="CopyCurrent">
-                <img src="/svg/copy-svgrepo-com.svg" style="filter: invert(1);" />
+                <img src="/svg/copy-svgrepo-com.svg" class="icon-white" />
             </button>
             @if (ShowDownloadButton)
             {
                 <button class="btn btn-icon-only btn-viewer-action" title="Download" @onclick="DownloadCurrent">
-                    <img src="/svg/download-svgrepo-com.svg" style="filter: invert(1);" />
+                    <img src="/svg/download-svgrepo-com.svg" class="icon-white" />
                 </button>
             }
             @if (CurrentItem?.HighResSource?.StartsWith("http") == true)
             {
                 <button class="btn btn-icon-only btn-viewer-action" title="Copy Link" @onclick="CopyLinkCurrent">
-                    <img src="/svg/link-svgrepo-com.svg" style="filter: invert(1);" />
+                    <img src="/svg/link-svgrepo-com.svg" class="icon-white" />
                 </button>
             }
 
             @if (OnDeleteRequested.HasDelegate)
             {
                 <button class="btn btn-icon-only btn-viewer-action" title="Delete" @onclick="DeleteCurrent">
-                    <img src="/svg/trash-bin-trash-svgrepo-com.svg" style="filter: invert(27%) sepia(91%) saturate(2361%) hue-rotate(339deg) brightness(101%) contrast(106%);" />
+                    <img src="/svg/trash-bin-trash-svgrepo-com.svg" class="icon-danger" />
                 </button>
             }
             @if (OnUploadRequested.HasDelegate)
             {
                 <button class="btn btn-icon-only btn-viewer-action" title="Upload" @onclick="UploadCurrent">
-                    <img src="/svg/add-circle-svgrepo-com.svg" style="filter: invert(47%) sepia(87%) saturate(464%) hue-rotate(97deg) brightness(96%) contrast(87%);" />
+                    <img src="/svg/add-circle-svgrepo-com.svg" class="icon-success" />
                 </button>
             }
             @if (CurrentVrcxData != null && (CurrentVrcxData.World != null || (CurrentVrcxData.Players != null && CurrentVrcxData.Players.Count > 0)))
             {
                 <button class="btn btn-icon-only btn-viewer-action @(ShowInfoPanel ? "active" : "")" title="Toggle Info Panel" @onclick="ToggleInfoPanel">
-                    <img src="/svg/info-circle-svgrepo-com.svg" style="filter: invert(1);" />
+                    <img src="/svg/info-circle-svgrepo-com.svg" class="icon-white" />
                 </button>
             }
         </div>
@@ -104,7 +104,7 @@
                 {
                     <div class="d-flex flex-column flex-grow-1" style="min-height: 0;">
                         <div class="text-white-50 small fw-bold text-uppercase mb-2 d-flex align-items-center gap-2 flex-shrink-0">
-                            <img src="/svg/profile-user-svgrepo-com.svg" style="width: 14px; height: 14px; filter: invert(80%) sepia(48%) saturate(1454%) hue-rotate(159deg) brightness(101%) contrast(97%);" />
+                            <img src="/svg/profile-user-svgrepo-com.svg" class="icon-accent" style="width: 14px; height: 14px;" />
                             Players (@CurrentVrcxData.Players.Count)
                         </div>
                         <div class="overflow-auto flex-grow-1 pe-1">
@@ -120,7 +120,7 @@
                                         <div class="@(player.Id == Auth.CurrentUser?.Id ? "text-accent" : (Auth.CurrentUser?.Friends?.Contains(player.Id) == true ? "text-warning" : "text-white")) small text-truncate flex-grow-1 fw-bold" style="cursor: pointer;" @onclick="() => OpenUserInBrowser(player.Id)" title="Open Profile in Browser">@player.DisplayName</div>
                                         @if (isAuthor)
                                         {
-                                            <img src="/svg/camera-svgrepo-com.svg" style="width: 14px; height: 14px; filter: invert(80%) sepia(48%) saturate(1454%) hue-rotate(159deg) brightness(101%) contrast(97%);" title="Author" />
+                                            <img src="/svg/camera-svgrepo-com.svg" class="icon-accent" style="width: 14px; height: 14px;" title="Author" />
                                         }
                                     </div>
                                 }
@@ -134,7 +134,7 @@
         @if (Items != null && Items.Count > 1)
         {
             <button class="btn btn-icon-only btn-nav right" @onclick="Next" @onclick:stopPropagation="true" disabled="@(CurrentIndex == Items.Count - 1)">
-                <img src="/svg/back-arrow-svgrepo-com.svg" style="transform: scaleX(-1); filter: invert(1);" />
+                <img src="/svg/back-arrow-svgrepo-com.svg" class="icon-white" style="transform: scaleX(-1);" />
             </button>
         }
         

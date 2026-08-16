@@ -28,7 +28,7 @@
                     @if (IsEmail2FA)
                     {
                         <button class="btn btn-outline-primary flex-fill py-2" @onclick="Resend2FA" disabled="@IsLoggingIn" title="Resend Email Code">
-                            <i class="bi bi-arrow-clockwise"></i>
+                            <img src="/svg/rotate-right-svgrepo-com.svg" class="icon-white" style="width: 16px; height: 16px;" />
                         </button>
                     }
                     <button class="btn btn-primary flex-fill py-2" @onclick="Submit2FA" disabled="@IsLoggingIn">
@@ -51,7 +51,7 @@
                 @if (IsLoggedIn && !HasVRCPlus)
                 {
                     <div class="alert mb-0 p-3 d-flex align-items-center gap-2 alert-vrcplus">
-                        <i class="bi bi-exclamation-triangle-fill"></i>
+                        <img src="/svg/error-svgrepo-com.svg" class="icon-danger" style="width: 20px; height: 20px;" />
                         <span>You need <strong>VRChat Plus</strong> to use this program.</span>
                     </div>
                 }
@@ -113,7 +113,7 @@
                     else
                     {
                         <button class="btn btn-warning w-100 mt-2 fw-bold text-dark" @onclick="StartUpdate">
-                            <img src="/svg/rotate-right-svgrepo-com.svg" class="btn-icon" style="filter: invert(0);" />New Update Available!
+                            <img src="/svg/rotate-right-svgrepo-com.svg" class="btn-icon icon-dark" />New Update Available!
                         </button>
                     }
                 }
@@ -132,9 +132,7 @@
                         <div class="d-flex align-items-center justify-content-between p-3 border-bottom" style="border-color: var(--border-color) !important;">
                             <div class="d-flex align-items-center gap-3">
                                 <div class="p-2 d-flex align-items-center justify-content-center" style="background-color: var(--bg-active); width: 40px; height: 40px; border-radius: 10px;">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="var(--accent)" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M22 2L11.2 3.6V11.6H22V2ZM10 3.8L2 5V11.6H10V3.8ZM2 12.4V19L10 20.2V12.4H2ZM11.2 12.4V20.4L22 22V12.4H11.2Z"/>
-                                    </svg>
+                                    <img src="/svg/windows-svgrepo-com.svg" class="icon-accent" style="width: 20px; height: 20px;" alt="Windows" />
                                 </div>
                                 <div>
                                     <h6 class="mb-1 text-white fw-bold">Start with Windows</h6>
@@ -150,9 +148,7 @@
                         <div class="d-flex align-items-center justify-content-between p-3 border-bottom" style="border-color: var(--border-color) !important;">
                             <div class="d-flex align-items-center gap-3">
                                 <div class="p-2 d-flex align-items-center justify-content-center" style="background-color: var(--bg-active); width: 40px; height: 40px; border-radius: 10px;">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="var(--accent)" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/>
-                                    </svg>
+                                    <img src="/svg/shield-minus-svgrepo-com.svg" class="icon-accent" style="width: 20px; height: 20px;" alt="Background" />
                                 </div>
                                 <div>
                                     <h6 class="mb-1 text-white fw-bold">Start in Background</h6>
@@ -168,9 +164,7 @@
                         <div class="d-flex align-items-center justify-content-between p-3">
                             <div class="d-flex align-items-center gap-3">
                                 <div class="p-2 d-flex align-items-center justify-content-center" style="background-color: var(--bg-active); width: 40px; height: 40px; border-radius: 10px;">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="var(--accent)" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M21 3H3v18h18V3zM9 13H5l7-7 7 7h-4v4H9v-4z"/>
-                                    </svg>
+                                    <img src="/svg/minimize-square-minimalistic-svgrepo-com.svg" class="icon-accent" style="width: 20px; height: 20px;" alt="Minimize" />
                                 </div>
                                 <div>
                                     <h6 class="mb-1 text-white fw-bold">Minimize to Tray</h6>
@@ -193,7 +187,7 @@
                         <div class="row g-2 mb-3">
                             <div class="col-6">
                                 <div class="p-3 cache-info-box h-100 d-flex align-items-center gap-3">
-                                    <i class="bi bi-files text-primary fs-3"></i>
+                                    <img src="/svg/files-fill-svgrepo-com.svg" class="icon-accent" style="width: 28px; height: 28px;" />
                                     <div class="d-flex flex-column">
                                         <span class="text-muted small text-uppercase fw-bold">Files</span>
                                         <span class="fw-bold fs-5">@VrcLogsFilesCount</span>
@@ -202,7 +196,7 @@
                             </div>
                             <div class="col-6">
                                 <div class="p-3 cache-info-box h-100 d-flex align-items-center gap-3">
-                                    <i class="bi bi-hdd-fill text-success fs-3"></i>
+                                    <img src="/svg/storage-svgrepo-com.svg" class="icon-success" style="width: 28px; height: 28px;" />
                                     <div class="d-flex flex-column">
                                         <span class="text-muted small text-uppercase fw-bold">Total Size</span>
                                         <span class="fw-bold fs-5">@VrcLogsTotalSize</span>
@@ -214,7 +208,7 @@
                     else
                     {
                         <div class="p-3 cache-info-box text-warning d-flex align-items-center mb-3">
-                            <i class="bi bi-exclamation-triangle-fill me-2"></i> VRChat logs folder not found.
+                            <img src="/svg/error-svgrepo-com.svg" class="icon-danger me-2" style="width: 16px; height: 16px;" /> VRChat logs folder not found.
                         </div>
                     }
 
@@ -234,7 +228,7 @@
                     <div class="row g-2 mb-3">
                         <div class="col-6">
                             <div class="p-3 cache-info-box h-100 d-flex align-items-center gap-3">
-                                <i class="bi bi-files text-primary fs-3"></i>
+                                <img src="/svg/files-fill-svgrepo-com.svg" class="icon-accent" style="width: 28px; height: 28px;" />
                                 <div class="d-flex flex-column">
                                     <span class="text-muted small text-uppercase fw-bold">Files</span>
                                     <span class="fw-bold fs-5">@CacheFilesCount</span>
@@ -243,7 +237,7 @@
                         </div>
                         <div class="col-6">
                             <div class="p-3 cache-info-box h-100 d-flex align-items-center gap-3">
-                                <i class="bi bi-hdd-fill text-success fs-3"></i>
+                                <img src="/svg/storage-svgrepo-com.svg" class="icon-success" style="width: 28px; height: 28px;" />
                                 <div class="d-flex flex-column">
                                     <span class="text-muted small text-uppercase fw-bold">Total Size</span>
                                     <span class="fw-bold fs-5">@CacheTotalSize</span>
@@ -255,7 +249,7 @@
                 else
                 {
                     <div class="p-3 cache-info-box text-warning d-flex align-items-center mb-3">
-                        <i class="bi bi-exclamation-triangle-fill me-2"></i> Cache folder not found.
+                        <img src="/svg/error-svgrepo-com.svg" class="icon-danger me-2" style="width: 16px; height: 16px;" /> Cache folder not found.
                     </div>
                 }
 
@@ -277,7 +271,7 @@
                     <div class="row g-2 mb-3">
                         <div class="col-6">
                             <div class="p-3 cache-info-box h-100 d-flex align-items-center gap-3">
-                                <i class="bi bi-database-fill text-info fs-3"></i>
+                                <img src="/svg/database-svgrepo-com.svg" class="icon-accent" style="width: 28px; height: 28px;" />
                                 <div class="d-flex flex-column">
                                     <span class="text-muted small text-uppercase fw-bold">Total Saved</span>
                                     <span class="fw-bold fs-5">@PicflowDbTotal</span>

@@ -126,7 +126,7 @@
                             }
                         </div>
                         <button class="btn btn-sm btn-dark w-50 d-flex justify-content-center align-items-center editor-dropdown-btn" @onclick="Rotate" title="Rotate 90°">
-                            <i class="bi bi-arrow-clockwise me-2"></i> Rotate
+                            <img src="/svg/rotate-right-svgrepo-com.svg" class="btn-icon me-2" style="width: 16px; height: 16px;" /> Rotate
                         </button>
                     </div>
                 </div>
@@ -155,7 +155,7 @@
                             </div>
                             <div class="d-flex align-items-center gap-1 editor-section-transition @(RemoveBgEnabled ? "" : "editor-section-disabled")">
                                 <button class="btn btn-sm @(IsColorPicking ? "btn-info" : "btn-outline-secondary") px-2 py-1" @onclick="ToggleColorPicker" disabled="@(!RemoveBgEnabled)" title="Pick color from image">
-                                    <i class="bi bi-eyedropper"></i>
+                                    <img src="/svg/color-picker-svgrepo-com.svg" class="icon-accent" style="width: 16px; height: 16px;" />
                                 </button>
                                 <input type="color" class="form-control form-control-color form-control-sm p-1 color-picker-sm" value="@HexRemoveBgColor" @oninput="OnRemoveBgColorInput" disabled="@(!RemoveBgEnabled)">
                             </div>
