@@ -1,16 +1,11 @@
 @page "/emoji"
-@implements IDisposable
+@inherits VRCGalleryManager.Core.Components.MediaPageBase
 @using VRCGalleryManager.Core
 @using VRCGalleryManager.Core.DTO
 @using Newtonsoft.Json.Linq
 @using System.IO
 @using Microsoft.AspNetCore.Components.Forms
 @using Microsoft.JSInterop
-@inject VRCAuth Auth
-@inject IJSRuntime JSRuntime
-@inject NotificationService NotificationService
-@inject DialogService dialogService
-@inject FileDropService FileDropService
 
 <div class="h-100 d-flex flex-column p-3 position-relative">
     
@@ -102,18 +97,11 @@
 <VRCGalleryManager.Components.ImageViewer @ref="imageViewer" OnDeleteRequested="HandleViewerDelete" />
 
 @code {
-    private ApiRequest apiRequest;
-    private bool isLoading = true;
-    private bool isRefreshing = false;
-    private int imageCount = 0;
     private List<EmojiItem> emojis = new();
     private VRCGalleryManager.Components.ImageViewer imageViewer;
     
     private static List<EmojiItem> cachedEmojis = null;
     private static int cachedImageCount = 0;
-
-    private string editingBase64Image = null;
-    private bool isDragging = false;
 
     private static string EMOJI_MASK_TAG = "square";
 
@@ -128,15 +116,10 @@
         public int FramesOverTime { get; set; }
     }
 
-    [SupplyParameterFromQuery]
-    public string uploadPath { get; set; }
+    protected override int MaxImageCount => 18;
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task LoadInitialDataAsync()
     {
-        FileDropService.OnDragEnter += HandleDragEnter;
-        FileDropService.OnDragLeave += HandleDragLeave;
-        FileDropService.OnFileDropped += HandleFileDropped;
-        apiRequest = new ApiRequest(Auth);
         if (cachedEmojis != null)
         {
             emojis = new List<EmojiItem>(cachedEmojis);
@@ -147,11 +130,6 @@
         {
             await RefreshList();
         }
-
-        if (!string.IsNullOrEmpty(uploadPath) && File.Exists(uploadPath))
-        {
-            await LoadLocalFileForEditing(uploadPath);
-        }
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -159,7 +137,7 @@
         await JSRuntime.InvokeVoidAsync("spritesheetAnimator.initAll");
     }
 
-    private async Task RefreshList()
+    protected override async Task RefreshList()
     {
         if (isRefreshing) return;
         isRefreshing = true;
@@ -195,7 +173,7 @@
                         IsAnimated = isAnimated,
                         Frames = frames,
                         FramesOverTime = framesOverTime,
-                        ImageUrl = $"https://api.vrchat.cloud/api/1/image/{id}/1/256",
+                        ImageUrl = ApiRequest.ImageThumbnailUrl(id),
                         FileUrl = $"https://api.vrchat.cloud/api/1/file/{id}/1/file"
                     });
                 }
@@ -253,93 +231,6 @@
         }
     }
 
-    private async Task OnDropFile(InputFileChangeEventArgs e)
-    {
-        isDragging = false;
-        await OnInputFileChange(e);
-    }
-
-    private async Task OnInputFileChange(InputFileChangeEventArgs e)
-    {
-        if (imageCount >= 18) return;
-        
-        var file = e.File;
-        if (file != null && file.ContentType.StartsWith("image/"))
-        {
-            await LoadFileForEditing(file);
-        }
-    }
-
-    private async Task PasteFromClipboard()
-    {
-        if (imageCount >= 18) return;
-        
-        try
-        {
-            string savedPath = await ClipboardHandler.ClipboardDataImageOrLink();
-            if (!string.IsNullOrEmpty(savedPath) && File.Exists(savedPath))
-            {
-                await LoadLocalFileForEditing(savedPath);
-            }
-            else
-            {
-                NotificationService.Show("No image found or invalid link in clipboard.", "Clipboard Empty", NotificationType.Info);
-            }
-        }
-        catch (Exception ex)
-        {
-            NotificationService.Show(ex.Message, "Paste Error", NotificationType.Error);
-        }
-    }
-
-    private async Task LoadFileForEditing(IBrowserFile file)
-    {
-        try
-        {
-            using var stream = file.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024); // 10MB
-            using var memoryStream = new MemoryStream();
-            await stream.CopyToAsync(memoryStream);
-            byte[] bytes = memoryStream.ToArray();
-            
-            string base64String = Convert.ToBase64String(bytes);
-            editingBase64Image = $"data:{file.ContentType};base64,{base64String}";
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error reading file: {ex.Message}");
-        }
-    }
-
-    private async Task LoadLocalFileForEditing(string filePath)
-    {
-        try
-        {
-            byte[] bytes = await File.ReadAllBytesAsync(filePath);
-            string contentType = GetContentType(filePath);
-
-            string base64String = Convert.ToBase64String(bytes);
-            editingBase64Image = $"data:{contentType};base64,{base64String}";
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error reading local file: {ex.Message}");
-        }
-    }
-
-    private string GetContentType(string filePath)
-    {
-        string ext = Path.GetExtension(filePath).ToLower();
-        return ext switch
-        {
-            ".png" => "image/png",
-            ".jpg" => "image/jpeg",
-            ".jpeg" => "image/jpeg",
-            ".gif" => "image/gif",
-            ".webp" => "image/webp",
-            _ => "image/png"
-        };
-    }
-
     private async Task OnEditorSave((string Base64, bool IsAnimated, string AnimStyle, int Frames, int FramesOverTime) result)
     {
         try
@@ -373,6 +264,7 @@
 
             try { File.Delete(tempPath); } catch { }
 
+            await Task.Delay(2000);
             await RefreshList();
             editingBase64Image = null;
         }
@@ -382,53 +274,6 @@
         }
     }
 
-    private void OnEditorCancel()
-    {
-        editingBase64Image = null;
-    }
-
-    public void Dispose()
-    {
-        FileDropService.OnDragEnter -= HandleDragEnter;
-        FileDropService.OnDragLeave -= HandleDragLeave;
-        FileDropService.OnFileDropped -= HandleFileDropped;
-    }
-
-    private void HandleDragEnter()
-    {
-        InvokeAsync(() =>
-        {
-            isDragging = true;
-            StateHasChanged();
-        });
-    }
-
-    private void HandleDragLeave()
-    {
-        InvokeAsync(() =>
-        {
-            isDragging = false;
-            StateHasChanged();
-        });
-    }
-
-    private void HandleFileDropped(string[] files)
-    {
-        InvokeAsync(async () =>
-        {
-            isDragging = false;
-            if (files != null && files.Length > 0)
-            {
-                var filePath = files[0];
-                string ext = System.IO.Path.GetExtension(filePath).ToLower();
-                if (ext == ".png" || ext == ".jpg" || ext == ".jpeg" || ext == ".webp" || ext == ".gif")
-                {
-                    await LoadLocalFileForEditing(filePath);
-                }
-            }
-            StateHasChanged();
-        });
-    }
     private async Task HandleViewerDelete(int index)
     {
         var targetList = emojis;

@@ -296,7 +296,6 @@
     private int CompressionQuality = 100;
     private double SizeMb = 0;
     private bool isAdaptationDropdownOpen = false;
-    private bool isAnimationDropdownOpen = false;
     private bool isEmojiTypeDropdownOpen = false;
 
 
@@ -875,7 +874,6 @@
     private void SetAnimationStyle(string style)
     {
         AnimationStyle = style;
-        isAnimationDropdownOpen = false;
         // Animated styles typically don't change preview scale, just logic for saving,
         // but triggering a UI update is good
     }

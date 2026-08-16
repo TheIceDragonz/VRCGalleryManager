@@ -2,6 +2,7 @@ using VRCGalleryManager.Core.DTO;
 using VRChat.API.Api;
 using VRChat.API.Client;
 using VRChat.API.Model;
+using System.Collections.Concurrent;
 using System.Text.Json;
 
 namespace VRCGalleryManager.Core
@@ -29,34 +30,34 @@ namespace VRCGalleryManager.Core
         {
             public List<string> JsonImage { get; set; } = new List<string>();
 
-            public string CountImages { get; set; } = new string("");
-            public string Tags { get; set; } = new string("");
-            public string AnimationStyle { get; set; } = new string("");
-            public string Frames { get; set; } = new string("");
-            public string FramesOverTime { get; set; } = new string("");
-            public string LoopStyle { get; set; } = new string("");
-            public string MaskTag { get; set; } = new string("");
-            public string IdImageUploaded { get; set; } = new string("");
+            public string CountImages { get; set; } = "";
+            public string Tags { get; set; } = "";
+            public string AnimationStyle { get; set; } = "";
+            public string Frames { get; set; } = "";
+            public string FramesOverTime { get; set; } = "";
+            public string LoopStyle { get; set; } = "";
+            public string MaskTag { get; set; } = "";
+            public string IdImageUploaded { get; set; } = "";
         }
 
         public class ApiDataPrint
         {
-            public string IdImageUploaded { get; set; } = new string("");
-            public string Id { get; set; } = new string("");
-            public string AuthorId { get; set; } = new string("");
-            public string AuthorName { get; set; } = new string("");
-            public string FileId { get; set; } = new string("");
+            public string IdImageUploaded { get; set; } = "";
+            public string Id { get; set; } = "";
+            public string AuthorId { get; set; } = "";
+            public string AuthorName { get; set; } = "";
+            public string FileId { get; set; } = "";
         }
 
         public class ApiDataWorld
         {
-            public string Id { get; set; } = new string("");
-            public string Name { get; set; } = new string("");
-            public string Description { get; set; } = new string("");
-            public string Author { get; set; } = new string("");
-            public string AuthorId { get; set; } = new string("");
-            public string ImageUrl { get; set; } = new string("");
-            public string ThumbnailUrl { get; set; } = new string("");
+            public string Id { get; set; } = "";
+            public string Name { get; set; } = "";
+            public string Description { get; set; } = "";
+            public string Author { get; set; } = "";
+            public string AuthorId { get; set; } = "";
+            public string ImageUrl { get; set; } = "";
+            public string ThumbnailUrl { get; set; } = "";
         }
 
         public class ApiDataInventory
@@ -93,6 +94,20 @@ namespace VRCGalleryManager.Core
             public int FramesOverTime { get; set; }
             public string? LoopStyle { get; set; }
         }
+
+        /// <summary>Returns the standard VRChat 256px thumbnail URL for a file ID.</summary>
+        public static string ImageThumbnailUrl(string fileId) =>
+            $"https://api.vrchat.cloud/api/1/image/{fileId}/1/256";
+
+        /// <summary>Maps a file extension to its MIME type.</summary>
+        private static string GetMimeType(string path) =>
+            Path.GetExtension(path).ToLower() switch
+            {
+                ".jpg" or ".jpeg" => "image/jpeg",
+                ".gif" => "image/gif",
+                ".webp" => "image/webp",
+                _ => "image/png"
+            };
 
         public async Task<T> ExecuteWithReloginAsync<T>(Func<Task<T>> apiCall)
         {
@@ -211,17 +226,7 @@ namespace VRCGalleryManager.Core
             ApiData apiData = new ApiData();
 
             using var stream = System.IO.File.OpenRead(path);
-            
-            string extension = Path.GetExtension(path).ToLower();
-            string mimeType = extension switch {
-                ".jpg" or ".jpeg" => "image/jpeg",
-                ".png" => "image/png",
-                ".gif" => "image/gif",
-                ".webp" => "image/webp",
-                _ => "image/png"
-            };
-            
-            var fileParam = new FileParameter(Path.GetFileName(path), mimeType, stream);
+            var fileParam = new FileParameter(Path.GetFileName(path), GetMimeType(path), stream);
 
             ImagePurpose vrcPurpose = tag switch
             {
@@ -278,17 +283,7 @@ namespace VRCGalleryManager.Core
             try
             {
                 using var stream = System.IO.File.OpenRead(path);
-                
-                string extension = Path.GetExtension(path).ToLower();
-                string mimeType = extension switch {
-                    ".jpg" or ".jpeg" => "image/jpeg",
-                    ".png" => "image/png",
-                    ".gif" => "image/gif",
-                    ".webp" => "image/webp",
-                    _ => "image/png"
-                };
-                
-                var fileParam = new FileParameter(Path.GetFileName(path), mimeType, stream);
+                var fileParam = new FileParameter(Path.GetFileName(path), GetMimeType(path), stream);
 
                 var response = await ExecuteWithReloginAsync(() => printsApi.UploadPrintAsync(
                     fileParam,
@@ -328,64 +323,6 @@ namespace VRCGalleryManager.Core
             return apiData;
         }
 
-        public async Task<ApiData> UploadImage(string path, string maskTag, TagType tag, string animationStyle)
-        {
-            ApiData apiData = new ApiData();
-
-            try
-            {
-                using var stream = System.IO.File.OpenRead(path);
-                
-                string extension = Path.GetExtension(path).ToLower();
-                string mimeType = extension switch {
-                    ".jpg" or ".jpeg" => "image/jpeg",
-                    ".png" => "image/png",
-                    ".gif" => "image/gif",
-                    ".webp" => "image/webp",
-                    _ => "image/png"
-                };
-                
-                var fileParam = new FileParameter(Path.GetFileName(path), mimeType, stream);
-
-                ImagePurpose vrcPurpose = tag switch
-                {
-                    TagType.Icon => ImagePurpose.Icon,
-                    TagType.Gallery => ImagePurpose.Gallery,
-                    TagType.Emoji => ImagePurpose.Emoji,
-                    TagType.EmojiAnimated => ImagePurpose.Emojianimated,
-                    TagType.Sticker => ImagePurpose.Sticker,
-                    TagType.Print => ImagePurpose.Gallery,
-                    _ => ImagePurpose.Gallery
-                };
-
-                ImageMask? vrcMask = Enum.TryParse<ImageMask>(maskTag, true, out var m) ? m : (ImageMask?)null;
-                ImageAnimationStyle? vrcAnim = Enum.TryParse<ImageAnimationStyle>(animationStyle, true, out var a) ? a : null;
-
-                var response = await ExecuteWithReloginAsync(() => filesApi.UploadImageAsync(
-                    fileParam,
-                    vrcPurpose,
-                    vrcAnim,
-                    null,
-                    null,
-                    null,
-                    vrcMask
-                ));
-
-                apiData.IdImageUploaded = response.Id;
-                apiData.Tags = response.Tags != null ? string.Join(", ", response.Tags) : "";
-                apiData.Frames = response.Frames.ToString();
-                apiData.FramesOverTime = response.FramesOverTime.ToString();
-                apiData.AnimationStyle = response.AnimationStyle?.ToString() ?? "";
-                apiData.MaskTag = response.MaskTag?.ToString() ?? "";
-            }
-            catch (ApiException ex)
-            {
-                Console.WriteLine($"Error uploading image: {ex.Message}");
-                throw;
-            }
-
-            return apiData;
-        }
 
         public async Task<ApiData> DeleteApiData(string id)
         {
@@ -432,19 +369,48 @@ namespace VRCGalleryManager.Core
             try
             {
                 var user = await ExecuteWithReloginAsync(() => Auth.AuthApi.GetCurrentUserAsync());
-                await ExecuteWithReloginAsync(() => usersApi.UpdateUserAsync(user.Id, new UpdateUserRequest { UserIcon = urlImage }));
+                
+                var updateRequest = new UpdateUserRequest
+                {
+                    AcceptedTOSVersion = user.AcceptedTOSVersion,
+                    Bio = user.Bio,
+                    BioLinks = user.BioLinks,
+                    Status = user.Status,
+                    StatusDescription = user.StatusDescription,
+                    Tags = user.Tags,
+                    Pronouns = user.Pronouns,
+                    ProfilePicOverride = user.ProfilePicOverride,
+                    UserIcon = urlImage
+                };
+                
+                await ExecuteWithReloginAsync(() => usersApi.UpdateUserAsync(user.Id, updateRequest));
             }
             catch (ApiException ex)
             {
                 Console.WriteLine($"Error: {ex.Message}");
             }
         }
+        
         public async Task SetProfilePicture(string urlImage)
         {
             try
             {
                 var user = await ExecuteWithReloginAsync(() => Auth.AuthApi.GetCurrentUserAsync());
-                await ExecuteWithReloginAsync(() => usersApi.UpdateUserAsync(user.Id, new UpdateUserRequest { ProfilePicOverride = urlImage }));
+                
+                var updateRequest = new UpdateUserRequest
+                {
+                    AcceptedTOSVersion = user.AcceptedTOSVersion,
+                    Bio = user.Bio,
+                    BioLinks = user.BioLinks,
+                    Status = user.Status,
+                    StatusDescription = user.StatusDescription,
+                    Tags = user.Tags,
+                    Pronouns = user.Pronouns,
+                    UserIcon = user.UserIcon,
+                    ProfilePicOverride = urlImage
+                };
+                
+                await ExecuteWithReloginAsync(() => usersApi.UpdateUserAsync(user.Id, updateRequest));
             }
             catch (ApiException ex)
             {
@@ -521,7 +487,7 @@ namespace VRCGalleryManager.Core
                 return null;
             }
         }
-        private static Dictionary<string, string> _userNameCache = new Dictionary<string, string>();
+        private static readonly ConcurrentDictionary<string, string> _userNameCache = new();
 
         public async Task<string> GetUserName(string userId)
         {

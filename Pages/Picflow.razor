@@ -482,7 +482,7 @@
                     string fileId = invInfo.Metadata?.FileId;
                     if (!string.IsNullOrEmpty(fileId))
                     {
-                        imgModel.Url = $"https://api.vrchat.cloud/api/1/image/{fileId}/1/256";
+                        imgModel.Url = ApiRequest.ImageThumbnailUrl(fileId);
                     }
                     else if (!string.IsNullOrEmpty(invInfo.ImageUrl))
                     {
@@ -515,7 +515,7 @@
                     {
                         imgModel.UserId = printInfo.AuthorId;
                     }
-                    imgModel.Url = $"https://api.vrchat.cloud/api/1/image/{printInfo.FileId}/1/256";
+                    imgModel.Url = ApiRequest.ImageThumbnailUrl(printInfo.FileId);
                 }
                 else
                 {
