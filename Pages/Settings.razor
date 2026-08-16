@@ -262,9 +262,12 @@
                 }
 
                 <div class="d-flex flex-column gap-2 mb-4">
-                    <button class="btn text-nowrap w-100" @onclick="OpenCacheFolder">
-                        <img src="/svg/folder-open-svgrepo-com.svg" class="btn-icon" />Open Cache
-                    </button>
+                    @if (!OperatingSystem.IsAndroid())
+                    {
+                        <button class="btn text-nowrap w-100" @onclick="OpenCacheFolder">
+                            <img src="/svg/folder-open-svgrepo-com.svg" class="btn-icon" />Open Cache
+                        </button>
+                    }
                     <button class="btn btn-danger text-nowrap w-100" @onclick="ClearCacheFiles">
                         <img src="/svg/trash-bin-trash-svgrepo-com.svg" class="btn-icon" />Clear Cache
                     </button>

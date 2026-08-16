@@ -1247,6 +1247,21 @@ canvas.picking-color {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
     background-color: var(--bg-panel);
     border-bottom: 1px solid var(--border-color);
+    position: relative;
+    overflow: hidden;
+}
+
+.android-layout .nav-profile-effect-android {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top;
+    z-index: 0;
+    opacity: 0.35;
+    pointer-events: none;
 }
 
 .android-layout .main-content-container {
@@ -1347,12 +1362,13 @@ canvas.picking-color {
 
 .android-layout .nav-buttons-bg {
     flex-direction: row !important;
-    width: max-content;
+    width: 100%;
     height: 100%;
-    padding: 0 10px !important;
+    padding: 0 5px !important;
     align-items: center;
+    justify-content: space-around;
     background-color: transparent !important;
-    gap: 8px !important;
+    gap: 4px !important;
 }
 
 .android-layout .nav-item {
@@ -1360,36 +1376,36 @@ canvas.picking-color {
 }
 
 .android-layout .custom-nav-link {
-    height: 60px;
+    height: 55px;
     line-height: normal;
-    padding: 0 12px;
+    padding: 0 4px;
     flex-direction: column;
     justify-content: center;
-    font-size: 0.75rem;
-    gap: 4px;
-    border-radius: 12px;
-    width: 70px;
+    font-size: 0.65rem;
+    gap: 2px;
+    border-radius: 10px;
+    width: 55px;
 }
 
 .android-layout .custom-nav-link .nav-icon {
     position: static;
-    width: 24px;
-    height: 24px;
+    width: 22px;
+    height: 22px;
 }
 
 .android-layout .nav-bottom-group {
     margin-top: 0 !important;
     flex-direction: row !important;
     align-items: center;
-    gap: 8px !important;
+    gap: 4px !important;
 }
 
 .android-layout .nav-divider {
-    width: 2px;
-    height: 40px;
+    width: 1px;
+    height: 35px;
     border-bottom: none !important;
     border-right: 1px solid var(--border-color);
-    margin: 0 5px !important;
+    margin: 0 2px !important;
 }
 
 .android-layout .details-panel {

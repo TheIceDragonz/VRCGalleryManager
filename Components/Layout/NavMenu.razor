@@ -5,6 +5,10 @@
 @inject VRCAuth Auth
 @inject NavigationManager NavManager
 
+@if (OperatingSystem.IsAndroid() && !string.IsNullOrEmpty(ProfileEffectUrl))
+{
+    <img src="@ProfileEffectUrl" class="nav-profile-effect-android" />
+}
 <div class="top-row flex-shrink-0 p-3 d-flex align-items-center justify-content-center nav-top-row @(!IsLoggedIn ? "logged-out-mode" : "")">
     <a class="navbar-brand m-0 d-flex align-items-center justify-content-center w-100" href="">
         <img src="/VRCGM.png" class="nav-brand-img @(!IsLoggedIn ? "logged-out-img" : "")" />
@@ -17,9 +21,9 @@
         <img src="@(string.IsNullOrEmpty(CurrentUser.ProfilePicOverrideThumbnail) ? CurrentUser.CurrentAvatarThumbnailImageUrl : CurrentUser.ProfilePicOverrideThumbnail)" 
              class="nav-profile-bg" />
         
-        @if (!string.IsNullOrEmpty(ProfileEffectUrl))
+        @if (!OperatingSystem.IsAndroid() && !string.IsNullOrEmpty(ProfileEffectUrl))
         {
-            <img src="@ProfileEffectUrl" class="nav-profile-effect" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; object-position: top; z-index: 1;" />
+            <img src="@ProfileEffectUrl" class="nav-profile-effect" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; object-position: top; z-index: 1; pointer-events: none;" />
         }
         
         <div class="position-absolute w-100 h-100 d-flex flex-column align-items-center justify-content-center nav-profile-content" style="z-index: 2;">
