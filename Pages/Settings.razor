@@ -42,16 +42,11 @@
                     </button>
                 </div>
                 
-                @if (!string.IsNullOrEmpty(LoginError))
-                {
-                    <div class="alert alert-danger mt-2 mb-0 p-3 alert-custom-danger">
-                        <i class="bi bi-exclamation-triangle-fill me-2"></i> @LoginError
-                    </div>
-                }
+
             }
             else
             {
-                <h4 class="mb-2 @(IsLoggedIn ? "text-accent" : "text-danger")">
+                <h4 class="mb-2 @(IsLoggedIn ? "text-accent" : "")">
                     @(IsLoggedIn ? "Logged In" : "VRChat Login")
                 </h4>
 
@@ -89,12 +84,7 @@
                     @(IsLoggedIn ? "Logout" : "Login")
                 </button>
 
-                @if (!string.IsNullOrEmpty(LoginError))
-                {
-                    <div class="alert alert-danger mt-1 mb-0 p-3 alert-custom-danger">
-                        <i class="bi bi-exclamation-triangle-fill me-2"></i> @LoginError
-                    </div>
-                }
+
             }
         </div>
 
@@ -105,15 +95,31 @@
                 <button class="btn w-100" @onclick="OpenGitHub">
                     <img src="/svg/info-circle-svgrepo-com.svg" class="btn-icon" />Open GitHub Page
                 </button>
-                <button class="btn w-100" @onclick="CheckForUpdates">
-                    <img src="/svg/rotate-right-svgrepo-com.svg" class="btn-icon" />Check for Updates
-                </button>
-                @if (!string.IsNullOrEmpty(UpdateMessage))
+                @if (HasUpdate)
                 {
-                    <div class="alert @(HasUpdate ? "alert-info" : "alert-secondary") mb-0 p-2 alert-custom-info">
-                        <i class="bi @(HasUpdate ? "bi-arrow-up-circle-fill" : "bi-check-circle-fill") me-2"></i>@UpdateMessage
-                    </div>
+                    @if (IsUpdating)
+                    {
+                        <div class="mt-2 p-3 panel" style="background-color: var(--bg-hover); border: 1px solid var(--accent); box-shadow: 0 0 10px rgba(106, 227, 249, 0.2);">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="spinner-border spinner-border-sm" style="color: var(--accent);" role="status"></span>
+                                    <span class="fw-bold" style="color: var(--accent);">Downloading Update...</span>
+                                </div>
+                                <span class="text-white small fw-bold">@(UpdateProgressPercentage)%</span>
+                            </div>
+                            <div class="progress" style="height: 8px; background-color: var(--bg-active);">
+                                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: @(UpdateProgressPercentage)%; background-color: var(--accent);"></div>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <button class="btn btn-warning w-100 mt-2 fw-bold text-dark" @onclick="StartUpdate">
+                            <img src="/svg/rotate-right-svgrepo-com.svg" class="btn-icon" style="filter: invert(0);" />New Update Available!
+                        </button>
+                    }
                 }
+
             </div>
         <!-- System Panel -->
         <div class="panel d-flex flex-column">
@@ -122,12 +128,12 @@
                 @if (!OperatingSystem.IsAndroid())
                 {
                     <h5 class="mt-0 mb-3 text-muted fw-bold text-uppercase" style="letter-spacing: 0.5px; font-size: 0.8rem;">Application Behavior</h5>
-                    <div class="d-flex flex-column mb-4 rounded panel shadow-none border-0" style="background-color: var(--bg-hover); padding: 0;">
+                    <div class="d-flex flex-column mb-4 panel shadow-none border-0" style="background-color: var(--bg-hover); padding: 0;">
                         
                         <!-- Start with Windows -->
                         <div class="d-flex align-items-center justify-content-between p-3 border-bottom" style="border-color: var(--border-color) !important;">
                             <div class="d-flex align-items-center gap-3">
-                                <div class="p-2 rounded d-flex align-items-center justify-content-center" style="background-color: var(--bg-active); width: 40px; height: 40px;">
+                                <div class="p-2 d-flex align-items-center justify-content-center" style="background-color: var(--bg-active); width: 40px; height: 40px; border-radius: 10px;">
                                     <svg width="20" height="20" viewBox="0 0 24 24" fill="var(--accent)" xmlns="http://www.w3.org/2000/svg">
                                         <path d="M22 2L11.2 3.6V11.6H22V2ZM10 3.8L2 5V11.6H10V3.8ZM2 12.4V19L10 20.2V12.4H2ZM11.2 12.4V20.4L22 22V12.4H11.2Z"/>
                                     </svg>
@@ -145,7 +151,7 @@
                         <!-- Start in Background -->
                         <div class="d-flex align-items-center justify-content-between p-3 border-bottom" style="border-color: var(--border-color) !important;">
                             <div class="d-flex align-items-center gap-3">
-                                <div class="p-2 rounded d-flex align-items-center justify-content-center" style="background-color: var(--bg-active); width: 40px; height: 40px;">
+                                <div class="p-2 d-flex align-items-center justify-content-center" style="background-color: var(--bg-active); width: 40px; height: 40px; border-radius: 10px;">
                                     <svg width="20" height="20" viewBox="0 0 24 24" fill="var(--accent)" xmlns="http://www.w3.org/2000/svg">
                                         <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/>
                                     </svg>
@@ -163,7 +169,7 @@
                         <!-- Minimize to Tray -->
                         <div class="d-flex align-items-center justify-content-between p-3">
                             <div class="d-flex align-items-center gap-3">
-                                <div class="p-2 rounded d-flex align-items-center justify-content-center" style="background-color: var(--bg-active); width: 40px; height: 40px;">
+                                <div class="p-2 d-flex align-items-center justify-content-center" style="background-color: var(--bg-active); width: 40px; height: 40px; border-radius: 10px;">
                                     <svg width="20" height="20" viewBox="0 0 24 24" fill="var(--accent)" xmlns="http://www.w3.org/2000/svg">
                                         <path d="M21 3H3v18h18V3zM9 13H5l7-7 7 7h-4v4H9v-4z"/>
                                     </svg>
@@ -179,47 +185,57 @@
                         </div>
 
                     </div>
-                }
+                }   
 
-                <h5 class="mt-4 mb-3 text-muted fw-bold text-uppercase" style="letter-spacing: 0.5px; font-size: 0.8rem;">Storage & Logs</h5>
-                <div class="d-flex flex-column gap-2 mb-4">
-                    <div class="d-flex gap-2">
-                        <button class="btn flex-fill text-nowrap" @onclick="OpenCacheFolder">
-                            <img src="/svg/folder-open-svgrepo-com.svg" class="btn-icon" />Open Cache
-                        </button>
-                        @if (OperatingSystem.IsWindows())
-                        {
-                            <button class="btn flex-fill text-nowrap" @onclick="OpenVRChatLogs">
-                                <img src="/svg/folder-open-svgrepo-com.svg" class="btn-icon" />Open Logs
-                            </button>
-                        }
-                    </div>
-                    <div class="d-flex gap-2">
-                        <button class="btn btn-danger flex-fill text-nowrap" @onclick="ClearCacheFiles">
-                            <img src="/svg/trash-bin-trash-svgrepo-com.svg" class="btn-icon" />Clear Cache
-                        </button>
-                        @if (OperatingSystem.IsWindows())
-                        {
-                            <button class="btn btn-danger flex-fill text-nowrap" @onclick="ClearVRChatLogs">
-                                <img src="/svg/trash-bin-trash-svgrepo-com.svg" class="btn-icon" />Clear Logs
-                            </button>
-                        }
-                    </div>
-                </div>
-
-                @if (!string.IsNullOrEmpty(SystemMessage))
+                @if (OperatingSystem.IsWindows())
                 {
-                    <div class="alert @(SystemMessageIsError ? "alert-danger" : "alert-success") mb-3 p-2 alert-custom-info">
-                        <i class="bi @(SystemMessageIsError ? "bi-x-circle-fill" : "bi-check-circle-fill") me-2"></i>@SystemMessage
+                    <h5 class="mt-4 mb-2 text-muted text-09rem">VRChat Logs Information</h5>
+                    @if (VrcLogsExists)
+                    {
+                        <div class="row g-2 mb-3">
+                            <div class="col-6">
+                                <div class="p-3 cache-info-box h-100 d-flex align-items-center gap-3">
+                                    <i class="bi bi-files text-primary fs-3"></i>
+                                    <div class="d-flex flex-column">
+                                        <span class="text-muted small text-uppercase fw-bold">Files</span>
+                                        <span class="fw-bold fs-5">@VrcLogsFilesCount</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="p-3 cache-info-box h-100 d-flex align-items-center gap-3">
+                                    <i class="bi bi-hdd-fill text-success fs-3"></i>
+                                    <div class="d-flex flex-column">
+                                        <span class="text-muted small text-uppercase fw-bold">Total Size</span>
+                                        <span class="fw-bold fs-5">@VrcLogsTotalSize</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="p-3 cache-info-box text-warning d-flex align-items-center mb-3">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i> VRChat logs folder not found.
+                        </div>
+                    }
+
+                    <div class="d-flex flex-column gap-2 mb-4">
+                        <button class="btn text-nowrap w-100" @onclick="OpenVRChatLogs">
+                            <img src="/svg/folder-open-svgrepo-com.svg" class="btn-icon" />Open Logs
+                        </button>
+                        <button class="btn btn-danger text-nowrap w-100" @onclick="ClearVRChatLogs">
+                            <img src="/svg/trash-bin-trash-svgrepo-com.svg" class="btn-icon" />Clear Logs
+                        </button>
                     </div>
                 }
 
                 <h5 class="mt-4 mb-2 text-muted text-09rem">Cache Information</h5>
                 @if (CacheExists)
                 {
-                    <div class="row g-2">
+                    <div class="row g-2 mb-3">
                         <div class="col-6">
-                            <div class="p-3 rounded cache-info-box h-100 d-flex align-items-center gap-3">
+                            <div class="p-3 cache-info-box h-100 d-flex align-items-center gap-3">
                                 <i class="bi bi-files text-primary fs-3"></i>
                                 <div class="d-flex flex-column">
                                     <span class="text-muted small text-uppercase fw-bold">Files</span>
@@ -228,7 +244,7 @@
                             </div>
                         </div>
                         <div class="col-6">
-                            <div class="p-3 rounded cache-info-box h-100 d-flex align-items-center gap-3">
+                            <div class="p-3 cache-info-box h-100 d-flex align-items-center gap-3">
                                 <i class="bi bi-hdd-fill text-success fs-3"></i>
                                 <div class="d-flex flex-column">
                                     <span class="text-muted small text-uppercase fw-bold">Total Size</span>
@@ -240,17 +256,26 @@
                 }
                 else
                 {
-                    <div class="p-3 rounded cache-info-box text-warning d-flex align-items-center">
+                    <div class="p-3 cache-info-box text-warning d-flex align-items-center mb-3">
                         <i class="bi bi-exclamation-triangle-fill me-2"></i> Cache folder not found.
                     </div>
                 }
+
+                <div class="d-flex flex-column gap-2 mb-4">
+                    <button class="btn text-nowrap w-100" @onclick="OpenCacheFolder">
+                        <img src="/svg/folder-open-svgrepo-com.svg" class="btn-icon" />Open Cache
+                    </button>
+                    <button class="btn btn-danger text-nowrap w-100" @onclick="ClearCacheFiles">
+                        <img src="/svg/trash-bin-trash-svgrepo-com.svg" class="btn-icon" />Clear Cache
+                    </button>
+                </div>
                 
                 @if (OperatingSystem.IsWindows())
                 {
                     <h5 class="mt-4 mb-2 text-muted text-09rem">Picflow Database</h5>
                     <div class="row g-2 mb-3">
                         <div class="col-6">
-                            <div class="p-3 rounded cache-info-box h-100 d-flex align-items-center gap-3">
+                            <div class="p-3 cache-info-box h-100 d-flex align-items-center gap-3">
                                 <i class="bi bi-database-fill text-info fs-3"></i>
                                 <div class="d-flex flex-column">
                                     <span class="text-muted small text-uppercase fw-bold">Total Saved</span>
@@ -259,7 +284,7 @@
                             </div>
                         </div>
                         <div class="col-6">
-                            <div class="p-3 rounded cache-info-box h-100 d-flex flex-column justify-content-center gap-1">
+                            <div class="p-3 cache-info-box h-100 d-flex flex-column justify-content-center gap-1">
                                 <div class="d-flex justify-content-between">
                                     <span class="small text-muted">Stickers</span><span class="small fw-bold">@PicflowDbStickers</span>
                                 </div>
@@ -284,16 +309,20 @@
     private string Username = "";
     private string Password = "";
     private string Code2FA = "";
-    private string LoginError = "";
     private int CacheFilesCount = 0;
     private string CacheTotalSize = "0 B";
     private bool CacheExists = false;
-    private string UpdateMessage = "";
-    private string SystemMessage = "";
-    private bool SystemMessageIsError = false;
+    private int VrcLogsFilesCount = 0;
+    private string VrcLogsTotalSize = "0 B";
+    private bool VrcLogsExists = false;
     private bool IsLoggingIn = false;
     private bool HasVRCPlus = false;
     private bool HasUpdate = false;
+    private string LatestUpdateVersion = "";
+    private string LocalVersion = "";
+    private bool IsUpdating = false;
+    private int UpdateProgressPercentage = 0;
+    private string UpdateProgressText = "";
     private bool ShowPassword = false;
     private bool Show2FA = false;
     private bool IsEmail2FA = false;
@@ -333,6 +362,23 @@
         _minimizeToTray = Config.Get("MinimizeToTray", "true") == "true";
 
         UpdateCacheInfo();
+        UpdateVRChatLogsInfo();
+        UpdatePicflowDbStats();
+
+        if (OperatingSystem.IsWindows())
+        {
+            try
+            {
+                var updateCheck = await Updater.IsUpdateAvailableAsync();
+                HasUpdate = updateCheck.isAvailable;
+                if (HasUpdate)
+                {
+                    LatestUpdateVersion = updateCheck.latestVersion;
+                    LocalVersion = updateCheck.localVersion;
+                }
+            }
+            catch { }
+        }
 
         if (Auth.Is2FARequired)
         {
@@ -344,8 +390,7 @@
             }
             IsEmail2FA = Auth.IsEmail2FA;
             Show2FA = true;
-            SystemMessage = "Authentication required. Please enter the new 2FA code.";
-            SystemMessageIsError = false;
+            Notifications.Show("Authentication required. Please enter the new 2FA code.", "2FA Required", VRCGalleryManager.Core.NotificationType.Info);
             return;
         }
 
@@ -416,30 +461,27 @@
             {
                 IsEmail2FA = Auth.IsEmail2FA;
                 Show2FA = true;
-                SystemMessage = "IP changed. Please enter your 2FA code.";
-                SystemMessageIsError = false;
+                Notifications.Show("IP changed. Please enter your 2FA code.", "2FA Required", VRCGalleryManager.Core.NotificationType.Info);
                 StateHasChanged();
             }
             else
             {
                 Auth.Logout(keepCredentials: true);
-                SystemMessage = "Session expired and auto-login failed. Please log in again.";
-                SystemMessageIsError = true;
+                Notifications.Show("Session expired and auto-login failed. Please log in again.", "Session Expired", VRCGalleryManager.Core.NotificationType.Error);
                 StateHasChanged();
             }
         }
         catch
         {
             Auth.Logout(keepCredentials: true);
-            SystemMessage = "Session expired. Please log in again.";
-            SystemMessageIsError = true;
+            Notifications.Show("Session expired. Please log in again.", "Session Expired", VRCGalleryManager.Core.NotificationType.Error);
             StateHasChanged();
         }
     }
 
     private async Task ToggleLogin()
     {
-        LoginError = "";
+
         if (IsLoggedIn)
         {
             try { Auth.AuthApi.Logout(); } catch { }
@@ -478,12 +520,12 @@
                 }
                 else
                 {
-                    LoginError = "Invalid credentials or connection error.";
+                    Notifications.Show("Invalid credentials or connection error.", "Login Error", VRCGalleryManager.Core.NotificationType.Error);
                 }
             }
             catch (Exception ex)
             {
-                LoginError = ex.Message;
+                Notifications.Show(ex.Message, "Login Error", VRCGalleryManager.Core.NotificationType.Error);
             }
             finally
             {
@@ -497,7 +539,7 @@
         if (string.IsNullOrWhiteSpace(Code2FA)) return;
         
         IsLoggingIn = true;
-        LoginError = "";
+
         StateHasChanged();
         
         try
@@ -513,12 +555,12 @@
             }
             else
             {
-                LoginError = "Invalid 2FA code.";
+                Notifications.Show("Invalid 2FA code.", "Login Error", VRCGalleryManager.Core.NotificationType.Error);
             }
         }
         catch (Exception ex)
         {
-            LoginError = ex.Message;
+            Notifications.Show(ex.Message, "Login Error", VRCGalleryManager.Core.NotificationType.Error);
         }
         finally
         {
@@ -530,13 +572,13 @@
     {
         Show2FA = false;
         Code2FA = "";
-        LoginError = "";
+
     }
 
     private async Task Resend2FA()
     {
         IsLoggingIn = true;
-        LoginError = "";
+
         StateHasChanged();
         
         try
@@ -564,12 +606,12 @@
             }
             else
             {
-                LoginError = "Unexpected status when resending code.";
+                Notifications.Show("Unexpected status when resending code.", "Login Error", VRCGalleryManager.Core.NotificationType.Error);
             }
         }
         catch (Exception ex)
         {
-            LoginError = ex.Message;
+            Notifications.Show(ex.Message, "Login Error", VRCGalleryManager.Core.NotificationType.Error);
         }
         finally
         {
@@ -597,30 +639,34 @@
         await Microsoft.Maui.ApplicationModel.Launcher.Default.OpenAsync(new Uri("https://github.com/TheIceDragonz/VRCGalleryManager"));
     }
 
-    private async Task CheckForUpdates()
+    private async Task StartUpdate()
     {
-        UpdateMessage = "Checking for updates...";
-        HasUpdate = false;
+        bool confirmed = await dialogService.ShowConfirmAsync(
+            "Update Available", 
+            $"A new version ({LatestUpdateVersion}) is available.\nYou are currently on version {LocalVersion}.\n\nDo you want to download and install it?", 
+            "Yes", "No");
+        if (!confirmed) return;
+
+        IsUpdating = true;
+        UpdateProgressPercentage = 0;
         StateHasChanged();
-        
+
         try
         {
-            await Updater.CheckForUpdatesAsync(Notifications, dialogService, (progressText, isError) => 
+            await Updater.DownloadAndInstallUpdateAsync(Notifications, (progressText, progressInt, isError) => 
             {
-                UpdateMessage = progressText;
-                HasUpdate = !isError;
-                InvokeAsync(StateHasChanged);
+                if (!isError)
+                {
+                    UpdateProgressPercentage = progressInt;
+                    InvokeAsync(StateHasChanged);
+                }
             });
-            
-            // Wait for it to finish or if it didn't update we clear the loading message
-            if (UpdateMessage == "Checking for updates...")
-            {
-                UpdateMessage = "";
-            }
         }
         catch (Exception ex)
         {
-            UpdateMessage = $"Update check failed: {ex.Message}";
+            Notifications.Show($"Update failed: {ex.Message}", "Update Error", VRCGalleryManager.Core.NotificationType.Error);
+            IsUpdating = false;
+            StateHasChanged();
         }
     }
 
@@ -671,7 +717,8 @@
         {
             foreach (var file in logFiles)
                 try { System.IO.File.Delete(file); } catch { }
-            ShowSystemMessage("All VRChat logs have been successfully deleted!", false);
+            Notifications.Show("All VRChat logs have been successfully deleted!", "System", VRCGalleryManager.Core.NotificationType.Success);
+            UpdateVRChatLogsInfo();
         }
     }
 
@@ -704,9 +751,7 @@
 
     private void ShowSystemMessage(string message, bool isError)
     {
-        SystemMessage = message;
-        SystemMessageIsError = isError;
-        StateHasChanged();
+        Notifications.Show(message, isError ? "Error" : "System", isError ? VRCGalleryManager.Core.NotificationType.Error : VRCGalleryManager.Core.NotificationType.Success);
     }
 
     private void UpdateCacheInfo()
@@ -736,8 +781,35 @@
             CacheFilesCount = 0;
             CacheTotalSize = "0 B";
         }
+    }
 
-        UpdatePicflowDbStats();
+    private void UpdateVRChatLogsInfo()
+    {
+        if (!OperatingSystem.IsWindows()) return;
+        
+        string vrchatLogPath = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData).Replace("Local", "LocalLow"),
+            "VRChat", "VRChat");
+        
+        VrcLogsExists = Directory.Exists(vrchatLogPath);
+        if (VrcLogsExists)
+        {
+            string[] files = Directory.GetFiles(vrchatLogPath, "output_log_*.txt");
+            VrcLogsFilesCount = files.Length;
+            long totalSize = files.Sum(file => new FileInfo(file).Length);
+
+            string[] units = { "B", "KB", "MB", "GB", "TB" };
+            double size = totalSize;
+            int unitIndex = 0;
+            while (size >= 1024 && unitIndex < units.Length - 1) { size /= 1024; unitIndex++; }
+
+            VrcLogsTotalSize = $"{size:0.##} {units[unitIndex]}";
+        }
+        else
+        {
+            VrcLogsFilesCount = 0;
+            VrcLogsTotalSize = "0 B";
+        }
     }
 
     private void UpdatePicflowDbStats()
@@ -759,7 +831,7 @@
         {
             PicflowDatabase.Clear();
             UpdatePicflowDbStats();
-            ShowSystemMessage("Picflow database has been successfully cleared!", false);
+            Notifications.Show("Picflow database has been successfully cleared!", "System", VRCGalleryManager.Core.NotificationType.Success);
         }
     }
 }

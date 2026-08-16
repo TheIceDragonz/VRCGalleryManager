@@ -129,6 +129,21 @@ h6 {
     color: white !important;
 }
 
+/* Warning buttons */
+.btn-warning,
+.btn-outline-warning {
+    color: #212529 !important;
+    background-color: #ffc107 !important;
+    border-color: #e0a800 !important;
+}
+
+.btn-warning:hover,
+.btn-outline-warning:hover {
+    background-color: #e0a800 !important;
+    border-color: #d39e00 !important;
+    color: #212529 !important;
+}
+
 /* Custom Panel */
 .panel {
     background-color: var(--bg-panel);
@@ -416,12 +431,25 @@ h6 {
 /* NavMenu Styles */
 .nav-top-row {
     height: 80px;
+    transition: height 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .nav-brand-img {
     width: 48px;
     height: 48px;
     object-fit: contain;
+    transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@media (min-width: 992px) {
+    .nav-top-row.logged-out-mode {
+        height: 220px;
+    }
+
+    .nav-brand-img.logged-out-img {
+        width: 160px;
+        height: 160px;
+    }
 }
 
 .nav-profile-card-container {
@@ -706,6 +734,7 @@ h6 {
     background-color: var(--bg-hover);
     color: var(--text-muted);
     font-size: 0.85rem;
+    border-radius: 10px;
 }
 
 /* Gallery & Media Utilities */

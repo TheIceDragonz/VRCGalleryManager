@@ -15,7 +15,7 @@ namespace VRCGalleryManager
     {
         private static readonly string apiUrl = "https://api.github.com/repos/TheIceDragonz/VRCGalleryManager/releases/latest";
 
-        public async Task<bool> IsUpdateAvailableAsync()
+        public async Task<(bool isAvailable, string latestVersion, string localVersion)> IsUpdateAvailableAsync()
         {
             using var client = new HttpClient();
             client.DefaultRequestHeaders.UserAgent.ParseAdd("VRCGalleryManager");
@@ -27,15 +27,19 @@ namespace VRCGalleryManager
                 .GetCustomAttribute<AssemblyFileVersionAttribute>()?
                 .Version ?? throw new InvalidOperationException("Local version not found");
 
-            return !string.Equals(localVersion, latestVersion, StringComparison.OrdinalIgnoreCase);
+            bool isAvailable = !string.Equals(localVersion, latestVersion, StringComparison.OrdinalIgnoreCase);
+            return (isAvailable, latestVersion, localVersion);
         }
 
-        public async Task CheckForUpdatesAsync(NotificationService notificationService, DialogService dialogService, Action<string, bool> updateProgressState)
+        public async Task CheckForUpdatesAsync(NotificationService notificationService, DialogService dialogService, Action<string, int, bool> updateProgressState, bool silentIfNotAvailable = false)
         {
             if (!OperatingSystem.IsWindows())
             {
-                updateProgressState("Updates are only supported on Windows.", true);
-                notificationService.Show("Updates are currently only available for the Windows version.", "Unsupported OS", NotificationType.Info);
+                if (!silentIfNotAvailable)
+                {
+                    updateProgressState("Updates are only supported on Windows.", 0, true);
+                    notificationService.Show("Updates are currently only available for the Windows version.", "Unsupported OS", NotificationType.Info);
+                }
                 return;
             }
 
@@ -59,10 +63,13 @@ namespace VRCGalleryManager
 
             if (!isAvailable)
             {
-                notificationService.Show(
-                    "You are already using the latest version.",
-                    "No Update",
-                    NotificationType.Info);
+                if (!silentIfNotAvailable)
+                {
+                    notificationService.Show(
+                        "You are already using the latest version.",
+                        "No Update",
+                        NotificationType.Info);
+                }
                 return;
             }
 
@@ -75,13 +82,16 @@ namespace VRCGalleryManager
 
             if (result)
             {
-                updateProgressState("Updating (0%)", false);
-                await DownloadAndInstallUpdateAsync(client, notificationService, updateProgressState);
+                updateProgressState("Updating (0%)", 0, false);
+                await DownloadAndInstallUpdateAsync(notificationService, updateProgressState);
             }
         }
 
-        private async Task DownloadAndInstallUpdateAsync(HttpClient client, NotificationService notificationService, Action<string, bool> updateProgressState)
+        public async Task DownloadAndInstallUpdateAsync(NotificationService notificationService, Action<string, int, bool> updateProgressState)
         {
+            using var client = new HttpClient();
+            client.DefaultRequestHeaders.UserAgent.ParseAdd("VRCGalleryManager");
+
             string jsonResponse = await client.GetStringAsync(apiUrl);
             using var doc = JsonDocument.Parse(jsonResponse);
             var releaseJson = doc.RootElement;
@@ -132,7 +142,7 @@ namespace VRCGalleryManager
                         int progress = (int)((totalRead * 100) / totalBytes);
                         Application.Current.Dispatcher.Dispatch(() =>
                         {
-                            updateProgressState($"Updating ({progress}%)", false);
+                            updateProgressState($"Updating ({progress}%)", progress, false);
                         });
                     }
                 }

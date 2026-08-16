@@ -5,9 +5,9 @@
 @inject VRCAuth Auth
 @inject NavigationManager NavManager
 
-<div class="top-row flex-shrink-0 p-3 d-flex align-items-center justify-content-center nav-top-row">
+<div class="top-row flex-shrink-0 p-3 d-flex align-items-center justify-content-center nav-top-row @(!IsLoggedIn ? "logged-out-mode" : "")">
     <a class="navbar-brand m-0 d-flex align-items-center justify-content-center w-100" href="">
-        <img src="/VRCGM.png" class="nav-brand-img" />
+        <img src="/VRCGM.png" class="nav-brand-img @(!IsLoggedIn ? "logged-out-img" : "")" />
     </a>
 </div>
 

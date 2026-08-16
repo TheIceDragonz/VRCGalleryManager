@@ -34,6 +34,23 @@ namespace VRCGalleryManager.Core
             return tcs.Task;
         }
 
+        public Task ShowAlertAsync(string title, string message, string confirmText = "OK")
+        {
+            var tcs = new TaskCompletionSource<bool>();
+
+            var request = new DialogRequest
+            {
+                Title = title,
+                Message = message,
+                ConfirmText = confirmText,
+                CancelText = "", // Empty to hide cancel button
+                Tcs = tcs
+            };
+
+            OnShow?.Invoke(request);
+            return tcs.Task;
+        }
+
         public void Hide()
         {
             OnHide?.Invoke();

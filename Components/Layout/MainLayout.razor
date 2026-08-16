@@ -1,4 +1,5 @@
 @inherits LayoutComponentBase
+@using VRCGalleryManager.Core
 
 <div class="page main-page-container @(Microsoft.Maui.Devices.DeviceInfo.Current.Platform == Microsoft.Maui.Devices.DevicePlatform.Android ? "android-layout" : "")">
     <div class="sidebar main-sidebar-container">
@@ -14,3 +15,28 @@
     <NotificationDisplay />
     <DialogDisplay />
 </div>
+
+@code {
+    [Inject] private UpdateManager Updater { get; set; } = default!;
+    [Inject] private NotificationService Notifications { get; set; } = default!;
+    [Inject] private DialogService Dialogs { get; set; } = default!;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                if (OperatingSystem.IsWindows())
+                {
+                    var updateCheck = await Updater.IsUpdateAvailableAsync();
+                    if (updateCheck.isAvailable)
+                    {
+                        Notifications.Show("A new update is available! You can download it from Settings.", "Update Available", VRCGalleryManager.Core.NotificationType.Info, 8000);
+                    }
+                }
+            }
+            catch (Exception) { }
+        }
+    }
+}

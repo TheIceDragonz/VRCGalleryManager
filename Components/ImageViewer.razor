@@ -50,6 +50,12 @@
             <button class="btn btn-icon-only btn-viewer-action" title="Copy Image" @onclick="CopyCurrent">
                 <img src="/svg/copy-svgrepo-com.svg" style="filter: invert(1);" />
             </button>
+            @if (ShowDownloadButton)
+            {
+                <button class="btn btn-icon-only btn-viewer-action" title="Download" @onclick="DownloadCurrent">
+                    <img src="/svg/download-svgrepo-com.svg" style="filter: invert(1);" />
+                </button>
+            }
             @if (CurrentItem?.HighResSource?.StartsWith("http") == true)
             {
                 <button class="btn btn-icon-only btn-viewer-action" title="Copy Link" @onclick="CopyLinkCurrent">
@@ -159,6 +165,7 @@
     [Parameter] public EventCallback OnClosed { get; set; }
     [Parameter] public EventCallback<int> OnDeleteRequested { get; set; }
     [Parameter] public EventCallback<int> OnUploadRequested { get; set; }
+    [Parameter] public bool ShowDownloadButton { get; set; } = true;
 
     public bool IsVisible { get; private set; }
     public IReadOnlyList<ViewerItem> Items { get; private set; }
