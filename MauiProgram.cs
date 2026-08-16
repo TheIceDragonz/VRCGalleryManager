@@ -33,6 +33,8 @@ public static class MauiProgram
         builder.Services.AddSingleton<DialogService>();
         builder.Services.AddSingleton<UpdateManager>();
         builder.Services.AddSingleton<FileDropService>();
+        builder.Services.AddScoped<ApiRequest>();
+        builder.Services.AddScoped<MediaCacheService>();
 
 #if DEBUG
 		builder.Services.AddBlazorWebViewDeveloperTools();

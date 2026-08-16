@@ -15,8 +15,9 @@ namespace VRCGalleryManager.Core.Components
         [Inject] protected NotificationService NotificationService { get; set; }
         [Inject] protected DialogService dialogService { get; set; }
         [Inject] protected FileDropService FileDropService { get; set; }
+        [Inject] protected ApiRequest apiRequest { get; set; }
+        [Inject] protected MediaCacheService CacheService { get; set; }
 
-        protected ApiRequest apiRequest;
         protected bool isLoading = true;
         protected bool isRefreshing = false;
         protected int imageCount = 0;
@@ -33,8 +34,6 @@ namespace VRCGalleryManager.Core.Components
             FileDropService.OnDragEnter += HandleDragEnter;
             FileDropService.OnDragLeave += HandleDragLeave;
             FileDropService.OnFileDropped += HandleFileDropped;
-            
-            apiRequest = new ApiRequest(Auth);
             
             await LoadInitialDataAsync();
 

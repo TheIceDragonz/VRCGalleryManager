@@ -138,7 +138,8 @@
 <VRCGalleryManager.Components.ImageViewer @ref="imageViewer" OnUploadRequested="HandleViewerUpload" />
 
 @code {
-    private ApiRequest ApiReq;
+    [Inject] protected ApiRequest ApiReq { get; set; }
+    [Inject] protected MediaCacheService CacheService { get; set; }
     private List<ImageModel> Images = new();
     private bool ShowInfo = false;
     private string LogStatus = "";
@@ -149,17 +150,10 @@
         ? Images.Where(i => i.Category == SelectedCategory.Value) 
         : Images;
 
-    private static List<ImageModel> cachedImages = null;
-    private static HashSet<string> cachedAllItems = null;
-    private static string cachedLogStatus = null;
-    private static bool isStreamingStatic = false;
-    private static CancellationTokenSource? staticCts;
-    private static event Action StateChanged;
-
     private bool IsStreamingProp 
     {
-        get => isStreamingStatic;
-        set => isStreamingStatic = value;
+        get => CacheService.Get<bool>("PicflowStreaming");
+        set => CacheService.Set("PicflowStreaming", value);
     }
 
     private static readonly Regex StickerRegex = new Regex(
@@ -194,42 +188,37 @@
     protected override async Task OnInitializedAsync()
     {
         CropPrints = Config.Get("CropWhiteBorder", "true") == "true";
-        ApiReq = new ApiRequest(Auth);
-        
-        StateChanged += NotifyStateChanged;
 
-        if (cachedImages != null)
+
+        var cachedImg = CacheService.Get<List<ImageModel>>("PicflowImages");
+        if (cachedImg != null)
         {
-            Images = cachedImages;
-            _allItems = cachedAllItems;
-            LogStatus = cachedLogStatus ?? "";
+            Images = new List<ImageModel>(cachedImg);
+            _allItems = CacheService.Get<HashSet<string>>("PicflowAllItems") ?? new HashSet<string>();
+            LogStatus = CacheService.Get<string>("PicflowLogStatus") ?? "";
         }
         else
         {
-            cachedImages = Images;
-            cachedAllItems = _allItems;
             await LoadFromLogs();
         }
     }
 
-    private void NotifyStateChanged()
-    {
-        try { InvokeAsync(StateHasChanged); } catch { }
-    }
+
 
     private async Task Refresh()
     {
-        cachedImages = null;
-        cachedAllItems = null;
         ClearItems();
         await LoadFromLogs();
     }
 
     private void ClearItems()
     {
-        InvokeAsync(() => { Images.Clear(); StateHasChanged(); });
+        Images.Clear();
         _allItems.Clear();
         LogStatus = "";
+        CacheService.Set("PicflowImages", (List<ImageModel>)null);
+        CacheService.Set("PicflowAllItems", (HashSet<string>)null);
+        CacheService.Set<string>("PicflowLogStatus", null);
         StateHasChanged();
     }
 
@@ -279,24 +268,29 @@
 
     private void OnStreamingChanged()
     {
-        if (isStreamingStatic)
+        var cts = CacheService.Get<CancellationTokenSource>("PicflowCts");
+        if (IsStreamingProp)
         {
-            staticCts?.Cancel();
-            staticCts = new CancellationTokenSource();
-            _ = StreamLogsAsync(staticCts.Token);
+            cts?.Cancel();
+            cts = new CancellationTokenSource();
+            _ = StreamLogsAsync(cts.Token);
+            CacheService.Set("PicflowCts", cts);
         }
         else
         {
-            staticCts?.Cancel();
+            cts?.Cancel();
+            CacheService.Set<CancellationTokenSource>("PicflowCts", null);
         }
     }
 
     private async Task LoadFromLogs()
     {
-        staticCts?.Cancel();
-        isStreamingStatic = false;
-        staticCts = new CancellationTokenSource();
-        var token = staticCts.Token;
+        var oldCts = CacheService.Get<CancellationTokenSource>("PicflowCts");
+        oldCts?.Cancel();
+        IsStreamingProp = false;
+        var cts = new CancellationTokenSource();
+        CacheService.Set("PicflowCts", cts);
+        var token = cts.Token;
 
         string userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
         string vrchatLogPath = Path.Combine(userProfile, "AppData", "LocalLow", "VRChat", "VRChat");
@@ -317,7 +311,7 @@
         }
 
         LogStatus = "| Processing...";
-        cachedLogStatus = LogStatus;
+        CacheService.Set("PicflowLogStatus", LogStatus);
         StateHasChanged();
 
         foreach (var logFile in logFiles)
@@ -340,7 +334,7 @@
         }
 
         LogStatus = "";
-        cachedLogStatus = LogStatus;
+        CacheService.Set("PicflowLogStatus", LogStatus);
         StateHasChanged();
     }
 
@@ -369,7 +363,7 @@
                 if (line != null)
                 {
                     ProcessLogLine(line);
-                    StateChanged?.Invoke();
+                    InvokeAsync(StateHasChanged);
                 }
                 else
                 {
@@ -457,7 +451,7 @@
                     {
                         imgModel.UserId = cachedItem.UserId;
                     }
-                    StateChanged?.Invoke();
+                    InvokeAsync(StateHasChanged);
                     return;
                 }
             }
@@ -498,7 +492,7 @@
                 {
                     PicflowDatabase.SaveItem(imgModel.ItemId, "", "", "INVALID", (int)imgModel.Category);
                     InvokeAsync(() => { Images.Remove(imgModel); StateHasChanged(); });
-                    StateChanged?.Invoke();
+                    InvokeAsync(StateHasChanged);
                     return;
                 }
             }
@@ -521,7 +515,7 @@
                 {
                     PicflowDatabase.SaveItem(imgModel.ItemId, "", "", "INVALID", (int)imgModel.Category);
                     InvokeAsync(() => { Images.Remove(imgModel); StateHasChanged(); });
-                    StateChanged?.Invoke();
+                    InvokeAsync(StateHasChanged);
                     return;
                 }
             }
@@ -529,7 +523,7 @@
             if (!string.IsNullOrEmpty(imgModel.Url))
             {
                 PicflowDatabase.SaveItem(imgModel.ItemId, imgModel.Username, imgModel.UserId, imgModel.Url, (int)imgModel.Category);
-                StateChanged?.Invoke();
+                InvokeAsync(StateHasChanged);
             }
         }
         catch
@@ -615,7 +609,6 @@
 
     public void Dispose()
     {
-        StateChanged -= NotifyStateChanged;
     }
     private void HandleViewerUpload(int index)
     {

@@ -86,10 +86,6 @@
 @code {
     private List<IconItem> icons = new();
     private VRCGalleryManager.Components.ImageViewer imageViewer;
-    
-    private static List<IconItem> cachedIcons = null;
-    private static int cachedImageCount = 0;
-
     private static string ICONS_TAG = "icon";
     private static string ICONS_MASK_TYPE = "square";
 
@@ -106,10 +102,11 @@
     protected override async Task LoadInitialDataAsync()
     {
         selectedImageUrl = Auth.CurrentUser?.UserIcon;
-        if (cachedIcons != null)
+        var cached = CacheService.Get<List<IconItem>>("Icons");
+        if (cached != null)
         {
-            icons = new List<IconItem>(cachedIcons);
-            imageCount = cachedImageCount;
+            icons = new List<IconItem>(cached);
+            imageCount = CacheService.Get<int>("IconsCount");
             isLoading = false;
         }
         else
@@ -125,7 +122,7 @@
         isRefreshing = true;
         isLoading = true;
         icons.Clear();
-        cachedIcons = null;
+        CacheService.Set("Icons", (List<IconItem>)null);
         StateHasChanged();
 
         try
@@ -135,6 +132,7 @@
             if (data?.JsonImage != null)
             {
                 imageCount = data.JsonImage.Count;
+                CacheService.Set("IconsCount", imageCount);
                 
                 foreach (string json in data.JsonImage)
                 {
@@ -149,8 +147,8 @@
                 }
             }
             
-            cachedIcons = new List<IconItem>(icons);
-            cachedImageCount = imageCount;
+            CacheService.Set("Icons", new List<IconItem>(icons));
+            CacheService.Set("IconsCount", imageCount);
         }
         catch (Exception ex)
         {
@@ -189,8 +187,8 @@
                 await apiRequest.DeleteApiData(item.Id);
                 icons.Remove(item);
                 imageCount--;
-                cachedIcons = new List<IconItem>(icons);
-                cachedImageCount = imageCount;
+                CacheService.Set("Icons", new List<IconItem>(icons));
+                CacheService.Set("IconsCount", imageCount);
                 StateHasChanged();
                 NotificationService.Show("Icon deleted successfully.", "Deleted", NotificationType.Success);
             }

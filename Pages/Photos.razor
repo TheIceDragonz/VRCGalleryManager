@@ -87,8 +87,7 @@
     private List<PhotoItem> photos = new();
     private VRCGalleryManager.Components.ImageViewer imageViewer;
     
-    private static List<PhotoItem> cachedPhotos = null;
-    private static int cachedImageCount = 0;
+
 
     private static string PHOTOS_TAG = "gallery";
     private static string PHOTOS_MASK_TYPE = "square";
@@ -106,10 +105,11 @@
     protected override async Task LoadInitialDataAsync()
     {
         selectedImageUrl = Auth.CurrentUser?.ProfilePicOverride;
-        if (cachedPhotos != null)
+        var cached = CacheService.Get<List<PhotoItem>>("Photos");
+        if (cached != null)
         {
-            photos = new List<PhotoItem>(cachedPhotos);
-            imageCount = cachedImageCount;
+            photos = new List<PhotoItem>(cached);
+            imageCount = CacheService.Get<int>("PhotosCount");
             isLoading = false;
         }
         else
@@ -125,7 +125,7 @@
         isRefreshing = true;
         isLoading = true;
         photos.Clear();
-        cachedPhotos = null;
+        CacheService.Set("Photos", (List<PhotoItem>)null);
         StateHasChanged();
 
         try
@@ -135,7 +135,7 @@
             if (data?.JsonImage != null)
             {
                 imageCount = data.JsonImage.Count;
-                
+                CacheService.Set("PhotosCount", imageCount);
                 foreach (string json in data.JsonImage)
                 {
                     JObject jsonObject = JObject.Parse(json);
@@ -149,8 +149,8 @@
                 }
             }
             
-            cachedPhotos = new List<PhotoItem>(photos);
-            cachedImageCount = imageCount;
+            CacheService.Set("Photos", new List<PhotoItem>(photos));
+            CacheService.Set("PhotosCount", imageCount);
         }
         catch (Exception ex)
         {
@@ -189,8 +189,8 @@
                 await apiRequest.DeleteApiData(item.Id);
                 photos.Remove(item);
                 imageCount--;
-                cachedPhotos = new List<PhotoItem>(photos);
-                cachedImageCount = imageCount;
+                CacheService.Set("Photos", new List<PhotoItem>(photos));
+                CacheService.Set("PhotosCount", imageCount);
                 StateHasChanged();
                 NotificationService.Show("Photo deleted successfully.", "Deleted", NotificationType.Success);
             }

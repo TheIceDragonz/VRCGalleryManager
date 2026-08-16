@@ -69,15 +69,18 @@ public partial class MainPage : ContentPage
 
     private FileDropService GetFileDropService()
     {
-        return Handler?.MauiContext?.Services.GetService<FileDropService>() 
-            ?? Application.Current?.Windows.FirstOrDefault()?.Page?.Handler?.MauiContext?.Services.GetService<FileDropService>();
+        return Handler?.MauiContext?.Services.GetService<FileDropService>(); 
     }
 
+#if WINDOWS
     private bool? _isCurrentDragValid = null;
+#endif
 
     private async void OnDrop(object sender, DropEventArgs e)
     {
+#if WINDOWS
         _isCurrentDragValid = null;
+#endif
         var service = GetFileDropService();
         if (service == null || !service.IsDragDropEnabled) return;
 
@@ -161,7 +164,9 @@ public partial class MainPage : ContentPage
 
     private void OnDragLeave(object sender, DragEventArgs e)
     {
+#if WINDOWS
         _isCurrentDragValid = null;
+#endif
         var service = GetFileDropService();
         if (service != null && service.IsDragDropEnabled)
         {

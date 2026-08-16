@@ -100,8 +100,7 @@
     private List<EmojiItem> emojis = new();
     private VRCGalleryManager.Components.ImageViewer imageViewer;
     
-    private static List<EmojiItem> cachedEmojis = null;
-    private static int cachedImageCount = 0;
+
 
     private static string EMOJI_MASK_TAG = "square";
 
@@ -120,10 +119,11 @@
 
     protected override async Task LoadInitialDataAsync()
     {
-        if (cachedEmojis != null)
+        var cached = CacheService.Get<List<EmojiItem>>("Emojis");
+        if (cached != null)
         {
-            emojis = new List<EmojiItem>(cachedEmojis);
-            imageCount = cachedImageCount;
+            emojis = new List<EmojiItem>(cached);
+            imageCount = CacheService.Get<int>("EmojisCount");
             isLoading = false;
         }
         else
@@ -143,7 +143,7 @@
         isRefreshing = true;
         isLoading = true;
         emojis.Clear();
-        cachedEmojis = null;
+        CacheService.Set("Emojis", (List<EmojiItem>)null);
         StateHasChanged();
 
         try
@@ -153,6 +153,7 @@
             if (data?.JsonImage != null)
             {
                 imageCount = data.JsonImage.Count;
+                CacheService.Set("EmojisCount", imageCount);
                 
                 foreach (string json in data.JsonImage)
                 {
@@ -179,8 +180,8 @@
                 }
             }
             
-            cachedEmojis = new List<EmojiItem>(emojis);
-            cachedImageCount = imageCount;
+            CacheService.Set("Emojis", new List<EmojiItem>(emojis));
+            CacheService.Set("EmojisCount", imageCount);
         }
         catch (Exception ex)
         {
@@ -219,8 +220,8 @@
                 await apiRequest.DeleteApiData(item.Id);
                 emojis.Remove(item);
                 imageCount--;
-                cachedEmojis = new List<EmojiItem>(emojis);
-                cachedImageCount = imageCount;
+                CacheService.Set("Emojis", new List<EmojiItem>(emojis));
+                CacheService.Set("EmojisCount", imageCount);
                 StateHasChanged();
                 NotificationService.Show("Emoji deleted successfully.", "Deleted", NotificationType.Success);
             }
