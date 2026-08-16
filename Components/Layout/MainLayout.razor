@@ -1,13 +1,37 @@
 @inherits LayoutComponentBase
 @using VRCGalleryManager.Core
+@implements IDisposable
 
 <div class="page main-page-container @(Microsoft.Maui.Devices.DeviceInfo.Current.Platform == Microsoft.Maui.Devices.DevicePlatform.Android ? "android-layout" : "")">
     <div class="sidebar main-sidebar-container">
         <NavMenu />
     </div>
 
-    <main class="main-content-container">
-        <article class="content w-100 h-100 p-0 m-0 main-article">
+    <main class="main-content-container d-flex flex-column">
+        @if (!IsOnline)
+        {
+            <div class="offline-banner d-flex align-items-center justify-content-between px-3 py-2 bg-danger text-white shadow-sm" style="z-index: 1050; font-size: 0.9rem; animation: slideDown 0.3s ease;">
+                <div class="d-flex align-items-center gap-2">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M23.64 7c-.45-.34-4.93-3.66-11.64-3.66-1.57 0-3.04.19-4.38.53l2.42 2.42c.62-.06 1.28-.1 1.96-.1 5.3 0 9.09 2.44 9.53 2.76L23.64 7zM1.41 1.6L0 3.01l2.45 2.45C1.18 5.99.37 6.64.35 6.66l11.64 14.5 3.32-4.14 4.54 4.54 1.41-1.41L1.41 1.6zM12 18.25L4.54 8.95c.98-.67 3.63-2.14 7.46-2.14.33 0 .66.01.98.04l6.09 6.09L12 18.25z"/>
+                    </svg>
+                    <span><strong>You are offline</strong> &mdash; No internet connection. Some features may not be available.</span>
+                </div>
+                <button class="btn btn-sm btn-outline-light d-flex align-items-center gap-1 py-0 px-2" @onclick="CheckConnectivity" disabled="@isCheckingConnection">
+                    @if (isCheckingConnection)
+                    {
+                        <span class="spinner-border spinner-border-sm" role="status"></span>
+                    }
+                    else
+                    {
+                        <i class="bi bi-arrow-clockwise"></i>
+                    }
+                    <span>Retry</span>
+                </button>
+            </div>
+        }
+
+        <article class="content w-100 flex-grow-1 p-0 m-0 main-article overflow-hidden">
             @Body
         </article>
     </main>
@@ -20,6 +44,41 @@
     [Inject] private UpdateManager Updater { get; set; } = default!;
     [Inject] private NotificationService Notifications { get; set; } = default!;
     [Inject] private DialogService Dialogs { get; set; } = default!;
+    [Inject] private NetworkStatusService NetworkStatus { get; set; } = default!;
+
+    private bool IsOnline => NetworkStatus.IsOnline;
+    private bool isCheckingConnection = false;
+
+    protected override void OnInitialized()
+    {
+        NetworkStatus.OnNetworkStatusChanged += HandleNetworkStatusChanged;
+    }
+
+    private void HandleNetworkStatusChanged(bool isOnline)
+    {
+        InvokeAsync(() =>
+        {
+            if (isOnline)
+            {
+                Notifications.Show("Internet connection restored.", "Online", NotificationType.Success, 3500);
+            }
+            StateHasChanged();
+        });
+    }
+
+    private async Task CheckConnectivity()
+    {
+        isCheckingConnection = true;
+        StateHasChanged();
+        await Task.Delay(300);
+        bool online = await NetworkStatus.CheckConnectionAsync();
+        isCheckingConnection = false;
+        if (!online)
+        {
+            Notifications.Show("Still offline. Please check your network connection.", "No Connection", NotificationType.Error, 3000);
+        }
+        StateHasChanged();
+    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -38,5 +97,10 @@
             }
             catch (Exception) { }
         }
+    }
+
+    public void Dispose()
+    {
+        NetworkStatus.OnNetworkStatusChanged -= HandleNetworkStatusChanged;
     }
 }

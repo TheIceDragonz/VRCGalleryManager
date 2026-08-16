@@ -140,6 +140,7 @@
 @code {
     [Inject] protected ApiRequest ApiReq { get; set; }
     [Inject] protected MediaCacheService CacheService { get; set; }
+    [Inject] protected NetworkStatusService NetworkStatus { get; set; }
     private List<ImageModel> Images = new();
     private bool ShowInfo = false;
     private string LogStatus = "";
@@ -188,6 +189,7 @@
     protected override async Task OnInitializedAsync()
     {
         CropPrints = Config.Get("CropWhiteBorder", "true") == "true";
+        NetworkStatus.OnNetworkStatusChanged += HandlePicflowNetworkChange;
 
         var cachedImg = CacheService.Get<List<ImageModel>>("PicflowImages");
         if (cachedImg != null)
@@ -199,6 +201,18 @@
         else
         {
             await LoadFromLogs();
+        }
+    }
+
+    private void HandlePicflowNetworkChange(bool isOnline)
+    {
+        if (isOnline)
+        {
+            // Re-fetch any images that were skipped while offline
+            foreach (var img in Images.Where(i => string.IsNullOrEmpty(i.Url)))
+            {
+                _ = FetchImageUrl(img);
+            }
         }
     }
 
@@ -489,11 +503,10 @@
                         imgModel.Url = url;
                     }
                 }
-                else
+                else if (NetworkStatus.IsOnline)
                 {
                     PicflowDatabase.SaveItem(imgModel.ItemId, "", "", "INVALID", (int)imgModel.Category);
                     InvokeAsync(() => { Images.Remove(imgModel); StateHasChanged(); });
-                    InvokeAsync(StateHasChanged);
                     return;
                 }
             }
@@ -512,11 +525,10 @@
                     }
                     imgModel.Url = ApiRequest.ImageThumbnailUrl(printInfo.FileId);
                 }
-                else
+                else if (NetworkStatus.IsOnline)
                 {
                     PicflowDatabase.SaveItem(imgModel.ItemId, "", "", "INVALID", (int)imgModel.Category);
                     InvokeAsync(() => { Images.Remove(imgModel); StateHasChanged(); });
-                    InvokeAsync(StateHasChanged);
                     return;
                 }
             }
@@ -612,6 +624,7 @@
 
     public void Dispose()
     {
+        NetworkStatus.OnNetworkStatusChanged -= HandlePicflowNetworkChange;
         CacheService.Set("PicflowImages", Images);
         CacheService.Set("PicflowAllItems", _allItems);
     }

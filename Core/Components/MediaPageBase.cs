@@ -17,9 +17,12 @@ namespace VRCGalleryManager.Core.Components
         [Inject] protected FileDropService FileDropService { get; set; }
         [Inject] protected ApiRequest apiRequest { get; set; }
         [Inject] protected MediaCacheService CacheService { get; set; }
+        [Inject] protected NetworkStatusService NetworkStatus { get; set; }
 
         protected bool isLoading = true;
         protected bool isRefreshing = false;
+        protected bool hasNetworkError = false;
+        protected string errorMessage = "";
         protected int imageCount = 0;
         
         protected string editingBase64Image = null;
@@ -34,6 +37,7 @@ namespace VRCGalleryManager.Core.Components
             FileDropService.OnDragEnter += HandleDragEnter;
             FileDropService.OnDragLeave += HandleDragLeave;
             FileDropService.OnFileDropped += HandleFileDropped;
+            NetworkStatus.OnNetworkStatusChanged += HandleBaseNetworkStatusChanged;
             
             await LoadInitialDataAsync();
 
@@ -41,6 +45,26 @@ namespace VRCGalleryManager.Core.Components
             {
                 await LoadLocalFileForEditing(uploadPath);
             }
+        }
+
+        private void HandleBaseNetworkStatusChanged(bool isOnline)
+        {
+            if (isOnline && hasNetworkError)
+            {
+                InvokeAsync(async () =>
+                {
+                    hasNetworkError = false;
+                    errorMessage = "";
+                    await RefreshList();
+                });
+            }
+        }
+
+        public virtual async Task RetryLoadAsync()
+        {
+            hasNetworkError = false;
+            errorMessage = "";
+            await RefreshList();
         }
 
         protected abstract Task LoadInitialDataAsync();
@@ -101,7 +125,7 @@ namespace VRCGalleryManager.Core.Components
                 
                 if (file.ContentType.Contains("gif", StringComparison.OrdinalIgnoreCase))
                 {
-                    NotificationService.Show("Le GIF sono supportate solo per le Emoji. L'immagine è stata convertita in formato statico.", "Formato GIF convertito", NotificationType.Info);
+                    NotificationService.Show("GIFs are only supported for Emojis. The image was converted to a static format.", "GIF Converted", NotificationType.Info);
                 }
                 
                 byte[] bytes = memoryStream.ToArray();
@@ -124,7 +148,7 @@ namespace VRCGalleryManager.Core.Components
 
                 if (contentType.Contains("gif", StringComparison.OrdinalIgnoreCase))
                 {
-                    NotificationService.Show("Le GIF sono supportate solo per le Emoji. L'immagine è stata convertita in formato statico.", "Formato GIF convertito", NotificationType.Info);
+                    NotificationService.Show("GIFs are only supported for Emojis. The image was converted to a static format.", "GIF Converted", NotificationType.Info);
                 }
 
                 string base64String = Convert.ToBase64String(bytes);
@@ -224,6 +248,7 @@ namespace VRCGalleryManager.Core.Components
             FileDropService.OnDragEnter -= HandleDragEnter;
             FileDropService.OnDragLeave -= HandleDragLeave;
             FileDropService.OnFileDropped -= HandleFileDropped;
+            NetworkStatus.OnNetworkStatusChanged -= HandleBaseNetworkStatusChanged;
         }
 
         protected void HandleDragEnter()

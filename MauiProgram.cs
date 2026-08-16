@@ -35,6 +35,7 @@ public static class MauiProgram
         builder.Services.AddSingleton<FileDropService>();
         builder.Services.AddSingleton<ApiRequest>();
         builder.Services.AddSingleton<MediaCacheService>();
+        builder.Services.AddSingleton<NetworkStatusService>();
 
 #if DEBUG
 		builder.Services.AddBlazorWebViewDeveloperTools();

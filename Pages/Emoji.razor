@@ -58,6 +58,39 @@
                 <div class="spinner-border text-primary" role="status"></div>
             </div>
         }
+        else if (hasNetworkError)
+        {
+            <div class="flex-grow-1 d-flex flex-column justify-content-center align-items-center text-center p-4">
+                <div class="p-3 mb-3 rounded-circle" style="background-color: var(--bg-active); width: 64px; height: 64px; display: flex; align-items: center; justify-content: center;">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="var(--danger, #ff4757)">
+                        <path d="M23.64 7c-.45-.34-4.93-3.66-11.64-3.66-1.57 0-3.04.19-4.38.53l2.42 2.42c.62-.06 1.28-.1 1.96-.1 5.3 0 9.09 2.44 9.53 2.76L23.64 7zM1.41 1.6L0 3.01l2.45 2.45C1.18 5.99.37 6.64.35 6.66l11.64 14.5 3.32-4.14 4.54 4.54 1.41-1.41L1.41 1.6zM12 18.25L4.54 8.95c.98-.67 3.63-2.14 7.46-2.14.33 0 .66.01.98.04l6.09 6.09L12 18.25z"/>
+                    </svg>
+                </div>
+                <h5 class="text-white fw-bold mb-1">Connection Error</h5>
+                <p class="text-muted mb-3" style="max-width: 400px; font-size: 0.9rem;">@errorMessage</p>
+                <button class="btn btn-primary d-flex align-items-center gap-2 px-3 py-2" @onclick="RetryLoadAsync" disabled="@isRefreshing">
+                    @if (isRefreshing)
+                    {
+                        <span class="spinner-border spinner-border-sm" role="status"></span>
+                    }
+                    else
+                    {
+                        <img src="/svg/rotate-right-svgrepo-com.svg" class="btn-icon" style="margin: 0;" />
+                    }
+                    <span>Retry</span>
+                </button>
+            </div>
+        }
+        else if (emojis.Count == 0)
+        {
+            <div class="flex-grow-1 d-flex flex-column justify-content-center align-items-center text-center p-4">
+                <div class="p-3 mb-3 rounded-circle" style="background-color: var(--bg-active); width: 64px; height: 64px; display: flex; align-items: center; justify-content: center;">
+                    <img src="/svg/smile-svgrepo-com.svg" style="width: 32px; height: 32px; opacity: 0.6;" />
+                </div>
+                <h5 class="text-white fw-bold mb-1">No Emojis Found</h5>
+                <p class="text-muted mb-3" style="max-width: 400px; font-size: 0.9rem;">You haven't uploaded any custom emojis or stickers to VRChat yet. Upload a new emoji to get started!</p>
+            </div>
+        }
         else
         {
             <div class="flex-grow-1 overflow-auto">
@@ -100,8 +133,6 @@
     private List<EmojiItem> emojis = new();
     private VRCGalleryManager.Components.ImageViewer imageViewer;
     
-
-
     private static string EMOJI_MASK_TAG = "square";
 
     public class EmojiItem
@@ -142,6 +173,8 @@
         if (isRefreshing) return;
         isRefreshing = true;
         isLoading = true;
+        hasNetworkError = false;
+        errorMessage = "";
         emojis.Clear();
         CacheService.Set("Emojis", (List<EmojiItem>)null);
         StateHasChanged();
@@ -175,7 +208,12 @@
         }
         catch (Exception ex)
         {
+            hasNetworkError = true;
+            errorMessage = !NetworkStatus.IsOnline 
+                ? "No internet connection. Please check your network and try again." 
+                : "Unable to reach VRChat servers. Please try again later.";
             Console.WriteLine($"Error loading emojis: {ex.Message}");
+            NotificationService.Show(errorMessage, "Connection Error", NotificationType.Error);
         }
         finally
         {

@@ -146,56 +146,32 @@ namespace VRCGalleryManager.Core
 
         public async Task<List<VRChat.API.Model.File>> GetFilesAsync(string tag)
         {
-            try
-            {
-                var files = await ExecuteWithReloginAsync(() => filesApi.GetFilesAsync(tag, null, 100));
-                return files ?? new List<VRChat.API.Model.File>();
-            }
-            catch (ApiException ex)
-            {
-                Console.WriteLine($"Error fetching files for {tag}: {ex.Message}");
-                return new List<VRChat.API.Model.File>();
-            }
+            var files = await ExecuteWithReloginAsync(() => filesApi.GetFilesAsync(tag, null, 100));
+            return files ?? new List<VRChat.API.Model.File>();
         }
 
         public async Task<List<Print>> GetPrintsAsync()
         {
-            try
-            {
-                var user = await ExecuteWithReloginAsync(() => Auth.AuthApi.GetCurrentUserAsync());
-                if (user == null || string.IsNullOrEmpty(user.Id)) return new List<Print>();
+            var user = await ExecuteWithReloginAsync(() => Auth.AuthApi.GetCurrentUserAsync());
+            if (user == null || string.IsNullOrEmpty(user.Id)) return new List<Print>();
 
-                var prints = await ExecuteWithReloginAsync(() => printsApi.GetUserPrintsAsync(user.Id, 100, 0));
-                return prints ?? new List<Print>();
-            }
-            catch (ApiException ex)
-            {
-                Console.WriteLine($"Error fetching prints: {ex.Message}");
-                return new List<Print>();
-            }
+            var prints = await ExecuteWithReloginAsync(() => printsApi.GetUserPrintsAsync(user.Id, 100, 0));
+            return prints ?? new List<Print>();
         }
 
         public async Task<List<InventoryItem>> GetStickersAsync()
         {
-            try
-            {
-                var inventory = await ExecuteWithReloginAsync(() => inventoryApi.GetInventoryAsync(
-                    n: 100,
-                    offset: 0,
-                    types: InventoryItemType.Sticker,
-                    tags: "Custom Sticker",
-                    flags: InventoryFlag.Ugc,
-                    archived: false,
-                    order: "newest_created"
-                ));
+            var inventory = await ExecuteWithReloginAsync(() => inventoryApi.GetInventoryAsync(
+                n: 100,
+                offset: 0,
+                types: InventoryItemType.Sticker,
+                tags: "Custom Sticker",
+                flags: InventoryFlag.Ugc,
+                archived: false,
+                order: "newest_created"
+            ));
 
-                return inventory?.Data ?? new List<InventoryItem>();
-            }
-            catch (ApiException ex)
-            {
-                Console.WriteLine($"Error fetching stickers: {ex.Message}");
-                return new List<InventoryItem>();
-            }
+            return inventory?.Data ?? new List<InventoryItem>();
         }
 
         public async Task<ApiData> GetApiData(string tag)
@@ -229,7 +205,7 @@ namespace VRCGalleryManager.Core
                     }
                 }
             }
-            catch (ApiException ex)
+            catch (Exception ex)
             {
                 Console.WriteLine($"Error: {ex.Message}");
             }
