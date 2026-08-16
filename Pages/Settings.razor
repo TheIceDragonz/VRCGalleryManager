@@ -411,6 +411,7 @@
     {
         Username = user.DisplayName;
         Password = "password";
+        ShowPassword = false;
 
         // Check VRChat Plus badge or tag
         HasVRCPlus = false;
@@ -442,32 +443,45 @@
         }
         catch (VRChat.API.Client.ApiException ex) when (ex.ErrorCode == 401)
         {
-            var creds = Auth.LoadCredentials();
-            if (creds != null)
+            try
             {
-                Username = creds.Value.username;
-                Password = creds.Value.password;
-            }
-            
-            bool success = await Auth.TryAutoReloginAsync();
-            if (success)
-            {
-                var user = await Auth.AuthApi.GetCurrentUserAsync();
-                Auth.CurrentUser = user;
-                ApplyCurrentUser(user);
+                IsLoggingIn = true;
                 StateHasChanged();
+
+                var creds = Auth.LoadCredentials();
+                if (creds != null)
+                {
+                    Username = creds.Value.username;
+                    Password = creds.Value.password;
+                }
+                
+                bool success = await Auth.TryAutoReloginAsync();
+                if (success)
+                {
+                    var user = await Auth.AuthApi.GetCurrentUserAsync();
+                    Auth.CurrentUser = user;
+                    ApplyCurrentUser(user);
+                }
+                else if (Auth.Is2FARequired)
+                {
+                    IsEmail2FA = Auth.IsEmail2FA;
+                    Show2FA = true;
+                    Notifications.Show("IP changed. Please enter your 2FA code.", "2FA Required", VRCGalleryManager.Core.NotificationType.Info);
+                }
+                else
+                {
+                    Auth.Logout(keepCredentials: true);
+                    Notifications.Show("Session expired and auto-login failed. Please log in again.", "Session Expired", VRCGalleryManager.Core.NotificationType.Error);
+                }
             }
-            else if (Auth.Is2FARequired)
-            {
-                IsEmail2FA = Auth.IsEmail2FA;
-                Show2FA = true;
-                Notifications.Show("IP changed. Please enter your 2FA code.", "2FA Required", VRCGalleryManager.Core.NotificationType.Info);
-                StateHasChanged();
-            }
-            else
+            catch
             {
                 Auth.Logout(keepCredentials: true);
                 Notifications.Show("Session expired and auto-login failed. Please log in again.", "Session Expired", VRCGalleryManager.Core.NotificationType.Error);
+            }
+            finally
+            {
+                IsLoggingIn = false;
                 StateHasChanged();
             }
         }
@@ -520,7 +534,7 @@
                 }
                 else
                 {
-                    Notifications.Show("Invalid credentials or connection error.", "Login Error", VRCGalleryManager.Core.NotificationType.Error);
+                    Notifications.Show(string.IsNullOrEmpty(Auth.LastErrorMessage) ? "Invalid credentials or connection error." : Auth.LastErrorMessage, "Login Error", VRCGalleryManager.Core.NotificationType.Error);
                 }
             }
             catch (Exception ex)

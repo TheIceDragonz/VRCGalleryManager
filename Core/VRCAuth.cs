@@ -2,6 +2,7 @@ using Microsoft.Maui.Storage;
 using VRChat.API.Api;
 using VRChat.API.Client;
 using VRChat.API.Model;
+using System.Threading;
 
 namespace VRCGalleryManager.Core
 {
@@ -33,6 +34,8 @@ namespace VRCGalleryManager.Core
 
 
 
+        public string LastErrorMessage { get; private set; }
+
         private VRCAuth()
         {
             Config = new Configuration();
@@ -55,6 +58,11 @@ namespace VRCGalleryManager.Core
         {
             Config.Username = usernameVRC;
             Config.Password = passwordVRC;
+            if (AuthApi.Configuration is Configuration authConfig)
+            {
+                authConfig.Username = usernameVRC;
+                authConfig.Password = passwordVRC;
+            }
 
             try
             {
@@ -71,28 +79,46 @@ namespace VRCGalleryManager.Core
                 }
                 else if (currentUserResp.RawContent != null && currentUserResp.RawContent.Contains("\"error\""))
                 {
+                    LastErrorMessage = ExtractErrorMessage(currentUserResp.RawContent);
                     return VRCAuthStatus.Error;
                 }
                 else if (currentUserResp.Data == null || string.IsNullOrEmpty(currentUserResp.Data.Id))
                 {
+                    LastErrorMessage = "Invalid credentials or API error.";
                     return VRCAuthStatus.Error;
                 }
 
+                var user = await AuthApi.GetCurrentUserAsync();
+                
                 SaveCookies();
-
                 LoggedIn = true;
-                CurrentUser = await AuthApi.GetCurrentUserAsync();
+                CurrentUser = user;
                 Console.WriteLine("Logged in as: {0}", CurrentUser.DisplayName);
                 
                 OnAuthStateChanged?.Invoke();
 
                 return VRCAuthStatus.Success;
             }
-            catch (ApiException ex)
+            catch (Exception ex)
             {
                 Console.WriteLine("API Error: {0}", ex.Message);
+                LastErrorMessage = ex.Message;
                 return VRCAuthStatus.Error;
             }
+        }
+
+        private string ExtractErrorMessage(string rawContent)
+        {
+            try
+            {
+                var root = System.Text.Json.JsonDocument.Parse(rawContent);
+                if (root.RootElement.TryGetProperty("error", out var errorEl) && errorEl.TryGetProperty("message", out var msgEl))
+                {
+                    return msgEl.GetString();
+                }
+            }
+            catch { }
+            return "Invalid credentials or API error.";
         }
 
         public async Task<VRCAuthStatus> Verify2FAAsync(string code, bool isEmail)
@@ -110,17 +136,18 @@ namespace VRCGalleryManager.Core
                     ExtractAuthCookie(resp2fa);
                 }
 
+                var user = await AuthApi.GetCurrentUserAsync();
+                
                 SaveCookies();
-
                 LoggedIn = true;
-                CurrentUser = await AuthApi.GetCurrentUserAsync();
+                CurrentUser = user;
                 Console.WriteLine("Logged in as: {0}", CurrentUser.DisplayName);
                 
                 OnAuthStateChanged?.Invoke();
 
                 return VRCAuthStatus.Success;
             }
-            catch (ApiException ex)
+            catch (Exception ex)
             {
                 Console.WriteLine("2FA Verification Error: {0}", ex.Message);
                 return VRCAuthStatus.Error;
@@ -283,21 +310,39 @@ namespace VRCGalleryManager.Core
             if (Config.DefaultHeaders.TryGetValue("Cookie", out string cookieString))
             {
                 var parts = cookieString.Split(';');
-                var newParts = parts.Where(p => !p.Trim().StartsWith("auth=")).ToList();
-                Config.DefaultHeaders["Cookie"] = string.Join(";", newParts);
+                var newParts = parts.Where(p => !string.IsNullOrWhiteSpace(p) && !p.Trim().StartsWith("auth=")).Select(p => p.Trim()).ToList();
+                if (newParts.Count > 0)
+                {
+                    Config.DefaultHeaders["Cookie"] = string.Join("; ", newParts);
+                }
+                else
+                {
+                    Config.DefaultHeaders.Remove("Cookie");
+                }
             }
             Config.ApiKey.Remove("auth");
         }
+
+        private SemaphoreSlim _reloginSemaphore = new SemaphoreSlim(1, 1);
+        private DateTime _lastReloginAttempt = DateTime.MinValue;
 
         public async Task<bool> TryAutoReloginAsync()
         {
             var creds = LoadCredentials();
             if (creds == null) return false;
 
-            ClearAuthCookieOnly();
-            
+            await _reloginSemaphore.WaitAsync();
             try
             {
+                if (LoggedIn && (DateTime.UtcNow - _lastReloginAttempt).TotalSeconds < 5)
+                {
+                    return true;
+                }
+
+                _lastReloginAttempt = DateTime.UtcNow;
+
+                ClearAuthCookieOnly();
+                
                 var status = await LoginAsync(creds.Value.username, creds.Value.password);
                 if (status == VRCAuthStatus.Success)
                 {
@@ -314,6 +359,10 @@ namespace VRCGalleryManager.Core
             }
             catch
             {
+            }
+            finally
+            {
+                _reloginSemaphore.Release();
             }
             return false;
         }
