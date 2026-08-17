@@ -10,20 +10,15 @@ namespace VRCGalleryManager.Core
     public class ApiRequest
     {
         private VRCAuth Auth;
-        private FilesApi filesApi;
-        private PrintsApi printsApi;
-        private UsersApi usersApi;
-        private WorldsApi worldApi;
-        private InventoryApi inventoryApi;
+        private FilesApi filesApi => new FilesApi(Auth.ApiClient, Auth.ApiClient, Auth.Config);
+        private PrintsApi printsApi => new PrintsApi(Auth.ApiClient, Auth.ApiClient, Auth.Config);
+        private UsersApi usersApi => new UsersApi(Auth.ApiClient, Auth.ApiClient, Auth.Config);
+        private WorldsApi worldApi => new WorldsApi(Auth.ApiClient, Auth.ApiClient, Auth.Config);
+        private InventoryApi inventoryApi => new InventoryApi(Auth.ApiClient, Auth.ApiClient, Auth.Config);
 
         public ApiRequest(VRCAuth Auth)
         {
             this.Auth = Auth;
-            filesApi = new FilesApi(Auth.ApiClient, Auth.ApiClient, Auth.Config);
-            printsApi = new PrintsApi(Auth.ApiClient, Auth.ApiClient, Auth.Config);
-            usersApi = new UsersApi(Auth.ApiClient, Auth.ApiClient, Auth.Config);
-            worldApi = new WorldsApi(Auth.ApiClient, Auth.ApiClient, Auth.Config);
-            inventoryApi = new InventoryApi(Auth.ApiClient, Auth.ApiClient, Auth.Config);
         }
 
         public class ApiData
@@ -152,8 +147,20 @@ namespace VRCGalleryManager.Core
 
         public async Task<List<Print>> GetPrintsAsync()
         {
-            var user = await ExecuteWithReloginAsync(() => Auth.AuthApi.GetCurrentUserAsync());
-            if (user == null || string.IsNullOrEmpty(user.Id)) return new List<Print>();
+            var user = Auth.CurrentUser ?? await ExecuteWithReloginAsync(() => Auth.AuthApi.GetCurrentUserAsync());
+            if (user == null || string.IsNullOrEmpty(user.Id))
+            {
+                bool relogged = await Auth.TryAutoReloginAsync();
+                if (relogged)
+                {
+                    user = Auth.CurrentUser ?? await Auth.AuthApi.GetCurrentUserAsync();
+                }
+            }
+
+            if (user == null || string.IsNullOrEmpty(user.Id))
+            {
+                throw new ApiException(401, "User is not logged in or session expired.");
+            }
 
             var prints = await ExecuteWithReloginAsync(() => printsApi.GetUserPrintsAsync(user.Id, 100, 0));
             return prints ?? new List<Print>();

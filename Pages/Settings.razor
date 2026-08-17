@@ -407,37 +407,25 @@
 
     private void ApplyCurrentUser(CurrentUser user)
     {
+        if (user == null) return;
         Username = user.DisplayName;
         Password = "password";
         ShowPassword = false;
 
         // Check VRChat Plus badge or tag
-        HasVRCPlus = false;
-        if (user.Badges != null)
-        {
-            foreach (var badge in user.Badges)
-            {
-                if (badge.BadgeId == "bdg_754f9935-0f97-49d8-b857-95afb9b673fa")
-                {
-                    HasVRCPlus = true;
-                    break;
-                }
-            }
-        }
-        
-        if (!HasVRCPlus && user.Tags != null && user.Tags.Contains("system_supporter"))
-        {
-            HasVRCPlus = true;
-        }
+        HasVRCPlus = VRCAuth.CheckHasVRCPlus(user);
     }
 
     private async Task LoadCurrentUser()
     {
         try
         {
-            var user = await Auth.AuthApi.GetCurrentUserAsync();
-            Auth.CurrentUser = user;
-            ApplyCurrentUser(user);
+            var user = Auth.CurrentUser ?? await Auth.AuthApi.GetCurrentUserAsync();
+            if (user != null && !string.IsNullOrEmpty(user.Id))
+            {
+                Auth.CurrentUser = user;
+                ApplyCurrentUser(user);
+            }
         }
         catch (VRChat.API.Client.ApiException ex) when (ex.ErrorCode == 401)
         {
@@ -496,7 +484,7 @@
 
         if (IsLoggedIn)
         {
-            try { Auth.AuthApi.Logout(); } catch { }
+            try { await Auth.AuthApi.LogoutAsync(); } catch { }
             finally
             {
                 Auth.Logout();
@@ -551,7 +539,6 @@
         if (string.IsNullOrWhiteSpace(Code2FA)) return;
         
         IsLoggingIn = true;
-
         StateHasChanged();
         
         try
@@ -563,11 +550,18 @@
                 Show2FA = false;
                 Code2FA = "";
                 Password = "";
-                await LoadCurrentUser();
+                if (Auth.CurrentUser != null)
+                {
+                    ApplyCurrentUser(Auth.CurrentUser);
+                }
+                else
+                {
+                    await LoadCurrentUser();
+                }
             }
             else
             {
-                Notifications.Show("Invalid 2FA code.", "Login Error", VRCGalleryManager.Core.NotificationType.Error);
+                Notifications.Show(string.IsNullOrEmpty(Auth.LastErrorMessage) ? "Invalid 2FA code." : Auth.LastErrorMessage, "Login Error", VRCGalleryManager.Core.NotificationType.Error);
             }
         }
         catch (Exception ex)
@@ -577,6 +571,7 @@
         finally
         {
             IsLoggingIn = false;
+            StateHasChanged();
         }
     }
 

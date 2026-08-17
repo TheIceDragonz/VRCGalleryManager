@@ -189,6 +189,15 @@
             foreach (var print in printList)
             {
                 string fileId = print.Files?.FileId;
+                if (string.IsNullOrEmpty(fileId) && !string.IsNullOrEmpty(print.Files?.Image))
+                {
+                    var match = System.Text.RegularExpressions.Regex.Match(print.Files.Image, @"file_[a-f0-9\-]+");
+                    if (match.Success)
+                    {
+                        fileId = match.Value;
+                    }
+                }
+
                 if (!string.IsNullOrEmpty(print.Id) && !string.IsNullOrEmpty(fileId))
                 {
                     prints.Add(new PrintItem
