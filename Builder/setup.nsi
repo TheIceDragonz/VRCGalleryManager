@@ -2,13 +2,15 @@
 ; Configurations and Definitions
 ;--------------------------------
 !define AppName "VRCGalleryManager"
-!define AppVersion "1.0.0.0"
+!ifndef AppVersion
+  !define AppVersion "2.0.0"
+!endif
 !define AppPublisher "TheIceDragonz"
 !define AppDescription "Simple Tool for your VRChat gallery"
 
 ; Icon
-!define MUI_ICON "E:\- ProgramLabs\VRCGalleryManager\Icon.ico"
-!define MUI_UNICON "E:\- ProgramLabs\VRCGalleryManager\Icon.ico"
+!define MUI_ICON "..\icon.ico"
+!define MUI_UNICON "..\icon.ico"
 
 ;--------------------------------
 ; Installer Settings
@@ -20,7 +22,7 @@ BrandingText "Nullsoft Install System v3.10+"
 !include "MUI2.nsh"   ; Use Modern UI 2
 
 ; Add version information
-VIProductVersion "${AppVersion}"
+VIProductVersion "${AppVersion}.0"
 VIAddVersionKey /LANG=0x409 "ProductName" "${AppName}"
 VIAddVersionKey /LANG=0x409 "FileDescription" "${AppDescription}"
 VIAddVersionKey /LANG=0x409 "CompanyName" "${AppPublisher}"
@@ -40,7 +42,7 @@ VIAddVersionKey /LANG=0x409 "LegalCopyright" "${AppPublisher}"
 ;--------------------------------
 ; Default Installation Directory
 ;--------------------------------
-InstallDir "$PROGRAMFILES\${AppName}"
+InstallDir "$PROGRAMFILES64\${AppName}"
 InstallDirRegKey HKLM "Software\${AppName}" "Install_Dir"
 
 ;--------------------------------
@@ -50,16 +52,16 @@ Section "Install"
     SetDetailsView show
     SetOutPath "$INSTDIR"
     
-    ; Copy application files (modify the path as needed)
-    File /r "E:\- ProgramLabs\VRCGalleryManager\bin\Release\net8.0-windows\publish\win-x86\*.*"
+    ; Copy application files from Output\Windows
+    File /r "Output\Windows\*.*"
     
-    ; Copy the Icon.ico file (make sure it exists)
-    File "E:\- ProgramLabs\VRCGalleryManager\Icon.ico"
+    ; Copy the Icon.ico file
+    File "..\icon.ico"
     
     ; Create shortcuts (desktop and Start menu)
-    CreateShortcut "$DESKTOP\${AppName}.lnk" "$INSTDIR\VRCGalleryManager.exe" "" "$INSTDIR\Icon.ico"
+    CreateShortcut "$DESKTOP\${AppName}.lnk" "$INSTDIR\VRCGalleryManager.exe" "" "$INSTDIR\icon.ico"
     CreateDirectory "$SMPROGRAMS\${AppName}"
-    CreateShortcut "$SMPROGRAMS\${AppName}\${AppName}.lnk" "$INSTDIR\VRCGalleryManager.exe" "" "$INSTDIR\Icon.ico"
+    CreateShortcut "$SMPROGRAMS\${AppName}\${AppName}.lnk" "$INSTDIR\VRCGalleryManager.exe" "" "$INSTDIR\icon.ico"
     
     ; Register the installation directory in the registry
     WriteRegStr HKLM "Software\${AppName}" "Install_Dir" "$INSTDIR"
@@ -83,7 +85,7 @@ Section "Uninstall"
     Delete "$INSTDIR\VRCGalleryManager.exe"
     Delete "$INSTDIR\Uninstall.exe"
     Delete "$DESKTOP\${AppName}.lnk"
-    Delete "$INSTDIR\Icon.ico"
+    Delete "$INSTDIR\icon.ico"
     Delete "$SMPROGRAMS\${AppName}\${AppName}.lnk"
     RMDir "$SMPROGRAMS\${AppName}"
     RMDir /r "$INSTDIR"   ; Remove the entire installation folder recursively
