@@ -1,8 +1,9 @@
 @page "/settings"
 @using VRCGalleryManager.Core
+@using VRCGalleryManager.Core.Api
+@using VRCGalleryManager.Core.Api.Models
 @using System.IO
 @using Microsoft.AspNetCore.Components.Web
-@using VRChat.API.Model
 @inject VRCAuth Auth
 @inject DialogService dialogService
 @inject UpdateManager Updater
@@ -503,7 +504,7 @@
                 ApplyCurrentUser(user);
             }
         }
-        catch (VRChat.API.Client.ApiException ex) when (ex.ErrorCode == 401)
+        catch (VRChatApiException ex) when (ex.StatusCode == 401)
         {
             try
             {
@@ -666,12 +667,6 @@
         
         try
         {
-            // Clear temporary headers so VRChat treats this as a fresh login request (and thus sends a new code)
-            Auth.Config.ApiKey.Clear();
-            Auth.Config.DefaultHeaders.Clear();
-            Auth.ApiClient = new VRChat.API.Client.ApiClient(Auth.Config.BasePath);
-            Auth.AuthApi = new VRChat.API.Api.AuthenticationApi(Auth.ApiClient, Auth.ApiClient, Auth.Config);
-
             var status = await Auth.LoginAsync(Username, Password);
             if (status == VRCAuthStatus.RequiresEmail2FA)
             {

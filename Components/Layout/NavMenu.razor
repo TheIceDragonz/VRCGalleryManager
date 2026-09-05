@@ -1,6 +1,5 @@
 @using VRCGalleryManager.Core
-@using VRChat.API.Client
-@using Newtonsoft.Json.Linq
+@using VRCGalleryManager.Core.Api.Models
 @implements IDisposable
 @inject VRCAuth Auth
 @inject NavigationManager NavManager
@@ -110,7 +109,7 @@
 
 
 @code {
-    private VRChat.API.Model.CurrentUser CurrentUser;
+    private CurrentUser? CurrentUser;
     private VRChatPublicProfile? PublicProfile;
     private VRCProfileTheme ProfileTheme = new();
     private string ProfileEffectUrl;
@@ -227,24 +226,16 @@
             {
                 using var request = new System.Net.Http.HttpRequestMessage(System.Net.Http.HttpMethod.Get, "cosmetics/index/profileEffect");
                 request.Headers.TryAddWithoutValidation("User-Agent", "VRCGalleryManager");
-                if (Auth.Config.DefaultHeaders.TryGetValue("Cookie", out string cookie))
+                if (!string.IsNullOrEmpty(Auth.CookieHeader))
                 {
-                    request.Headers.TryAddWithoutValidation("Cookie", cookie);
+                    request.Headers.TryAddWithoutValidation("Cookie", Auth.CookieHeader);
                 }
 
                 var response = await _cosmeticsHttpClient.SendAsync(request);
                 if (response.IsSuccessStatusCode)
                 {
                     var content = await response.Content.ReadAsStringAsync();
-                    var arr = JArray.Parse(content);
-                    var item = arr.FirstOrDefault(x => x["id"]?.ToString() == CurrentUser.ProfileEffect);
-                    if (item != null)
-                    {
-                        var assets = item["metadata"]?["assets"] as JArray;
-                        var anim = assets?.FirstOrDefault(a => a["type"]?.ToString() == "mainAnimation");
-                        if (anim != null)
-                            ProfileEffectUrl = anim["url"]?.ToString();
-                    }
+                    ProfileEffectUrl = ExtractCosmeticAnimationUrl(content, CurrentUser.ProfileEffect);
                 }
             }
         }
@@ -256,28 +247,48 @@
             {
                 using var request = new System.Net.Http.HttpRequestMessage(System.Net.Http.HttpMethod.Get, "cosmetics/index/iconFrame");
                 request.Headers.TryAddWithoutValidation("User-Agent", "VRCGalleryManager");
-                if (Auth.Config.DefaultHeaders.TryGetValue("Cookie", out string cookie))
+                if (!string.IsNullOrEmpty(Auth.CookieHeader))
                 {
-                    request.Headers.TryAddWithoutValidation("Cookie", cookie);
+                    request.Headers.TryAddWithoutValidation("Cookie", Auth.CookieHeader);
                 }
 
                 var response = await _cosmeticsHttpClient.SendAsync(request);
                 if (response.IsSuccessStatusCode)
                 {
                     var content = await response.Content.ReadAsStringAsync();
-                    var arr = JArray.Parse(content);
-                    var item = arr.FirstOrDefault(x => x["id"]?.ToString() == CurrentUser.IconFrame);
-                    if (item != null)
-                    {
-                        var assets = item["metadata"]?["assets"] as JArray;
-                        var anim = assets?.FirstOrDefault(a => a["type"]?.ToString() == "mainAnimation");
-                        if (anim != null)
-                            IconFrameUrl = anim["url"]?.ToString();
-                    }
+                    IconFrameUrl = ExtractCosmeticAnimationUrl(content, CurrentUser.IconFrame);
                 }
             }
         }
         catch { }
+    }
+
+    private static string? ExtractCosmeticAnimationUrl(string json, string targetId)
+    {
+        try
+        {
+            using var doc = System.Text.Json.JsonDocument.Parse(json);
+            foreach (var el in doc.RootElement.EnumerateArray())
+            {
+                if (el.TryGetProperty("id", out var idEl) && idEl.GetString() == targetId)
+                {
+                    if (el.TryGetProperty("metadata", out var meta) && meta.TryGetProperty("assets", out var assets) && assets.ValueKind == System.Text.Json.JsonValueKind.Array)
+                    {
+                        foreach (var asset in assets.EnumerateArray())
+                        {
+                            if (asset.TryGetProperty("type", out var t) && t.GetString() == "mainAnimation" &&
+                                asset.TryGetProperty("url", out var u))
+                            {
+                                return u.GetString();
+                            }
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+        catch { }
+        return null;
     }
 
     public void Dispose()

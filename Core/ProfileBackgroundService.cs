@@ -721,9 +721,9 @@ a {{
             {
                 using var request = new HttpRequestMessage(HttpMethod.Get, $"profile/{userId}");
                 request.Headers.TryAddWithoutValidation("User-Agent", "VRCGalleryManager");
-                if (_auth.Config.DefaultHeaders.TryGetValue("Cookie", out string? cookie) && !string.IsNullOrEmpty(cookie))
+                if (!string.IsNullOrEmpty(_auth.CookieHeader))
                 {
-                    request.Headers.TryAddWithoutValidation("Cookie", cookie);
+                    request.Headers.TryAddWithoutValidation("Cookie", _auth.CookieHeader);
                 }
 
                 var response = await _httpClient.SendAsync(request);

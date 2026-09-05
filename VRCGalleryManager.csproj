@@ -67,14 +67,10 @@
     <ItemGroup>
         <PackageReference Include="CommunityToolkit.Maui" Version="9.0.1" />
         <PackageReference Include="H.NotifyIcon.Maui" Version="2.0.144" />
-        <PackageReference Include="JsonSubTypes" Version="2.0.1" />
         <PackageReference Include="Microsoft.Maui.Controls" Version="8.0.100" />
         <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="8.0.100" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="8.0.100" />
         <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.1" />
-        <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
-        <PackageReference Include="Otp.NET" Version="1.4.1" />
-        <PackageReference Include="Polly" Version="8.7.0" />
         <PackageReference Include="SixLabors.ImageSharp" Version="4.1.0" />
         <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="2.1.4" />
     </ItemGroup>

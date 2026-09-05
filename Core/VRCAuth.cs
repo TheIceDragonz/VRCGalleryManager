@@ -1,8 +1,11 @@
-using Microsoft.Maui.Storage;
-using VRChat.API.Api;
-using VRChat.API.Client;
-using VRChat.API.Model;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Maui.Storage;
+using VRCGalleryManager.Core.Api;
+using VRCGalleryManager.Core.Api.Models;
 
 namespace VRCGalleryManager.Core
 {
@@ -16,36 +19,36 @@ namespace VRCGalleryManager.Core
 
     public class VRCAuth
     {
-        private static VRCAuth instance;
+        private static VRCAuth? instance;
 
-        public Configuration Config;
-        public ApiClient ApiClient;
-        public AuthenticationApi AuthApi;
+        public VRChatApiClient ApiClient { get; }
+        public AuthConfigShim Config { get; }
+        public VRCAuth AuthApi => this;
 
         public bool LoggedIn = false;
         public bool CookieLoaded = false;
-        public CurrentUser CurrentUser { get; set; }
-        public event Action OnAuthStateChanged;
+        public CurrentUser? CurrentUser { get; set; }
+        public event Action? OnAuthStateChanged;
 
         public bool Is2FARequired = false;
         public bool IsEmail2FA = false;
-        public event Action On2FARequiredEvent;
+        public event Action? On2FARequiredEvent;
         public void Notify2FARequired() => On2FARequiredEvent?.Invoke();
 
-
-
-        public string LastErrorMessage { get; private set; }
+        public string LastErrorMessage { get; private set; } = "";
+        public string CookieHeader => ApiClient.CookieHeader;
 
         private VRCAuth()
         {
-            Config = new Configuration();
-            Config.UserAgent = "VRCGalleryManager";
+            ApiClient = new VRChatApiClient();
+            Config = new AuthConfigShim(ApiClient);
 
-            ApiClient = new ApiClient(Config.BasePath);
+            ApiClient.OnCookiesUpdated += () =>
+            {
+                SaveCookies();
+            };
 
             LoadCookies();
-
-            AuthApi = new AuthenticationApi(ApiClient, ApiClient, Config);
         }
 
         public static VRCAuth Instance()
@@ -56,57 +59,41 @@ namespace VRCGalleryManager.Core
 
         public async Task<VRCAuthStatus> LoginAsync(string usernameVRC, string passwordVRC)
         {
-            Config.ApiKey.Clear();
-            Config.ApiKeyPrefix.Clear();
-            Config.DefaultHeaders.Clear();
-            Config.UserAgent = "VRCGalleryManager";
-            Config.Username = usernameVRC;
-            Config.Password = passwordVRC;
-            if (AuthApi.Configuration is Configuration authConfig)
-            {
-                authConfig.ApiKey.Clear();
-                authConfig.ApiKeyPrefix.Clear();
-                authConfig.DefaultHeaders.Clear();
-                authConfig.UserAgent = "VRCGalleryManager";
-                authConfig.Username = usernameVRC;
-                authConfig.Password = passwordVRC;
-            }
-
             try
             {
-                ApiResponse<CurrentUser> currentUserResp = await AuthApi.GetCurrentUserWithHttpInfoAsync();
-                ExtractAuthCookie(currentUserResp);
+                var (user, raw, statusCode) = await ApiClient.LoginRawAsync(usernameVRC, passwordVRC);
 
-                if (requiresEmail2FA(currentUserResp))
+                if (raw.Contains("emailOtp"))
                 {
+                    Is2FARequired = true;
+                    IsEmail2FA = true;
                     return VRCAuthStatus.RequiresEmail2FA;
                 }
-                else if (currentUserResp.RawContent != null && currentUserResp.RawContent.Contains("totp"))
+                else if (raw.Contains("totp") || raw.Contains("otp"))
                 {
+                    Is2FARequired = true;
+                    IsEmail2FA = false;
                     return VRCAuthStatus.RequiresApp2FA;
                 }
-                else if (currentUserResp.RawContent != null && currentUserResp.RawContent.Contains("\"error\""))
+                else if (raw.Contains("\"error\"") || statusCode >= 400)
                 {
-                    LastErrorMessage = ExtractErrorMessage(currentUserResp.RawContent);
+                    LastErrorMessage = VRChatApiClient.ExtractErrorMessage(raw, "Invalid credentials or API error.");
                     return VRCAuthStatus.Error;
                 }
-                else if (currentUserResp.Data == null || string.IsNullOrEmpty(currentUserResp.Data.Id))
+                else if (user == null || string.IsNullOrEmpty(user.Id))
                 {
                     LastErrorMessage = "Invalid credentials or API error.";
                     return VRCAuthStatus.Error;
                 }
 
-                var user = (currentUserResp.Data != null && !string.IsNullOrEmpty(currentUserResp.Data.Id))
-                    ? currentUserResp.Data
-                    : await AuthApi.GetCurrentUserAsync();
-                
                 await SaveCookiesAsync();
                 LoggedIn = true;
+                CookieLoaded = true;
+                Is2FARequired = false;
                 CurrentUser = user;
                 Console.WriteLine("Logged in as: {0}", CurrentUser.DisplayName);
-                
-                OnAuthStateChanged?.Invoke();
 
+                OnAuthStateChanged?.Invoke();
                 return VRCAuthStatus.Success;
             }
             catch (Exception ex)
@@ -117,21 +104,7 @@ namespace VRCGalleryManager.Core
             }
         }
 
-        private string ExtractErrorMessage(string rawContent)
-        {
-            try
-            {
-                var root = System.Text.Json.JsonDocument.Parse(rawContent);
-                if (root.RootElement.TryGetProperty("error", out var errorEl) && errorEl.TryGetProperty("message", out var msgEl))
-                {
-                    return msgEl.GetString();
-                }
-            }
-            catch { }
-            return "Invalid credentials or API error.";
-        }
-
-        public static bool CheckHasVRCPlus(CurrentUser user)
+        public static bool CheckHasVRCPlus(CurrentUser? user)
         {
             if (user == null) return false;
 
@@ -140,8 +113,8 @@ namespace VRCGalleryManager.Core
                 foreach (var badge in user.Badges)
                 {
                     if (badge.BadgeId == "bdg_754f9935-0f97-49d8-b857-95afb9b673fa" ||
-                        (badge.BadgeName != null && (badge.BadgeName.Contains("Plus", StringComparison.OrdinalIgnoreCase) || badge.BadgeName.Contains("Supporter", StringComparison.OrdinalIgnoreCase))) ||
-                        (badge.BadgeId != null && (badge.BadgeId.Contains("supporter", StringComparison.OrdinalIgnoreCase) || badge.BadgeId.Contains("vrcplus", StringComparison.OrdinalIgnoreCase))))
+                        (!string.IsNullOrEmpty(badge.BadgeName) && (badge.BadgeName.Contains("Plus", StringComparison.OrdinalIgnoreCase) || badge.BadgeName.Contains("Supporter", StringComparison.OrdinalIgnoreCase))) ||
+                        (!string.IsNullOrEmpty(badge.BadgeId) && (badge.BadgeId.Contains("supporter", StringComparison.OrdinalIgnoreCase) || badge.BadgeId.Contains("vrcplus", StringComparison.OrdinalIgnoreCase))))
                     {
                         return true;
                     }
@@ -178,74 +151,34 @@ namespace VRCGalleryManager.Core
                 bool isVerified = false;
                 if (isEmail)
                 {
-                    var resp2fa = await AuthApi.Verify2FAEmailCodeWithHttpInfoAsync(new TwoFactorEmailCode(cleanCode));
-                    ExtractAuthCookie(resp2fa);
-                    if (resp2fa.Data != null && resp2fa.Data.Verified)
-                    {
-                        isVerified = true;
-                    }
-                    else if (resp2fa.RawContent != null && resp2fa.RawContent.Contains("\"verified\":true"))
-                    {
-                        isVerified = true;
-                    }
-                    else if (resp2fa.RawContent != null && resp2fa.RawContent.Contains("\"error\""))
-                    {
-                        LastErrorMessage = ExtractErrorMessage(resp2fa.RawContent);
-                    }
-                    else
-                    {
-                        LastErrorMessage = "Invalid 2FA email code.";
-                    }
+                    isVerified = await ApiClient.VerifyEmail2FAAsync(cleanCode);
                 }
                 else
                 {
-                    var resp2fa = await AuthApi.Verify2FAWithHttpInfoAsync(new TwoFactorAuthCode(cleanCode));
-                    ExtractAuthCookie(resp2fa);
-                    if (resp2fa.Data != null && resp2fa.Data.Verified)
-                    {
-                        isVerified = true;
-                    }
-                    else if (resp2fa.RawContent != null && resp2fa.RawContent.Contains("\"verified\":true"))
-                    {
-                        isVerified = true;
-                    }
-                    else if (resp2fa.RawContent != null && resp2fa.RawContent.Contains("\"error\""))
-                    {
-                        LastErrorMessage = ExtractErrorMessage(resp2fa.RawContent);
-                    }
-                    else
-                    {
-                        LastErrorMessage = "Invalid 2FA code.";
-                    }
+                    isVerified = await ApiClient.VerifyTotp2FAAsync(cleanCode);
                 }
 
                 if (!isVerified)
                 {
+                    LastErrorMessage = "Invalid 2FA code.";
                     return VRCAuthStatus.Error;
                 }
 
-                var userResp = await AuthApi.GetCurrentUserWithHttpInfoAsync();
-                ExtractAuthCookie(userResp);
-
-                var user = (userResp.Data != null && !string.IsNullOrEmpty(userResp.Data.Id))
-                    ? userResp.Data
-                    : await AuthApi.GetCurrentUserAsync();
-
+                var user = await ApiClient.GetCurrentUserAsync();
                 if (user == null || string.IsNullOrEmpty(user.Id))
                 {
                     LastErrorMessage = "Authentication failed: unable to fetch user profile.";
                     return VRCAuthStatus.Error;
                 }
-                
+
                 await SaveCookiesAsync();
                 LoggedIn = true;
                 CookieLoaded = true;
                 CurrentUser = user;
                 Is2FARequired = false;
                 Console.WriteLine("Logged in as: {0}", CurrentUser.DisplayName);
-                
-                OnAuthStateChanged?.Invoke();
 
+                OnAuthStateChanged?.Invoke();
                 return VRCAuthStatus.Success;
             }
             catch (Exception ex)
@@ -256,81 +189,19 @@ namespace VRCGalleryManager.Core
             }
         }
 
-        private void ExtractAuthCookie<T>(ApiResponse<T> resp)
+        public async Task<CurrentUser> GetCurrentUserAsync()
         {
-            if (resp == null || resp.Headers == null) return;
-
-            var cookiesDict = new Dictionary<string, string>();
-            
-            if (Config.DefaultHeaders.TryGetValue("Cookie", out string existingCookies))
-            {
-                var parts = existingCookies.Split(';');
-                foreach(var p in parts)
-                {
-                    var kv = p.Trim().Split(new[] { '=' }, 2);
-                    if (kv.Length == 2)
-                        cookiesDict[kv[0]] = kv[1];
-                }
-            }
-
-            foreach (var key in resp.Headers.Keys)
-            {
-                if (key.Equals("Set-Cookie", StringComparison.OrdinalIgnoreCase))
-                {
-                    var cookies = resp.Headers[key];
-                    foreach (var cookieHeader in cookies)
-                    {
-                        var parts = cookieHeader.Split(';');
-                        var firstPart = parts[0].Trim();
-                        var kv = firstPart.Split(new[] { '=' }, 2);
-                        if (kv.Length == 2)
-                        {
-                            cookiesDict[kv[0]] = kv[1];
-                        }
-                    }
-                }
-            }
-
-            if (cookiesDict.Count > 0)
-            {
-                var cookieString = string.Join("; ", cookiesDict.Select(kv => $"{kv.Key}={kv.Value}"));
-                if (Config.DefaultHeaders.ContainsKey("Cookie"))
-                    Config.DefaultHeaders["Cookie"] = cookieString;
-                else
-                    Config.DefaultHeaders.Add("Cookie", cookieString);
-                
-                Config.ApiKeyPrefix.Clear();
-
-                if (cookiesDict.TryGetValue("auth", out string authTok))
-                {
-                    if (Config.ApiKey.ContainsKey("auth"))
-                        Config.ApiKey["auth"] = authTok;
-                    else
-                        Config.AddApiKey("auth", authTok);
-                }
-
-                if (cookiesDict.TryGetValue("twoFactorAuth", out string twoFaTok))
-                {
-                    if (Config.ApiKey.ContainsKey("twoFactorAuth"))
-                        Config.ApiKey["twoFactorAuth"] = twoFaTok;
-                    else
-                        Config.AddApiKey("twoFactorAuth", twoFaTok);
-                }
-                
-                Console.WriteLine("Cookies extracted and updated.");
-            }
-        }
-
-        private bool requiresEmail2FA(ApiResponse<CurrentUser> resp)
-        {
-            return resp.RawContent != null && resp.RawContent.Contains("emailOtp");
+            var user = await ApiClient.GetCurrentUserAsync();
+            CurrentUser = user;
+            return user;
         }
 
         public async Task SaveCookiesAsync()
         {
             try
             {
-                if (Config.DefaultHeaders.TryGetValue("Cookie", out string cookieString))
+                var cookieString = ApiClient.CookieHeader;
+                if (!string.IsNullOrEmpty(cookieString))
                 {
                     await SecureStorage.Default.SetAsync("auth_cookie", cookieString);
                     CookieLoaded = true;
@@ -356,38 +227,8 @@ namespace VRCGalleryManager.Core
 
                 if (!string.IsNullOrEmpty(cookieString))
                 {
-                    if (!cookieString.Contains("="))
-                    {
-                        cookieString = $"auth={cookieString}";
-                    }
-
-                    if (Config.DefaultHeaders.ContainsKey("Cookie"))
-                        Config.DefaultHeaders["Cookie"] = cookieString;
-                    else
-                        Config.DefaultHeaders.Add("Cookie", cookieString);
-
-                    Config.ApiKeyPrefix.Clear();
-
-                    var parts = cookieString.Split(';');
-                    foreach (var p in parts)
-                    {
-                        var kv = p.Trim().Split(new[] { '=' }, 2);
-                        if (kv.Length == 2)
-                        {
-                            string key = kv[0].Trim();
-                            string val = kv[1].Trim();
-                            if (key == "auth" || key == "twoFactorAuth")
-                            {
-                                if (Config.ApiKey.ContainsKey(key))
-                                    Config.ApiKey[key] = val;
-                                else
-                                    Config.AddApiKey(key, val);
-                            }
-                        }
-                    }
-
+                    ApiClient.SetCookieHeader(cookieString);
                     CookieLoaded = true;
-                    AuthApi = new AuthenticationApi(ApiClient, ApiClient, Config);
                     return true;
                 }
             }
@@ -407,38 +248,8 @@ namespace VRCGalleryManager.Core
 
                 if (!string.IsNullOrEmpty(cookieString))
                 {
-                    if (!cookieString.Contains("="))
-                    {
-                        cookieString = $"auth={cookieString}";
-                    }
-
-                    if (Config.DefaultHeaders.ContainsKey("Cookie"))
-                        Config.DefaultHeaders["Cookie"] = cookieString;
-                    else
-                        Config.DefaultHeaders.Add("Cookie", cookieString);
-
-                    Config.ApiKeyPrefix.Clear();
-
-                    var parts = cookieString.Split(';');
-                    foreach (var p in parts)
-                    {
-                        var kv = p.Trim().Split(new[] { '=' }, 2);
-                        if (kv.Length == 2)
-                        {
-                            string key = kv[0].Trim();
-                            string val = kv[1].Trim();
-                            if (key == "auth" || key == "twoFactorAuth")
-                            {
-                                if (Config.ApiKey.ContainsKey(key))
-                                    Config.ApiKey[key] = val;
-                                else
-                                    Config.AddApiKey(key, val);
-                            }
-                        }
-                    }
-
+                    ApiClient.SetCookieHeader(cookieString);
                     CookieLoaded = true;
-                    AuthApi = new AuthenticationApi(ApiClient, ApiClient, Config);
                 }
             }
             catch (Exception ex)
@@ -472,7 +283,7 @@ namespace VRCGalleryManager.Core
             {
                 string username = await SecureStorage.Default.GetAsync("auth_username");
                 string password = await SecureStorage.Default.GetAsync("auth_password");
-                
+
                 if (!string.IsNullOrEmpty(username) && !string.IsNullOrEmpty(password))
                 {
                     return (username, password);
@@ -491,7 +302,7 @@ namespace VRCGalleryManager.Core
             {
                 string username = Task.Run(async () => await SecureStorage.Default.GetAsync("auth_username")).GetAwaiter().GetResult();
                 string password = Task.Run(async () => await SecureStorage.Default.GetAsync("auth_password")).GetAwaiter().GetResult();
-                
+
                 if (!string.IsNullOrEmpty(username) && !string.IsNullOrEmpty(password))
                 {
                     return (username, password);
@@ -506,24 +317,10 @@ namespace VRCGalleryManager.Core
 
         public void ClearAuthCookieOnly()
         {
-            if (Config.DefaultHeaders.TryGetValue("Cookie", out string cookieString))
-            {
-                var parts = cookieString.Split(';');
-                var newParts = parts.Where(p => !string.IsNullOrWhiteSpace(p) && !p.Trim().StartsWith("auth=")).Select(p => p.Trim()).ToList();
-                if (newParts.Count > 0)
-                {
-                    Config.DefaultHeaders["Cookie"] = string.Join("; ", newParts);
-                }
-                else
-                {
-                    Config.DefaultHeaders.Remove("Cookie");
-                }
-            }
-            Config.ApiKey.Remove("auth");
-            Config.ApiKeyPrefix.Remove("auth");
+            ApiClient.ClearAuthCookieOnly();
         }
 
-        private SemaphoreSlim _reloginSemaphore = new SemaphoreSlim(1, 1);
+        private readonly SemaphoreSlim _reloginSemaphore = new(1, 1);
         private DateTime _lastReloginAttempt = DateTime.MinValue;
 
         public async Task<bool> TryAutoReloginAsync()
@@ -542,7 +339,7 @@ namespace VRCGalleryManager.Core
                 _lastReloginAttempt = DateTime.UtcNow;
 
                 ClearAuthCookieOnly();
-                
+
                 var status = await LoginAsync(creds.Value.username, creds.Value.password);
                 if (status == VRCAuthStatus.Success)
                 {
@@ -567,6 +364,17 @@ namespace VRCGalleryManager.Core
             return false;
         }
 
+        public async Task LogoutAsync(bool keepCredentials = false)
+        {
+            try
+            {
+                await ApiClient.LogoutAsync();
+            }
+            catch { }
+
+            Logout(keepCredentials);
+        }
+
         public void Logout(bool keepCredentials = false)
         {
             SecureStorage.Default.Remove("auth_cookie");
@@ -582,15 +390,7 @@ namespace VRCGalleryManager.Core
             CurrentUser = null;
             Is2FARequired = false;
 
-            Config.Username = null;
-            Config.Password = null;
-            Config.ApiKey.Clear();
-            Config.ApiKeyPrefix.Clear();
-            Config.DefaultHeaders.Clear();
-            Config.UserAgent = "VRCGalleryManager";
-
-            ApiClient = new ApiClient(Config.BasePath);
-            AuthApi = new AuthenticationApi(ApiClient, ApiClient, Config);
+            ApiClient.ClearCookies();
 
             OnAuthStateChanged?.Invoke();
         }
@@ -598,6 +398,29 @@ namespace VRCGalleryManager.Core
         public void NotifyAuthStateChanged()
         {
             OnAuthStateChanged?.Invoke();
+        }
+
+        public class AuthConfigShim
+        {
+            private readonly VRChatApiClient _client;
+            public AuthConfigShim(VRChatApiClient client) => _client = client;
+
+            public string BasePath => VRChatApiClient.DefaultBaseUrl;
+            public string UserAgent { get; set; } = VRChatApiClient.DefaultUserAgent;
+
+            public Dictionary<string, string> DefaultHeaders
+            {
+                get
+                {
+                    var dict = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                    var ch = _client.CookieHeader;
+                    if (!string.IsNullOrEmpty(ch))
+                    {
+                        dict["Cookie"] = ch;
+                    }
+                    return dict;
+                }
+            }
         }
     }
 }
