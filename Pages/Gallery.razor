@@ -6,6 +6,8 @@
 @using SixLabors.ImageSharp.Processing
 @inject VRCAuth Auth
 @inject NavigationManager Nav
+@inject DialogService dialogService
+@inject NotificationService NotificationService
 
 <div class="h-100 d-flex flex-column p-3">
     @* TOP TOOLBAR *@
@@ -141,7 +143,7 @@
     </div>
 }
 
-<VRCGalleryManager.Components.ImageViewer @ref="imageViewer" OnUploadRequested="HandleViewerUpload" ShowDownloadButton="false" />
+<VRCGalleryManager.Components.ImageViewer @ref="imageViewer" OnUploadRequested="HandleViewerUpload" OnDeleteRequested="HandleViewerDelete" ShowDownloadButton="false" />
 
 @code {
     // ── State ─────────────────────────────────────────────────────────────
@@ -531,6 +533,57 @@
         else
         {
             Nav.NavigateTo($"/{route}");
+        }
+    }
+
+    private async Task HandleViewerDelete(int index)
+    {
+        var targetList = Items.Where(x => !x.IsFolder).ToList();
+        if (index < 0 || index >= targetList.Count) return;
+        var item = targetList[index];
+
+        bool confirm = await dialogService.ShowConfirmAsync("Delete Photo", $"Are you sure you want to move \"{item.Name}\" to the Recycle Bin?", "Delete", "Cancel");
+        if (confirm)
+        {
+            try
+            {
+                bool deleted = FileHelper.DeleteToRecycleBin(item.Path);
+                if (!deleted)
+                {
+                    NotificationService.Show("Failed to delete the photo.", "Delete Error", NotificationType.Error);
+                    return;
+                }
+
+                Items.Remove(item);
+                if (SelectedImage == item)
+                {
+                    SelectedImage = null;
+                }
+
+                var remainingPhotos = Items.Where(x => !x.IsFolder).ToList();
+                if (remainingPhotos.Count > 0)
+                {
+                    var viewerItems = remainingPhotos.Select(x => new VRCGalleryManager.Components.ImageViewer.ViewerItem
+                    {
+                        HighResSource = x.Path,
+                        LowResSource = x.ThumbnailBase64,
+                        Title = x.Name
+                    }).ToList();
+                    int nextIndex = Math.Min(index, viewerItems.Count - 1);
+                    imageViewer.Open(viewerItems, nextIndex);
+                }
+                else
+                {
+                    imageViewer.Close();
+                }
+
+                StateHasChanged();
+                NotificationService.Show("Photo moved to the Recycle Bin.", "Deleted", NotificationType.Success);
+            }
+            catch (Exception ex)
+            {
+                NotificationService.Show($"Delete failed: {ex.Message}", "Delete Error", NotificationType.Error);
+            }
         }
     }
 

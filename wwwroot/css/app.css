@@ -1642,7 +1642,6 @@ canvas.picking-color {
     }
 }
 
-
 .image-viewer-bottom-bar {
     position: absolute;
     bottom: 25px;
@@ -1651,9 +1650,8 @@ canvas.picking-color {
     display: flex;
     gap: 15px;
     background: rgba(15, 15, 15, 0.7);
-    padding: 10px 20px;
+    padding: 10px 10px;
     border-radius: 50px;
-
     border: 1px solid rgba(255, 255, 255, 0.1);
     z-index: 1000;
     transition: opacity 0.3s;
