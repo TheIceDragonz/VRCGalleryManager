@@ -2128,6 +2128,26 @@ canvas.picking-color {
     aspect-ratio: 16 / 9;
 }
 
+/* Picflow Info Dialog */
+.picflow-info-dialog {
+    width: 460px;
+    max-width: 92vw;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.75);
+    animation: fadeIn 0.2s ease-out;
+}
+
+.picflow-code-box {
+    background: rgba(0, 0, 0, 0.5);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.picflow-code-box:hover {
+    border-color: var(--accent);
+    background: rgba(0, 0, 0, 0.65);
+    box-shadow: 0 0 14px rgba(106, 227, 249, 0.2);
+}
+
 /* SVG Icon Filter Utilities */
 .icon-accent {
     filter: var(--filter-accent);

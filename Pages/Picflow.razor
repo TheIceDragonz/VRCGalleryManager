@@ -31,13 +31,6 @@
         </div>
     </div>
 
-    @if (ShowInfo)
-    {
-        <div class="alert alert-info cursor-pointer" role="alert" @onclick="CopyInfoText">
-            <strong>Tip:</strong> Click here to copy <code>--enable-sdk-log-levels</code>. You need to add this to your VRChat launch options for Picflow to read stickers, emojis and prints!
-        </div>
-    }
-
     <div class="mb-3 d-flex gap-1 p-1 rounded-pill shadow-sm mx-auto align-items-center" style="width: fit-content; background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255,255,255,0.1); padding-right: 1.25rem !important;">
         <div class="d-flex gap-1">
             <button class="btn btn-sm rounded-pill px-3 @GetCategoryBtnClass(null)" @onclick="() => SetCategory(null)">All</button>
@@ -136,6 +129,55 @@
 }
 
 <VRCGalleryManager.Components.ImageViewer @ref="imageViewer" OnUploadRequested="HandleViewerUpload" />
+
+@if (ShowInfo)
+{
+    <div class="position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center dialog-overlay" style="z-index: 10005;" @onclick="ToggleInfo">
+        <div class="dialog-panel d-flex flex-column picflow-info-dialog" @onclick:stopPropagation="true">
+            <div class="p-3 px-4 d-flex align-items-center justify-content-between border-bottom border-secondary" style="background: rgba(0, 0, 0, 0.2);">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="viewer-info-icon-box" style="width: 28px; height: 28px;">
+                        <img src="/svg/info-circle-svgrepo-com.svg" class="icon-accent" style="width: 15px; height: 15px;" />
+                    </div>
+                    <h5 class="fw-bold text-white mb-0 fs-6">Picflow Setup & Launch Option</h5>
+                </div>
+                <button class="btn-viewer-info-close" @onclick="ToggleInfo" title="Close">
+                    <img src="/svg/close-bold-svgrepo-com.svg" class="icon-white" style="width: 12px; height: 12px;" />
+                </button>
+            </div>
+
+            <div class="p-4 flex-grow-1 d-flex flex-column gap-3">
+                <p class="text-light mb-0" style="font-size: 0.88rem; line-height: 1.5;">
+                    To allow <strong>Picflow</strong> to read stickers, emojis and prints in real-time, VRChat must be started with extended SDK logging enabled.
+                </p>
+
+                <div class="picflow-code-box d-flex align-items-center justify-content-between p-2 px-3 rounded" @onclick="CopyInfoText" title="Click to copy">
+                    <div class="d-flex align-items-center gap-2 overflow-hidden">
+                        <span class="text-muted user-select-none font-monospace small">$</span>
+                        <code class="text-accent font-monospace fw-bold text-truncate" style="font-size: 0.95rem;">--enable-sdk-log-levels</code>
+                    </div>
+                    <button class="btn btn-sm @(isCopied ? "btn-success" : "btn-outline-secondary") d-flex align-items-center gap-1 flex-shrink-0 ms-2" @onclick="CopyInfoText" @onclick:stopPropagation="true">
+                        <img src="/svg/copy-svgrepo-com.svg" class="icon-white" style="width: 14px; height: 14px;" />
+                        <span style="font-size: 0.78rem;">@(isCopied ? "Copied!" : "Copy")</span>
+                    </button>
+                </div>
+
+                <div class="p-3 rounded" style="background: rgba(0, 0, 0, 0.25); border: 1px solid rgba(255, 255, 255, 0.06); font-size: 0.82rem;">
+                    <div class="text-white-50 fw-bold mb-2 text-uppercase" style="font-size: 0.72rem; letter-spacing: 0.5px;">How to configure in Steam:</div>
+                    <ol class="mb-0 ps-3 text-light d-flex flex-column gap-1" style="line-height: 1.45;">
+                        <li>Open <strong>Steam</strong> and go to your <strong>Library</strong>.</li>
+                        <li>Right-click <strong>VRChat</strong> &rarr; <strong>Properties...</strong></li>
+                        <li>Under the <strong>General</strong> tab, paste the parameter into <strong>Launch Options</strong>.</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="p-3 px-4 d-flex justify-content-end dialog-footer">
+                <button class="btn btn-secondary px-4 fw-bold btn-sm" @onclick="ToggleInfo">Close</button>
+            </div>
+        </div>
+    </div>
+}
 
 @code {
     [Inject] protected ApiRequest ApiReq { get; set; }
@@ -259,15 +301,34 @@
         StateHasChanged();
     }
 
+    private bool isCopied = false;
+
     private void ToggleInfo()
     {
         ShowInfo = !ShowInfo;
+        if (ShowInfo) isCopied = false;
     }
 
     private async Task CopyInfoText()
     {
-        await Microsoft.Maui.ApplicationModel.DataTransfer.Clipboard.Default.SetTextAsync("--enable-sdk-log-levels");
-        ShowInfo = false;
+        try
+        {
+            await Microsoft.Maui.ApplicationModel.DataTransfer.Clipboard.Default.SetTextAsync("--enable-sdk-log-levels");
+            NotificationService.Show("Copied '--enable-sdk-log-levels' to clipboard!", "Copied", NotificationType.Success);
+            isCopied = true;
+            StateHasChanged();
+
+            _ = Task.Run(async () =>
+            {
+                await Task.Delay(2000);
+                isCopied = false;
+                await InvokeAsync(StateHasChanged);
+            });
+        }
+        catch (Exception ex)
+        {
+            NotificationService.Show($"Failed to copy: {ex.Message}", "Error", NotificationType.Error);
+        }
     }
 
     private void OnCropPrintsChanged(ChangeEventArgs e)
