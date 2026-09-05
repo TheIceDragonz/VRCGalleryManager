@@ -622,31 +622,75 @@ a {{
 }}
 
 .image-viewer-info-panel {{
-    border: 2px solid {btnBorder} !important;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.7), 0 0 20px rgba({rgb.r}, {rgb.g}, {rgb.b}, 0.2) !important;
-}}
-
-.image-viewer-info-panel .world-info-viewer {{
     border: 1px solid {btnBorder} !important;
-    background-color: {btnBg} !important;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.75), 0 0 24px rgba({rgb.r}, {rgb.g}, {rgb.b}, 0.25) !important;
 }}
 
-.image-viewer-info-panel .world-name {{
+.viewer-info-header {{
+    border-bottom-color: {btnBorder} !important;
+}}
+
+.viewer-info-icon-box {{
+    background-color: rgba({rgb.r}, {rgb.g}, {rgb.b}, 0.15) !important;
+    border-color: {btnBorder} !important;
+}}
+
+.viewer-world-card {{
+    border-color: {btnBorder} !important;
+}}
+
+.viewer-world-card:hover {{
+    border-color: {iconColor} !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5), 0 0 12px rgba({rgb.r}, {rgb.g}, {rgb.b}, 0.25) !important;
+}}
+
+.viewer-world-title.clickable:hover {{
     color: {iconColor} !important;
-}}
-
-.image-viewer-info-panel .world-name:hover {{
-    color: #ffffff !important;
     text-shadow: 0 0 8px {iconColor} !important;
 }}
 
-.image-viewer-info-panel .border-primary {{
-    border-color: {iconColor} !important;
+.viewer-world-meta.clickable:hover {{
+    background-color: rgba({rgb.r}, {rgb.g}, {rgb.b}, 0.12) !important;
+    color: {iconColor} !important;
 }}
 
-.image-viewer-info-panel .bg-primary {{
+.viewer-world-meta.clickable:hover .badge {{
+    background-color: rgba({rgb.r}, {rgb.g}, {rgb.b}, 0.25) !important;
+    color: {iconColor} !important;
+}}
+
+.viewer-world-btn {{
+    background-color: {btnBg} !important;
+    border-color: {btnBorder} !important;
+    color: {iconColor} !important;
+}}
+
+.viewer-world-btn:hover {{
+    background-color: {btnActiveBg} !important;
+    border-color: {iconColor} !important;
+    color: #ffffff !important;
+    box-shadow: 0 0 12px rgba({rgb.r}, {rgb.g}, {rgb.b}, 0.5) !important;
+}}
+
+.viewer-count-badge {{
+    border-color: {btnBorder} !important;
+}}
+
+.viewer-player-item:hover {{
+    border-color: {iconColor} !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3), 0 0 8px rgba({rgb.r}, {rgb.g}, {rgb.b}, 0.2) !important;
+}}
+
+.viewer-player-dot.self,
+.viewer-player-dot.author {{
     background-color: {iconColor} !important;
-    box-shadow: 0 0 6px {iconColor} !important;
+    box-shadow: 0 0 8px {iconColor} !important;
+}}
+
+.viewer-player-badge.self {{
+    background-color: rgba({rgb.r}, {rgb.g}, {rgb.b}, 0.15) !important;
+    border-color: rgba({rgb.r}, {rgb.g}, {rgb.b}, 0.4) !important;
+    color: {iconColor} !important;
 }}
 
 .image-container .spinner-border {{

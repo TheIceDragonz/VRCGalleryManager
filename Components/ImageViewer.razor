@@ -86,48 +86,118 @@
         @if (ShowInfoPanel && CurrentVrcxData != null && (CurrentVrcxData.World != null || (CurrentVrcxData.Players != null && CurrentVrcxData.Players.Count > 0)))
         {
             <div class="image-viewer-info-panel" @onclick:stopPropagation="true">
-                @if (CurrentVrcxData.World != null)
-                {
-                    <div class="world-info-viewer mb-3">
-                        @if (!string.IsNullOrEmpty(CurrentVrcxData.World.ImageUrl))
-                        {
-                            <img src="@CurrentVrcxData.World.ImageUrl" class="world-img mb-2" />
-                        }
-                        <div class="world-name mt-0" style="cursor: pointer;" @onclick="() => OpenWorld(CurrentVrcxData.World.Id)" title="Open world page">
-                            @CurrentVrcxData.World.Name
+                <!-- Panel Header -->
+                <div class="viewer-info-header">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="viewer-info-icon-box">
+                            <img src="/svg/info-circle-svgrepo-com.svg" class="icon-accent" style="width: 16px; height: 16px;" />
                         </div>
-
+                        <span class="fw-bold text-white fs-6">Photo Details</span>
                     </div>
-                }
+                    <button class="btn-viewer-info-close" @onclick="ToggleInfoPanel" title="Close Panel">
+                        <img src="/svg/close-bold-svgrepo-com.svg" class="icon-white" style="width: 13px; height: 13px;" />
+                    </button>
+                </div>
 
-                @if (CurrentVrcxData.Players != null && CurrentVrcxData.Players.Count > 0)
-                {
-                    <div class="d-flex flex-column flex-grow-1" style="min-height: 0;">
-                        <div class="text-white-50 small fw-bold text-uppercase mb-2 d-flex align-items-center gap-2 flex-shrink-0">
-                            <img src="/svg/profile-user-svgrepo-com.svg" class="icon-accent" style="width: 14px; height: 14px;" />
-                            Players (@CurrentVrcxData.Players.Count)
+                <!-- Panel Body -->
+                <div class="viewer-info-body">
+                    <!-- World Card -->
+                    @if (CurrentVrcxData.World != null)
+                    {
+                        <div class="viewer-world-card">
+                            <div class="viewer-world-preview">
+                                @if (!string.IsNullOrEmpty(CurrentVrcxData.World.ImageUrl))
+                                {
+                                    <img src="@CurrentVrcxData.World.ImageUrl" class="viewer-world-img" alt="@CurrentVrcxData.World.Name" />
+                                }
+                                else
+                                {
+                                    <div class="viewer-world-placeholder">
+                                        <img src="/svg/gallery-wide-svgrepo-com.svg" class="icon-accent" style="width: 28px; height: 28px; opacity: 0.5;" />
+                                        <span>World Preview</span>
+                                    </div>
+                                }
+                                <div class="viewer-world-badge">
+                                    <img src="/svg/gallery-wide-svgrepo-com.svg" class="icon-white" style="width: 11px; height: 11px;" /> World
+                                </div>
+                            </div>
+
+                            <div class="viewer-world-details">
+                                <div class="viewer-world-title clickable" title="Copy: @CurrentVrcxData.World.Name" @onclick="CopyWorldName">
+                                    <span class="text-truncate">@CurrentVrcxData.World.Name</span>
+                                    <img src="/svg/copy-svgrepo-com.svg" class="icon-accent viewer-copy-hint" title="Copy" />
+                                </div>
+
+                                @if (!string.IsNullOrEmpty(CurrentVrcxData.World.InstanceId))
+                                {
+                                    <div class="viewer-world-meta clickable" title="Copy: @CurrentVrcxData.World.InstanceId" @onclick="CopyInstanceId">
+                                        <span class="badge bg-secondary bg-opacity-25 text-muted px-1 py-0 fw-normal flex-shrink-0" style="font-size: 0.68rem;">Instance</span>
+                                        <span class="text-truncate">@CurrentVrcxData.World.InstanceId</span>
+                                        <img src="/svg/copy-svgrepo-com.svg" class="icon-accent viewer-copy-hint ms-auto" title="Copy" />
+                                    </div>
+                                }
+
+                                <button class="btn btn-sm viewer-world-btn" @onclick="() => OpenWorld(CurrentVrcxData.World.Id)" title="Open world in VRChat">
+                                    <img src="/svg/link-svgrepo-com.svg" class="icon-accent" style="width: 14px; height: 14px;" />
+                                    <span>Open in VRChat</span>
+                                </button>
+                            </div>
                         </div>
-                        <div class="overflow-auto flex-grow-1 pe-1">
-                            <div class="d-flex flex-column gap-1">
+                    }
+
+
+
+                    <!-- Players in Instance -->
+                    @if (CurrentVrcxData.Players != null && CurrentVrcxData.Players.Count > 0)
+                    {
+                        <div class="viewer-players-container">
+                            <div class="viewer-section-header">
+                                <div class="d-flex align-items-center gap-2">
+                                    <img src="/svg/profile-user-svgrepo-com.svg" class="icon-accent" style="width: 13px; height: 13px;" />
+                                    <span>Players</span>
+                                </div>
+                                <span class="viewer-count-badge">@CurrentVrcxData.Players.Count</span>
+                            </div>
+
+                            <div class="viewer-players-list">
                                 @foreach (var player in CurrentVrcxData.Players
                                     .OrderByDescending(p => p.Id == Auth.CurrentUser?.Id)
                                     .ThenByDescending(p => Auth.CurrentUser?.Friends?.Contains(p.Id) == true)
                                     .ThenBy(p => p.DisplayName))
                                 {
                                     bool isAuthor = CurrentVrcxData.Author?.Id == player.Id;
-                                    <div class="bg-secondary bg-opacity-25 rounded p-1 px-2 d-flex align-items-center gap-2 @(isAuthor ? "border border-primary border-opacity-50" : "")">
-                                        <div class="rounded-circle @(isAuthor ? "bg-primary" : "bg-secondary")" style="width: 8px; height: 8px;"></div>
-                                        <div class="@(player.Id == Auth.CurrentUser?.Id ? "text-self-user" : (Auth.CurrentUser?.Friends?.Contains(player.Id) == true ? "text-warning" : "text-white")) small text-truncate flex-grow-1 fw-bold">@player.DisplayName</div>
+                                    bool isSelf = player.Id == Auth.CurrentUser?.Id;
+                                    bool isFriend = Auth.CurrentUser?.Friends?.Contains(player.Id) == true;
+
+                                    <div class="viewer-player-item @(isSelf ? "is-self" : "") @(isAuthor ? "is-author" : "")"
+                                         @onclick="() => OpenUserInBrowser(player.Id)"
+                                         title="@player.DisplayName (Click to view profile)">
+                                        
+                                        <div class="viewer-player-dot @(isSelf ? "self" : (isFriend ? "friend" : (isAuthor ? "author" : "other")))"></div>
+                                        
+                                        <div class="viewer-player-name @(isSelf ? "text-self-user" : (isFriend ? "text-warning" : "text-white"))">
+                                            @player.DisplayName
+                                        </div>
+
                                         @if (isAuthor)
                                         {
-                                            <img src="/svg/camera-svgrepo-com.svg" class="icon-accent" style="width: 14px; height: 14px;" title="Author" />
+                                            <img src="/svg/camera-svgrepo-com.svg" class="icon-accent flex-shrink-0" style="width: 14px; height: 14px;" title="Author" />
+                                        }
+
+                                        @if (isSelf)
+                                        {
+                                            <span class="viewer-player-badge self">You</span>
+                                        }
+                                        else if (isFriend)
+                                        {
+                                            <span class="viewer-player-badge friend">Friend</span>
                                         }
                                     </div>
                                 }
                             </div>
                         </div>
-                    </div>
-                }
+                    }
+                </div>
             </div>
         }
 
@@ -474,6 +544,51 @@
         if (OnUploadRequested.HasDelegate)
         {
             await OnUploadRequested.InvokeAsync(CurrentIndex);
+        }
+    }
+
+    private async Task CopyWorldName()
+    {
+        if (CurrentVrcxData?.World?.Name != null)
+        {
+            await CopyTextToClipboard(CurrentVrcxData.World.Name, "World name copied to clipboard");
+        }
+    }
+
+    private async Task CopyInstanceId()
+    {
+        if (CurrentVrcxData?.World?.InstanceId != null)
+        {
+            await CopyTextToClipboard(CurrentVrcxData.World.InstanceId, "Instance ID copied to clipboard");
+        }
+    }
+
+    private async Task CopyTextToClipboard(string? text, string message = "Copied to clipboard")
+    {
+        if (string.IsNullOrWhiteSpace(text)) return;
+        try
+        {
+            bool success = false;
+            try
+            {
+                success = await JS.InvokeAsync<bool>("clipboardInterop.writeText", text);
+            }
+            catch { }
+
+            if (!success)
+            {
+                await Microsoft.Maui.ApplicationModel.DataTransfer.Clipboard.Default.SetTextAsync(text);
+                success = true;
+            }
+
+            if (success)
+            {
+                NotificationService.Show(message, "Copied", VRCGalleryManager.Core.NotificationType.Success);
+            }
+        }
+        catch (Exception ex)
+        {
+            NotificationService.Show($"Failed to copy: {ex.Message}", "Error", VRCGalleryManager.Core.NotificationType.Error);
         }
     }
 
