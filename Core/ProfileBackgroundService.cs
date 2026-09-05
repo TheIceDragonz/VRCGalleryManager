@@ -307,6 +307,9 @@ namespace VRCGalleryManager.Core
             string btnHoverBorder = RgbToHex(MixRgb(darkBase, rgb, 0.50));
             string btnActiveBg = RgbToHex(MixRgb(darkBase, rgb, 0.26));
             string focusShadow = $"rgba({rgb.r}, {rgb.g}, {rgb.b}, 0.35)";
+            string switchKnobOff = $"data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='rgba({rgb.r},{rgb.g},{rgb.b},0.55)'/%3e%3c/svg%3e";
+            string switchKnobOffHover = $"data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='rgba({rgb.r},{rgb.g},{rgb.b},0.85)'/%3e%3c/svg%3e";
+            string switchKnobOn = "data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23ffffff'/%3e%3c/svg%3e";
 
             return $@"
 :root {{
@@ -386,14 +389,78 @@ a {{
     box-shadow: 0 0 0 0.25rem {focusShadow} !important;
 }}
 
+.form-check-input {{
+    background-color: {btnBg} !important;
+    border: 1.5px solid {btnBorder} !important;
+}}
+
+.form-check-input:focus {{
+    border-color: {iconColor} !important;
+    box-shadow: 0 0 0 0.25rem {focusShadow} !important;
+}}
+
+/* Switch in deactivated (unchecked / OFF) state */
+.form-switch .form-check-input {{
+    background-color: {btnBg} !important;
+    border-color: {btnBorder} !important;
+    background-image: url(""{switchKnobOff}"") !important;
+}}
+
+.form-switch .form-check-input:hover:not(:checked) {{
+    border-color: {btnHoverBorder} !important;
+    background-image: url(""{switchKnobOffHover}"") !important;
+}}
+
+/* Switch in activated (checked / ON) state */
 .form-switch .form-check-input:checked {{
     background-color: {btnHoverBg} !important;
     border-color: {iconColor} !important;
+    background-image: url(""{switchKnobOn}"") !important;
+    box-shadow: 0 0 8px rgba({rgb.r}, {rgb.g}, {rgb.b}, 0.4) !important;
+}}
+
+/* Sliders (form-range) track and thumb */
+.form-range::-webkit-slider-runnable-track {{
+    background-color: {btnBorder} !important;
+    border-radius: 4px;
+}}
+
+.form-range::-moz-range-track {{
+    background-color: {btnBorder} !important;
+    border-radius: 4px;
 }}
 
 .form-range::-webkit-slider-thumb {{
     background: {iconColor} !important;
     box-shadow: 0 0 8px rgba({rgb.r}, {rgb.g}, {rgb.b}, 0.7) !important;
+}}
+
+.form-range::-moz-range-thumb {{
+    background: {iconColor} !important;
+    box-shadow: 0 0 8px rgba({rgb.r}, {rgb.g}, {rgb.b}, 0.7) !important;
+}}
+
+/* Sliders when disabled (deactivated) */
+.form-range:disabled::-webkit-slider-thumb {{
+    background: rgba({rgb.r}, {rgb.g}, {rgb.b}, 0.45) !important;
+    border: 1px solid {btnBorder} !important;
+    box-shadow: none !important;
+}}
+
+.form-range:disabled::-moz-range-thumb {{
+    background: rgba({rgb.r}, {rgb.g}, {rgb.b}, 0.45) !important;
+    border: 1px solid {btnBorder} !important;
+    box-shadow: none !important;
+}}
+
+.form-range:disabled::-webkit-slider-runnable-track {{
+    background-color: {btnBg} !important;
+    opacity: 0.6 !important;
+}}
+
+.form-range:disabled::-moz-range-track {{
+    background-color: {btnBg} !important;
+    opacity: 0.6 !important;
 }}
 
 .nav-icon:not(.custom-nav-link:hover .nav-icon):not(.custom-nav-link.active .nav-icon), .icon-accent:not(.icon-danger):not(.icon-success):not(.icon-white):not(.icon-dark), .folder-svg-icon {{
