@@ -36,6 +36,7 @@ public static class MauiProgram
         builder.Services.AddSingleton<ApiRequest>();
         builder.Services.AddSingleton<MediaCacheService>();
         builder.Services.AddSingleton<NetworkStatusService>();
+        builder.Services.AddSingleton<ProfileBackgroundService>();
 
 #if DEBUG
 		builder.Services.AddBlazorWebViewDeveloperTools();

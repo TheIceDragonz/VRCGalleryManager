@@ -124,7 +124,7 @@
                             
                             @if (!string.IsNullOrEmpty(print.AuthorName))
                             {
-                                <div class="position-absolute w-100 text-center media-card-label picflow-label fw-bold @(!string.IsNullOrEmpty(print.AuthorId) ? "cursor-pointer" : "") @(!string.IsNullOrEmpty(print.AuthorId) && print.AuthorId == Auth.CurrentUser?.Id ? "text-accent" : (!string.IsNullOrEmpty(print.AuthorId) && Auth.CurrentUser?.Friends?.Contains(print.AuthorId) == true ? "text-warning" : ""))" @onclick="() => OpenUserInBrowser(print.AuthorId)" title="@(!string.IsNullOrEmpty(print.AuthorId) ? "Open Profile in Browser" : "")">
+                                <div class="position-absolute w-100 text-center media-card-label picflow-label fw-bold @(!string.IsNullOrEmpty(print.AuthorId) ? "cursor-pointer" : "") @(!string.IsNullOrEmpty(print.AuthorId) && print.AuthorId == Auth.CurrentUser?.Id ? "text-self-user" : (!string.IsNullOrEmpty(print.AuthorId) && Auth.CurrentUser?.Friends?.Contains(print.AuthorId) == true ? "text-warning" : ""))" @onclick="() => OpenUserInBrowser(print.AuthorId)" title="@(!string.IsNullOrEmpty(print.AuthorId) ? "Open Profile in Browser" : "")">
                                     @print.AuthorName
                                 </div>
                             }

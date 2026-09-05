@@ -65,13 +65,13 @@
 
             @if (OnDeleteRequested.HasDelegate)
             {
-                <button class="btn btn-icon-only btn-viewer-action" title="Delete" @onclick="DeleteCurrent">
+                <button class="btn btn-icon-only btn-viewer-action btn-viewer-delete" title="Delete" @onclick="DeleteCurrent">
                     <img src="/svg/trash-bin-trash-svgrepo-com.svg" class="icon-danger" />
                 </button>
             }
             @if (OnUploadRequested.HasDelegate)
             {
-                <button class="btn btn-icon-only btn-viewer-action" title="Upload" @onclick="UploadCurrent">
+                <button class="btn btn-icon-only btn-viewer-action btn-viewer-upload" title="Upload" @onclick="UploadCurrent">
                     <img src="/svg/add-circle-svgrepo-com.svg" class="icon-success" />
                 </button>
             }
@@ -117,7 +117,7 @@
                                     bool isAuthor = CurrentVrcxData.Author?.Id == player.Id;
                                     <div class="bg-secondary bg-opacity-25 rounded p-1 px-2 d-flex align-items-center gap-2 @(isAuthor ? "border border-primary border-opacity-50" : "")">
                                         <div class="rounded-circle @(isAuthor ? "bg-primary" : "bg-secondary")" style="width: 8px; height: 8px;"></div>
-                                        <div class="@(player.Id == Auth.CurrentUser?.Id ? "text-accent" : (Auth.CurrentUser?.Friends?.Contains(player.Id) == true ? "text-warning" : "text-white")) small text-truncate flex-grow-1 fw-bold" style="cursor: pointer;" @onclick="() => OpenUserInBrowser(player.Id)" title="Open Profile in Browser">@player.DisplayName</div>
+                                        <div class="@(player.Id == Auth.CurrentUser?.Id ? "text-self-user" : (Auth.CurrentUser?.Friends?.Contains(player.Id) == true ? "text-warning" : "text-white")) small text-truncate flex-grow-1 fw-bold">@player.DisplayName</div>
                                         @if (isAuthor)
                                         {
                                             <img src="/svg/camera-svgrepo-com.svg" class="icon-accent" style="width: 14px; height: 14px;" title="Author" />

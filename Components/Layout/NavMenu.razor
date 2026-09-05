@@ -4,8 +4,9 @@
 @implements IDisposable
 @inject VRCAuth Auth
 @inject NavigationManager NavManager
+@inject ProfileBackgroundService BackgroundService
 
-@if (OperatingSystem.IsAndroid() && !string.IsNullOrEmpty(ProfileEffectUrl))
+@if (BackgroundService.DisplayVRCCosmetics && OperatingSystem.IsAndroid() && !string.IsNullOrEmpty(ProfileEffectUrl))
 {
     <img src="@ProfileEffectUrl" class="nav-profile-effect-android" />
 }
@@ -21,7 +22,7 @@
         <img src="@(string.IsNullOrEmpty(CurrentUser.ProfilePicOverrideThumbnail) ? CurrentUser.CurrentAvatarThumbnailImageUrl : CurrentUser.ProfilePicOverrideThumbnail)" 
              class="nav-profile-bg" />
         
-        @if (!OperatingSystem.IsAndroid() && !string.IsNullOrEmpty(ProfileEffectUrl))
+        @if (BackgroundService.DisplayVRCCosmetics && !OperatingSystem.IsAndroid() && !string.IsNullOrEmpty(ProfileEffectUrl))
         {
             <img src="@ProfileEffectUrl" class="nav-profile-effect" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; object-position: top; z-index: 1; pointer-events: none;" />
         }
@@ -29,12 +30,12 @@
         <div class="position-absolute w-100 h-100 d-flex flex-column align-items-center justify-content-center nav-profile-content" style="z-index: 2;">
             <div class="position-relative d-flex align-items-center justify-content-center">
                 <img src="@CurrentUser.UserIcon" class="nav-profile-icon" />
-                @if (!string.IsNullOrEmpty(IconFrameUrl))
+                @if (BackgroundService.DisplayVRCCosmetics && !string.IsNullOrEmpty(IconFrameUrl))
                 {
                     <img src="@IconFrameUrl" class="nav-icon-frame" style="position: absolute; top: -15%; left: -15%; width: 130%; height: 130%; pointer-events: none;" />
                 }
             </div>
-            <span class="mt-1 fw-bold text-truncate w-100 text-center px-2 nav-profile-name">@CurrentUser.DisplayName</span>
+            <span class="mt-1 fw-bold text-truncate w-100 text-center px-2 nav-profile-name" style="color: #ffffff !important;">@CurrentUser.DisplayName</span>
             
             @if (CurrentUser.Badges != null)
             {
@@ -110,6 +111,8 @@
 
 @code {
     private VRChat.API.Model.CurrentUser CurrentUser;
+    private VRChatPublicProfile? PublicProfile;
+    private VRCProfileTheme ProfileTheme = new();
     private string ProfileEffectUrl;
     private string IconFrameUrl;
     private bool IsLoggedIn => CurrentUser != null;
@@ -126,6 +129,7 @@
     {
         Auth.OnAuthStateChanged += AuthStateChanged;
         Auth.On2FARequiredEvent += Handle2FARequired;
+        BackgroundService.OnSettingsChanged += HandleSettingsChanged;
         await LoadUser();
     }
 
@@ -140,6 +144,18 @@
     {
         await LoadUser();
         await InvokeAsync(StateHasChanged);
+    }
+
+    private void HandleSettingsChanged()
+    {
+        ProfileTheme = BackgroundService.GetProfileTheme(PublicProfile, isDarkMode: true);
+        UpdateSidebarBackground();
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void UpdateSidebarBackground()
+    {
+        BackgroundService.UpdateSidebarBackground(PublicProfile);
     }
 
     private async Task LoadUser()
@@ -181,8 +197,11 @@
         else
         {
             CurrentUser = null;
+            PublicProfile = null;
+            ProfileTheme = new();
             ProfileEffectUrl = null;
             IconFrameUrl = null;
+            BackgroundService.UpdateSidebarBackground(null);
         }
     }
 
@@ -190,8 +209,18 @@
     {
         ProfileEffectUrl = null;
         IconFrameUrl = null;
+        PublicProfile = null;
+        ProfileTheme = new();
         if (CurrentUser == null) return;
         
+        try
+        {
+            PublicProfile = await BackgroundService.GetPublicProfileAsync(CurrentUser.Id);
+            ProfileTheme = BackgroundService.GetProfileTheme(PublicProfile, isDarkMode: true);
+            UpdateSidebarBackground();
+        }
+        catch { }
+
         try
         {
             if (!string.IsNullOrEmpty(CurrentUser.ProfileEffect))
@@ -255,5 +284,6 @@
     {
         Auth.OnAuthStateChanged -= AuthStateChanged;
         Auth.On2FARequiredEvent -= Handle2FARequired;
+        BackgroundService.OnSettingsChanged -= HandleSettingsChanged;
     }
 }

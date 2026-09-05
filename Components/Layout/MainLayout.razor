@@ -2,8 +2,25 @@
 @using VRCGalleryManager.Core
 @implements IDisposable
 
+@if (!string.IsNullOrEmpty(ThemeCssRules))
+{
+    <svg style="position: absolute; width: 0; height: 0; overflow: hidden; pointer-events: none;" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+            <filter id="theme-icon-filter" color-interpolation-filters="sRGB">
+                <feColorMatrix type="matrix" values="0 0 0 @IconFilterR 0  0 0 0 @IconFilterG 0  0 0 0 @IconFilterB 0  0 0 0 1 0" />
+            </filter>
+            <filter id="theme-btn-filter" color-interpolation-filters="sRGB">
+                <feColorMatrix type="matrix" values="0 0 0 @BtnFilterR 0  0 0 0 @BtnFilterG 0  0 0 0 @BtnFilterB 0  0 0 0 1 0" />
+            </filter>
+        </defs>
+    </svg>
+    <style>
+        @((MarkupString)ThemeCssRules)
+    </style>
+}
+
 <div class="page main-page-container @(Microsoft.Maui.Devices.DeviceInfo.Current.Platform == Microsoft.Maui.Devices.DevicePlatform.Android ? "android-layout" : "")">
-    <div class="sidebar main-sidebar-container">
+    <div class="sidebar main-sidebar-container" style="@SidebarBackgroundStyle">
         <NavMenu />
     </div>
 
@@ -43,13 +60,45 @@
     [Inject] private NotificationService Notifications { get; set; } = default!;
     [Inject] private DialogService Dialogs { get; set; } = default!;
     [Inject] private NetworkStatusService NetworkStatus { get; set; } = default!;
+    [Inject] private ProfileBackgroundService BackgroundService { get; set; } = default!;
 
+    private string SidebarBackgroundStyle = "";
+    private string ThemeCssRules = "";
+    private string IconFilterR = "0";
+    private string IconFilterG = "0";
+    private string IconFilterB = "0";
+    private string BtnFilterR = "0";
+    private string BtnFilterG = "0";
+    private string BtnFilterB = "0";
     private bool IsOnline => NetworkStatus.IsOnline;
     private bool isCheckingConnection = false;
 
     protected override void OnInitialized()
     {
         NetworkStatus.OnNetworkStatusChanged += HandleNetworkStatusChanged;
+        BackgroundService.OnSidebarBackgroundChanged += HandleSidebarBgChanged;
+        SidebarBackgroundStyle = BackgroundService.CurrentSidebarBackgroundStyle;
+        ThemeCssRules = BackgroundService.CurrentThemeCss;
+        UpdateFilterMatrix();
+    }
+
+    private void HandleSidebarBgChanged()
+    {
+        SidebarBackgroundStyle = BackgroundService.CurrentSidebarBackgroundStyle;
+        ThemeCssRules = BackgroundService.CurrentThemeCss;
+        UpdateFilterMatrix();
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void UpdateFilterMatrix()
+    {
+        IconFilterR = BackgroundService.IconColorMatrix.r.ToString("0.####", System.Globalization.CultureInfo.InvariantCulture);
+        IconFilterG = BackgroundService.IconColorMatrix.g.ToString("0.####", System.Globalization.CultureInfo.InvariantCulture);
+        IconFilterB = BackgroundService.IconColorMatrix.b.ToString("0.####", System.Globalization.CultureInfo.InvariantCulture);
+
+        BtnFilterR = BackgroundService.ButtonColorMatrix.r.ToString("0.####", System.Globalization.CultureInfo.InvariantCulture);
+        BtnFilterG = BackgroundService.ButtonColorMatrix.g.ToString("0.####", System.Globalization.CultureInfo.InvariantCulture);
+        BtnFilterB = BackgroundService.ButtonColorMatrix.b.ToString("0.####", System.Globalization.CultureInfo.InvariantCulture);
     }
 
     private void HandleNetworkStatusChanged(bool isOnline)
@@ -100,5 +149,6 @@
     public void Dispose()
     {
         NetworkStatus.OnNetworkStatusChanged -= HandleNetworkStatusChanged;
+        BackgroundService.OnSidebarBackgroundChanged -= HandleSidebarBgChanged;
     }
 }

@@ -407,6 +407,9 @@ h6 {
     background-color: var(--bg-panel);
     display: flex;
     flex-direction: column;
+    background-size: cover;
+    background-position: top center;
+    background-repeat: no-repeat;
 }
 
 .main-content-container {
@@ -495,9 +498,13 @@ h6 {
 }
 
 .nav-profile-name {
-    color: #fff;
+    color: #ffffff !important;
     font-size: 0.95rem;
     text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.9), 0 0 4px rgba(0, 0, 0, 0.8);
+}
+
+.text-self-user {
+    color: #6ae3f9 !important;
 }
 
 .nav-badge-icon {
@@ -524,7 +531,8 @@ h6 {
 }
 
 .nav-buttons-bg {
-    background-color: rgb(5, 5, 5);
+    background-color: rgba(5, 5, 5, 0.82);
+    backdrop-filter: blur(8px);
     border-radius: var(--radius-lg);
 }
 
@@ -842,6 +850,10 @@ h6 {
 
 .media-btn-open:hover {
     background-color: #0A3540 !important;
+}
+
+.media-btn-open .btn-icon {
+    filter: var(--filter-white) !important;
 }
 
 .media-btn-delete {
@@ -1663,6 +1675,36 @@ canvas.picking-color {
 .btn-viewer-action:hover {
     background: rgba(255, 255, 255, 0.2);
     transform: scale(1.1);
+}
+
+.btn-viewer-action.btn-viewer-delete {
+    background-color: #420505 !important;
+    border: 2px solid #6a0b0b !important;
+}
+
+.btn-viewer-action.btn-viewer-delete:hover {
+    background-color: #6a0b0b !important;
+    border-color: #9e1414 !important;
+    box-shadow: 0 0 12px rgba(220, 53, 69, 0.5) !important;
+}
+
+.btn-viewer-action.btn-viewer-delete:hover img {
+    filter: var(--filter-white) !important;
+}
+
+.btn-viewer-action.btn-viewer-upload {
+    background-color: #0b3d16 !important;
+    border: 2px solid #125e22 !important;
+}
+
+.btn-viewer-action.btn-viewer-upload:hover {
+    background-color: #125e22 !important;
+    border-color: #1a822f !important;
+    box-shadow: 0 0 12px rgba(25, 135, 84, 0.5) !important;
+}
+
+.btn-viewer-action.btn-viewer-upload:hover img {
+    filter: var(--filter-white) !important;
 }
 
 .btn-viewer-action img {

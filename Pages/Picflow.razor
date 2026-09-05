@@ -83,7 +83,7 @@
                             <img src="@img.Url" class="w-100 h-100 object-fit-cover" loading="lazy" />
                         }
                     }
-                    <div class="position-absolute w-100 text-center media-card-label picflow-label fw-bold @(!string.IsNullOrEmpty(img.UserId) ? "cursor-pointer" : "") @(!string.IsNullOrEmpty(img.UserId) && img.UserId == Auth.CurrentUser?.Id ? "text-accent" : (!string.IsNullOrEmpty(img.UserId) && Auth.CurrentUser?.Friends?.Contains(img.UserId) == true ? "text-warning" : ""))" @onclick="() => OpenUserInBrowser(img.UserId)" title="@(!string.IsNullOrEmpty(img.UserId) ? "Open Profile in Browser" : "")">
+                    <div class="position-absolute w-100 text-center media-card-label picflow-label fw-bold @(!string.IsNullOrEmpty(img.UserId) ? "cursor-pointer" : "") @(!string.IsNullOrEmpty(img.UserId) && img.UserId == Auth.CurrentUser?.Id ? "text-self-user" : (!string.IsNullOrEmpty(img.UserId) && Auth.CurrentUser?.Friends?.Contains(img.UserId) == true ? "text-warning" : ""))" @onclick="() => OpenUserInBrowser(img.UserId)" title="@(!string.IsNullOrEmpty(img.UserId) ? "Open Profile in Browser" : "")">
                         @img.Username
                     </div>
 

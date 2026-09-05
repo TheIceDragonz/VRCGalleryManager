@@ -7,6 +7,7 @@
 @inject DialogService dialogService
 @inject UpdateManager Updater
 @inject NotificationService Notifications
+@inject ProfileBackgroundService BackgroundService
 
 <div class="settings-page container-fluid h-100 p-4 overflow-y-auto">
     <div class="d-flex flex-column gap-4 max-w-600 mx-auto w-100">
@@ -119,6 +120,63 @@
                 }
 
             </div>
+        <!-- Appearance Panel -->
+        <div class="panel d-flex flex-column">
+            <h4 class="mb-4">Appearance</h4>
+            <h5 class="mt-0 mb-3 text-muted fw-bold text-uppercase" style="letter-spacing: 0.5px; font-size: 0.8rem;">VRChat Profile</h5>
+            <div class="d-flex flex-column panel shadow-none border-0" style="background-color: var(--bg-hover); padding: 0;">
+                
+                <!-- Display VRChat Profile Backgrounds -->
+                <div class="d-flex align-items-center justify-content-between p-3 border-bottom" style="border-color: var(--border-color) !important;">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="p-2 d-flex align-items-center justify-content-center" style="background-color: var(--bg-active); width: 40px; height: 40px; border-radius: 10px;">
+                            <img src="/svg/gallery-wide-svgrepo-com.svg" class="icon-accent" style="width: 20px; height: 20px;" alt="Backgrounds" />
+                        </div>
+                        <div>
+                            <h6 class="mb-1 text-white fw-bold">VRChat Profile Backgrounds</h6>
+                            <div class="text-muted" style="font-size: 0.85rem;">Show profile backgrounds</div>
+                        </div>
+                    </div>
+                    <div class="form-check form-switch fs-4 m-0">
+                        <input class="form-check-input cursor-pointer" type="checkbox" id="displayVRCProfileBackgrounds" @bind="DisplayVRCProfileBackgrounds">
+                    </div>
+                </div>
+
+                <!-- Display VRChat Profile Themes -->
+                <div class="d-flex align-items-center justify-content-between p-3 border-bottom" style="border-color: var(--border-color) !important;">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="p-2 d-flex align-items-center justify-content-center" style="background-color: var(--bg-active); width: 40px; height: 40px; border-radius: 10px;">
+                            <img src="/svg/color-picker-svgrepo-com.svg" class="icon-accent" style="width: 20px; height: 20px;" alt="Themes" />
+                        </div>
+                        <div>
+                            <h6 class="mb-1 text-white fw-bold">VRChat Profile Themes</h6>
+                            <div class="text-muted" style="font-size: 0.85rem;">Show custom theme colors on buttons, icons and text</div>
+                        </div>
+                    </div>
+                    <div class="form-check form-switch fs-4 m-0">
+                        <input class="form-check-input cursor-pointer" type="checkbox" id="displayVRCProfileThemes" @bind="DisplayVRCProfileThemes">
+                    </div>
+                </div>
+
+                <!-- Display VRChat Cosmetics -->
+                <div class="d-flex align-items-center justify-content-between p-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="p-2 d-flex align-items-center justify-content-center" style="background-color: var(--bg-active); width: 40px; height: 40px; border-radius: 10px;">
+                            <img src="/svg/sticker-smile-square-svgrepo-com.svg" class="icon-accent" style="width: 20px; height: 20px;" alt="Cosmetics" />
+                        </div>
+                        <div>
+                            <h6 class="mb-1 text-white fw-bold">VRChat Profile Cosmetics</h6>
+                            <div class="text-muted" style="font-size: 0.85rem;">Show profile effects and icon frames</div>
+                        </div>
+                    </div>
+                    <div class="form-check form-switch fs-4 m-0">
+                        <input class="form-check-input cursor-pointer" type="checkbox" id="displayVRCCosmetics" @bind="DisplayVRCCosmetics">
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
         <!-- System Panel -->
         <div class="panel d-flex flex-column">
             <h4 class="mb-4">System</h4>
@@ -325,6 +383,24 @@
     private int PicflowDbStickers = 0;
     private int PicflowDbEmojis = 0;
     private int PicflowDbPrints = 0;
+
+    private bool DisplayVRCProfileBackgrounds
+    {
+        get => BackgroundService.DisplayVRCProfileBackgrounds;
+        set => BackgroundService.DisplayVRCProfileBackgrounds = value;
+    }
+
+    private bool DisplayVRCProfileThemes
+    {
+        get => BackgroundService.DisplayVRCProfileThemes;
+        set => BackgroundService.DisplayVRCProfileThemes = value;
+    }
+
+    private bool DisplayVRCCosmetics
+    {
+        get => BackgroundService.DisplayVRCCosmetics;
+        set => BackgroundService.DisplayVRCCosmetics = value;
+    }
 
     private bool _startWithWindows;
     private bool StartWithWindows
