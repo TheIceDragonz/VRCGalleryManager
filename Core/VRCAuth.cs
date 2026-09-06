@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Maui.Storage;
@@ -38,6 +39,17 @@ namespace VRCGalleryManager.Core
         public string LastErrorMessage { get; private set; } = "";
         public string CookieHeader => ApiClient.CookieHeader;
 
+        private Task? _initTask;
+
+        public Task EnsureInitializedAsync()
+        {
+            if (_initTask == null)
+            {
+                _initTask = LoadCookiesAsync();
+            }
+            return _initTask;
+        }
+
         private VRCAuth()
         {
             ApiClient = new VRChatApiClient();
@@ -45,10 +57,10 @@ namespace VRCGalleryManager.Core
 
             ApiClient.OnCookiesUpdated += () =>
             {
-                SaveCookies();
+                _ = SaveCookiesAsync();
             };
 
-            LoadCookies();
+            _initTask = LoadCookiesAsync();
         }
 
         public static VRCAuth Instance()
@@ -57,32 +69,75 @@ namespace VRCGalleryManager.Core
             return instance;
         }
 
-        public async Task<VRCAuthStatus> LoginAsync(string usernameVRC, string passwordVRC)
+        public async Task<VRCAuthStatus> LoginAsync(string usernameVRC, string passwordVRC, bool isManualLogin = false)
         {
             try
             {
-                var (user, raw, statusCode) = await ApiClient.LoginRawAsync(usernameVRC, passwordVRC);
-
-                if (raw.Contains("emailOtp"))
+                if (string.IsNullOrWhiteSpace(usernameVRC) || string.IsNullOrWhiteSpace(passwordVRC))
                 {
-                    Is2FARequired = true;
-                    IsEmail2FA = true;
-                    return VRCAuthStatus.RequiresEmail2FA;
-                }
-                else if (raw.Contains("totp") || raw.Contains("otp"))
-                {
-                    Is2FARequired = true;
-                    IsEmail2FA = false;
-                    return VRCAuthStatus.RequiresApp2FA;
-                }
-                else if (raw.Contains("\"error\"") || statusCode >= 400)
-                {
-                    LastErrorMessage = VRChatApiClient.ExtractErrorMessage(raw, "Invalid credentials or API error.");
+                    LastErrorMessage = "Username and password cannot be empty.";
                     return VRCAuthStatus.Error;
                 }
-                else if (user == null || string.IsNullOrEmpty(user.Id))
+
+                var (user, raw, statusCode) = await ApiClient.LoginRawAsync(usernameVRC.Trim(), passwordVRC, clearTwoFactorCookie: isManualLogin);
+
+                try
                 {
-                    LastErrorMessage = "Invalid credentials or API error.";
+                    using var doc = JsonDocument.Parse(raw);
+                    var root = doc.RootElement;
+
+                    if (root.TryGetProperty("requiresTwoFactorAuth", out var twoFactorProp) && twoFactorProp.ValueKind == JsonValueKind.Array)
+                    {
+                        var factors = twoFactorProp.EnumerateArray()
+                            .Select(x => x.GetString() ?? "")
+                            .Where(x => !string.IsNullOrEmpty(x))
+                            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+                        Is2FARequired = true;
+
+                        if (factors.Contains("emailOtp") && !factors.Contains("totp") && !factors.Contains("otp"))
+                        {
+                            IsEmail2FA = true;
+                            return VRCAuthStatus.RequiresEmail2FA;
+                        }
+                        else
+                        {
+                            IsEmail2FA = false;
+                            return VRCAuthStatus.RequiresApp2FA;
+                        }
+                    }
+
+                    if (statusCode >= 400 || root.TryGetProperty("error", out _))
+                    {
+                        LastErrorMessage = VRChatApiClient.ExtractErrorMessage(raw, statusCode == 401 ? "Invalid username or password." : $"Login failed (HTTP {statusCode}).");
+                        return VRCAuthStatus.Error;
+                    }
+                }
+                catch (JsonException)
+                {
+                    if (raw.Contains("emailOtp"))
+                    {
+                        Is2FARequired = true;
+                        IsEmail2FA = true;
+                        return VRCAuthStatus.RequiresEmail2FA;
+                    }
+                    else if (raw.Contains("totp") || raw.Contains("otp"))
+                    {
+                        Is2FARequired = true;
+                        IsEmail2FA = false;
+                        return VRCAuthStatus.RequiresApp2FA;
+                    }
+                }
+
+                if (statusCode >= 400)
+                {
+                    LastErrorMessage = VRChatApiClient.ExtractErrorMessage(raw, statusCode == 401 ? "Invalid username or password." : $"Login failed (HTTP {statusCode}).");
+                    return VRCAuthStatus.Error;
+                }
+
+                if (user == null || string.IsNullOrEmpty(user.Id))
+                {
+                    LastErrorMessage = "Authentication failed: invalid user data received.";
                     return VRCAuthStatus.Error;
                 }
 
@@ -141,7 +196,7 @@ namespace VRCGalleryManager.Core
         {
             try
             {
-                string cleanCode = (code ?? "").Trim();
+                string cleanCode = (code ?? "").Trim().Replace(" ", "").Replace("-", "");
                 if (string.IsNullOrEmpty(cleanCode))
                 {
                     LastErrorMessage = "2FA code cannot be empty.";
@@ -164,7 +219,17 @@ namespace VRCGalleryManager.Core
                     return VRCAuthStatus.Error;
                 }
 
-                var user = await ApiClient.GetCurrentUserAsync();
+                CurrentUser? user = null;
+                try
+                {
+                    user = await ApiClient.GetCurrentUserAsync();
+                }
+                catch
+                {
+                    await Task.Delay(300);
+                    user = await ApiClient.GetCurrentUserAsync();
+                }
+
                 if (user == null || string.IsNullOrEmpty(user.Id))
                 {
                     LastErrorMessage = "Authentication failed: unable to fetch user profile.";
@@ -242,29 +307,21 @@ namespace VRCGalleryManager.Core
 
         public void LoadCookies()
         {
-            try
-            {
-                string cookieString = Task.Run(async () => await SecureStorage.Default.GetAsync("auth_cookie")).GetAwaiter().GetResult();
-
-                if (!string.IsNullOrEmpty(cookieString))
-                {
-                    ApiClient.SetCookieHeader(cookieString);
-                    CookieLoaded = true;
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Load error: {ex.Message}");
-                CookieLoaded = false;
-            }
+            _ = LoadCookiesAsync();
         }
 
         public async Task SaveCredentialsAsync(string username, string password)
         {
             try
             {
-                await SecureStorage.Default.SetAsync("auth_username", username);
-                await SecureStorage.Default.SetAsync("auth_password", password);
+                if (!string.IsNullOrEmpty(username))
+                {
+                    await SecureStorage.Default.SetAsync("auth_username", username);
+                }
+                if (!string.IsNullOrEmpty(password))
+                {
+                    await SecureStorage.Default.SetAsync("auth_password", password);
+                }
             }
             catch (Exception ex)
             {
@@ -338,9 +395,10 @@ namespace VRCGalleryManager.Core
 
                 _lastReloginAttempt = DateTime.UtcNow;
 
+                // Clear only auth cookie, preserving twoFactorAuth cookie so 2FA may be bypassed
                 ClearAuthCookieOnly();
 
-                var status = await LoginAsync(creds.Value.username, creds.Value.password);
+                var status = await LoginAsync(creds.Value.username, creds.Value.password, isManualLogin: false);
                 if (status == VRCAuthStatus.Success)
                 {
                     Is2FARequired = false;

@@ -16,7 +16,7 @@ namespace VRCGalleryManager.Core.Api
     public class VRChatApiClient
     {
         public const string DefaultBaseUrl = "https://api.vrchat.cloud/api/1/";
-        public const string DefaultUserAgent = "VRCGalleryManager";
+        public const string DefaultUserAgent = "VRCGalleryManager/2.0 (github.com/TheIceDragonz/VRCGalleryManager)";
 
         private readonly HttpClient _httpClient;
         private readonly ConcurrentDictionary<string, string> _cookies = new(StringComparer.OrdinalIgnoreCase);
@@ -30,13 +30,26 @@ namespace VRCGalleryManager.Core.Api
 
         public string CookieHeader
         {
-            get => string.Join("; ", _cookies.Select(kv => $"{kv.Key}={kv.Value}"));
+            get => string.Join("; ", _cookies.Where(kv => !string.IsNullOrWhiteSpace(kv.Value)).Select(kv => $"{kv.Key}={kv.Value}"));
             set => SetCookieHeader(value);
         }
 
         public VRChatApiClient(HttpClient? httpClient = null)
         {
-            _httpClient = httpClient ?? new HttpClient();
+            if (httpClient != null)
+            {
+                _httpClient = httpClient;
+            }
+            else
+            {
+                var handler = new HttpClientHandler
+                {
+                    UseCookies = false,
+                    AllowAutoRedirect = true
+                };
+                _httpClient = new HttpClient(handler);
+            }
+
             if (_httpClient.BaseAddress == null)
             {
                 _httpClient.BaseAddress = new Uri(DefaultBaseUrl);
@@ -63,7 +76,11 @@ namespace VRCGalleryManager.Core.Api
                 var kv = part.Trim().Split(new[] { '=' }, 2);
                 if (kv.Length == 2 && !string.IsNullOrWhiteSpace(kv[0]))
                 {
-                    _cookies[kv[0].Trim()] = kv[1].Trim();
+                    string val = kv[1].Trim().Trim('\"');
+                    if (!string.IsNullOrEmpty(val))
+                    {
+                        _cookies[kv[0].Trim()] = val;
+                    }
                 }
             }
             OnCookiesUpdated?.Invoke();
@@ -94,7 +111,17 @@ namespace VRCGalleryManager.Core.Api
 
         private void ExtractCookies(HttpResponseMessage response)
         {
-            if (response.Headers.TryGetValues("Set-Cookie", out var setCookies))
+            IEnumerable<string>? setCookies = null;
+            if (response.Headers.TryGetValues("Set-Cookie", out var scHeaders))
+            {
+                setCookies = scHeaders;
+            }
+            else if (response.Content?.Headers != null && response.Content.Headers.TryGetValues("Set-Cookie", out var scContentHeaders))
+            {
+                setCookies = scContentHeaders;
+            }
+
+            if (setCookies != null)
             {
                 bool changed = false;
                 foreach (var sc in setCookies)
@@ -103,8 +130,21 @@ namespace VRCGalleryManager.Core.Api
                     var kv = cookiePart.Split(new[] { '=' }, 2);
                     if (kv.Length == 2 && !string.IsNullOrWhiteSpace(kv[0]))
                     {
-                        _cookies[kv[0].Trim()] = kv[1].Trim();
-                        changed = true;
+                        string name = kv[0].Trim();
+                        string val = kv[1].Trim().Trim('\"');
+
+                        if (string.IsNullOrEmpty(val) || val.Equals("deleted", StringComparison.OrdinalIgnoreCase))
+                        {
+                            if (_cookies.TryRemove(name, out _))
+                            {
+                                changed = true;
+                            }
+                        }
+                        else
+                        {
+                            _cookies[name] = val;
+                            changed = true;
+                        }
                     }
                 }
                 if (changed)
@@ -198,12 +238,26 @@ namespace VRCGalleryManager.Core.Api
 
         #region Authentication
 
-        public async Task<(CurrentUser? user, string rawResponse, int statusCode)> LoginRawAsync(string username, string password, CancellationToken ct = default)
+        public async Task<(CurrentUser? user, string rawResponse, int statusCode)> LoginRawAsync(
+            string username, 
+            string password, 
+            bool clearTwoFactorCookie = false, 
+            CancellationToken ct = default)
         {
-            ClearCookies();
+            // Clear auth cookie, and optionally 2FA cookie if requested
+            ClearAuthCookieOnly();
+            if (clearTwoFactorCookie)
+            {
+                _cookies.TryRemove("twoFactorAuth", out _);
+                OnCookiesUpdated?.Invoke();
+            }
 
             using var req = new HttpRequestMessage(HttpMethod.Get, "auth/user");
-            var credentials = Convert.ToBase64String(Encoding.UTF8.GetBytes($"{username}:{password}"));
+            
+            // VRChat API specification requires: base64(urlencode(username):urlencode(password))
+            string encodedUser = System.Net.WebUtility.UrlEncode(username ?? "");
+            string encodedPass = System.Net.WebUtility.UrlEncode(password ?? "");
+            var credentials = Convert.ToBase64String(Encoding.UTF8.GetBytes($"{encodedUser}:{encodedPass}"));
             req.Headers.Authorization = new AuthenticationHeaderValue("Basic", credentials);
 
             using var resp = await SendRawAsync(req, ct).ConfigureAwait(false);
@@ -225,9 +279,10 @@ namespace VRCGalleryManager.Core.Api
 
         public async Task<bool> VerifyEmail2FAAsync(string code, CancellationToken ct = default)
         {
-            using var req = new HttpRequestMessage(HttpMethod.Put, "auth/twofactorauth/emailotp/verify")
+            string cleanCode = (code ?? "").Trim().Replace(" ", "").Replace("-", "");
+            using var req = new HttpRequestMessage(HttpMethod.Post, "auth/twofactorauth/emailotp/verify")
             {
-                Content = new StringContent(JsonSerializer.Serialize(new { code = code.Trim() }), Encoding.UTF8, "application/json")
+                Content = new StringContent(JsonSerializer.Serialize(new { code = cleanCode }), Encoding.UTF8, "application/json")
             };
 
             using var resp = await SendRawAsync(req, ct).ConfigureAwait(false);
@@ -253,9 +308,17 @@ namespace VRCGalleryManager.Core.Api
 
         public async Task<bool> VerifyTotp2FAAsync(string code, CancellationToken ct = default)
         {
-            using var req = new HttpRequestMessage(HttpMethod.Put, "auth/twofactorauth/totp/verify")
+            string cleanCode = (code ?? "").Trim().Replace(" ", "").Replace("-", "");
+
+            // If the code is obviously not a 6-digit TOTP (e.g. 8-char recovery code or contains letters), try recovery OTP first
+            bool isRecoveryCode = cleanCode.Length != 6 || !cleanCode.All(char.IsDigit);
+
+            string primaryEndpoint = isRecoveryCode ? "auth/twofactorauth/otp/verify" : "auth/twofactorauth/totp/verify";
+            string fallbackEndpoint = isRecoveryCode ? "auth/twofactorauth/totp/verify" : "auth/twofactorauth/otp/verify";
+
+            using var req = new HttpRequestMessage(HttpMethod.Post, primaryEndpoint)
             {
-                Content = new StringContent(JsonSerializer.Serialize(new { code = code.Trim() }), Encoding.UTF8, "application/json")
+                Content = new StringContent(JsonSerializer.Serialize(new { code = cleanCode }), Encoding.UTF8, "application/json")
             };
 
             using var resp = await SendRawAsync(req, ct).ConfigureAwait(false);
@@ -263,20 +326,32 @@ namespace VRCGalleryManager.Core.Api
 
             if (!resp.IsSuccessStatusCode)
             {
-                // Fallback to otp/verify endpoint if totp/verify returns 404
-                if (resp.StatusCode == System.Net.HttpStatusCode.NotFound)
+                // Fallback to alternative endpoint if primary returned 400 Bad Request or 404 Not Found
+                if (resp.StatusCode == System.Net.HttpStatusCode.NotFound || resp.StatusCode == System.Net.HttpStatusCode.BadRequest)
                 {
-                    using var reqOtp = new HttpRequestMessage(HttpMethod.Put, "auth/twofactorauth/otp/verify")
+                    try
                     {
-                        Content = new StringContent(JsonSerializer.Serialize(new { code = code.Trim() }), Encoding.UTF8, "application/json")
-                    };
-                    using var respOtp = await SendRawAsync(reqOtp, ct).ConfigureAwait(false);
-                    var rawOtp = await respOtp.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
-                    if (!respOtp.IsSuccessStatusCode)
-                    {
-                        throw new VRChatApiException((int)respOtp.StatusCode, ExtractErrorMessage(rawOtp, "Invalid 2FA code."), rawOtp);
+                        using var reqFallback = new HttpRequestMessage(HttpMethod.Post, fallbackEndpoint)
+                        {
+                            Content = new StringContent(JsonSerializer.Serialize(new { code = cleanCode }), Encoding.UTF8, "application/json")
+                        };
+                        using var respFallback = await SendRawAsync(reqFallback, ct).ConfigureAwait(false);
+                        var rawFallback = await respFallback.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
+                        if (respFallback.IsSuccessStatusCode)
+                        {
+                            try
+                            {
+                                using var docFallback = JsonDocument.Parse(rawFallback);
+                                if (docFallback.RootElement.TryGetProperty("verified", out var vf) && vf.GetBoolean())
+                                {
+                                    return true;
+                                }
+                            }
+                            catch { }
+                            return rawFallback.Contains("\"verified\":true");
+                        }
                     }
-                    return rawOtp.Contains("\"verified\":true");
+                    catch { }
                 }
 
                 throw new VRChatApiException((int)resp.StatusCode, ExtractErrorMessage(raw, "Invalid 2FA code."), raw);

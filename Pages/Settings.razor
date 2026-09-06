@@ -50,7 +50,7 @@
                     @(IsLoggedIn ? "Logged In" : "VRChat Login")
                 </h4>
 
-                @if (IsLoggedIn && !HasVRCPlus)
+                @if (IsLoggedIn && Auth.CurrentUser != null && !HasVRCPlus)
                 {
                     <div class="alert mb-0 p-3 d-flex align-items-center gap-2 alert-vrcplus">
                         <img src="/svg/error-svgrepo-com.svg" class="icon-danger" style="width: 20px; height: 20px;" />
@@ -428,6 +428,7 @@
 
     protected override async Task OnInitializedAsync()
     {
+        await Auth.EnsureInitializedAsync();
         _startWithWindows = Config.Get("StartWithWindows", "false") == "true";
         _startInBackground = Config.Get("StartInBackground", "false") == "true";
         _minimizeToTray = Config.Get("MinimizeToTray", "true") == "true";
@@ -579,7 +580,7 @@
             StateHasChanged();
             try
             {
-                var status = await Auth.LoginAsync(Username, Password);
+                var status = await Auth.LoginAsync(Username, Password, isManualLogin: true);
                 if (status == VRCAuthStatus.RequiresEmail2FA)
                 {
                     IsEmail2FA = true;
@@ -623,7 +624,10 @@
             var status = await Auth.Verify2FAAsync(Code2FA, IsEmail2FA);
             if (status == VRCAuthStatus.Success)
             {
-                await Auth.SaveCredentialsAsync(Username, Password);
+                if (!string.IsNullOrEmpty(Username) && !string.IsNullOrEmpty(Password))
+                {
+                    await Auth.SaveCredentialsAsync(Username, Password);
+                }
                 Show2FA = false;
                 Code2FA = "";
                 Password = "";
@@ -656,27 +660,35 @@
     {
         Show2FA = false;
         Code2FA = "";
-
+        Auth.Is2FARequired = false;
+        Auth.ClearAuthCookieOnly();
     }
 
     private async Task Resend2FA()
     {
         IsLoggingIn = true;
-
         StateHasChanged();
         
         try
         {
-            var status = await Auth.LoginAsync(Username, Password);
+            if (string.IsNullOrEmpty(Username) || string.IsNullOrEmpty(Password))
+            {
+                var creds = await Auth.LoadCredentialsAsync();
+                if (creds != null)
+                {
+                    Username = creds.Value.username;
+                    Password = creds.Value.password;
+                }
+            }
+
+            var status = await Auth.LoginAsync(Username, Password, isManualLogin: false);
             if (status == VRCAuthStatus.RequiresEmail2FA)
             {
-                // Just notify that a new code has been sent
                 Notifications.Show("New code sent to your email!", "2FA", VRCGalleryManager.Core.NotificationType.Success);
             }
             else if (status == VRCAuthStatus.Success)
             {
-                // Somehow they logged in without 2FA (e.g. they turned it off in the meantime)
-                Auth.SaveCredentials(Username, Password);
+                await Auth.SaveCredentialsAsync(Username, Password);
                 Show2FA = false;
                 Code2FA = "";
                 Password = "";
@@ -684,7 +696,7 @@
             }
             else
             {
-                Notifications.Show("Unexpected status when resending code.", "Login Error", VRCGalleryManager.Core.NotificationType.Error);
+                Notifications.Show(string.IsNullOrEmpty(Auth.LastErrorMessage) ? "Unexpected status when resending code." : Auth.LastErrorMessage, "Login Error", VRCGalleryManager.Core.NotificationType.Error);
             }
         }
         catch (Exception ex)

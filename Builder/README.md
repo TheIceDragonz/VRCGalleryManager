@@ -1,46 +1,46 @@
 # VRCGalleryManager - Build System
 
-Questa cartella contiene gli script per compilare automaticamente la versione **Windows (EXE / Setup)** e **Android (APK)** di VRCGalleryManager.
+This folder contains scripts to automatically compile the **Windows (EXE / Setup)** and **Android (APK)** versions of VRCGalleryManager.
 
 ---
 
-## 📁 Struttura della cartella
+## 📁 Folder Structure
 
-- **`Build_Windows_EXE.bat`**: Compila e pubblica l'app per Windows (`net8.0-windows10.0.19041.0`, x64, self-contained). Se NSIS è installato sul computer, genera anche il file `VRCGalleryManager_Setup.exe`.
-- **`Build_Android_APK.bat`**: Compila e pubblica il pacchetto Android (`net8.0-android`, Release) ed estrae il file `VRCGalleryManager.apk`.
-- **`Build_All.bat`**: Esegue in sequenza sia la build Windows che la build Android.
-- **`setup.nsi`**: Script di configurazione NSIS per generare l'installer di installazione Windows.
-- **`Output/`**: Cartella di destinazione (creata automaticamente) contenente:
-  - `Output/Windows/`: File eseguibile standalone (`VRCGalleryManager.exe`) e dipendenze.
-  - `Output/Android/`: File APK per dispositivi Android (`VRCGalleryManager.apk`).
-  - `Output/VRCGalleryManager_Setup.exe`: Installer Windows (se NSIS è presente).
+- **`Build_Windows_EXE.bat`**: Compiles and publishes the app for Windows (`net8.0-windows10.0.19041.0`, x64, self-contained). If NSIS is installed on your computer, it also creates the `VRCGalleryManager_Setup.exe` installer.
+- **`Build_Android_APK.bat`**: Compiles and publishes the Android package (`net8.0-android`, Release) and extracts `VRCGalleryManager.apk`.
+- **`Build_All.bat`**: Runs both the Windows and Android builds in sequence.
+- **`setup.nsi`**: NSIS configuration script for generating the Windows installer.
+- **`Output/`**: Destination directory (generated automatically) containing:
+  - `Output/Windows/`: Standalone executable (`VRCGalleryManager.exe`) and dependencies.
+  - `Output/Android/`: APK file for Android devices (`VRCGalleryManager.apk`).
+  - `Output/VRCGalleryManager_Setup.exe`: Windows installer (when NSIS is installed).
 
 ---
 
-## ⚙️ Prerequisiti
+## ⚙️ Prerequisites
 
 ### 1. .NET 8 SDK
-Assicurati di avere installato il **.NET 8 SDK**:
-- Scaricabile da: [https://dotnet.microsoft.com/download/dotnet/8.0](https://dotnet.microsoft.com/download/dotnet/8.0)
+Ensure you have the **.NET 8 SDK** installed:
+- Download: [https://dotnet.microsoft.com/download/dotnet/8.0](https://dotnet.microsoft.com/download/dotnet/8.0)
 
-### 2. Workload .NET MAUI
-Se necessario, puoi installare o aggiornare i carichi di lavoro MAUI aprendo il terminale come amministratore ed eseguendo:
+### 2. .NET MAUI Workloads
+If needed, install or update the MAUI workloads by opening an elevated terminal (Run as administrator) and executing:
 ```bash
 dotnet workload install maui
-# Oppure singolarmente:
+# Or individually:
 dotnet workload install maui-windows
 dotnet workload install maui-android
 ```
 
-### 3. NSIS (Opzionale - Per creare l'installer Setup.exe)
-Se desideri creare l'installer Windows oltre all'eseguibile standalone:
-- Installa **NSIS (Nullsoft Scriptable Install System)**: [https://nsis.sourceforge.io/Download](https://nsis.sourceforge.io/Download)
+### 3. NSIS (Optional - To create the Setup.exe installer)
+If you want to create the Windows installer in addition to the standalone executable:
+- Install **NSIS (Nullsoft Scriptable Install System)**: [https://nsis.sourceforge.io/Download](https://nsis.sourceforge.io/Download)
 
 ---
 
-## 🚀 Utilizzo
+## 🚀 Usage
 
-Fai semplicemente doppio clic su uno dei file `.bat`:
-1. Fai doppio clic su `Build_Windows_EXE.bat` per Windows.
-2. Fai doppio clic su `Build_Android_APK.bat` per Android.
-3. Fai doppio clic su `Build_All.bat` per entrambi.
+Simply double-click any of the `.bat` files:
+1. Double-click `Build_Windows_EXE.bat` for Windows.
+2. Double-click `Build_Android_APK.bat` for Android.
+3. Double-click `Build_All.bat` for both.

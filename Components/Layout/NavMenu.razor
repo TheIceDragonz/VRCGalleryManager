@@ -129,6 +129,7 @@
         Auth.OnAuthStateChanged += AuthStateChanged;
         Auth.On2FARequiredEvent += Handle2FARequired;
         BackgroundService.OnSettingsChanged += HandleSettingsChanged;
+        await Auth.EnsureInitializedAsync();
         await LoadUser();
     }
 
@@ -225,7 +226,7 @@
             if (!string.IsNullOrEmpty(CurrentUser.ProfileEffect))
             {
                 using var request = new System.Net.Http.HttpRequestMessage(System.Net.Http.HttpMethod.Get, "cosmetics/index/profileEffect");
-                request.Headers.TryAddWithoutValidation("User-Agent", "VRCGalleryManager");
+                request.Headers.TryAddWithoutValidation("User-Agent", VRChatApiClient.DefaultUserAgent);
                 if (!string.IsNullOrEmpty(Auth.CookieHeader))
                 {
                     request.Headers.TryAddWithoutValidation("Cookie", Auth.CookieHeader);
@@ -246,7 +247,7 @@
             if (!string.IsNullOrEmpty(CurrentUser.IconFrame))
             {
                 using var request = new System.Net.Http.HttpRequestMessage(System.Net.Http.HttpMethod.Get, "cosmetics/index/iconFrame");
-                request.Headers.TryAddWithoutValidation("User-Agent", "VRCGalleryManager");
+                request.Headers.TryAddWithoutValidation("User-Agent", VRChatApiClient.DefaultUserAgent);
                 if (!string.IsNullOrEmpty(Auth.CookieHeader))
                 {
                     request.Headers.TryAddWithoutValidation("Cookie", Auth.CookieHeader);

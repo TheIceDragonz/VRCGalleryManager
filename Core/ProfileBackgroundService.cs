@@ -764,7 +764,7 @@ a {{
             try
             {
                 using var request = new HttpRequestMessage(HttpMethod.Get, $"profile/{userId}");
-                request.Headers.TryAddWithoutValidation("User-Agent", "VRCGalleryManager");
+                request.Headers.TryAddWithoutValidation("User-Agent", Api.VRChatApiClient.DefaultUserAgent);
                 if (!string.IsNullOrEmpty(_auth.CookieHeader))
                 {
                     request.Headers.TryAddWithoutValidation("Cookie", _auth.CookieHeader);
