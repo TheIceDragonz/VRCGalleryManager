@@ -784,8 +784,6 @@ h6 {
 .btn-vrcplus-subscribe:hover {
     background-color: #ffd633 !important;
     color: #000000 !important;
-    box-shadow: 0 4px 12px rgba(255, 200, 0, 0.45) !important;
-    transform: translateY(-1px) !important;
 }
 
 .btn-vrcplus-subscribe:active {
