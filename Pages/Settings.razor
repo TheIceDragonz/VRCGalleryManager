@@ -76,22 +76,49 @@
                         <div class="d-flex flex-column gap-1 min-w-0 flex-grow-1">
                             <div class="d-flex align-items-center gap-2 flex-wrap">
                                 <span class="settings-account-name text-truncate" title="@user.DisplayName">@user.DisplayName</span>
-                                @if (user.Badges != null && user.Badges.Any(b => b.Showcased))
+                                @if (!string.IsNullOrWhiteSpace(user.Pronouns))
+                                {
+                                    <span class="settings-account-pronouns" title="Pronouns: @user.Pronouns">@user.Pronouns</span>
+                                }
+                                @if (user.Badges != null && user.Badges.Any(b => b.Hidden != true))
                                 {
                                     <div class="settings-badge-list">
-                                        @foreach (var badge in user.Badges.Where(b => b.Showcased).Take(6))
+                                        @foreach (var badge in user.Badges.Where(b => b.Hidden != true))
                                         {
                                             <img src="@badge.BadgeImageUrl" class="settings-badge-item" title="@badge.BadgeName" />
                                         }
                                     </div>
                                 }
                             </div>
-                            @if (HasVRCPlus)
-                            {
-                                <div class="settings-vrcplus-pill">
-                                    <span>VRChat Plus</span>
+                            <div class="d-flex align-items-center gap-1 flex-wrap mt-1">
+                                <div class="settings-pill @user.TrustClass" title="Trust Rank: @user.TrustLevel">
+                                    <span>@user.TrustLevel</span>
                                 </div>
-                            }
+
+                                @if (HasVRCPlus)
+                                {
+                                    <div class="settings-pill pill-vrcplus" title="VRChat Plus Subscriber">
+                                        <span>VRChat Plus</span>
+                                    </div>
+                                }
+
+                                @if (user.AgeVerified || user.AgeVerificationStatus == "18+")
+                                {
+                                    <div class="settings-pill pill-age-verified" title="Age Verified (@(user.AgeVerificationStatus ?? "18+"))">
+                                        <span>@(user.AgeVerificationStatus ?? "18+") Verified</span>
+                                    </div>
+                                }
+
+                                @if (user.Languages != null && user.Languages.Any())
+                                {
+                                    @foreach (var lang in user.Languages)
+                                    {
+                                        <div class="settings-pill pill-language" title="Language: @lang.DisplayName">
+                                            <span>@lang.Code</span>
+                                        </div>
+                                    }
+                                }
+                            </div>
                         </div>
                     </div>
 
@@ -162,8 +189,8 @@
                     }
                     else
                     {
-                        <button class="btn btn-warning w-100 mt-2 fw-bold text-dark" @onclick="StartUpdate">
-                            <img src="/svg/rotate-right-svgrepo-com.svg" class="btn-icon icon-dark" />New Update Available!
+                        <button class="btn btn-warning w-100 mt-2 fw-bold" @onclick="StartUpdate">
+                            <img src="/svg/rotate-right-svgrepo-com.svg" class="btn-icon" />New Update Available!
                         </button>
                     }
                 }
