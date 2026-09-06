@@ -226,13 +226,6 @@
                     </button>
                 }
             }
-
-            <!-- Legal Disclaimer -->
-            <div class="about-footer text-center pt-3 mt-1">
-                <div class="text-muted" style="font-size: 0.65rem; opacity: 0.7; line-height: 1.4;">
-                    VRCGalleryManager is an open-source project and is not affiliated with, endorsed by, or associated with VRChat Inc.
-                </div>
-            </div>
         </div>
         <!-- Appearance Panel -->
         <div class="panel d-flex flex-column">
@@ -469,8 +462,170 @@
                     </button>
                 }
             </div>
+
+            <!-- Legal Notice & Open Source Notice -->
+            <div class="about-legal-card p-3">
+                <div class="d-flex align-items-center justify-content-between mb-2 flex-wrap gap-1">
+                    <span class="fw-bold text-white small">Legal Notice</span>
+                    <span class="text-muted" style="font-size: 0.72rem;">© 2024–2026 TheIceDragonz</span>
+                </div>
+                
+                <p class="text-muted mb-2" style="font-size: 0.72rem; line-height: 1.45;">
+                    VRCGalleryManager is an independent utility designed to organize media and profile assets via web requests. It operates outside the VRChat client and makes no alterations to the game installation.
+                </p>
+
+                <p class="text-muted mb-2" style="font-size: 0.72rem; line-height: 1.45;">
+                    All trademarks referenced belong to their respective owners. This application is distributed freely as open-source software under the MIT License without liability or warranty.
+                </p>
+
+                <div class="d-flex align-items-center justify-content-between pt-2 border-top" style="border-color: rgba(255, 255, 255, 0.08) !important;">
+                    <span class="text-muted" style="font-size: 0.7rem;">Open Source Software Notice</span>
+                    <button type="button" class="btn btn-sm py-0 px-2" style="font-size: 0.7rem; height: 24px; border-width: 1px;" @onclick="OpenLicenses">
+                        Licenses
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
+
+@if (ShowLicensesModal)
+{
+    <div class="position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center dialog-overlay" style="z-index: 10005;" @onclick="CloseLicenses">
+        <div class="dialog-panel d-flex flex-column licenses-dialog-panel" @onclick:stopPropagation="true">
+            <!-- Modal Header -->
+            <div class="p-3 px-4 d-flex align-items-center justify-content-between border-bottom" style="border-color: rgba(255, 255, 255, 0.08) !important; background: rgba(0, 0, 0, 0.25);">
+                <div class="d-flex align-items-center gap-2">
+                    <img src="/svg/files-fill-svgrepo-com.svg" class="icon-accent" style="width: 18px; height: 18px;" />
+                    <h5 class="fw-bold text-white mb-0 fs-6">Open Source Software Notice</h5>
+                </div>
+                <button class="btn-viewer-info-close" @onclick="CloseLicenses" title="Close">
+                    <img src="/svg/close-bold-svgrepo-com.svg" class="icon-white" style="width: 12px; height: 12px;" />
+                </button>
+            </div>
+
+            <!-- Modal Subheader -->
+            <div class="px-4 pt-3 pb-2">
+                <p class="text-muted mb-0" style="font-size: 0.78rem; line-height: 1.45;">
+                    VRCGalleryManager is built with the help of the open-source community. The following third-party components and libraries are used in this software under their respective licenses:
+                </p>
+            </div>
+
+            <!-- Scrollable Component List -->
+            <div class="px-4 py-2 flex-grow-1 overflow-y-auto licenses-list d-flex flex-column gap-2">
+                
+                <!-- Microsoft .NET MAUI & Blazor -->
+                <div class="license-item-card p-3">
+                    <div class="d-flex align-items-center justify-content-between gap-2 mb-1">
+                        <span class="fw-bold text-white" style="font-size: 0.88rem;">Microsoft .NET MAUI & Blazor</span>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge badge-license-mit">MIT</span>
+                            <button class="btn license-link-btn" @onclick='() => OpenExternalUrl("https://github.com/dotnet/maui")' title="Open dotnet/maui repository">
+                                <img src="/svg/link-svgrepo-com.svg" class="btn-icon" />
+                            </button>
+                        </div>
+                    </div>
+                    <div class="text-muted small mb-1" style="font-size: 0.72rem;">© Microsoft Corporation. All rights reserved.</div>
+                    <div class="text-light" style="font-size: 0.78rem; line-height: 1.4; color: #b8c2cc !important;">
+                        Cross-platform native application framework and Razor component WebView integration.
+                    </div>
+                </div>
+
+                <!-- SixLabors ImageSharp -->
+                <div class="license-item-card p-3">
+                    <div class="d-flex align-items-center justify-content-between gap-2 mb-1">
+                        <span class="fw-bold text-white" style="font-size: 0.88rem;">SixLabors ImageSharp & Drawing</span>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge badge-license-apache">Apache 2.0 / Split</span>
+                            <button class="btn license-link-btn" @onclick='() => OpenExternalUrl("https://github.com/SixLabors/ImageSharp")' title="Open SixLabors/ImageSharp repository">
+                                <img src="/svg/link-svgrepo-com.svg" class="btn-icon" />
+                            </button>
+                        </div>
+                    </div>
+                    <div class="text-muted small mb-1" style="font-size: 0.72rem;">© Six Labors and contributors</div>
+                    <div class="text-light" style="font-size: 0.78rem; line-height: 1.4; color: #b8c2cc !important;">
+                        High-performance, managed cross-platform 2D graphics, image decoding, and manipulation engine.
+                    </div>
+                </div>
+
+                <!-- CommunityToolkit.Maui -->
+                <div class="license-item-card p-3">
+                    <div class="d-flex align-items-center justify-content-between gap-2 mb-1">
+                        <span class="fw-bold text-white" style="font-size: 0.88rem;">CommunityToolkit.Maui</span>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge badge-license-mit">MIT</span>
+                            <button class="btn license-link-btn" @onclick='() => OpenExternalUrl("https://github.com/CommunityToolkit/Maui")' title="Open CommunityToolkit/Maui repository">
+                                <img src="/svg/link-svgrepo-com.svg" class="btn-icon" />
+                            </button>
+                        </div>
+                    </div>
+                    <div class="text-muted small mb-1" style="font-size: 0.72rem;">© .NET Foundation and Contributors</div>
+                    <div class="text-light" style="font-size: 0.78rem; line-height: 1.4; color: #b8c2cc !important;">
+                        Community-maintained collection of animations, converters, and native platform helpers for MAUI.
+                    </div>
+                </div>
+
+                <!-- H.NotifyIcon.Maui -->
+                <div class="license-item-card p-3">
+                    <div class="d-flex align-items-center justify-content-between gap-2 mb-1">
+                        <span class="fw-bold text-white" style="font-size: 0.88rem;">H.NotifyIcon.Maui</span>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge badge-license-mit">MIT</span>
+                            <button class="btn license-link-btn" @onclick='() => OpenExternalUrl("https://github.com/HavenDV/H.NotifyIcon")' title="Open H.NotifyIcon repository">
+                                <img src="/svg/link-svgrepo-com.svg" class="btn-icon" />
+                            </button>
+                        </div>
+                    </div>
+                    <div class="text-muted small mb-1" style="font-size: 0.72rem;">© HavenDV (Valerii Hazun)</div>
+                    <div class="text-light" style="font-size: 0.78rem; line-height: 1.4; color: #b8c2cc !important;">
+                        Windows tray icon support, taskbar notification area integration, and background lifecycle handling.
+                    </div>
+                </div>
+
+                <!-- Bootstrap -->
+                <div class="license-item-card p-3">
+                    <div class="d-flex align-items-center justify-content-between gap-2 mb-1">
+                        <span class="fw-bold text-white" style="font-size: 0.88rem;">Bootstrap & Bootstrap Icons</span>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge badge-license-mit">MIT</span>
+                            <button class="btn license-link-btn" @onclick='() => OpenExternalUrl("https://github.com/twbs/bootstrap")' title="Open Bootstrap repository">
+                                <img src="/svg/link-svgrepo-com.svg" class="btn-icon" />
+                            </button>
+                        </div>
+                    </div>
+                    <div class="text-muted small mb-1" style="font-size: 0.72rem;">© 2011-2026 The Bootstrap Authors & Twitter, Inc.</div>
+                    <div class="text-light" style="font-size: 0.78rem; line-height: 1.4; color: #b8c2cc !important;">
+                        Modern front-end CSS framework for responsive design, grid layout, and foundational utility classes.
+                    </div>
+                </div>
+
+                <!-- SVGRepo Community Vectors -->
+                <div class="license-item-card p-3">
+                    <div class="d-flex align-items-center justify-content-between gap-2 mb-1">
+                        <span class="fw-bold text-white" style="font-size: 0.88rem;">SVGRepo Community Vectors</span>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge badge-license-mit">MIT / CC0</span>
+                            <button class="btn license-link-btn" @onclick='() => OpenExternalUrl("https://www.svgrepo.com")' title="Open SVGRepo website">
+                                <img src="/svg/link-svgrepo-com.svg" class="btn-icon" />
+                            </button>
+                        </div>
+                    </div>
+                    <div class="text-muted small mb-1" style="font-size: 0.72rem;">© SVGRepo and respective vector authors</div>
+                    <div class="text-light" style="font-size: 0.78rem; line-height: 1.4; color: #b8c2cc !important;">
+                        Vector iconography and visual symbols utilized throughout navigation, buttons, and interface menus.
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="p-3 px-4 d-flex justify-content-end dialog-footer border-top" style="border-color: rgba(255, 255, 255, 0.08) !important;">
+                <button class="btn btn-sm px-4 fw-bold" style="background-color: var(--bg-hover); border: 1px solid var(--border-color); color: #fff;" @onclick="CloseLicenses">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+}
 
 @code {
     private string Username = "";
@@ -492,6 +647,7 @@
     private bool ShowPassword = false;
     private bool Show2FA = false;
     private bool IsEmail2FA = false;
+    private bool ShowLicensesModal = false;
 
     private int PicflowDbTotal = 0;
     private int PicflowDbStickers = 0;
@@ -928,6 +1084,28 @@
     private async Task OpenIssues()
     {
         await Microsoft.Maui.ApplicationModel.Launcher.Default.OpenAsync(new Uri("https://github.com/TheIceDragonz/VRCGalleryManager/issues"));
+    }
+
+    private void OpenLicenses()
+    {
+        ShowLicensesModal = true;
+    }
+
+    private void CloseLicenses()
+    {
+        ShowLicensesModal = false;
+    }
+
+    private async Task OpenExternalUrl(string url)
+    {
+        try
+        {
+            if (Uri.TryCreate(url, UriKind.Absolute, out var uri))
+            {
+                await Microsoft.Maui.ApplicationModel.Launcher.Default.OpenAsync(uri);
+            }
+        }
+        catch { }
     }
 
     private async Task OpenVRCPlusSubscriptions()

@@ -2474,3 +2474,81 @@ canvas.picking-color {
     border-top: 1px solid var(--border-color);
     line-height: 1.5;
 }
+
+.about-legal-card {
+    background-color: var(--bg-hover);
+    border-radius: var(--radius-md, 12px);
+}
+
+/* ==========================================================================
+   Licenses Modal Styles
+   ========================================================================== */
+.licenses-dialog-panel {
+    width: 640px;
+    max-width: 92vw;
+    max-height: 85vh;
+    border-radius: var(--radius-lg, 16px);
+}
+
+.licenses-list {
+    max-height: 52vh;
+    padding-bottom: 6px;
+}
+
+.license-item-card {
+    background-color: var(--bg-hover);
+    border-radius: var(--radius-md, 10px);
+    transition: background-color var(--transition-fast, 0.2s ease);
+}
+
+.license-item-card:hover {
+    background-color: var(--bg-active);
+}
+
+.badge-license-mit {
+    background: rgba(106, 227, 249, 0.12);
+    color: var(--accent);
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 0.2rem 0.5rem;
+    border-radius: 6px;
+    letter-spacing: 0.2px;
+}
+
+.badge-license-apache {
+    background: rgba(40, 167, 69, 0.15);
+    color: #48d575;
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 0.2rem 0.5rem;
+    border-radius: 6px;
+    letter-spacing: 0.2px;
+}
+
+.license-link-btn {
+    padding: 0.2rem 0.4rem !important;
+    border-radius: 6px !important;
+    background: rgba(255, 255, 255, 0.05);
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.license-link-btn:hover {
+    background: rgba(106, 227, 249, 0.15);
+    border-color: rgba(106, 227, 249, 0.4) !important;
+}
+
+.license-link-btn .btn-icon {
+    width: 12px !important;
+    height: 12px !important;
+    margin: 0 !important;
+    filter: var(--filter-muted);
+    transition: filter 0.2s ease;
+}
+
+.license-link-btn:hover .btn-icon {
+    filter: var(--filter-accent);
+}
