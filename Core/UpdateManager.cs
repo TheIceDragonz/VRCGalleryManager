@@ -26,9 +26,9 @@ namespace VRCGalleryManager
         private (bool isAvailable, string latestVersion, string localVersion)? _cachedUpdate;
         private DateTime _lastCheckTime = DateTime.MinValue;
 
-        public async Task<(bool isAvailable, string latestVersion, string localVersion)> IsUpdateAvailableAsync()
+        public async Task<(bool isAvailable, string latestVersion, string localVersion)> IsUpdateAvailableAsync(bool forceRefresh = false)
         {
-            if (_cachedUpdate.HasValue && (DateTime.UtcNow - _lastCheckTime).TotalMinutes < 5)
+            if (!forceRefresh && _cachedUpdate.HasValue && (DateTime.UtcNow - _lastCheckTime).TotalMinutes < 5)
             {
                 return _cachedUpdate.Value;
             }

@@ -3,6 +3,7 @@
 @using VRCGalleryManager.Core.Api
 @using VRCGalleryManager.Core.Api.Models
 @using System.IO
+@using System.Reflection
 @using Microsoft.AspNetCore.Components.Web
 @inject VRCAuth Auth
 @inject DialogService dialogService
@@ -165,37 +166,74 @@
 
         <!-- About Panel -->
         <div class="panel d-flex flex-column gap-3">
-            <h4 class="mb-2">About</h4>
-                <p class="text-muted mb-0">VRCGalleryManager v2.0</p>
-                <button class="btn w-100" @onclick="OpenGitHub">
-                    <img src="/svg/info-circle-svgrepo-com.svg" class="btn-icon" />Open GitHub Page
-                </button>
-                @if (HasUpdate)
-                {
-                    @if (IsUpdating)
-                    {
-                        <div class="mt-2 p-3 panel" style="background-color: var(--bg-hover); border: 1px solid var(--accent); box-shadow: 0 0 10px rgba(106, 227, 249, 0.2);">
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <div class="d-flex align-items-center gap-2">
-                                    <span class="spinner-border spinner-border-sm" style="color: var(--accent);" role="status"></span>
-                                    <span class="fw-bold" style="color: var(--accent);">Downloading Update...</span>
-                                </div>
-                                <span class="text-white small fw-bold">@(UpdateProgressPercentage)%</span>
-                            </div>
-                            <div class="progress" style="height: 8px; background-color: var(--bg-active);">
-                                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: @(UpdateProgressPercentage)%; background-color: var(--accent);"></div>
-                            </div>
-                        </div>
-                    }
-                    else
-                    {
-                        <button class="btn btn-warning w-100 mt-2 fw-bold" @onclick="StartUpdate">
-                            <img src="/svg/rotate-right-svgrepo-com.svg" class="btn-icon" />New Update Available!
-                        </button>
-                    }
-                }
+            <h4 class="mb-1">About</h4>
 
+            <!-- App Branding Box with Action Links on the Right -->
+            <div class="d-flex align-items-center justify-content-between p-3 about-brand-box gap-3">
+                <div class="d-flex align-items-center gap-3 min-w-0 flex-grow-1">
+                    <img src="/VRCGM.png" alt="VRCGalleryManager Logo" class="about-logo flex-shrink-0" />
+                    <div class="d-flex flex-column gap-1 min-w-0">
+                        <span class="fs-5 fw-bold text-white text-truncate">VRCGalleryManager</span>
+                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                            <span class="badge about-version-badge">v@(string.IsNullOrEmpty(LocalVersion) ? "2.0.0" : LocalVersion)</span>
+                            @if (HasUpdate && !string.IsNullOrEmpty(LatestUpdateVersion))
+                            {
+                                <span class="badge about-update-badge" title="New version available: v@(LatestUpdateVersion)">
+                                    ➜ v@(LatestUpdateVersion)
+                                </span>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <div class="about-actions-col">
+                    <button class="btn about-action-btn" @onclick="OpenGitHub" title="Open GitHub Page">
+                        <img src="/svg/info-circle-svgrepo-com.svg" class="btn-icon" />
+                        <span>GitHub Page</span>
+                    </button>
+                    <button class="btn about-action-btn" @onclick="OpenReleases" title="View Release Notes and Changelog">
+                        <img src="/svg/files-fill-svgrepo-com.svg" class="btn-icon" />
+                        <span>Changelog</span>
+                    </button>
+                    <button class="btn about-action-btn" @onclick="OpenIssues" title="Report a Bug or Request a Feature">
+                        <img src="/svg/error-svgrepo-com.svg" class="btn-icon" />
+                        <span>Report Issue</span>
+                    </button>
+                </div>
             </div>
+
+            @if (HasUpdate)
+            {
+                @if (IsUpdating)
+                {
+                    <div class="mt-2 p-3 panel" style="background-color: var(--bg-hover); border: 1px solid var(--accent); box-shadow: 0 0 10px rgba(106, 227, 249, 0.2);">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="spinner-border spinner-border-sm" style="color: var(--accent);" role="status"></span>
+                                <span class="fw-bold" style="color: var(--accent);">Downloading Update...</span>
+                            </div>
+                            <span class="text-white small fw-bold">@(UpdateProgressPercentage)%</span>
+                        </div>
+                        <div class="progress" style="height: 8px; background-color: var(--bg-active);">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: @(UpdateProgressPercentage)%; background-color: var(--accent);"></div>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <button class="btn btn-warning w-100 mt-2 fw-bold" @onclick="StartUpdate">
+                        <img src="/svg/rotate-right-svgrepo-com.svg" class="btn-icon" />New Update Available!
+                    </button>
+                }
+            }
+
+            <!-- Legal Disclaimer -->
+            <div class="about-footer text-center pt-3 mt-1">
+                <div class="text-muted" style="font-size: 0.65rem; opacity: 0.7; line-height: 1.4;">
+                    VRCGalleryManager is an open-source project and is not affiliated with, endorsed by, or associated with VRChat Inc.
+                </div>
+            </div>
+        </div>
         <!-- Appearance Panel -->
         <div class="panel d-flex flex-column">
             <h4 class="mb-4">Appearance</h4>
@@ -516,16 +554,30 @@
             InvokeAsync(StateHasChanged);
         });
 
+        try
+        {
+            LocalVersion = Assembly.GetExecutingAssembly()
+                .GetCustomAttribute<AssemblyFileVersionAttribute>()?
+                .Version ?? "2.0.0";
+        }
+        catch
+        {
+            LocalVersion = "2.0.0";
+        }
+
         if (OperatingSystem.IsWindows())
         {
             try
             {
                 var updateCheck = await Updater.IsUpdateAvailableAsync();
                 HasUpdate = updateCheck.isAvailable;
+                if (!string.IsNullOrEmpty(updateCheck.localVersion))
+                {
+                    LocalVersion = updateCheck.localVersion;
+                }
                 if (HasUpdate)
                 {
                     LatestUpdateVersion = updateCheck.latestVersion;
-                    LocalVersion = updateCheck.localVersion;
                 }
             }
             catch { }
@@ -866,6 +918,16 @@
     private async Task OpenGitHub()
     {
         await Microsoft.Maui.ApplicationModel.Launcher.Default.OpenAsync(new Uri("https://github.com/TheIceDragonz/VRCGalleryManager"));
+    }
+
+    private async Task OpenReleases()
+    {
+        await Microsoft.Maui.ApplicationModel.Launcher.Default.OpenAsync(new Uri("https://github.com/TheIceDragonz/VRCGalleryManager/releases"));
+    }
+
+    private async Task OpenIssues()
+    {
+        await Microsoft.Maui.ApplicationModel.Launcher.Default.OpenAsync(new Uri("https://github.com/TheIceDragonz/VRCGalleryManager/issues"));
     }
 
     private async Task OpenVRCPlusSubscriptions()

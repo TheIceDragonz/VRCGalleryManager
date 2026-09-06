@@ -2396,3 +2396,81 @@ canvas.picking-color {
 .icon-dark {
     filter: var(--filter-dark);
 }
+
+/* ==========================================================================
+   About Section Styles
+   ========================================================================== */
+.about-brand-box {
+    background-color: var(--bg-hover);
+    border-radius: var(--radius-md, 12px);
+    transition: border-color var(--transition-fast, 0.2s ease);
+}
+
+.about-logo {
+    width: 52px;
+    height: 52px;
+    object-fit: contain;
+    border-radius: 12px;
+    filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.4));
+    flex-shrink: 0;
+}
+
+.about-version-badge {
+    background: rgba(106, 227, 249, 0.12);
+    color: var(--accent);
+    border: 1px solid rgba(106, 227, 249, 0.3);
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.25rem 0.55rem;
+    border-radius: 6px;
+    letter-spacing: 0.3px;
+}
+
+.about-update-badge {
+    background: rgba(255, 193, 7, 0.15);
+    color: #ffc107;
+    border: 1px solid rgba(255, 193, 7, 0.35);
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.25rem 0.55rem;
+    border-radius: 6px;
+    letter-spacing: 0.3px;
+}
+
+.about-actions-col {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex-shrink: 0;
+    min-width: 140px;
+}
+
+.about-action-btn {
+    padding: 0.28rem 0.65rem !important;
+    font-size: 0.76rem !important;
+    font-family: inherit !important;
+    font-weight: 600 !important;
+    border-radius: 8px !important;
+    border-width: 1px !important;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    justify-content: center !important;
+    text-align: center;
+    gap: 6px;
+    height: 30px;
+    line-height: 1;
+    width: 100%;
+}
+
+.about-action-btn .btn-icon {
+    width: 13px !important;
+    height: 13px !important;
+    margin: 0 !important;
+    flex-shrink: 0;
+}
+
+.about-footer {
+    border-top: 1px solid var(--border-color);
+    line-height: 1.5;
+}
