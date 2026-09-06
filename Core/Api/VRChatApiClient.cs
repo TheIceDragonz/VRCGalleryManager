@@ -373,7 +373,22 @@ namespace VRCGalleryManager.Core.Api
         public async Task<CurrentUser> GetCurrentUserAsync(CancellationToken ct = default)
         {
             using var req = new HttpRequestMessage(HttpMethod.Get, "auth/user");
-            return await SendAsync<CurrentUser>(req, ct).ConfigureAwait(false);
+            using var response = await SendRawAsync(req, ct).ConfigureAwait(false);
+            await EnsureSuccessAsync(response);
+
+            var json = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
+
+            if (json.Contains("requiresTwoFactorAuth"))
+            {
+                throw new VRChatApiException(401, "Two-factor authentication required.", json);
+            }
+
+            var result = JsonSerializer.Deserialize<CurrentUser>(json, _jsonOptions);
+            if (result == null || string.IsNullOrEmpty(result.Id))
+            {
+                throw new VRChatApiException(401, "Invalid session or user not authenticated.", json);
+            }
+            return result;
         }
 
         public async Task LogoutAsync(CancellationToken ct = default)

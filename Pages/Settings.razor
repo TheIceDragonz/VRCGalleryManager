@@ -13,6 +13,21 @@
 <div class="settings-page container-fluid h-100 p-4 overflow-y-auto">
     <div class="d-flex flex-column gap-4 max-w-600 mx-auto w-100">
         <h3 class="mb-1 text-center">Settings</h3>
+
+        @if (IsLoggedIn && Auth.CurrentUser != null && !string.IsNullOrEmpty(Auth.CurrentUser.Id) && !HasVRCPlus)
+        {
+            <div class="alert mb-0 p-3 d-flex align-items-center justify-content-between gap-3 flex-wrap alert-vrcplus">
+                <div class="d-flex align-items-center gap-2">
+                    <img src="/svg/error-svgrepo-com.svg" class="icon-warning flex-shrink-0" style="width: 20px; height: 20px;" />
+                    <span>You need <strong>VRChat Plus</strong> to use this program.</span>
+                </div>
+                <button type="button" class="btn-vrcplus-subscribe" @onclick="OpenVRCPlusSubscriptions">
+                    <img src="/svg/link-svgrepo-com.svg" class="btn-icon" alt="" />
+                    <span>Get VRChat Plus</span>
+                </button>
+            </div>
+        }
+
         <!-- Login Panel -->
         <div class="panel d-flex flex-column gap-3">
             @if (Show2FA)
@@ -27,12 +42,6 @@
                 
                 <div class="d-flex gap-2">
                     <button class="btn btn-outline-secondary flex-fill py-2" @onclick="Cancel2FA" disabled="@IsLoggingIn">Cancel</button>
-                    @if (IsEmail2FA)
-                    {
-                        <button class="btn btn-outline-primary flex-fill py-2" @onclick="Resend2FA" disabled="@IsLoggingIn" title="Resend Email Code">
-                            <img src="/svg/rotate-right-svgrepo-com.svg" class="icon-white" style="width: 16px; height: 16px;" />
-                        </button>
-                    }
                     <button class="btn btn-primary flex-fill py-2" @onclick="Submit2FA" disabled="@IsLoggingIn">
                         @if (IsLoggingIn)
                         {
@@ -40,34 +49,75 @@
                         }
                         Verify
                     </button>
+                    @if (IsEmail2FA)
+                    {
+                        <button type="button" class="btn btn-square" @onclick="Resend2FA" disabled="@IsLoggingIn" title="Resend Email Code">
+                            <img src="/svg/rotate-right-svgrepo-com.svg" class="btn-icon" style="width: 18px; height: 18px; margin: 0;" />
+                        </button>
+                    }
                 </div>
                 
 
             }
+            else if (IsLoggedIn && Auth.CurrentUser != null && !string.IsNullOrEmpty(Auth.CurrentUser.Id))
+            {
+                var user = Auth.CurrentUser;
+                string avatarUrl = !string.IsNullOrEmpty(user.UserIcon) 
+                    ? user.UserIcon 
+                    : (!string.IsNullOrEmpty(user.ProfilePicOverrideThumbnail) 
+                        ? user.ProfilePicOverrideThumbnail 
+                        : user.CurrentAvatarThumbnailImageUrl);
+
+                <h4 class="mb-2 text-accent">VRChat Account</h4>
+
+                <div class="settings-account-card d-flex align-items-center justify-content-between gap-3">
+                    <div class="d-flex align-items-center gap-3 min-w-0 flex-grow-1">
+                        <img src="@(string.IsNullOrEmpty(avatarUrl) ? "/svg/profile-user-svgrepo-com.svg" : avatarUrl)" class="settings-account-avatar" />
+                        <div class="d-flex flex-column gap-1 min-w-0 flex-grow-1">
+                            <div class="d-flex align-items-center gap-2 flex-wrap">
+                                <span class="settings-account-name text-truncate" title="@user.DisplayName">@user.DisplayName</span>
+                                @if (user.Badges != null && user.Badges.Any(b => b.Showcased))
+                                {
+                                    <div class="settings-badge-list">
+                                        @foreach (var badge in user.Badges.Where(b => b.Showcased).Take(6))
+                                        {
+                                            <img src="@badge.BadgeImageUrl" class="settings-badge-item" title="@badge.BadgeName" />
+                                        }
+                                    </div>
+                                }
+                            </div>
+                            @if (HasVRCPlus)
+                            {
+                                <div class="settings-vrcplus-pill">
+                                    <span>VRChat Plus</span>
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    <button class="btn btn-outline-danger px-3 py-2 flex-shrink-0" @onclick="ToggleLogin" disabled="@IsLoggingIn">
+                        @if (IsLoggingIn)
+                        {
+                            <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                        }
+                        Logout
+                    </button>
+                </div>
+            }
             else
             {
-                <h4 class="mb-2 @(IsLoggedIn ? "text-accent" : "")">
-                    @(IsLoggedIn ? "Logged In" : "VRChat Login")
-                </h4>
-
-                @if (IsLoggedIn && Auth.CurrentUser != null && !HasVRCPlus)
-                {
-                    <div class="alert mb-0 p-3 d-flex align-items-center gap-2 alert-vrcplus">
-                        <img src="/svg/error-svgrepo-com.svg" class="icon-danger" style="width: 20px; height: 20px;" />
-                        <span>You need <strong>VRChat Plus</strong> to use this program.</span>
-                    </div>
-                }
+                <h4 class="mb-2">VRChat Login</h4>
 
                 <div class="mb-2">
                     <label class="form-label text-muted mb-1">Username</label>
-                    <input type="text" class="form-control" @bind="Username" disabled="@IsLoggedIn" @onkeydown="OnUsernameKeyDown" />
+                    <input type="text" class="form-control" @bind="Username" @onkeydown="OnUsernameKeyDown" placeholder="Enter username or email" />
                 </div>
 
                 <div class="mb-4">
                     <label class="form-label text-muted mb-1">Password</label>
                     <div class="input-group">
-                        <input type="@(ShowPassword ? "text" : "password")" class="form-control password-input" @bind="Password" @bind:event="oninput" disabled="@IsLoggedIn" @onkeydown="OnPasswordKeyDown" />
-                        @if (!IsLoggedIn && !string.IsNullOrEmpty(Password))
+                        <input type="@(ShowPassword ? "text" : "password")" class="form-control password-input" @bind="Password" @bind:event="oninput" @onkeydown="OnPasswordKeyDown" placeholder="Enter password" />
+                        @if (!string.IsNullOrEmpty(Password))
                         {
                             <button class="btn btn-password-toggle p-2" type="button" @onclick="() => ShowPassword = !ShowPassword" title="@(ShowPassword ? "Hide password" : "Show password")">
                                 <img src="/svg/eye-svgrepo-com.svg" class="btn-icon" style="margin-right: 0;" />
@@ -76,15 +126,13 @@
                     </div>
                 </div>
 
-                <button class="btn @(IsLoggedIn ? "btn-outline-danger" : "btn-primary") w-100 py-2" @onclick="ToggleLogin" disabled="@IsLoggingIn">
+                <button class="btn btn-primary w-100 py-2" @onclick="ToggleLogin" disabled="@IsLoggingIn">
                     @if (IsLoggingIn)
                     {
                         <span class="spinner-border spinner-border-sm me-2" role="status"></span>
                     }
-                    @(IsLoggedIn ? "Logout" : "Login")
+                    Login
                 </button>
-
-
             }
         </div>
 
@@ -424,7 +472,7 @@
         set { _minimizeToTray = value; Config.Set("MinimizeToTray", value ? "true" : "false"); }
     }
 
-    private bool IsLoggedIn => Auth.LoggedIn || Auth.CookieLoaded;
+    private bool IsLoggedIn => (Auth.LoggedIn || Auth.CookieLoaded) && Auth.CurrentUser != null && !string.IsNullOrEmpty(Auth.CurrentUser.Id);
 
     protected override async Task OnInitializedAsync()
     {
@@ -459,20 +507,25 @@
         if (Auth.Is2FARequired)
         {
             var creds = await Auth.LoadCredentialsAsync();
-            if (creds != null)
+            if (creds != null && !string.IsNullOrEmpty(creds.Value.username))
             {
                 Username = creds.Value.username;
-                Password = creds.Value.password;
             }
+            else
+            {
+                try { Username = await SecureStorage.Default.GetAsync("auth_username") ?? Username; } catch { }
+            }
+            Password = "";
+            ShowPassword = false;
             IsEmail2FA = Auth.IsEmail2FA;
             Show2FA = true;
             Notifications.Show("Authentication required. Please enter the new 2FA code.", "2FA Required", VRCGalleryManager.Core.NotificationType.Info);
             return;
         }
 
-        if (IsLoggedIn)
+        if (Auth.LoggedIn || Auth.CookieLoaded)
         {
-            if (Auth.CurrentUser != null)
+            if (Auth.CurrentUser != null && !string.IsNullOrEmpty(Auth.CurrentUser.Id))
             {
                 ApplyCurrentUser(Auth.CurrentUser);
             }
@@ -481,13 +534,27 @@
                 await LoadCurrentUser();
             }
         }
+        else
+        {
+            var creds = await Auth.LoadCredentialsAsync();
+            if (creds != null && !string.IsNullOrEmpty(creds.Value.username))
+            {
+                Username = creds.Value.username;
+            }
+            else
+            {
+                try { Username = await SecureStorage.Default.GetAsync("auth_username") ?? Username; } catch { }
+            }
+            Password = "";
+            ShowPassword = false;
+        }
     }
 
     private void ApplyCurrentUser(CurrentUser user)
     {
         if (user == null) return;
         Username = user.DisplayName;
-        Password = "password";
+        Password = "";
         ShowPassword = false;
 
         // Check VRChat Plus badge or tag
@@ -504,6 +571,11 @@
                 Auth.CurrentUser = user;
                 ApplyCurrentUser(user);
             }
+            else
+            {
+                Auth.CurrentUser = null;
+                throw new VRChatApiException(401, "User is not authenticated or 2FA is required.");
+            }
         }
         catch (VRChatApiException ex) when (ex.StatusCode == 401)
         {
@@ -512,13 +584,6 @@
                 IsLoggingIn = true;
                 StateHasChanged();
 
-                var creds = await Auth.LoadCredentialsAsync();
-                if (creds != null)
-                {
-                    Username = creds.Value.username;
-                    Password = creds.Value.password;
-                }
-                
                 bool success = await Auth.TryAutoReloginAsync();
                 if (success)
                 {
@@ -528,18 +593,34 @@
                 }
                 else if (Auth.Is2FARequired)
                 {
+                    Password = "";
+                    ShowPassword = false;
                     IsEmail2FA = Auth.IsEmail2FA;
                     Show2FA = true;
                     Notifications.Show("IP changed. Please enter your 2FA code.", "2FA Required", VRCGalleryManager.Core.NotificationType.Info);
                 }
                 else
                 {
+                    var creds = await Auth.LoadCredentialsAsync();
+                    if (creds != null && !string.IsNullOrEmpty(creds.Value.username))
+                    {
+                        Username = creds.Value.username;
+                    }
+                    Password = "";
+                    ShowPassword = false;
                     Auth.Logout(keepCredentials: true);
                     Notifications.Show("Session expired and auto-login failed. Please log in again.", "Session Expired", VRCGalleryManager.Core.NotificationType.Error);
                 }
             }
             catch
             {
+                var creds = await Auth.LoadCredentialsAsync();
+                if (creds != null && !string.IsNullOrEmpty(creds.Value.username))
+                {
+                    Username = creds.Value.username;
+                }
+                Password = "";
+                ShowPassword = false;
                 Auth.Logout(keepCredentials: true);
                 Notifications.Show("Session expired and auto-login failed. Please log in again.", "Session Expired", VRCGalleryManager.Core.NotificationType.Error);
             }
@@ -551,6 +632,13 @@
         }
         catch
         {
+            var creds = await Auth.LoadCredentialsAsync();
+            if (creds != null && !string.IsNullOrEmpty(creds.Value.username))
+            {
+                Username = creds.Value.username;
+            }
+            Password = "";
+            ShowPassword = false;
             Auth.Logout(keepCredentials: true);
             Notifications.Show("Session expired. Please log in again.", "Session Expired", VRCGalleryManager.Core.NotificationType.Error);
             StateHasChanged();
@@ -559,7 +647,6 @@
 
     private async Task ToggleLogin()
     {
-
         if (IsLoggedIn)
         {
             try { await Auth.AuthApi.LogoutAsync(); } catch { }
@@ -581,28 +668,32 @@
             try
             {
                 var status = await Auth.LoginAsync(Username, Password, isManualLogin: true);
-                if (status == VRCAuthStatus.RequiresEmail2FA)
+                if (status == VRCAuthStatus.RequiresEmail2FA || status == VRCAuthStatus.RequiresApp2FA)
                 {
-                    IsEmail2FA = true;
-                    Show2FA = true;
-                }
-                else if (status == VRCAuthStatus.RequiresApp2FA)
-                {
-                    IsEmail2FA = false;
+                    await Auth.SaveCredentialsAsync(Username, Password);
+                    Password = "";
+                    ShowPassword = false;
+                    IsEmail2FA = status == VRCAuthStatus.RequiresEmail2FA;
                     Show2FA = true;
                 }
                 else if (status == VRCAuthStatus.Success)
                 {
                     await Auth.SaveCredentialsAsync(Username, Password);
+                    Password = "";
+                    ShowPassword = false;
                     await LoadCurrentUser();
                 }
                 else
                 {
+                    Password = "";
+                    ShowPassword = false;
                     Notifications.Show(string.IsNullOrEmpty(Auth.LastErrorMessage) ? "Invalid credentials or connection error." : Auth.LastErrorMessage, "Login Error", VRCGalleryManager.Core.NotificationType.Error);
                 }
             }
             catch (Exception ex)
             {
+                Password = "";
+                ShowPassword = false;
                 Notifications.Show(ex.Message, "Login Error", VRCGalleryManager.Core.NotificationType.Error);
             }
             finally
@@ -624,13 +715,10 @@
             var status = await Auth.Verify2FAAsync(Code2FA, IsEmail2FA);
             if (status == VRCAuthStatus.Success)
             {
-                if (!string.IsNullOrEmpty(Username) && !string.IsNullOrEmpty(Password))
-                {
-                    await Auth.SaveCredentialsAsync(Username, Password);
-                }
                 Show2FA = false;
                 Code2FA = "";
                 Password = "";
+                ShowPassword = false;
                 if (Auth.CurrentUser != null)
                 {
                     ApplyCurrentUser(Auth.CurrentUser);
@@ -656,12 +744,36 @@
         }
     }
 
-    private void Cancel2FA()
+    private async Task Cancel2FA()
     {
         Show2FA = false;
         Code2FA = "";
-        Auth.Is2FARequired = false;
-        Auth.ClearAuthCookieOnly();
+        Password = "";
+        ShowPassword = false;
+        IsLoggingIn = false;
+
+        // Reset auth state and remove unverified partial session cookies
+        Auth.Logout(keepCredentials: true);
+
+        // Remove stored password so auto-login won't immediately re-trigger 2FA without user action
+        try
+        {
+            SecureStorage.Default.Remove("auth_password");
+        }
+        catch { }
+
+        // Keep username prefilled in the login form for convenience
+        try
+        {
+            var storedUser = await SecureStorage.Default.GetAsync("auth_username");
+            if (!string.IsNullOrEmpty(storedUser))
+            {
+                Username = storedUser;
+            }
+        }
+        catch { }
+
+        StateHasChanged();
     }
 
     private async Task Resend2FA()
@@ -671,27 +783,25 @@
         
         try
         {
-            if (string.IsNullOrEmpty(Username) || string.IsNullOrEmpty(Password))
+            var creds = await Auth.LoadCredentialsAsync();
+            if (creds == null)
             {
-                var creds = await Auth.LoadCredentialsAsync();
-                if (creds != null)
-                {
-                    Username = creds.Value.username;
-                    Password = creds.Value.password;
-                }
+                Notifications.Show("Saved credentials not found. Please log in again.", "Login Error", VRCGalleryManager.Core.NotificationType.Error);
+                Cancel2FA();
+                return;
             }
 
-            var status = await Auth.LoginAsync(Username, Password, isManualLogin: false);
+            var status = await Auth.LoginAsync(creds.Value.username, creds.Value.password, isManualLogin: false);
+            Password = "";
+            ShowPassword = false;
             if (status == VRCAuthStatus.RequiresEmail2FA)
             {
                 Notifications.Show("New code sent to your email!", "2FA", VRCGalleryManager.Core.NotificationType.Success);
             }
             else if (status == VRCAuthStatus.Success)
             {
-                await Auth.SaveCredentialsAsync(Username, Password);
                 Show2FA = false;
                 Code2FA = "";
-                Password = "";
                 await LoadCurrentUser();
             }
             else
@@ -701,6 +811,8 @@
         }
         catch (Exception ex)
         {
+            Password = "";
+            ShowPassword = false;
             Notifications.Show(ex.Message, "Login Error", VRCGalleryManager.Core.NotificationType.Error);
         }
         finally
@@ -727,6 +839,11 @@
     private async Task OpenGitHub()
     {
         await Microsoft.Maui.ApplicationModel.Launcher.Default.OpenAsync(new Uri("https://github.com/TheIceDragonz/VRCGalleryManager"));
+    }
+
+    private async Task OpenVRCPlusSubscriptions()
+    {
+        await Microsoft.Maui.ApplicationModel.Launcher.Default.OpenAsync(new Uri("https://vrchat.com/home/subscriptions"));
     }
 
     private async Task StartUpdate()

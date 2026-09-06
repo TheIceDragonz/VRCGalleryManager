@@ -15,7 +15,7 @@
     </a>
 </div>
 
-@if (CurrentUser != null)
+@if (CurrentUser != null && !string.IsNullOrEmpty(CurrentUser.Id))
 {
     <div class="profile-card flex-shrink-0 position-relative m-3 nav-profile-card-container">
         <img src="@(string.IsNullOrEmpty(CurrentUser.ProfilePicOverrideThumbnail) ? CurrentUser.CurrentAvatarThumbnailImageUrl : CurrentUser.ProfilePicOverrideThumbnail)" 
@@ -28,7 +28,7 @@
         
         <div class="position-absolute w-100 h-100 d-flex flex-column align-items-center justify-content-center nav-profile-content" style="z-index: 2;">
             <div class="position-relative d-flex align-items-center justify-content-center">
-                <img src="@CurrentUser.UserIcon" class="nav-profile-icon" />
+                <img src="@(string.IsNullOrEmpty(CurrentUser.UserIcon) ? CurrentUser.CurrentAvatarThumbnailImageUrl : CurrentUser.UserIcon)" class="nav-profile-icon" />
                 @if (BackgroundService.DisplayVRCCosmetics && !string.IsNullOrEmpty(IconFrameUrl))
                 {
                     <img src="@IconFrameUrl" class="nav-icon-frame" style="position: absolute; top: -15%; left: -15%; width: 130%; height: 130%; pointer-events: none;" />
@@ -114,7 +114,7 @@
     private VRCProfileTheme ProfileTheme = new();
     private string ProfileEffectUrl;
     private string IconFrameUrl;
-    private bool IsLoggedIn => CurrentUser != null;
+    private bool IsLoggedIn => CurrentUser != null && !string.IsNullOrEmpty(CurrentUser.Id);
     private bool HasVrcPlus => IsLoggedIn && VRCAuth.CheckHasVRCPlus(CurrentUser);
     private string DisabledClass => IsLoggedIn ? "" : "disabled-nav";
     private string VrcPlusDisabledClass => HasVrcPlus ? "" : "disabled-nav";
@@ -164,11 +164,17 @@
         {
             try
             {
-                CurrentUser = Auth.CurrentUser ?? await Auth.AuthApi.GetCurrentUserAsync();
-                if (CurrentUser != null)
+                var user = Auth.CurrentUser ?? await Auth.AuthApi.GetCurrentUserAsync();
+                if (user != null && !string.IsNullOrEmpty(user.Id))
                 {
-                    Auth.CurrentUser = CurrentUser;
+                    CurrentUser = user;
+                    Auth.CurrentUser = user;
                     await LoadCosmetics();
+                }
+                else
+                {
+                    CurrentUser = null;
+                    Auth.CurrentUser = null;
                 }
             }
             catch (ApiException ex) when (ex.ErrorCode == 401)
@@ -176,12 +182,23 @@
                 bool success = await Auth.TryAutoReloginAsync();
                 if (success)
                 {
-                    CurrentUser = Auth.CurrentUser ?? await Auth.AuthApi.GetCurrentUserAsync();
-                    await LoadCosmetics();
+                    var user = Auth.CurrentUser ?? await Auth.AuthApi.GetCurrentUserAsync();
+                    if (user != null && !string.IsNullOrEmpty(user.Id))
+                    {
+                        CurrentUser = user;
+                        Auth.CurrentUser = user;
+                        await LoadCosmetics();
+                    }
+                    else
+                    {
+                        CurrentUser = null;
+                        Auth.CurrentUser = null;
+                    }
                 }
                 else
                 {
                     CurrentUser = null;
+                    Auth.CurrentUser = null;
                     if (!Auth.Is2FARequired) 
                     {
                         Auth.Logout(keepCredentials: true);
@@ -191,6 +208,7 @@
             catch
             {
                 CurrentUser = null;
+                Auth.CurrentUser = null;
                 Auth.Logout(keepCredentials: true);
             }
         }

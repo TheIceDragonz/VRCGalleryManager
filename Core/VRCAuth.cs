@@ -163,17 +163,9 @@ namespace VRCGalleryManager.Core
         {
             if (user == null) return false;
 
-            if (user.Badges != null)
+            if (user.IsVRCPlus == true)
             {
-                foreach (var badge in user.Badges)
-                {
-                    if (badge.BadgeId == "bdg_754f9935-0f97-49d8-b857-95afb9b673fa" ||
-                        (!string.IsNullOrEmpty(badge.BadgeName) && (badge.BadgeName.Contains("Plus", StringComparison.OrdinalIgnoreCase) || badge.BadgeName.Contains("Supporter", StringComparison.OrdinalIgnoreCase))) ||
-                        (!string.IsNullOrEmpty(badge.BadgeId) && (badge.BadgeId.Contains("supporter", StringComparison.OrdinalIgnoreCase) || badge.BadgeId.Contains("vrcplus", StringComparison.OrdinalIgnoreCase))))
-                    {
-                        return true;
-                    }
-                }
+                return true;
             }
 
             if (user.Tags != null)
@@ -409,6 +401,11 @@ namespace VRCGalleryManager.Core
                     Is2FARequired = true;
                     IsEmail2FA = status == VRCAuthStatus.RequiresEmail2FA;
                     Notify2FARequired();
+                    return false;
+                }
+                else if (status == VRCAuthStatus.Error && LastErrorMessage?.Contains("Invalid username or password", StringComparison.OrdinalIgnoreCase) == true)
+                {
+                    SecureStorage.Default.Remove("auth_password");
                     return false;
                 }
             }

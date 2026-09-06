@@ -41,6 +41,9 @@ namespace VRCGalleryManager.Core.Api.Models
         [JsonPropertyName("tags")]
         public List<string> Tags { get; set; } = new();
 
+        [JsonPropertyName("$isVRCPlus")]
+        public bool? IsVRCPlus { get; set; }
+
         [JsonPropertyName("friends")]
         public List<string> Friends { get; set; } = new();
 
