@@ -38,7 +38,7 @@
                 
                 <div class="mb-4">
                     <label class="form-label text-muted mb-1">Auth Code</label>
-                    <input type="text" class="form-control" @bind="Code2FA" @onkeydown="On2FAKeyDown" placeholder="123456" />
+                    <input type="text" class="form-control" @bind="Code2FA" @onkeydown="On2FAKeyDown" placeholder="123456" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code" />
                 </div>
                 
                 <div class="d-flex gap-2">
@@ -71,9 +71,9 @@
 
                 <h4 class="mb-2 text-accent">VRChat Account</h4>
 
-                <div class="settings-account-card d-flex align-items-center justify-content-between gap-3">
+                <div class="settings-account-card d-flex align-items-center justify-content-between gap-3 p-3">
                     <div class="d-flex align-items-center gap-3 min-w-0 flex-grow-1">
-                        <img src="@(string.IsNullOrEmpty(avatarUrl) ? "/svg/profile-user-svgrepo-com.svg" : avatarUrl)" class="settings-account-avatar" />
+                        <img src="@(string.IsNullOrEmpty(avatarUrl) ? "/svg/profile-user-svgrepo-com.svg" : avatarUrl)" class="settings-account-avatar flex-shrink-0" />
                         <div class="d-flex flex-column gap-1 min-w-0 flex-grow-1">
                             <div class="d-flex align-items-center gap-2 flex-wrap">
                                 <span class="settings-account-name text-truncate" title="@user.DisplayName">@user.DisplayName</span>
@@ -123,7 +123,7 @@
                         </div>
                     </div>
 
-                    <button class="btn btn-outline-danger px-3 py-2 flex-shrink-0" @onclick="ToggleLogin" disabled="@IsLoggingIn">
+                    <button class="btn btn-outline-danger px-3 py-2 flex-shrink-0 settings-logout-btn" @onclick="ToggleLogin" disabled="@IsLoggingIn">
                         @if (IsLoggingIn)
                         {
                             <span class="spinner-border spinner-border-sm me-2" role="status"></span>
@@ -138,13 +138,13 @@
 
                 <div class="mb-2">
                     <label class="form-label text-muted mb-1">Username</label>
-                    <input type="text" class="form-control" @bind="Username" @onkeydown="OnUsernameKeyDown" placeholder="Enter username or email" />
+                    <input type="text" class="form-control" @bind="Username" @onkeydown="OnUsernameKeyDown" placeholder="Enter username or email" autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="username" />
                 </div>
 
                 <div class="mb-4">
                     <label class="form-label text-muted mb-1">Password</label>
                     <div class="input-group">
-                        <input type="@(ShowPassword ? "text" : "password")" class="form-control password-input" @bind="Password" @bind:event="oninput" @onkeydown="OnPasswordKeyDown" placeholder="Enter password" />
+                        <input type="@(ShowPassword ? "text" : "password")" class="form-control password-input" @bind="Password" @bind:event="oninput" @onkeydown="OnPasswordKeyDown" placeholder="Enter password" autocomplete="current-password" autocorrect="off" autocapitalize="none" />
                         @if (!string.IsNullOrEmpty(Password))
                         {
                             <button class="btn btn-password-toggle p-2" type="button" @onclick="() => ShowPassword = !ShowPassword" title="@(ShowPassword ? "Hide password" : "Show password")">
@@ -165,67 +165,118 @@
         </div>
 
         <!-- About Panel -->
-        <div class="panel d-flex flex-column gap-3">
+        <div class="panel d-flex flex-column gap-3 about-panel">
             <h4 class="mb-1">About</h4>
 
-            <!-- App Branding Box with Action Links on the Right -->
-            <div class="d-flex align-items-center justify-content-between p-3 about-brand-box gap-3">
-                <div class="d-flex align-items-center gap-3 min-w-0 flex-grow-1">
-                    <img src="/VRCGM.png" alt="VRCGalleryManager Logo" class="about-logo flex-shrink-0" />
-                    <div class="d-flex flex-column gap-1 min-w-0">
-                        <span class="fs-5 fw-bold text-white text-truncate">VRCGalleryManager</span>
-                        <div class="d-flex align-items-center gap-2 flex-wrap">
-                            <span class="badge about-version-badge">v@(string.IsNullOrEmpty(LocalVersion) ? "2.0.0" : LocalVersion)</span>
-                            @if (HasUpdate && !string.IsNullOrEmpty(LatestUpdateVersion))
-                            {
-                                <span class="badge about-update-badge" title="New version available: v@(LatestUpdateVersion)">
-                                    ➜ v@(LatestUpdateVersion)
-                                </span>
-                            }
+            <!-- App Branding Box with Action Links -->
+            <div class="about-brand-box p-3 d-flex flex-column gap-3">
+                <div class="about-brand-top d-flex align-items-center justify-content-between gap-3 flex-wrap">
+                    <div class="d-flex align-items-center gap-3 min-w-0">
+                        <img src="/VRCGM.png" alt="VRCGalleryManager Logo" class="about-logo flex-shrink-0" />
+                        <div class="d-flex flex-column min-w-0">
+                            <div class="d-flex align-items-center gap-2 flex-wrap">
+                                <span class="fs-5 fw-bold text-white text-truncate">VRCGalleryManager</span>
+                                @if (OperatingSystem.IsAndroid())
+                                {
+                                    <span class="badge about-platform-badge about-platform-badge-android" title="Android">
+                                        <img src="/svg/android-svgrepo-com.svg" class="about-platform-icon" alt="Android" />
+                                    </span>
+                                }
+                                else if (OperatingSystem.IsWindows())
+                                {
+                                    <span class="badge about-platform-badge about-platform-badge-win" title="Windows">
+                                        <img src="/svg/windows-svgrepo-com.svg" class="about-platform-icon" alt="Windows" />
+                                    </span>
+                                }
+                                else if (OperatingSystem.IsMacOS() || OperatingSystem.IsMacCatalyst() || OperatingSystem.IsIOS())
+                                {
+                                    <span class="badge about-platform-badge about-platform-badge-apple" title="Apple">
+                                        <img src="/svg/apple-svgrepo-com.svg" class="about-platform-icon" alt="Apple" />
+                                    </span>
+                                }
+                            </div>
+                            <div class="d-flex align-items-center gap-2 flex-wrap mt-1">
+                                <span class="badge about-version-badge">v@(LocalVersion)</span>
+                                @if (HasUpdate && !string.IsNullOrEmpty(LatestUpdateVersion))
+                                {
+                                    <span class="badge about-update-badge" title="New version available: v@(LatestUpdateVersion)">
+                                        ➜ v@(LatestUpdateVersion)
+                                    </span>
+                                }
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <div class="about-actions-col">
-                    <button class="btn about-action-btn" @onclick="OpenGitHub" title="Open GitHub Page">
-                        <img src="/svg/info-circle-svgrepo-com.svg" class="btn-icon" />
-                        <span>GitHub Page</span>
-                    </button>
-                    <button class="btn about-action-btn" @onclick="OpenReleases" title="View Release Notes and Changelog">
-                        <img src="/svg/files-fill-svgrepo-com.svg" class="btn-icon" />
-                        <span>Changelog</span>
-                    </button>
-                    <button class="btn about-action-btn" @onclick="OpenIssues" title="Report a Bug or Request a Feature">
-                        <img src="/svg/error-svgrepo-com.svg" class="btn-icon" />
-                        <span>Report Issue</span>
-                    </button>
+                    <div class="about-actions-col">
+                        <button class="btn about-action-btn" @onclick="OpenGitHub" title="Open GitHub Page">
+                            <img src="/svg/info-circle-svgrepo-com.svg" class="btn-icon" />
+                            <span>GitHub</span>
+                        </button>
+                        <button class="btn about-action-btn" @onclick="OpenReleases" title="View Release Notes and Changelog">
+                            <img src="/svg/files-fill-svgrepo-com.svg" class="btn-icon" />
+                            <span>Changelog</span>
+                        </button>
+                        <button class="btn about-action-btn" @onclick="OpenIssues" title="Report a Bug or Request a Feature">
+                            <img src="/svg/error-svgrepo-com.svg" class="btn-icon" />
+                            <span>Issues</span>
+                        </button>
+                    </div>
                 </div>
             </div>
 
             @if (HasUpdate)
             {
-                @if (IsUpdating)
-                {
-                    <div class="mt-2 p-3 panel" style="background-color: var(--bg-hover); border: 1px solid var(--accent); box-shadow: 0 0 10px rgba(106, 227, 249, 0.2);">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <div class="d-flex align-items-center gap-2">
-                                <span class="spinner-border spinner-border-sm" style="color: var(--accent);" role="status"></span>
-                                <span class="fw-bold" style="color: var(--accent);">Downloading Update...</span>
-                            </div>
-                            <span class="text-white small fw-bold">@(UpdateProgressPercentage)%</span>
+                <!-- Update Banner Card -->
+                <div class="p-3 about-update-card d-flex flex-column gap-2">
+                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                        <div class="d-flex align-items-center gap-2">
+                            <img src="/svg/rotate-right-svgrepo-com.svg" class="icon-warning flex-shrink-0" style="width: 20px; height: 20px;" />
+                            <span class="fw-bold text-white">@(OperatingSystem.IsAndroid() ? "New Android Version Available!" : "New Version Available!")</span>
                         </div>
-                        <div class="progress" style="height: 8px; background-color: var(--bg-active);">
-                            <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: @(UpdateProgressPercentage)%; background-color: var(--accent);"></div>
-                        </div>
+                        <span class="badge about-update-badge">v@(LatestUpdateVersion)</span>
                     </div>
-                }
-                else
-                {
-                    <button class="btn btn-warning w-100 mt-2 fw-bold" @onclick="StartUpdate">
-                        <img src="/svg/rotate-right-svgrepo-com.svg" class="btn-icon" />New Update Available!
-                    </button>
-                }
+
+                    <p class="text-muted small mb-1" style="font-size: 0.8rem; line-height: 1.4;">
+                        @(OperatingSystem.IsAndroid() 
+                            ? "A new release of VRCGalleryManager is available. Tap below to download the latest APK directly to your device." 
+                            : "A new release of VRCGalleryManager is available. Click below to install the update.")
+                    </p>
+
+                    @if (OperatingSystem.IsWindows() || OperatingSystem.IsAndroid())
+                    {
+                        @if (IsUpdating)
+                        {
+                            <div class="mt-1 d-flex flex-column gap-2">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="spinner-border spinner-border-sm" style="color: var(--accent);" role="status"></span>
+                                        <span class="fw-bold small" style="color: var(--accent);">@(OperatingSystem.IsAndroid() ? "Downloading APK..." : "Downloading Update...")</span>
+                                    </div>
+                                    <span class="text-white small fw-bold">@(UpdateProgressPercentage)%</span>
+                                </div>
+                                <div class="progress" style="height: 8px; background-color: var(--bg-active);">
+                                    <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: @(UpdateProgressPercentage)%; background-color: var(--accent);"></div>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <button class="btn btn-warning w-100 fw-bold py-2 d-flex align-items-center justify-content-center gap-2" @onclick="StartUpdate">
+                                <img src="/svg/@(OperatingSystem.IsAndroid() ? "download-svgrepo-com.svg" : "rotate-right-svgrepo-com.svg")" class="btn-icon" />
+                                <span>@(OperatingSystem.IsAndroid() ? "Install Update (APK)" : "Install Update")</span>
+                            </button>
+                        }
+                    }
+                    else
+                    {
+                        <button class="btn btn-warning w-100 fw-bold py-2 d-flex align-items-center justify-content-center gap-2" @onclick="OpenAndroidUpdate">
+                            <img src="/svg/download-svgrepo-com.svg" class="btn-icon" alt="" />
+                            <span>Download APK</span>
+                        </button>
+                    }
+                </div>
             }
+
         </div>
         <!-- Appearance Panel -->
         <div class="panel d-flex flex-column">
@@ -234,14 +285,14 @@
             <div class="d-flex flex-column panel shadow-none border-0" style="background-color: var(--bg-hover); padding: 0;">
                 
                 <!-- Display VRChat Profile Backgrounds -->
-                <div class="d-flex align-items-center justify-content-between p-3 border-bottom" style="border-color: var(--border-color) !important;">
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="p-2 d-flex align-items-center justify-content-center" style="background-color: var(--bg-active); width: 40px; height: 40px; border-radius: 10px;">
+                <div class="settings-toggle-row p-3 border-bottom" style="border-color: var(--border-color) !important;">
+                    <div class="settings-toggle-info">
+                        <div class="settings-toggle-icon">
                             <img src="/svg/gallery-wide-svgrepo-com.svg" class="icon-accent" style="width: 20px; height: 20px;" alt="Backgrounds" />
                         </div>
-                        <div>
-                            <h6 class="mb-1 text-white fw-bold">VRChat Profile Backgrounds</h6>
-                            <div class="text-muted" style="font-size: 0.85rem;">Show profile backgrounds</div>
+                        <div class="settings-toggle-text">
+                            <h6>VRChat Profile Backgrounds</h6>
+                            <div class="settings-toggle-desc">Show profile backgrounds</div>
                         </div>
                     </div>
                     <div class="form-check form-switch fs-4 m-0">
@@ -250,14 +301,14 @@
                 </div>
 
                 <!-- Display VRChat Profile Themes -->
-                <div class="d-flex align-items-center justify-content-between p-3 border-bottom" style="border-color: var(--border-color) !important;">
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="p-2 d-flex align-items-center justify-content-center" style="background-color: var(--bg-active); width: 40px; height: 40px; border-radius: 10px;">
+                <div class="settings-toggle-row p-3 border-bottom" style="border-color: var(--border-color) !important;">
+                    <div class="settings-toggle-info">
+                        <div class="settings-toggle-icon">
                             <img src="/svg/color-picker-svgrepo-com.svg" class="icon-accent" style="width: 20px; height: 20px;" alt="Themes" />
                         </div>
-                        <div>
-                            <h6 class="mb-1 text-white fw-bold">VRChat Profile Themes</h6>
-                            <div class="text-muted" style="font-size: 0.85rem;">Show custom theme colors on buttons, icons and text</div>
+                        <div class="settings-toggle-text">
+                            <h6>VRChat Profile Themes</h6>
+                            <div class="settings-toggle-desc">Show custom theme colors on buttons, icons and text</div>
                         </div>
                     </div>
                     <div class="form-check form-switch fs-4 m-0">
@@ -266,14 +317,14 @@
                 </div>
 
                 <!-- Display VRChat Cosmetics -->
-                <div class="d-flex align-items-center justify-content-between p-3">
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="p-2 d-flex align-items-center justify-content-center" style="background-color: var(--bg-active); width: 40px; height: 40px; border-radius: 10px;">
+                <div class="settings-toggle-row p-3">
+                    <div class="settings-toggle-info">
+                        <div class="settings-toggle-icon">
                             <img src="/svg/sticker-smile-square-svgrepo-com.svg" class="icon-accent" style="width: 20px; height: 20px;" alt="Cosmetics" />
                         </div>
-                        <div>
-                            <h6 class="mb-1 text-white fw-bold">VRChat Profile Cosmetics</h6>
-                            <div class="text-muted" style="font-size: 0.85rem;">Show profile effects and icon frames</div>
+                        <div class="settings-toggle-text">
+                            <h6>VRChat Profile Cosmetics</h6>
+                            <div class="settings-toggle-desc">Show profile effects and icon frames</div>
                         </div>
                     </div>
                     <div class="form-check form-switch fs-4 m-0">
@@ -294,14 +345,14 @@
                     <div class="d-flex flex-column mb-4 panel shadow-none border-0" style="background-color: var(--bg-hover); padding: 0;">
                         
                         <!-- Start with Windows -->
-                        <div class="d-flex align-items-center justify-content-between p-3 border-bottom" style="border-color: var(--border-color) !important;">
-                            <div class="d-flex align-items-center gap-3">
-                                <div class="p-2 d-flex align-items-center justify-content-center" style="background-color: var(--bg-active); width: 40px; height: 40px; border-radius: 10px;">
+                        <div class="settings-toggle-row p-3 border-bottom" style="border-color: var(--border-color) !important;">
+                            <div class="settings-toggle-info">
+                                <div class="settings-toggle-icon">
                                     <img src="/svg/windows-svgrepo-com.svg" class="icon-accent" style="width: 20px; height: 20px;" alt="Windows" />
                                 </div>
-                                <div>
-                                    <h6 class="mb-1 text-white fw-bold">Start with Windows</h6>
-                                    <div class="text-muted" style="font-size: 0.85rem;">Automatically launch the app when your PC boots</div>
+                                <div class="settings-toggle-text">
+                                    <h6>Start with Windows</h6>
+                                    <div class="settings-toggle-desc">Automatically launch the app when your PC boots</div>
                                 </div>
                             </div>
                             <div class="form-check form-switch fs-4 m-0">
@@ -310,14 +361,14 @@
                         </div>
                         
                         <!-- Start in Background -->
-                        <div class="d-flex align-items-center justify-content-between p-3 border-bottom" style="border-color: var(--border-color) !important;">
-                            <div class="d-flex align-items-center gap-3">
-                                <div class="p-2 d-flex align-items-center justify-content-center" style="background-color: var(--bg-active); width: 40px; height: 40px; border-radius: 10px;">
+                        <div class="settings-toggle-row p-3 border-bottom" style="border-color: var(--border-color) !important;">
+                            <div class="settings-toggle-info">
+                                <div class="settings-toggle-icon">
                                     <img src="/svg/shield-minus-svgrepo-com.svg" class="icon-accent" style="width: 20px; height: 20px;" alt="Background" />
                                 </div>
-                                <div>
-                                    <h6 class="mb-1 text-white fw-bold">Start in Background</h6>
-                                    <div class="text-muted" style="font-size: 0.85rem;">Launch silently into the system tray without showing the window</div>
+                                <div class="settings-toggle-text">
+                                    <h6>Start in Background</h6>
+                                    <div class="settings-toggle-desc">Launch silently into the system tray without showing the window</div>
                                 </div>
                             </div>
                             <div class="form-check form-switch fs-4 m-0">
@@ -326,14 +377,14 @@
                         </div>
 
                         <!-- Minimize to Tray -->
-                        <div class="d-flex align-items-center justify-content-between p-3">
-                            <div class="d-flex align-items-center gap-3">
-                                <div class="p-2 d-flex align-items-center justify-content-center" style="background-color: var(--bg-active); width: 40px; height: 40px; border-radius: 10px;">
+                        <div class="settings-toggle-row p-3">
+                            <div class="settings-toggle-info">
+                                <div class="settings-toggle-icon">
                                     <img src="/svg/minimize-square-minimalistic-svgrepo-com.svg" class="icon-accent" style="width: 20px; height: 20px;" alt="Minimize" />
                                 </div>
-                                <div>
-                                    <h6 class="mb-1 text-white fw-bold">Minimize to Tray</h6>
-                                    <div class="text-muted" style="font-size: 0.85rem;">Hide to the system tray instead of closing the application</div>
+                                <div class="settings-toggle-text">
+                                    <h6>Minimize to Tray</h6>
+                                    <div class="settings-toggle-desc">Hide to the system tray instead of closing the application</div>
                                 </div>
                             </div>
                             <div class="form-check form-switch fs-4 m-0">
@@ -480,7 +531,7 @@
 
                 <div class="d-flex align-items-center justify-content-between pt-2 border-top" style="border-color: rgba(255, 255, 255, 0.08) !important;">
                     <span class="text-muted" style="font-size: 0.7rem;">Open Source Software Notice</span>
-                    <button type="button" class="btn btn-sm py-0 px-2" style="font-size: 0.7rem; height: 24px; border-width: 1px;" @onclick="OpenLicenses">
+                    <button type="button" class="btn btn-sm py-0 px-2" style="font-size: 0.7rem; height: 26px; border-width: 1px;" @onclick="OpenLicenses">
                         Licenses
                     </button>
                 </div>
@@ -710,34 +761,22 @@
             InvokeAsync(StateHasChanged);
         });
 
+        LocalVersion = UpdateManager.GetCurrentVersion();
+
         try
         {
-            LocalVersion = Assembly.GetExecutingAssembly()
-                .GetCustomAttribute<AssemblyFileVersionAttribute>()?
-                .Version ?? "2.0.0";
-        }
-        catch
-        {
-            LocalVersion = "2.0.0";
-        }
-
-        if (OperatingSystem.IsWindows())
-        {
-            try
+            var updateCheck = await Updater.IsUpdateAvailableAsync();
+            HasUpdate = updateCheck.isAvailable;
+            if (!string.IsNullOrEmpty(updateCheck.localVersion))
             {
-                var updateCheck = await Updater.IsUpdateAvailableAsync();
-                HasUpdate = updateCheck.isAvailable;
-                if (!string.IsNullOrEmpty(updateCheck.localVersion))
-                {
-                    LocalVersion = updateCheck.localVersion;
-                }
-                if (HasUpdate)
-                {
-                    LatestUpdateVersion = updateCheck.latestVersion;
-                }
+                LocalVersion = updateCheck.localVersion;
             }
-            catch { }
+            if (HasUpdate)
+            {
+                LatestUpdateVersion = updateCheck.latestVersion;
+            }
         }
+        catch { }
 
         if (Auth.Is2FARequired)
         {
@@ -1113,6 +1152,11 @@
         await Microsoft.Maui.ApplicationModel.Launcher.Default.OpenAsync(new Uri("https://vrchat.com/home/subscriptions"));
     }
 
+    private async Task OpenAndroidUpdate()
+    {
+        await StartUpdate();
+    }
+
     private async Task StartUpdate()
     {
         bool confirmed = await dialogService.ShowConfirmAsync(
@@ -1139,8 +1183,11 @@
         catch (Exception ex)
         {
             Notifications.Show($"Update failed: {ex.Message}", "Update Error", VRCGalleryManager.Core.NotificationType.Error);
+        }
+        finally
+        {
             IsUpdating = false;
-            StateHasChanged();
+            InvokeAsync(StateHasChanged);
         }
     }
 

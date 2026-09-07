@@ -133,13 +133,10 @@
         {
             try
             {
-                if (OperatingSystem.IsWindows())
+                var updateCheck = await Updater.IsUpdateAvailableAsync();
+                if (updateCheck.isAvailable)
                 {
-                    var updateCheck = await Updater.IsUpdateAvailableAsync();
-                    if (updateCheck.isAvailable)
-                    {
-                        Notifications.Show("A new update is available! You can download it from Settings.", "Update Available", VRCGalleryManager.Core.NotificationType.Info, 8000);
-                    }
+                    Notifications.Show("A new update is available! You can download it from Settings.", "Update Available", VRCGalleryManager.Core.NotificationType.Info, 8000);
                 }
             }
             catch (Exception) { }

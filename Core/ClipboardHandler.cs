@@ -78,11 +78,8 @@ namespace VRCGalleryManager.Core
                         using var stream = ras.AsStreamForRead();
                         
                         using var src = Image.Load<Rgba32>(stream);
-                        using var bmp = new Image<Rgba32>(src.Width, src.Height);
-                        bmp.Mutate(x => x.DrawImage(src, new Point(0, 0), 1f));
-                        
                         string filePath = GetTempFilePath("Clipboard-Image");
-                        bmp.SaveAsPng(filePath);
+                        src.SaveAsPng(filePath);
 
                         uploadImage?.Invoke(filePath);
                         return filePath;
@@ -178,11 +175,8 @@ namespace VRCGalleryManager.Core
                         src.Mutate(x => x.Crop(rectangle));
                     }
 
-                    using var bmp = new Image<Rgba32>(src.Width, src.Height);
-                    bmp.Mutate(x => x.DrawImage(src, new Point(0, 0), 1f));
-                    
                     string filePath = GetTempFilePath("Downloaded-Image");
-                    bmp.SaveAsPng(filePath);
+                    src.SaveAsPng(filePath);
                     return filePath;
                 }
             }

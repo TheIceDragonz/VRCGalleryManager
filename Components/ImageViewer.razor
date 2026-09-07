@@ -434,35 +434,56 @@
         try 
         {
             string fileName = CurrentItem?.Title ?? "download";
-            foreach (char c in System.IO.Path.GetInvalidFileNameChars())
+            if (string.IsNullOrWhiteSpace(fileName))
             {
-                fileName = fileName.Replace(c, '_');
+                fileName = "download";
             }
-            
-            if (src.StartsWith("http"))
+
+            byte[] fileBytes;
+            string ext;
+
+            if (src.StartsWith("http", StringComparison.OrdinalIgnoreCase))
             {
-                string tempFile = await VRCGalleryManager.Core.ClipboardHandler.SaveImageFromUrlAsync(src, false);
-                if (string.IsNullOrEmpty(tempFile)) 
+                var (downloadedBytes, downloadedExt) = await VRCGalleryManager.Core.FileHelper.DownloadBytesFromUrlAsync(src);
+                if (downloadedBytes == null || downloadedBytes.Length == 0)
                 {
+                    NotificationService.Show("Failed to download image file.", "Error", VRCGalleryManager.Core.NotificationType.Error);
                     return;
                 }
-                
-                string ext = System.IO.Path.GetExtension(tempFile);
-                if (string.IsNullOrEmpty(ext)) ext = ".png";
-                
-                using var stream = new System.IO.MemoryStream(System.IO.File.ReadAllBytes(tempFile));
-                var result = await CommunityToolkit.Maui.Storage.FileSaver.Default.SaveAsync(fileName + ext, stream, default);
-                if (result.IsSuccessful) {
-                    NotificationService.Show("Image saved successfully.", "Saved", VRCGalleryManager.Core.NotificationType.Success);
-                }
+                fileBytes = downloadedBytes;
+                ext = downloadedExt;
             }
             else
             {
-                string ext = System.IO.Path.GetExtension(src);
-                using var stream = new System.IO.MemoryStream(System.IO.File.ReadAllBytes(src));
-                var result = await CommunityToolkit.Maui.Storage.FileSaver.Default.SaveAsync(fileName + ext, stream, default);
-                if (result.IsSuccessful) {
-                    NotificationService.Show("Image saved successfully.", "Saved", VRCGalleryManager.Core.NotificationType.Success);
+                if (!System.IO.File.Exists(src))
+                {
+                    NotificationService.Show("Source file not found.", "Error", VRCGalleryManager.Core.NotificationType.Error);
+                    return;
+                }
+                ext = System.IO.Path.GetExtension(src);
+                if (string.IsNullOrEmpty(ext)) ext = ".png";
+                fileBytes = await System.IO.File.ReadAllBytesAsync(src);
+            }
+
+            var (saved, destination) = await VRCGalleryManager.Core.FileHelper.SaveImageToDownloadsAsync(fileName, fileBytes, ext);
+            if (saved)
+            {
+                string successMsg = OperatingSystem.IsAndroid()
+                    ? "Image saved directly to Downloads."
+                    : "Image saved successfully.";
+                NotificationService.Show(successMsg, "Saved", VRCGalleryManager.Core.NotificationType.Success);
+
+                if (!string.IsNullOrEmpty(destination))
+                {
+                    string mime = ext.ToLowerInvariant() switch
+                    {
+                        ".jpg" or ".jpeg" => "image/jpeg",
+                        ".png" => "image/png",
+                        ".gif" => "image/gif",
+                        ".webp" => "image/webp",
+                        _ => "image/*"
+                    };
+                    await VRCGalleryManager.Core.FileHelper.OpenFileAsync(destination, mime);
                 }
             }
         }

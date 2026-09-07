@@ -821,9 +821,12 @@ h6 {
 .settings-account-card {
     background-color: var(--bg-hover);
     border-radius: var(--radius-md);
-    padding: 0.85rem 1.15rem;
     position: relative;
     overflow: hidden;
+}
+
+.settings-account-top {
+    width: 100%;
 }
 
 .settings-account-avatar {
@@ -852,6 +855,76 @@ h6 {
     white-space: nowrap;
     line-height: 1.2;
     align-self: center;
+}
+
+.settings-logout-btn {
+    border-color: rgba(220, 53, 69, 0.45) !important;
+    color: #ff6b6b !important;
+    font-size: 0.82rem;
+    font-weight: 600;
+    border-radius: 8px;
+    transition: all var(--transition-fast, 0.2s ease);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.settings-logout-btn:hover {
+    background: rgba(220, 53, 69, 0.15) !important;
+    border-color: #dc3545 !important;
+    color: #fff !important;
+}
+
+/* Settings Toggle Rows */
+.settings-toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: nowrap !important;
+    gap: 12px;
+}
+
+.settings-toggle-row .settings-toggle-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+    flex: 1 1 auto;
+}
+
+.settings-toggle-row .settings-toggle-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background-color: var(--bg-active);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0 !important;
+}
+
+.settings-toggle-row .settings-toggle-text {
+    min-width: 0;
+    flex: 1 1 auto;
+    word-break: break-word;
+}
+
+.settings-toggle-row .settings-toggle-text h6 {
+    margin-bottom: 2px;
+    color: #fff;
+    font-weight: 700;
+}
+
+.settings-toggle-row .settings-toggle-text .settings-toggle-desc {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    line-height: 1.35;
+    word-break: break-word;
+}
+
+.settings-toggle-row .form-switch {
+    flex-shrink: 0 !important;
+    margin: 0 !important;
 }
 
 .settings-pill,
@@ -1587,12 +1660,13 @@ canvas.picking-color {
 .android-layout .nav-scrollable-container {
     grid-column: 1;
     grid-row: 2;
-    padding: 0 5px 10px 5px !important;
+    padding: 0 8px 10px 8px !important;
     flex-direction: row !important;
     overflow-x: auto;
     overflow-y: hidden;
     width: 100%;
     align-items: center;
+    box-sizing: border-box;
 }
 
 .android-layout .nav-scrollable-container::-webkit-scrollbar {
@@ -1602,49 +1676,141 @@ canvas.picking-color {
 .android-layout .nav-buttons-bg {
     flex-direction: row !important;
     width: 100%;
-    height: 100%;
-    padding: 0 5px !important;
+    min-width: max-content;
+    height: auto;
+    padding: 5px 5px !important;
     align-items: center;
     justify-content: space-around;
-    background-color: transparent !important;
+    background-color: rgba(5, 5, 5, 0.82) !important;
+    backdrop-filter: blur(8px);
+    border-radius: var(--radius-lg);
     gap: 4px !important;
+    box-sizing: border-box;
 }
 
 .android-layout .nav-item {
     margin: 0;
+    flex: 1 1 0;
+    min-width: 48px;
+    max-width: 75px;
+    display: flex;
+    justify-content: center;
 }
 
 .android-layout .custom-nav-link {
-    height: 55px;
+    height: 52px;
     line-height: normal;
-    padding: 0 4px;
+    padding: 4px 2px;
     flex-direction: column;
     justify-content: center;
+    align-items: center;
     font-size: 0.65rem;
     gap: 2px;
     border-radius: 10px;
-    width: 55px;
+    width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: all 0.2s ease-in-out;
 }
 
 .android-layout .custom-nav-link .nav-icon {
     position: static;
     width: 22px;
     height: 22px;
+    margin: 0;
+    flex-shrink: 0;
 }
 
 .android-layout .nav-bottom-group {
     margin-top: 0 !important;
-    flex-direction: row !important;
-    align-items: center;
-    gap: 4px !important;
+    display: contents !important;
 }
 
 .android-layout .nav-divider {
-    width: 1px;
-    height: 35px;
+    width: 1px !important;
+    min-width: 1px !important;
+    max-width: 1px !important;
+    height: 35px !important;
+    background-color: var(--border-color) !important;
+    border: none !important;
     border-bottom: none !important;
-    border-right: 1px solid var(--border-color);
-    margin: 0 2px !important;
+    border-right: none !important;
+    align-self: center !important;
+    margin: auto 2px !important;
+    opacity: 0.5;
+    flex-shrink: 0 !important;
+}
+
+/* Horizontal / Landscape / Wide Screen Adaptive Navbar for Android */
+@media (orientation: landscape),
+(min-width: 576px) {
+    .android-layout .nav-scrollable-container {
+        padding: 0 10px 8px 10px !important;
+    }
+
+    .android-layout .nav-buttons-bg {
+        padding: 4px 6px !important;
+        gap: 6px !important;
+    }
+
+    .android-layout .nav-item {
+        flex: 1 1 0;
+        min-width: max-content;
+        max-width: 135px;
+    }
+
+    .android-layout .custom-nav-link {
+        flex-direction: row !important;
+        height: 38px !important;
+        padding: 0 10px !important;
+        gap: 6px !important;
+        font-size: 0.76rem !important;
+        width: 100% !important;
+        justify-content: center !important;
+        align-items: center !important;
+    }
+
+    .android-layout .custom-nav-link .nav-icon {
+        width: 18px !important;
+        height: 18px !important;
+        flex-shrink: 0 !important;
+        margin: 0 !important;
+    }
+
+    .android-layout .nav-divider {
+        height: 24px !important;
+        margin: auto 4px !important;
+    }
+}
+
+/* Tablet / Large Screens Adaptive Navbar for Android */
+@media (min-width: 768px) {
+    .android-layout .nav-buttons-bg {
+        gap: 8px !important;
+        padding: 5px 8px !important;
+    }
+
+    .android-layout .nav-item {
+        max-width: 160px;
+    }
+
+    .android-layout .custom-nav-link {
+        height: 42px !important;
+        padding: 0 14px !important;
+        gap: 8px !important;
+        font-size: 0.82rem !important;
+    }
+
+    .android-layout .custom-nav-link .nav-icon {
+        width: 20px !important;
+        height: 20px !important;
+    }
+
+    .android-layout .nav-divider {
+        height: 28px !important;
+        margin: auto 6px !important;
+    }
 }
 
 .android-layout .details-panel {
@@ -1675,12 +1841,12 @@ canvas.picking-color {
 }
 
 /* Adapt Upload, Paste, Reload buttons for mobile (Icon-only) */
-.android-layout .d-flex.justify-content-between.border-bottom {
+.android-layout .border-secondary.border-bottom {
     flex-wrap: wrap !important;
     gap: 10px !important;
 }
 
-.android-layout .d-flex.justify-content-between.border-bottom .btn {
+.android-layout .border-secondary.border-bottom .btn {
     font-size: 0 !important;
     padding: 0.375rem 0.5rem !important;
     display: inline-flex !important;
@@ -2437,6 +2603,98 @@ canvas.picking-color {
     letter-spacing: 0.3px;
 }
 
+.about-platform-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.25rem 0.45rem;
+    border-radius: 6px;
+    line-height: 1;
+    vertical-align: middle;
+}
+
+.about-platform-badge-android {
+    background: rgba(61, 220, 132, 0.15);
+    border: 1px solid rgba(61, 220, 132, 0.35);
+}
+
+.about-platform-badge-android .about-platform-icon {
+    filter: invert(72%) sepia(50%) saturate(700%) hue-rotate(90deg) brightness(98%) contrast(90%);
+}
+
+.about-platform-badge-win {
+    background: rgba(0, 164, 239, 0.15);
+    border: 1px solid rgba(0, 164, 239, 0.35);
+}
+
+.about-platform-badge-win .about-platform-icon {
+    filter: invert(53%) sepia(85%) saturate(2280%) hue-rotate(167deg) brightness(98%) contrast(101%);
+}
+
+.about-platform-badge-apple {
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.about-platform-badge-apple .about-platform-icon {
+    filter: var(--filter-white);
+}
+
+.about-platform-icon {
+    width: 14px;
+    height: 14px;
+    display: block;
+    object-fit: contain;
+}
+
+.android-update-card,
+.about-update-card {
+    background-color: var(--bg-hover);
+    border: 1px solid rgba(255, 193, 7, 0.45) !important;
+    border-radius: var(--radius-md, 12px);
+}
+
+.about-update-actions {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    align-items: stretch;
+    gap: 8px;
+    width: 100%;
+}
+
+.about-update-actions .btn-warning {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.about-update-actions .btn-outline-secondary {
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
+@media (max-width: 576px) {
+    .about-update-actions {
+        gap: 6px;
+    }
+
+    .about-update-actions .btn {
+        padding: 0.45rem 0.65rem !important;
+        font-size: 0.82rem !important;
+    }
+
+    .about-update-actions .btn-icon {
+        width: 14px !important;
+        height: 14px !important;
+    }
+}
+
+.android-layout .about-update-actions {
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+}
+
 .about-actions-col {
     display: flex;
     flex-direction: column;
@@ -2551,4 +2809,204 @@ canvas.picking-color {
 
 .license-link-btn:hover .btn-icon {
     filter: var(--filter-accent);
+}
+
+/* ==========================================================================
+   Android & Mobile Responsive Adaptations for Settings & About
+   ========================================================================== */
+.android-layout .settings-page {
+    padding: 0.85rem !important;
+}
+
+.android-layout .settings-account-card {
+    padding: 0.95rem !important;
+}
+
+.android-layout .settings-account-top {
+    gap: 10px !important;
+}
+
+.android-layout .settings-account-avatar {
+    width: 48px;
+    height: 48px;
+}
+
+.android-layout .settings-account-name {
+    font-size: 1.05rem;
+}
+
+.android-layout .settings-logout-btn {
+    padding: 0.35rem 0.65rem !important;
+    font-size: 0.78rem !important;
+    height: 34px;
+}
+
+.android-layout .about-brand-box {
+    padding: 0.95rem !important;
+}
+
+.android-layout .about-brand-top {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+}
+
+.android-layout .about-brand-top .about-actions-col {
+    display: flex !important;
+    flex-direction: row !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    gap: 6px !important;
+}
+
+.android-layout .about-action-btn {
+    flex: 1 !important;
+    min-width: 0 !important;
+    padding: 0.4rem 0.3rem !important;
+    font-size: 0.75rem !important;
+    height: 36px !important;
+}
+
+.android-layout .settings-toggle-row {
+    padding: 0.85rem 0.95rem !important;
+    gap: 10px !important;
+}
+
+.android-layout .settings-toggle-row .settings-toggle-info {
+    gap: 10px !important;
+}
+
+.android-layout .settings-toggle-row .settings-toggle-icon {
+    width: 36px !important;
+    height: 36px !important;
+}
+
+.android-layout .settings-toggle-row .settings-toggle-text h6 {
+    font-size: 0.92rem !important;
+}
+
+.android-layout .settings-toggle-row .settings-toggle-text .settings-toggle-desc {
+    font-size: 0.78rem !important;
+    line-height: 1.3 !important;
+}
+
+.android-layout .licenses-dialog-panel {
+    width: 95vw !important;
+    max-width: 95vw !important;
+    max-height: 88vh !important;
+    border-radius: 14px !important;
+}
+
+.android-layout .licenses-list {
+    max-height: 56vh !important;
+    padding-left: 0.85rem !important;
+    padding-right: 0.85rem !important;
+}
+
+.android-layout .license-item-card {
+    padding: 0.75rem !important;
+}
+
+.android-layout .license-link-btn {
+    min-width: 34px !important;
+    height: 34px !important;
+    padding: 0.3rem !important;
+}
+
+/* Fallback Responsive Rules for Mobile Screens (< 576px) */
+@media (max-width: 576px) {
+    .settings-page {
+        padding: 0.85rem !important;
+    }
+
+    .settings-account-card {
+        padding: 0.95rem !important;
+    }
+
+    .settings-account-top {
+        gap: 10px !important;
+    }
+
+    .settings-account-avatar {
+        width: 48px;
+        height: 48px;
+    }
+
+    .settings-account-name {
+        font-size: 1.05rem;
+    }
+
+    .settings-logout-btn {
+        padding: 0.35rem 0.65rem !important;
+        font-size: 0.78rem !important;
+        height: 34px;
+    }
+
+    .settings-toggle-row {
+        padding: 0.85rem 0.95rem !important;
+        gap: 10px !important;
+    }
+
+    .settings-toggle-row .settings-toggle-info {
+        gap: 10px !important;
+    }
+
+    .settings-toggle-row .settings-toggle-icon {
+        width: 36px !important;
+        height: 36px !important;
+    }
+
+    .settings-toggle-row .settings-toggle-text h6 {
+        font-size: 0.92rem !important;
+    }
+
+    .settings-toggle-row .settings-toggle-text .settings-toggle-desc {
+        font-size: 0.78rem !important;
+        line-height: 1.3 !important;
+    }
+
+    .about-brand-top {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 12px !important;
+    }
+
+    .about-brand-top .about-actions-col {
+        display: flex !important;
+        flex-direction: row !important;
+        width: 100% !important;
+        min-width: 0 !important;
+        gap: 6px !important;
+    }
+
+    .about-action-btn {
+        flex: 1 !important;
+        min-width: 0 !important;
+        padding: 0.4rem 0.3rem !important;
+        font-size: 0.75rem !important;
+        height: 36px !important;
+    }
+
+    .licenses-dialog-panel {
+        width: 95vw !important;
+        max-width: 95vw !important;
+        max-height: 88vh !important;
+        border-radius: 14px !important;
+    }
+
+    .licenses-list {
+        max-height: 56vh !important;
+        padding-left: 0.85rem !important;
+        padding-right: 0.85rem !important;
+    }
+
+    .license-item-card {
+        padding: 0.75rem !important;
+    }
+
+    .license-link-btn {
+        min-width: 34px !important;
+        height: 34px !important;
+        padding: 0.3rem !important;
+    }
 }
