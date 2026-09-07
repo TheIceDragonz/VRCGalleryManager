@@ -1,13 +1,13 @@
 <div align="center">
   <img src="https://github.com/user-attachments/assets/b3503583-ac41-4202-b8ca-3d397580e296" alt="Logo">
 
-  # VRCGalleryManager v2.0
+  # VRCGalleryManager
 
   **Modern, Cross-Platform VRChat Media & Profile Management Suite**  
-  *Powered by .NET 8 MAUI & Blazor Hybrid for Windows and Android*
+  *Powered by .NET 9 MAUI & Blazor Hybrid for Windows and Android*
 
   [![Platform](https://img.shields.io/badge/Platforms-Windows%20%7C%20Android-512BD4?style=flat-square&logo=dotnet)](https://github.com/TheIceDragonz/VRCGalleryManager)
-  [![Framework](https://img.shields.io/badge/Framework-.NET%208%20MAUI%20Blazor-blue?style=flat-square&logo=blazor)](https://dotnet.microsoft.com/download/dotnet/8.0)
+  [![Framework](https://img.shields.io/badge/Framework-.NET%209%20MAUI%20Blazor-blue?style=flat-square&logo=blazor)](https://dotnet.microsoft.com/download/dotnet/9.0)
   [![ImageSharp](https://img.shields.io/badge/ImageSharp-4.1.0-orange?style=flat-square)](https://github.com/SixLabors/ImageSharp)
   [![Release](https://img.shields.io/badge/Release-v2.0.0-success?style=flat-square)](https://github.com/TheIceDragonz/VRCGalleryManager/releases/latest)
 
@@ -32,23 +32,25 @@
 
 ## 🌟 What's New in v2.0
 
-**VRCGalleryManager v2.0** represents a complete architectural overhaul. Migrated from the original Windows Forms foundation to a cutting-edge **.NET 8 MAUI Blazor Hybrid** application, VRCGalleryManager is now a cross-platform desktop and mobile client with a responsive, hardware-accelerated UI, modern security practices, and deep VRChat profile integration.
+**VRCGalleryManager v2.0** represents a complete architectural overhaul. Migrated from the original Windows Forms foundation to a cutting-edge **.NET 9 MAUI Blazor Hybrid** application, VRCGalleryManager is now a high-performance cross-platform desktop and mobile client with a modern hardware-accelerated UI, native OS integrations, enhanced security, and deep VRChat profile customization.
 
 ---
 
 ## <a id="key-features"></a>✨ Key Features
 
-### 📱 Cross-Platform Architecture (.NET 8 MAUI + Blazor)
-- **Windows & Android Support**: Runs seamlessly on **Windows 10/11** desktop and **Android** mobile devices (APK).
-- **Responsive Modern UI**: Modern dark-mode interface built with CSS design tokens, custom SVG icons, smooth transitions, and custom scrollbars.
-- **Cross-Platform Image Engine**: Powered by **SixLabors ImageSharp 4.1.0** for high-performance cross-platform image manipulation without native GDI+ dependencies.
-- **Touch & Desktop Optimized**: Native mouse & keyboard controls on Windows with full touch UX and responsive navigation drawers on Android.
+### 📱 Cross-Platform Architecture (.NET 9 MAUI + Blazor)
+- **Windows & Android Support**: Runs seamlessly on **Windows 10/11** desktop and **Android** mobile devices (native APK).
+- **Responsive Modern UI**: Sleek dark-mode interface built with CSS design tokens, custom SVG icons, smooth transitions, and custom scrollbars.
+- **Android Immersive Experience**: Edge-to-edge layout with full display cutout (notch) support, translucent system bars, and responsive navigation drawers.
+- **Cross-Platform Image Engine**: Powered by **SixLabors ImageSharp 4.1.0** for high-performance cross-platform image processing without native GDI+ dependencies.
+- **Touch & Desktop Optimized**: Native mouse & keyboard controls on Windows with full touch UX and mobile-friendly gestures on Android.
 
 ### 🎨 VRChat Profile Customization & Dynamic Themes
-- **VRChat Profile Themes Sync**: Automatically extracts your active VRChat profile theme colors (accent, buttons, icons, subtexts) and applies them dynamically across the app.
+- **VRChat Profile Theme Sync**: Automatically extracts your active VRChat profile theme colors (accent, buttons, icons, subtexts) and applies them dynamically across the app, including custom TitleBar buttons and scrollbars.
+- **Custom Windows TitleBar**: Sleek, borderless window header with custom minimize, maximize, and close buttons integrated with your active profile theme.
 - **Profile Backgrounds Catalog**: Access and preview official VRChat profile background banners (Grid, Cascade, Bit Mountain, Approach, Planet Fall, Jungle, Light Streams, etc.).
 - **Animated Profile Effects ❤️**: Support for VRChat profile cosmetics and animated canvas effects (Aura, Fire, Orbit, Bounce, Rain, Laser, Confetti, and more).
-- **Profile Dialog Card**: View your profile bio, status, pronouns, user badges, icon frames, and avatar pictures directly in-app.
+- **Profile Details Card**: View your profile bio, status, pronouns, trust rank, unlimited user badges, icon frames, and avatar pictures directly in-app.
 
 ### 🖼️ Comprehensive VRChat Plus Media Management
 - **Stickers & Emojis**: Create, upload, organize, and delete VRChat custom stickers and emojis.
@@ -58,10 +60,13 @@
 - **Drag & Drop & Clipboard Paste**: Drag and drop images directly into the application window or paste directly from clipboard (`Ctrl + V`).
 - **High-Performance Caching (`MediaCacheService`)**: Smart local memory and disk caching prevents redundant network queries and ensures instant thumbnail loading.
 
-### 🔍 Immersive Image Viewer
+### 🔍 Immersive Image Viewer & Native Saving
 - **Full-Screen Viewer**: Immersive photo modal with smooth zooming, panning, and keyboard/touch navigation.
+- **Direct Download & Gallery Sync**:
+  - **Windows**: Native file save dialog to save photos anywhere on your system.
+  - **Android**: Direct save to `Pictures/VRCGalleryManager` with automatic MediaStore scanner notification, making images immediately visible in your device's photo gallery without needing a file manager.
 - **Quick Actions**: Download images locally, copy image/link to the system clipboard, or upload directly to VRChat.
-- **Integrated Metadata Inspector**: View detailed camera metadata and VRCX session info directly within the viewer.
+- **Integrated Metadata Inspector**: View detailed camera metadata, image dimensions, and VRCX session info directly within the viewer.
 
 ### ✂️ Integrated Image & Emoji Editors
 - **Quality Scale & Size Preview**: Real-time file size calculation and quality scaling slider before uploading to ensure images never exceed VRChat limits.
@@ -70,22 +75,27 @@
 
 ### 🌐 Picflow - Global Explorer & Local Database
 - **Worldwide Sticker Explorer**: Browse stickers placed across VRChat worlds with lazy-loading.
-- **Emoji & Print Discovery**: Now includes emojis and prints alongside world stickers.
+- **Emoji & Print Discovery**: Discover emojis and prints alongside world stickers.
 - **Live Stream Mode**: Monitor and inspect new stickers in real time as players place them.
 - **Local Database (`PicflowDatabase`)**: Persistent local storage to cache and quickly search through discovered stickers and prints with one-click cleanup.
+- **Info Dialog**: Quick inspection modal with creator information and asset details.
 
 ### 🔒 Security & Connectivity
-- **Modern Secure Storage**: Uses platform-native OS secure storage (`Microsoft.Maui.Storage.SecureStorage`) instead of legacy encryption files.
+- **Internal High-Performance API Client**: Custom-built, lightweight VRChat API client replacing external SDKs with clean JSON parsing and direct multi-part uploads.
+- **Modern Secure Storage**: Uses platform-native OS secure storage (`Microsoft.Maui.Storage.SecureStorage`) instead of plaintext config files.
 - **Two-Factor Authentication (2FA)**: Full support for both Authenticator TOTP codes and Email verification (with resend code option).
 - **Resilient Networking**: Automated network retry and backoff policies powered by **Polly**.
 - **Real-Time Network Monitor**: Dedicated `NetworkStatusService` detecting offline state with auto-reconnect notifications.
 
-### ⚙️ Desktop Integration & Maintenance Tools
-- **System Tray Integration**: Minimize to tray (`H.NotifyIcon.Maui`) to keep the app running quietly in the background.
+### ⚙️ Desktop & Mobile Maintenance Tools
+- **System Tray Integration (Windows)**: Minimize to tray (`H.NotifyIcon.Maui`) to keep the app running quietly in the background.
 - **Windows Startup**: Optional toggle to launch automatically with Windows (with silent background startup).
+- **In-App Auto-Updater**:
+  - **Windows**: Built-in update manager with animated download progress bars.
+  - **Android**: In-app APK updater that checks releases, downloads the new APK, and triggers the native package installer.
 - **VRChat Logs Inspector**: View VRChat log file counts and total disk usage, with one-click options to open the logs folder or clean up old logs.
 - **VRChat Cache Cleaner**: Monitor VRChat cache size and safely purge temporary files directly from the settings panel.
-- **In-App Auto-Updater**: Built-in update manager with animated download progress bars.
+- **Legal Notice & Compliance**: Built-in Terms of Service compliance and legal notice panel.
 
 ---
 
@@ -126,11 +136,12 @@ Download the latest release for your platform from the **[Releases Page](https:/
 
 ### Windows
 - **Installer (Recommended)**: Download and run `VRCGalleryManager_Setup.exe` to install the app with desktop and Start Menu shortcuts.
-- **Standalone / Portable**: Extract the portable ZIP release and launch `VRCGalleryManager.exe`.
+- **Standalone / Portable**: Extract the portable ZIP release (`VRCGalleryManager_Portable.zip`) and launch `VRCGalleryManager.exe`.
 
 ### Android
 - Download the `VRCGalleryManager.apk` file to your Android device.
 - Open the file and allow installation from your browser/file manager when prompted.
+- Future updates can be checked and installed directly from within the app!
 
 ---
 
@@ -139,7 +150,7 @@ Download the latest release for your platform from the **[Releases Page](https:/
 VRCGalleryManager includes an automated build system located in the [`Builder/`](./Builder/) directory for compiling Windows and Android binaries with one click.
 
 ### Prerequisites
-1. **.NET 8 SDK**: [Download .NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
+1. **.NET 9 SDK**: [Download .NET 9.0 SDK](https://dotnet.microsoft.com/download/dotnet/9.0)
 2. **.NET MAUI Workloads**:
    ```bash
    dotnet workload install maui
@@ -152,6 +163,7 @@ VRCGalleryManager includes an automated build system located in the [`Builder/`]
 ### Build Scripts
 Simply execute the batch scripts located in the `Builder/` folder:
 - **`Builder/Build_Windows_EXE.bat`**: Compiles a self-contained Windows executable and generates the NSIS setup installer.
+- **`Builder/Pack_Portable_ZIP.bat`**: Quickly packages the compiled Windows build into a portable ZIP package.
 - **`Builder/Build_Android_APK.bat`**: Compiles and packages the release Android APK (`VRCGalleryManager.apk`).
 - **`Builder/Build_All.bat`**: Builds both Windows and Android packages in sequence.
 

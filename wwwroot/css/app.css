@@ -536,7 +536,6 @@ h6 {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    filter: brightness(0.5);
 }
 
 .nav-profile-content {
@@ -856,6 +855,91 @@ h6 {
 
 .settings-account-top {
     width: 100%;
+}
+
+.settings-account-desktop-badges {
+    display: inline-flex;
+}
+
+.settings-account-desktop-tags {
+    display: flex;
+}
+
+.settings-account-mobile-bottom {
+    display: none;
+}
+
+.settings-account-mobile-bottom .settings-badge-list {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    width: 100% !important;
+}
+
+.settings-account-mobile-bottom .settings-account-tags {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    width: 100% !important;
+    gap: 6px;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.settings-account-mobile-bottom .settings-account-tags .settings-pill {
+    flex: 0 0 auto !important;
+    width: auto !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    height: auto !important;
+    min-height: 20px !important;
+    padding: 2.5px 8px !important;
+    font-size: 0.68rem !important;
+    line-height: 1.2 !important;
+    justify-content: center !important;
+    text-align: center !important;
+    white-space: nowrap !important;
+}
+
+.settings-account-mobile-bottom .settings-account-tags .settings-pill span {
+    white-space: nowrap !important;
+    overflow: visible !important;
+    display: inline !important;
+}
+
+/* Dynamic Tag Scaling by Quantity to ensure all tags fit comfortably on 1 single line */
+/* 4+ Tags */
+.settings-account-mobile-bottom .settings-account-tags:has(> :nth-child(4)) {
+    gap: 5px !important;
+}
+.settings-account-mobile-bottom .settings-account-tags:has(> :nth-child(4)) .settings-pill,
+.settings-account-mobile-bottom .settings-account-tags .settings-pill:nth-last-child(n+4),
+.settings-account-mobile-bottom .settings-account-tags .settings-pill:nth-last-child(n+4) ~ .settings-pill {
+    font-size: 0.62rem !important;
+    padding: 2px 7px !important;
+}
+
+/* 5+ Tags */
+.settings-account-mobile-bottom .settings-account-tags:has(> :nth-child(5)) {
+    gap: 4px !important;
+}
+.settings-account-mobile-bottom .settings-account-tags:has(> :nth-child(5)) .settings-pill,
+.settings-account-mobile-bottom .settings-account-tags .settings-pill:nth-last-child(n+5),
+.settings-account-mobile-bottom .settings-account-tags .settings-pill:nth-last-child(n+5) ~ .settings-pill {
+    font-size: 0.56rem !important;
+    padding: 1.5px 5.5px !important;
+}
+
+/* 6+ Tags */
+.settings-account-mobile-bottom .settings-account-tags:has(> :nth-child(6)) {
+    gap: 3px !important;
+}
+.settings-account-mobile-bottom .settings-account-tags:has(> :nth-child(6)) .settings-pill,
+.settings-account-mobile-bottom .settings-account-tags .settings-pill:nth-last-child(n+6),
+.settings-account-mobile-bottom .settings-account-tags .settings-pill:nth-last-child(n+6) ~ .settings-pill {
+    font-size: 0.51rem !important;
+    padding: 1px 4.5px !important;
+    letter-spacing: -0.15px !important;
 }
 
 .settings-account-avatar {
@@ -1581,6 +1665,8 @@ canvas.picking-color {
 .android-layout .main-sidebar-container {
     width: 100%;
     height: auto;
+    /* Offset per la tendina / status bar del telefono (modifica 35px in base allo spazio desiderato) */
+    padding-top: max(10px, env(safe-area-inset-top, 0px));
     display: grid !important;
     grid-template-columns: 1fr;
     grid-template-rows: 75px auto;
@@ -2849,6 +2935,23 @@ canvas.picking-color {
     padding: 0.85rem !important;
 }
 
+.android-layout .alert-vrcplus {
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+    gap: 12px !important;
+}
+
+.android-layout .alert-vrcplus > div {
+    justify-content: center !important;
+    text-align: center !important;
+}
+
+.android-layout .btn-vrcplus-subscribe {
+    margin: 0 auto !important;
+    align-self: center !important;
+}
+
 .android-layout .settings-account-card {
     padding: 0.95rem !important;
 }
@@ -2871,6 +2974,23 @@ canvas.picking-color {
     font-size: 0.78rem !important;
     height: 34px;
 }
+
+.android-layout .settings-account-desktop-badges,
+.android-layout .settings-account-desktop-tags {
+    display: none !important;
+}
+
+.android-layout .settings-account-mobile-bottom {
+    display: flex !important;
+    flex-direction: column;
+    align-items: center !important;
+    gap: 8px;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    width: 100%;
+}
+
 
 .android-layout .about-brand-box {
     padding: 0.95rem !important;
@@ -2950,6 +3070,23 @@ canvas.picking-color {
         padding: 0.85rem !important;
     }
 
+    .alert-vrcplus {
+        flex-direction: column !important;
+        align-items: center !important;
+        text-align: center !important;
+        gap: 12px !important;
+    }
+
+    .alert-vrcplus > div {
+        justify-content: center !important;
+        text-align: center !important;
+    }
+
+    .btn-vrcplus-subscribe {
+        margin: 0 auto !important;
+        align-self: center !important;
+    }
+
     .settings-account-card {
         padding: 0.95rem !important;
     }
@@ -2972,6 +3109,23 @@ canvas.picking-color {
         font-size: 0.78rem !important;
         height: 34px;
     }
+
+    .settings-account-desktop-badges,
+    .settings-account-desktop-tags {
+        display: none !important;
+    }
+
+    .settings-account-mobile-bottom {
+        display: flex !important;
+        flex-direction: column;
+        align-items: center !important;
+        gap: 8px;
+        margin-top: 10px;
+        padding-top: 10px;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        width: 100%;
+    }
+
 
     .settings-toggle-row {
         padding: 0.85rem 0.95rem !important;

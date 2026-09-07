@@ -160,7 +160,7 @@ public partial class App : Application
         window.TitleBar = titleBar;
 
         Microsoft.UI.Windowing.AppWindow? currentAppWindow = null;
-        bool isThemeActive = Config.Get("DisplayVRCProfileThemes", "false") == "true" &&
+        bool isThemeActive = Config.Get("DisplayVRCProfileThemes", "true") == "true" &&
                              Config.Get("CachedThemeIsCustom", "false") == "true";
         string? themeButtonColorHex = Config.Get("CachedThemeButtonColor", "#6ae3f9");
         string? themeIconColorHex = Config.Get("CachedThemeIconColor", "#6ae3f9");

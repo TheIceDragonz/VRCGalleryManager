@@ -184,7 +184,7 @@ namespace VRCGalleryManager.Core
 
         public bool DisplayVRCProfileBackgrounds
         {
-            get => Config.Get("DisplayVRCProfileBackgrounds", "false") == "true";
+            get => Config.Get("DisplayVRCProfileBackgrounds", "true") == "true";
             set
             {
                 Config.Set("DisplayVRCProfileBackgrounds", value ? "true" : "false");
@@ -205,7 +205,7 @@ namespace VRCGalleryManager.Core
 
         public bool DisplayVRCProfileThemes
         {
-            get => Config.Get("DisplayVRCProfileThemes", "false") == "true";
+            get => Config.Get("DisplayVRCProfileThemes", "true") == "true";
             set
             {
                 Config.Set("DisplayVRCProfileThemes", value ? "true" : "false");

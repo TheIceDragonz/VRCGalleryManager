@@ -72,65 +72,110 @@
 
                 <h4 class="mb-2 text-accent">VRChat Account</h4>
 
-                <div class="settings-account-card d-flex align-items-center justify-content-between gap-3 p-3">
-                    <div class="d-flex align-items-center gap-3 min-w-0 flex-grow-1">
-                        <img src="@(string.IsNullOrEmpty(avatarUrl) ? "/svg/profile-user-svgrepo-com.svg" : avatarUrl)" class="settings-account-avatar flex-shrink-0" />
-                        <div class="d-flex flex-column gap-1 min-w-0 flex-grow-1">
-                            <div class="d-flex align-items-center gap-2 flex-wrap">
-                                <span class="settings-account-name text-truncate" title="@user.DisplayName">@user.DisplayName</span>
-                                @if (!string.IsNullOrWhiteSpace(user.Pronouns))
-                                {
-                                    <span class="settings-account-pronouns" title="Pronouns: @user.Pronouns">@user.Pronouns</span>
-                                }
-                                @if (user.Badges != null && user.Badges.Any(b => b.Hidden != true))
-                                {
-                                    <div class="settings-badge-list">
-                                        @foreach (var badge in user.Badges.Where(b => b.Hidden != true))
-                                        {
-                                            <img src="@badge.BadgeImageUrl" class="settings-badge-item" title="@badge.BadgeName" />
-                                        }
-                                    </div>
-                                }
-                            </div>
-                            <div class="d-flex align-items-center gap-1 flex-wrap mt-1">
-                                <div class="settings-pill @user.TrustClass" title="Trust Rank: @user.TrustLevel">
-                                    <span>@user.TrustLevel</span>
-                                </div>
-
-                                @if (HasVRCPlus)
-                                {
-                                    <div class="settings-pill pill-vrcplus" title="VRChat Plus Subscriber">
-                                        <span>VRChat Plus</span>
-                                    </div>
-                                }
-
-                                @if (user.AgeVerified || user.AgeVerificationStatus == "18+")
-                                {
-                                    <div class="settings-pill pill-age-verified" title="Age Verified (@(user.AgeVerificationStatus ?? "18+"))">
-                                        <span>@(user.AgeVerificationStatus ?? "18+") Verified</span>
-                                    </div>
-                                }
-
-                                @if (user.Languages != null && user.Languages.Any())
-                                {
-                                    @foreach (var lang in user.Languages)
+                <div class="settings-account-card d-flex flex-column p-3">
+                    <div class="settings-account-top d-flex align-items-center justify-content-between gap-3">
+                        <div class="d-flex align-items-center gap-3 min-w-0 flex-grow-1">
+                            <img src="@(string.IsNullOrEmpty(avatarUrl) ? "/svg/profile-user-svgrepo-com.svg" : avatarUrl)" class="settings-account-avatar flex-shrink-0" />
+                            <div class="d-flex flex-column gap-1 min-w-0 flex-grow-1">
+                                <div class="d-flex align-items-center gap-2 flex-wrap">
+                                    <span class="settings-account-name text-truncate" title="@user.DisplayName">@user.DisplayName</span>
+                                    @if (!string.IsNullOrWhiteSpace(user.Pronouns))
                                     {
-                                        <div class="settings-pill pill-language" title="Language: @lang.DisplayName">
-                                            <span>@lang.Code</span>
+                                        <span class="settings-account-pronouns" title="Pronouns: @user.Pronouns">@user.Pronouns</span>
+                                    }
+                                    @if (user.Badges != null && user.Badges.Any(b => b.Hidden != true))
+                                    {
+                                        <div class="settings-badge-list settings-account-desktop-badges">
+                                            @foreach (var badge in user.Badges.Where(b => b.Hidden != true))
+                                            {
+                                                <img src="@badge.BadgeImageUrl" class="settings-badge-item" title="@badge.BadgeName" />
+                                            }
                                         </div>
                                     }
-                                }
+                                </div>
+                                <div class="settings-account-tags settings-account-desktop-tags d-flex align-items-center gap-1 flex-wrap mt-1">
+                                    <div class="settings-pill @user.TrustClass" title="Trust Rank: @user.TrustLevel">
+                                        <span>@user.TrustLevel</span>
+                                    </div>
+
+                                    @if (HasVRCPlus)
+                                    {
+                                        <div class="settings-pill pill-vrcplus" title="VRChat Plus Subscriber">
+                                            <span>VRChat Plus</span>
+                                        </div>
+                                    }
+
+                                    @if (user.AgeVerified || user.AgeVerificationStatus == "18+")
+                                    {
+                                        <div class="settings-pill pill-age-verified" title="Age Verified (@(user.AgeVerificationStatus ?? "18+"))">
+                                            <span>@(user.AgeVerificationStatus ?? "18+") Verified</span>
+                                        </div>
+                                    }
+
+                                    @if (user.Languages != null && user.Languages.Any())
+                                    {
+                                        @foreach (var lang in user.Languages)
+                                        {
+                                            <div class="settings-pill pill-language" title="Language: @lang.DisplayName">
+                                                <span>@lang.Code</span>
+                                            </div>
+                                        }
+                                    }
+                                </div>
                             </div>
                         </div>
+
+                        <button class="btn btn-outline-danger px-3 py-2 flex-shrink-0 settings-logout-btn" @onclick="ToggleLogin" disabled="@IsLoggingIn">
+                            @if (IsLoggingIn)
+                            {
+                                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                            }
+                            Logout
+                        </button>
                     </div>
 
-                    <button class="btn btn-outline-danger px-3 py-2 flex-shrink-0 settings-logout-btn" @onclick="ToggleLogin" disabled="@IsLoggingIn">
-                        @if (IsLoggingIn)
+                    <!-- Mobile Badges & Tags (Displayed below Avatar, Name, and Logout) -->
+                    <div class="settings-account-mobile-bottom">
+                        @if (user.Badges != null && user.Badges.Any(b => b.Hidden != true))
                         {
-                            <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                            <div class="settings-badge-list justify-content-center w-100">
+                                @foreach (var badge in user.Badges.Where(b => b.Hidden != true))
+                                {
+                                    <img src="@badge.BadgeImageUrl" class="settings-badge-item" title="@badge.BadgeName" />
+                                }
+                            </div>
                         }
-                        Logout
-                    </button>
+
+                        <div class="settings-account-tags d-flex align-items-center justify-content-center flex-nowrap w-100">
+                            <div class="settings-pill @user.TrustClass" title="Trust Rank: @user.TrustLevel">
+                                <span>@user.TrustLevel</span>
+                            </div>
+
+                            @if (HasVRCPlus)
+                            {
+                                <div class="settings-pill pill-vrcplus" title="VRChat Plus Subscriber">
+                                    <span>VRChat Plus</span>
+                                </div>
+                            }
+
+                            @if (user.AgeVerified || user.AgeVerificationStatus == "18+")
+                            {
+                                <div class="settings-pill pill-age-verified" title="Age Verified (@(user.AgeVerificationStatus ?? "18+"))">
+                                    <span>@(user.AgeVerificationStatus ?? "18+") Verified</span>
+                                </div>
+                            }
+
+                            @if (user.Languages != null && user.Languages.Any())
+                            {
+                                @foreach (var lang in user.Languages)
+                                {
+                                    <div class="settings-pill pill-language" title="Language: @lang.DisplayName">
+                                        <span>@lang.Code</span>
+                                    </div>
+                                }
+                            }
+                        </div>
+                    </div>
                 </div>
             }
             else
