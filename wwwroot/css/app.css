@@ -1,7 +1,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 :root {
-    --bg-main: #0a0b0d;
+    --bg-main: #111418;
+    --bg-content: #0a0b0d;
     --bg-panel: #111418;
     --bg-hover: #1a1d21;
     --bg-active: #21262d;
@@ -447,7 +448,8 @@ h6 {
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    background-color: var(--bg-main);
+    background-color: var(--bg-content);
+    border-top-left-radius: var(--radius-md);
 }
 
 .main-article {
@@ -1579,6 +1581,10 @@ canvas.picking-color {
 .android-layout .main-content-container {
     height: 0;
     flex: 1;
+    border-top-left-radius: var(--radius-lg);
+    border-top-right-radius: var(--radius-lg);
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
 }
 
 .android-layout .nav-top-row {
@@ -2601,6 +2607,7 @@ canvas.picking-color {
     padding: 0.25rem 0.55rem;
     border-radius: 6px;
     letter-spacing: 0.3px;
+    cursor: pointer;
 }
 
 .about-platform-badge {

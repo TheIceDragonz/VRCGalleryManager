@@ -10,6 +10,7 @@
 @inject UpdateManager Updater
 @inject NotificationService Notifications
 @inject ProfileBackgroundService BackgroundService
+@implements IDisposable
 
 <div class="settings-page container-fluid h-100 p-4 overflow-y-auto">
     <div class="d-flex flex-column gap-4 max-w-600 mx-auto w-100">
@@ -695,6 +696,9 @@
     private string LocalVersion = "";
     private bool IsUpdating = false;
     private int UpdateProgressPercentage = 0;
+    private bool _isPromptingUpdate = false;
+    [SupplyParameterFromQuery]
+    public bool? PromptUpdate { get; set; }
     private bool ShowPassword = false;
     private bool Show2FA = false;
     private bool IsEmail2FA = false;
@@ -748,6 +752,7 @@
 
     protected override async Task OnInitializedAsync()
     {
+        AppEvents.RequestPromptUpdate += HandleRequestPromptUpdate;
         await Auth.EnsureInitializedAsync();
         _startWithWindows = Config.Get("StartWithWindows", "false") == "true";
         _startInBackground = Config.Get("StartInBackground", "false") == "true";
@@ -1157,37 +1162,80 @@
         await StartUpdate();
     }
 
-    private async Task StartUpdate()
+    protected override async Task OnParametersSetAsync()
     {
-        bool confirmed = await dialogService.ShowConfirmAsync(
-            "Update Available", 
-            $"A new version ({LatestUpdateVersion}) is available.\nYou are currently on version {LocalVersion}.\n\nDo you want to download and install it?", 
-            "Yes", "No");
-        if (!confirmed) return;
-
-        IsUpdating = true;
-        UpdateProgressPercentage = 0;
-        StateHasChanged();
-
-        try
+        if (PromptUpdate == true)
         {
-            await Updater.DownloadAndInstallUpdateAsync(Notifications, (progressText, progressInt, isError) => 
+            PromptUpdate = null;
+            _ = InvokeAsync(async () =>
             {
-                if (!isError)
-                {
-                    UpdateProgressPercentage = progressInt;
-                    InvokeAsync(StateHasChanged);
-                }
+                await Task.Delay(200);
+                await StartUpdate();
             });
         }
-        catch (Exception ex)
+    }
+
+    private void HandleRequestPromptUpdate()
+    {
+        _ = InvokeAsync(async () =>
         {
-            Notifications.Show($"Update failed: {ex.Message}", "Update Error", VRCGalleryManager.Core.NotificationType.Error);
+            await Task.Delay(100);
+            await StartUpdate();
+        });
+    }
+
+    private async Task StartUpdate()
+    {
+        if (IsUpdating || _isPromptingUpdate) return;
+
+        _isPromptingUpdate = true;
+        try
+        {
+            if (string.IsNullOrEmpty(LatestUpdateVersion))
+            {
+                var updateCheck = await Updater.IsUpdateAvailableAsync();
+                if (updateCheck.isAvailable)
+                {
+                    HasUpdate = true;
+                    LatestUpdateVersion = updateCheck.latestVersion;
+                    LocalVersion = updateCheck.localVersion;
+                }
+            }
+
+            bool confirmed = await dialogService.ShowConfirmAsync(
+                "Update Available", 
+                $"A new version ({LatestUpdateVersion}) is available.\nYou are currently on version {LocalVersion}.\n\nDo you want to download and install it?", 
+                "Yes", "No");
+            if (!confirmed) return;
+
+            IsUpdating = true;
+            UpdateProgressPercentage = 0;
+            StateHasChanged();
+
+            try
+            {
+                await Updater.DownloadAndInstallUpdateAsync(Notifications, (progressText, progressInt, isError) => 
+                {
+                    if (!isError)
+                    {
+                        UpdateProgressPercentage = progressInt;
+                        InvokeAsync(StateHasChanged);
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                Notifications.Show($"Update failed: {ex.Message}", "Update Error", VRCGalleryManager.Core.NotificationType.Error);
+            }
+            finally
+            {
+                IsUpdating = false;
+                InvokeAsync(StateHasChanged);
+            }
         }
         finally
         {
-            IsUpdating = false;
-            InvokeAsync(StateHasChanged);
+            _isPromptingUpdate = false;
         }
     }
 
@@ -1354,5 +1402,10 @@
             UpdatePicflowDbStats();
             Notifications.Show("Picflow database has been successfully cleared!", "System", VRCGalleryManager.Core.NotificationType.Success);
         }
+    }
+
+    public void Dispose()
+    {
+        AppEvents.RequestPromptUpdate -= HandleRequestPromptUpdate;
     }
 }
