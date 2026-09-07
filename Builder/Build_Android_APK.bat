@@ -45,12 +45,12 @@ mkdir "%OUTPUT_DIR%"
 
 echo.
 echo [*] Building and Publishing Android APK (Release)...
-echo     Target: net8.0-android
+echo     Target: net9.0-android
 echo     Output: %OUTPUT_DIR%
 echo.
 
 dotnet publish "%CSPROJ%" ^
-    -f net8.0-android ^
+    -f net9.0-android ^
     -c Release ^
     -p:AndroidPackageFormats=apk ^
     -p:EmbedAssembliesIntoApk=true ^
@@ -80,7 +80,7 @@ if not defined FOUND_APK (
     )
 )
 if not defined FOUND_APK (
-    for /r "%ROOT_DIR%\bin\Release\net8.0-android" %%F in (*.apk) do (
+    for /r "%ROOT_DIR%\bin\Release\net9.0-android" %%F in (*.apk) do (
         set "FOUND_APK=%%F"
     )
 )

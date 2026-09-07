@@ -6,9 +6,9 @@ This folder contains scripts to automatically compile the **Windows (EXE / Setup
 
 ## Folder Structure
 
-- **`Build_Windows_EXE.bat`**: Compiles and publishes the app for Windows (`net8.0-windows10.0.19041.0`, x64, self-contained), automatically creates the **Portable ZIP** package (`VRCGalleryManager_Portable.zip`), and creates the `VRCGalleryManager_Setup.exe` installer if NSIS is installed.
+- **`Build_Windows_EXE.bat`**: Compiles and publishes the app for Windows (`net9.0-windows10.0.19041.0`, x64, framework-dependent), automatically creates the **Portable ZIP** package (`VRCGalleryManager_Portable.zip`), and creates the `VRCGalleryManager_Setup.exe` installer if NSIS is installed.
 - **`Pack_Portable_ZIP.bat`**: Quickly generates or updates the **Portable ZIP** from the existing `Output/Windows` build without recompiling.
-- **`Build_Android_APK.bat`**: Compiles and publishes the Android package (`net8.0-android`, Release) and extracts `VRCGalleryManager.apk`.
+- **`Build_Android_APK.bat`**: Compiles and publishes the Android package (`net9.0-android`, Release) and extracts `VRCGalleryManager.apk`.
 - **`Build_All.bat`**: Runs both the Windows and Android builds in sequence.
 - **`setup.nsi`**: NSIS configuration script for generating the Windows installer.
 - **`Output/`**: Destination directory (generated automatically) containing:
@@ -22,9 +22,9 @@ This folder contains scripts to automatically compile the **Windows (EXE / Setup
 
 ## Prerequisites
 
-### 1. .NET 8 SDK
-Ensure you have the **.NET 8 SDK** installed:
-- Download: [https://dotnet.microsoft.com/download/dotnet/8.0](https://dotnet.microsoft.com/download/dotnet/8.0)
+### 1. .NET 9 SDK
+Ensure you have the **.NET 9 SDK** installed:
+- Download: [https://dotnet.microsoft.com/download/dotnet/9.0](https://dotnet.microsoft.com/download/dotnet/9.0)
 
 ### 2. .NET MAUI Workloads
 If needed, install or update the MAUI workloads by opening an elevated terminal (Run as administrator) and executing:
