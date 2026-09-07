@@ -18,6 +18,20 @@ public static class MauiProgram
 			catch { }
 		};
 
+#if WINDOWS
+		try
+		{
+			var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+			var userDataFolder = System.IO.Path.Combine(localAppData, "VRCGalleryManager", "WebView2");
+			if (!System.IO.Directory.Exists(userDataFolder))
+			{
+				System.IO.Directory.CreateDirectory(userDataFolder);
+			}
+			Environment.SetEnvironmentVariable("WEBVIEW2_USER_DATA_FOLDER", userDataFolder);
+		}
+		catch { }
+#endif
+
 		var builder = MauiApp.CreateBuilder();
 		builder
 			.UseMauiApp<App>()

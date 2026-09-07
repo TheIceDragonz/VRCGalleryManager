@@ -157,8 +157,9 @@ Simply execute the batch scripts located in the `Builder/` folder:
 
 Artifacts will be placed in `Builder/Output/`:
 - `Builder/Output/Windows/`
-- `Builder/Output/Android/VRCGalleryManager.apk`
+- `Builder/Output/VRCGalleryManager_Portable.zip`
 - `Builder/Output/VRCGalleryManager_Setup.exe`
+- `Builder/Output/VRCGalleryManager.apk`
 
 ---
 

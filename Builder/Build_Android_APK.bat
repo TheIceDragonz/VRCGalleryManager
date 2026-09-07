@@ -11,7 +11,8 @@ echo.
 
 set "SCRIPT_DIR=%~dp0"
 set "ROOT_DIR=%SCRIPT_DIR%.."
-set "OUTPUT_DIR=%SCRIPT_DIR%Output\Android"
+set "OUTPUT_ROOT=%SCRIPT_DIR%Output"
+set "OUTPUT_DIR=%OUTPUT_ROOT%\Android"
 set "CSPROJ=%ROOT_DIR%\VRCGalleryManager.csproj"
 
 :: 1. Check .NET SDK
@@ -85,12 +86,13 @@ if not defined FOUND_APK (
 )
 
 if defined FOUND_APK (
+    copy /y "!FOUND_APK!" "%OUTPUT_ROOT%\VRCGalleryManager.apk" >nul
     copy /y "!FOUND_APK!" "%OUTPUT_DIR%\VRCGalleryManager.apk" >nul
     color 0A
     echo.
     echo ========================================================
     echo  [BUILD SUCCESSFUL] Android APK built successfully!
-    echo  APK Location: %OUTPUT_DIR%\VRCGalleryManager.apk
+    echo  APK Location: %OUTPUT_ROOT%\VRCGalleryManager.apk
     echo ========================================================
     echo.
 ) else (
@@ -101,6 +103,6 @@ if defined FOUND_APK (
     echo.
 )
 
-explorer "%OUTPUT_DIR%"
+explorer "%OUTPUT_ROOT%"
 pause
 exit /b 0

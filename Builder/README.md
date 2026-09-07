@@ -4,20 +4,23 @@ This folder contains scripts to automatically compile the **Windows (EXE / Setup
 
 ---
 
-## 📁 Folder Structure
+## Folder Structure
 
-- **`Build_Windows_EXE.bat`**: Compiles and publishes the app for Windows (`net8.0-windows10.0.19041.0`, x64, self-contained). If NSIS is installed on your computer, it also creates the `VRCGalleryManager_Setup.exe` installer.
+- **`Build_Windows_EXE.bat`**: Compiles and publishes the app for Windows (`net8.0-windows10.0.19041.0`, x64, self-contained), automatically creates the **Portable ZIP** package (`VRCGalleryManager_Portable.zip`), and creates the `VRCGalleryManager_Setup.exe` installer if NSIS is installed.
+- **`Pack_Portable_ZIP.bat`**: Quickly generates or updates the **Portable ZIP** from the existing `Output/Windows` build without recompiling.
 - **`Build_Android_APK.bat`**: Compiles and publishes the Android package (`net8.0-android`, Release) and extracts `VRCGalleryManager.apk`.
 - **`Build_All.bat`**: Runs both the Windows and Android builds in sequence.
 - **`setup.nsi`**: NSIS configuration script for generating the Windows installer.
 - **`Output/`**: Destination directory (generated automatically) containing:
   - `Output/Windows/`: Standalone executable (`VRCGalleryManager.exe`) and dependencies.
-  - `Output/Android/`: APK file for Android devices (`VRCGalleryManager.apk`).
+  - `Output/VRCGalleryManager_Portable.zip`: Portable ZIP release ready to extract and run anywhere.
   - `Output/VRCGalleryManager_Setup.exe`: Windows installer (when NSIS is installed).
+  - `Output/VRCGalleryManager.apk`: Android APK ready to install.
+  - `Output/Android/`: Android build intermediate files and signed APK.
 
 ---
 
-## ⚙️ Prerequisites
+## Prerequisites
 
 ### 1. .NET 8 SDK
 Ensure you have the **.NET 8 SDK** installed:
@@ -38,7 +41,7 @@ If you want to create the Windows installer in addition to the standalone execut
 
 ---
 
-## 🚀 Usage
+## Usage
 
 Simply double-click any of the `.bat` files:
 1. Double-click `Build_Windows_EXE.bat` for Windows.

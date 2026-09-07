@@ -19,6 +19,8 @@ public partial class App : MauiWinUIApplication
     /// </summary>
     public App()
     {
+        SetWebView2UserDataFolder();
+
         this.InitializeComponent();
 
         var mainInstance = AppInstance.FindOrRegisterForKey("VRCGalleryManagerSingleInstance");
@@ -60,6 +62,23 @@ public partial class App : MauiWinUIApplication
                 StateMask = 0
             };
             SetProcessInformation(System.Diagnostics.Process.GetCurrentProcess().Handle, ProcessPowerThrottling, ref state, (uint)System.Runtime.InteropServices.Marshal.SizeOf(state));
+        }
+        catch { }
+    }
+
+    private static void SetWebView2UserDataFolder()
+    {
+        try
+        {
+            var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            var userDataFolder = System.IO.Path.Combine(localAppData, "VRCGalleryManager", "WebView2");
+
+            if (!System.IO.Directory.Exists(userDataFolder))
+            {
+                System.IO.Directory.CreateDirectory(userDataFolder);
+            }
+
+            Environment.SetEnvironmentVariable("WEBVIEW2_USER_DATA_FOLDER", userDataFolder);
         }
         catch { }
     }
