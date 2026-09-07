@@ -19,7 +19,7 @@
     </style>
 }
 
-<div class="page main-page-container @(!string.IsNullOrEmpty(ThemeCssRules) ? "has-vrc-theme" : "") @(Microsoft.Maui.Devices.DeviceInfo.Current.Platform == Microsoft.Maui.Devices.DevicePlatform.Android ? "android-layout" : "")">
+<div class="page main-page-container @(!string.IsNullOrEmpty(ThemeCssRules) ? "has-vrc-theme" : "") @(!string.IsNullOrEmpty(SidebarBackgroundStyle) ? "has-vrc-background" : "") @(BackgroundService.DisplayVRCProfileBackgrounds ? "has-vrc-background-enabled" : "") @(Microsoft.Maui.Devices.DeviceInfo.Current.Platform == Microsoft.Maui.Devices.DevicePlatform.Android ? "android-layout" : "")">
     <div class="sidebar main-sidebar-container" style="@SidebarBackgroundStyle">
         <NavMenu />
     </div>
@@ -79,6 +79,7 @@
         AppEvents.RequestNavigateToSettings += HandleRequestNavigateToSettings;
         NetworkStatus.OnNetworkStatusChanged += HandleNetworkStatusChanged;
         BackgroundService.OnSidebarBackgroundChanged += HandleSidebarBgChanged;
+        BackgroundService.OnSettingsChanged += HandleSidebarBgChanged;
         SidebarBackgroundStyle = BackgroundService.CurrentSidebarBackgroundStyle;
         ThemeCssRules = BackgroundService.CurrentThemeCss;
         UpdateFilterMatrix();
@@ -173,5 +174,6 @@
         AppEvents.RequestNavigateToSettings -= HandleRequestNavigateToSettings;
         NetworkStatus.OnNetworkStatusChanged -= HandleNetworkStatusChanged;
         BackgroundService.OnSidebarBackgroundChanged -= HandleSidebarBgChanged;
+        BackgroundService.OnSettingsChanged -= HandleSidebarBgChanged;
     }
 }

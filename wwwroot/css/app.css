@@ -18,6 +18,13 @@
     --radius-md: 12px;
     --radius-lg: 16px;
 
+    /* Theme Button Tokens */
+    --theme-btn-bg: #07242B;
+    --theme-btn-border: #053742;
+    --theme-btn-hover-bg: #0A3540;
+    --theme-btn-hover-border: #505050;
+    --theme-btn-active-bg: #0D4452;
+
     --transition-fast: 0.15s ease-in-out;
     --transition-normal: 0.3s ease-in-out;
 
@@ -43,23 +50,36 @@ body {
     overflow: hidden;
 }
 
-/* Custom Scrollbar */
+/* Custom Floating Scrollbar */
 ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 15px;
+    height: 15px;
 }
 
 ::-webkit-scrollbar-track {
-    background: var(--bg-main);
+    background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-    background: var(--border-color);
-    border-radius: 4px;
+    background-color: var(--theme-btn-bg, #07242B);
+    border: 4px solid transparent;
+    background-clip: padding-box;
+    border-radius: 10px;
+    box-shadow: inset 0 0 0 1px var(--theme-btn-border, #053742);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: var(--text-muted);
+    background-color: var(--theme-btn-hover-bg, #0A3540);
+    box-shadow: inset 0 0 0 1px var(--accent);
+}
+
+::-webkit-scrollbar-thumb:active {
+    background-color: var(--theme-btn-active-bg, #0D4452);
+    box-shadow: inset 0 0 0 1px var(--accent);
+}
+
+::-webkit-scrollbar-corner {
+    background: transparent;
 }
 
 a {
@@ -452,6 +472,13 @@ h6 {
     border-top-left-radius: var(--radius-md);
 }
 
+.has-vrc-background .main-content-container,
+.has-vrc-background-enabled .main-content-container {
+    border-radius: 0 !important;
+    border-top-left-radius: 0 !important;
+    border-top-right-radius: 0 !important;
+}
+
 .main-article {
     overflow-y: auto;
 }
@@ -577,8 +604,8 @@ h6 {
     height: 3rem;
     line-height: 3rem;
     color: var(--accent);
-    background-color: #07242B;
-    border: 2px solid #053742;
+    background-color: var(--theme-btn-bg, #07242B);
+    border: 2px solid var(--theme-btn-border, #053742);
     border-radius: 10px;
     transition: all 0.2s ease-in-out;
     text-decoration: none;
@@ -587,8 +614,8 @@ h6 {
 }
 
 .custom-nav-link:hover {
-    background-color: #0A3540;
-    border-color: #505050;
+    background-color: var(--theme-btn-hover-bg, #0A3540);
+    border-color: var(--theme-btn-hover-border, #505050);
     color: white;
 }
 
@@ -1581,10 +1608,7 @@ canvas.picking-color {
 .android-layout .main-content-container {
     height: 0;
     flex: 1;
-    border-top-left-radius: var(--radius-lg);
-    border-top-right-radius: var(--radius-lg);
-    border-bottom-left-radius: 0;
-    border-bottom-right-radius: 0;
+    border-radius: 0 !important;
 }
 
 .android-layout .nav-top-row {

@@ -23,7 +23,6 @@ public partial class App : Application
         window.MinimumWidth = 930;
         window.MinimumHeight = 800;
 
-        // Configure native TitleBar (.NET 9) with styling matching .about-update-badge
         var updateBadgeButton = new Button
         {
             Text = "Update Available",
@@ -51,6 +50,7 @@ public partial class App : Application
                 {
                     var handCursor = Microsoft.UI.Input.InputSystemCursor.Create(Microsoft.UI.Input.InputSystemCursorShape.Hand);
                     var arrowCursor = Microsoft.UI.Input.InputSystemCursor.Create(Microsoft.UI.Input.InputSystemCursorShape.Arrow);
+                    var prop = typeof(Microsoft.UI.Xaml.UIElement).GetProperty("ProtectedCursor",
                         System.Reflection.BindingFlags.Instance |
                         System.Reflection.BindingFlags.NonPublic |
                         System.Reflection.BindingFlags.Public);
@@ -116,6 +116,15 @@ public partial class App : Application
             });
         };
 
+        var titleTextLabel = new Label
+        {
+            Text = "VRCGalleryManager",
+            TextColor = Color.FromArgb("#E2E8F0"),
+            VerticalOptions = LayoutOptions.Center,
+            FontSize = 12,
+            InputTransparent = true
+        };
+
         var titleBar = new TitleBar
         {
             BackgroundColor = Color.FromArgb("#111418"),
@@ -136,14 +145,7 @@ public partial class App : Application
                         VerticalOptions = LayoutOptions.Center,
                         InputTransparent = true
                     },
-                    new Label
-                    {
-                        Text = "VRCGalleryManager",
-                        TextColor = Color.FromArgb("#E2E8F0"),
-                        VerticalOptions = LayoutOptions.Center,
-                        FontSize = 12,
-                        InputTransparent = true
-                    }
+                    titleTextLabel
                 }
             },
             TrailingContent = new HorizontalStackLayout
@@ -157,6 +159,95 @@ public partial class App : Application
 
         window.TitleBar = titleBar;
 
+        Microsoft.UI.Windowing.AppWindow? currentAppWindow = null;
+        bool isThemeActive = Config.Get("DisplayVRCProfileThemes", "false") == "true" &&
+                             Config.Get("CachedThemeIsCustom", "false") == "true";
+        string? themeButtonColorHex = Config.Get("CachedThemeButtonColor", "#6ae3f9");
+        string? themeIconColorHex = Config.Get("CachedThemeIconColor", "#6ae3f9");
+
+        static Windows.UI.Color ParseHexColor(string? hex, Windows.UI.Color fallback)
+        {
+            if (string.IsNullOrWhiteSpace(hex)) return fallback;
+            try
+            {
+                string clean = hex.Trim().TrimStart('#');
+                if (clean.Length == 6 &&
+                    byte.TryParse(clean.Substring(0, 2), System.Globalization.NumberStyles.HexNumber, null, out byte r) &&
+                    byte.TryParse(clean.Substring(2, 2), System.Globalization.NumberStyles.HexNumber, null, out byte g) &&
+                    byte.TryParse(clean.Substring(4, 2), System.Globalization.NumberStyles.HexNumber, null, out byte b))
+                {
+                    return Microsoft.UI.ColorHelper.FromArgb(255, r, g, b);
+                }
+                else if (clean.Length == 8 &&
+                    byte.TryParse(clean.Substring(0, 2), System.Globalization.NumberStyles.HexNumber, null, out byte a) &&
+                    byte.TryParse(clean.Substring(2, 2), System.Globalization.NumberStyles.HexNumber, null, out byte r8) &&
+                    byte.TryParse(clean.Substring(4, 2), System.Globalization.NumberStyles.HexNumber, null, out byte g8) &&
+                    byte.TryParse(clean.Substring(6, 2), System.Globalization.NumberStyles.HexNumber, null, out byte b8))
+                {
+                    return Microsoft.UI.ColorHelper.FromArgb(a, r8, g8, b8);
+                }
+            }
+            catch { }
+            return fallback;
+        }
+
+        void ApplyTitleBarTheme()
+        {
+            try
+            {
+                if (currentAppWindow == null)
+                {
+                    if (window.Handler?.PlatformView is Microsoft.UI.Xaml.Window w)
+                    {
+                        currentAppWindow = GetAppWindow(w);
+                    }
+                }
+
+                if (currentAppWindow?.TitleBar != null)
+                {
+                    var nativeTitleBar = currentAppWindow.TitleBar;
+                    if (isThemeActive)
+                    {
+                        string? targetHex = !string.IsNullOrEmpty(themeIconColorHex) ? themeIconColorHex : themeButtonColorHex;
+                        var themeColor = ParseHexColor(targetHex, Microsoft.UI.ColorHelper.FromArgb(255, 106, 227, 249));
+
+                        // Window Caption Buttons (Minimize, Maximize/Restore, Close)
+                        nativeTitleBar.ButtonBackgroundColor = Microsoft.UI.Colors.Transparent;
+                        nativeTitleBar.ButtonForegroundColor = themeColor;
+                        nativeTitleBar.ButtonHoverBackgroundColor = Microsoft.UI.ColorHelper.FromArgb(60, themeColor.R, themeColor.G, themeColor.B);
+                        nativeTitleBar.ButtonHoverForegroundColor = Microsoft.UI.Colors.White;
+                        nativeTitleBar.ButtonPressedBackgroundColor = Microsoft.UI.ColorHelper.FromArgb(110, themeColor.R, themeColor.G, themeColor.B);
+                        nativeTitleBar.ButtonPressedForegroundColor = Microsoft.UI.Colors.White;
+                        nativeTitleBar.ButtonInactiveBackgroundColor = Microsoft.UI.Colors.Transparent;
+                        nativeTitleBar.ButtonInactiveForegroundColor = Microsoft.UI.ColorHelper.FromArgb(120, themeColor.R, themeColor.G, themeColor.B);
+                    }
+                    else
+                    {
+                        // Default caption buttons styling: same as button text color (#6AE3F9)
+                        var defaultColor = Microsoft.UI.ColorHelper.FromArgb(255, 106, 227, 249);
+                        nativeTitleBar.ButtonBackgroundColor = Microsoft.UI.Colors.Transparent;
+                        nativeTitleBar.ButtonForegroundColor = defaultColor;
+                        nativeTitleBar.ButtonHoverBackgroundColor = Microsoft.UI.ColorHelper.FromArgb(60, defaultColor.R, defaultColor.G, defaultColor.B);
+                        nativeTitleBar.ButtonHoverForegroundColor = Microsoft.UI.Colors.White;
+                        nativeTitleBar.ButtonPressedBackgroundColor = Microsoft.UI.ColorHelper.FromArgb(110, defaultColor.R, defaultColor.G, defaultColor.B);
+                        nativeTitleBar.ButtonPressedForegroundColor = Microsoft.UI.Colors.White;
+                        nativeTitleBar.ButtonInactiveBackgroundColor = Microsoft.UI.Colors.Transparent;
+                        nativeTitleBar.ButtonInactiveForegroundColor = Microsoft.UI.ColorHelper.FromArgb(120, defaultColor.R, defaultColor.G, defaultColor.B);
+                    }
+                }
+            }
+            catch { }
+        }
+
+        AppEvents.ProfileThemeChanged += (isEnabled, btnColor, iconColor) =>
+        {
+            isThemeActive = isEnabled;
+            themeButtonColorHex = btnColor;
+            themeIconColorHex = iconColor;
+
+            Application.Current?.Dispatcher.Dispatch(ApplyTitleBarTheme);
+        };
+
         window.Created += (s, e) =>
         {
             try
@@ -164,21 +255,11 @@ public partial class App : Application
                 var winuiWin = window.Handler?.PlatformView as Microsoft.UI.Xaml.Window;
                 if (winuiWin != null)
                 {
-                    var appWin = GetAppWindow(winuiWin);
-                    if (appWin != null)
+                    currentAppWindow = GetAppWindow(winuiWin);
+                    if (currentAppWindow != null)
                     {
-                        appWin.SetIcon("icon.ico");
-                        if (appWin.TitleBar != null)
-                        {
-                            appWin.TitleBar.ButtonBackgroundColor = Microsoft.UI.Colors.Transparent;
-                            appWin.TitleBar.ButtonForegroundColor = Microsoft.UI.ColorHelper.FromArgb(255, 226, 232, 240);
-                            appWin.TitleBar.ButtonHoverBackgroundColor = Microsoft.UI.ColorHelper.FromArgb(255, 33, 38, 45);
-                            appWin.TitleBar.ButtonHoverForegroundColor = Microsoft.UI.Colors.White;
-                            appWin.TitleBar.ButtonPressedBackgroundColor = Microsoft.UI.ColorHelper.FromArgb(255, 48, 54, 61);
-                            appWin.TitleBar.ButtonPressedForegroundColor = Microsoft.UI.Colors.White;
-                            appWin.TitleBar.ButtonInactiveBackgroundColor = Microsoft.UI.Colors.Transparent;
-                            appWin.TitleBar.ButtonInactiveForegroundColor = Microsoft.UI.ColorHelper.FromArgb(255, 110, 118, 129);
-                        }
+                        currentAppWindow.SetIcon("icon.ico");
+                        ApplyTitleBarTheme();
                     }
                 }
             }

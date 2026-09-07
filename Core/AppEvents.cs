@@ -33,5 +33,16 @@ namespace VRCGalleryManager.Core
         {
             UpdateStatusChanged?.Invoke(isAvailable, latestVersion);
         }
+
+        /// <summary>
+        /// Raised when VRChat Profile Theme changes or is toggled.
+        /// (bool isEnabled, string? buttonColor, string? iconColor)
+        /// </summary>
+        public static event Action<bool, string?, string?>? ProfileThemeChanged;
+
+        public static void NotifyProfileThemeChanged(bool isEnabled, string? buttonColor, string? iconColor)
+        {
+            ProfileThemeChanged?.Invoke(isEnabled, buttonColor, iconColor);
+        }
     }
 }

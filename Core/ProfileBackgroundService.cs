@@ -284,6 +284,20 @@ namespace VRCGalleryManager.Core
             IconColorMatrix = (iconRgb.r / 255.0, iconRgb.g / 255.0, iconRgb.b / 255.0);
 
             CurrentThemeCss = GenerateGlobalThemeCss(CurrentTheme);
+
+            bool isThemeActive = DisplayVRCProfileThemes && CurrentTheme.IsCustomTheme;
+            if (isThemeActive)
+            {
+                Config.Set("CachedThemeButtonColor", btnColor);
+                Config.Set("CachedThemeIconColor", iconColor);
+                Config.Set("CachedThemeIsCustom", "true");
+                AppEvents.NotifyProfileThemeChanged(true, btnColor, iconColor);
+            }
+            else if (!DisplayVRCProfileThemes || profile != null)
+            {
+                Config.Set("CachedThemeIsCustom", "false");
+                AppEvents.NotifyProfileThemeChanged(false, btnColor, iconColor);
+            }
         }
 
         public string GenerateGlobalThemeCss(VRCProfileTheme theme)
