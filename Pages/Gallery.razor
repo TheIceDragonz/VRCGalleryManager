@@ -12,17 +12,17 @@
 <div class="h-100 d-flex flex-column p-3">
     @* TOP TOOLBAR *@
     <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-secondary">
-        <div class="d-flex align-items-center">
-            <h3 class="mb-0 text-accent d-flex align-items-center gap-2">
+        <div class="d-flex align-items-center text-truncate me-2">
+            <h3 class="mb-0 text-accent d-flex align-items-center gap-2 text-nowrap">
                 <img src="/svg/gallery-wide-svgrepo-com.svg" class="media-page-icon" /> Gallery
             </h3>
             @if (!string.IsNullOrEmpty(CurrentFolder))
             {
-                <span class="text-white-50 ms-3 small mb-0" title="@CurrentFolder">@CurrentFolder</span>
+                <span class="text-white-50 ms-3 small mb-0 text-truncate" style="max-width: 450px;" title="@CurrentFolder">@CurrentFolder</span>
             }
         </div>
 
-        <div class="d-flex align-items-center gap-2">
+        <div class="d-flex align-items-center gap-2 flex-shrink-0">
             <button class="btn btn-outline-secondary btn-sm" @onclick="GoBack" disabled="@(!CanGoBack)" title="Go back">
                 <img src="/svg/back-arrow-svgrepo-com.svg" class="btn-icon" style="margin: 0;" />
             </button>
@@ -32,7 +32,6 @@
             <button class="btn btn-secondary btn-sm" @onclick="ChangeFolder" title="Change folder">
                 <img src="/svg/folder-open-svgrepo-com.svg" class="btn-icon" /> Change
             </button>
-
         </div>
     </div>
 
@@ -41,13 +40,13 @@
         
         @* GRID *@
         <div class="flex-grow-1 overflow-auto h-100 pe-2" @key="CurrentFolder">
-            @if (string.IsNullOrEmpty(RootFolder))
+            @if (string.IsNullOrEmpty(RootFolder) || !Directory.Exists(RootFolder))
             {
                 <div class="h-100 d-flex flex-column align-items-center justify-content-center text-white-50">
                     <img src="/svg/folder-open-svgrepo-com.svg" class="mb-3 opacity-50 folder-svg-icon" />
                     <h5 class="text-white">No folder selected</h5>
-                    <p>Click <strong>Change</strong> to pick your VRChat screenshots folder.</p>
-                    <button class="btn btn-primary mt-2" @onclick="ChangeFolder">
+                    <p>Click <strong>Change</strong> or select below to pick your VRChat screenshots folder.</p>
+                    <button class="btn btn-primary mt-2 d-flex align-items-center gap-2" @onclick="ChangeFolder">
                         <img src="/svg/folder-open-svgrepo-com.svg" class="btn-icon icon-white" /> Select Folder
                     </button>
                 </div>
@@ -165,6 +164,8 @@
     private bool CanGoBack =>
         !string.IsNullOrEmpty(CurrentFolder) &&
         !string.IsNullOrEmpty(RootFolder) &&
+        Directory.Exists(CurrentFolder) &&
+        Directory.Exists(RootFolder) &&
         !string.Equals(
             Path.GetFullPath(CurrentFolder).TrimEnd(Path.DirectorySeparatorChar),
             Path.GetFullPath(RootFolder).TrimEnd(Path.DirectorySeparatorChar),
@@ -185,12 +186,22 @@
     protected override async Task OnInitializedAsync()
     {
         var path = Config.GetPath("PathGallery");
+        if (string.IsNullOrEmpty(path) || !Directory.Exists(path))
+        {
+            var defaultVrc = FolderPickerHelper.GetDefaultVRChatPhotoPath();
+            if (!string.IsNullOrEmpty(defaultVrc) && Directory.Exists(defaultVrc))
+            {
+                path = defaultVrc;
+                Config.Set("PathGallery", path);
+            }
+        }
+
         if (!string.IsNullOrEmpty(path) && Directory.Exists(path))
         {
             if (cachedItems != null && cachedRootFolder == path)
             {
                 RootFolder = cachedRootFolder;
-                CurrentFolder = cachedCurrentFolder;
+                CurrentFolder = cachedCurrentFolder ?? cachedRootFolder;
                 Items = cachedItems;
             }
             else
@@ -221,18 +232,27 @@
     {
         try
         {
-            var result = await CommunityToolkit.Maui.Storage.FolderPicker.Default.PickAsync(default);
-            if (result.IsSuccessful && result.Folder != null)
+            string? startPath = !string.IsNullOrEmpty(CurrentFolder) && Directory.Exists(CurrentFolder)
+                ? CurrentFolder
+                : (!string.IsNullOrEmpty(RootFolder) && Directory.Exists(RootFolder) ? RootFolder : FolderPickerHelper.GetDefaultVRChatPhotoPath());
+
+            var picked = await FolderPickerHelper.PickFolderAsync(startPath, "Select VRChat Screenshots Folder");
+            if (!string.IsNullOrEmpty(picked) && Directory.Exists(picked))
             {
-                string picked = result.Folder.Path;
                 Config.Set("PathGallery", picked);
                 RootFolder = picked;
                 CurrentFolder = picked;
+                cachedItems = null;
+                cachedRootFolder = picked;
+                cachedCurrentFolder = picked;
                 SelectedImage = null;
                 await LoadFolderAsync();
             }
         }
-        catch { }
+        catch (Exception ex)
+        {
+            NotificationService.Show($"Error selecting folder: {ex.Message}", "Error", NotificationType.Error);
+        }
     }
 
     // ── Folder Loading ─────────────────────────────────────────────────────

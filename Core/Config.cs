@@ -26,14 +26,28 @@ namespace VRCGalleryManager.Core
 
         private static void LoadAllSettings()
         {
-            if (File.Exists(PathConfigJson))
+            try
             {
-                var json = File.ReadAllText(PathConfigJson);
-                _settings = JsonSerializer.Deserialize<Dictionary<string, string>>(json)
-                            ?? new Dictionary<string, string>();
+                if (File.Exists(PathConfigJson))
+                {
+                    var options = new JsonSerializerOptions
+                    {
+                        AllowTrailingCommas = true,
+                        ReadCommentHandling = JsonCommentHandling.Skip,
+                        PropertyNameCaseInsensitive = true
+                    };
+                    var json = File.ReadAllText(PathConfigJson);
+                    _settings = JsonSerializer.Deserialize<Dictionary<string, string>>(json, options)
+                                ?? new Dictionary<string, string>();
+                }
+                else
+                {
+                    _settings = new Dictionary<string, string>();
+                }
             }
-            else
+            catch (Exception ex)
             {
+                System.Diagnostics.Debug.WriteLine($"Error loading config.json: {ex.Message}");
                 _settings = new Dictionary<string, string>();
             }
         }

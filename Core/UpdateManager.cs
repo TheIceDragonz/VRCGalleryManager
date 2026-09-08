@@ -70,7 +70,7 @@ namespace VRCGalleryManager
                 return latest > local;
             }
 
-            return !string.Equals(localVersion, latestVersion, StringComparison.OrdinalIgnoreCase);
+            return false;
         }
 
         public async Task<(bool isAvailable, string latestVersion, string localVersion)> IsUpdateAvailableAsync(bool forceRefresh = false)

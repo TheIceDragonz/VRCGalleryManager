@@ -21,13 +21,27 @@ public partial class App : MauiWinUIApplication
     {
         SetWebView2UserDataFolder();
 
+        this.UnhandledException += (sender, e) =>
+        {
+            try
+            {
+                string path = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "fatal.log");
+                System.IO.File.AppendAllText(path, $"WinUI Unhandled: {e.Message}\n{e.Exception}\n\n");
+            }
+            catch { }
+        };
+
         this.InitializeComponent();
 
         var mainInstance = AppInstance.FindOrRegisterForKey("VRCGalleryManagerSingleInstance");
         if (!mainInstance.IsCurrent)
         {
-            var args = AppInstance.GetCurrent().GetActivatedEventArgs();
-            mainInstance.RedirectActivationToAsync(args).AsTask().Wait();
+            try
+            {
+                var args = AppInstance.GetCurrent().GetActivatedEventArgs();
+                mainInstance.RedirectActivationToAsync(args).AsTask().Wait();
+            }
+            catch { }
             System.Diagnostics.Process.GetCurrentProcess().Kill();
             return;
         }
