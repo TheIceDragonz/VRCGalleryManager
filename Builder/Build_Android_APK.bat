@@ -103,6 +103,6 @@ if defined FOUND_APK (
     echo.
 )
 
-explorer "%OUTPUT_ROOT%"
-pause
+if not defined NO_EXPLORER explorer "%OUTPUT_ROOT%"
+if not defined NO_PAUSE pause
 exit /b 0

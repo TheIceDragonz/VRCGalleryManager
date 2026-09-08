@@ -150,6 +150,6 @@ echo  Installer:  %OUTPUT_ROOT%\VRCGalleryManager_Setup.exe
 echo ========================================================
 echo.
 
-explorer "%OUTPUT_ROOT%"
-pause
+if not defined NO_EXPLORER explorer "%OUTPUT_ROOT%"
+if not defined NO_PAUSE pause
 exit /b 0
