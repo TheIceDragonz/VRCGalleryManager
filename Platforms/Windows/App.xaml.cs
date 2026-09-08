@@ -34,6 +34,7 @@ public partial class App : MauiWinUIApplication
 
         mainInstance.Activated += MainInstance_Activated;
         DisableEfficiencyMode();
+        VRCGalleryManager.Core.WindowsStartupHelper.SyncStartupPathIfEnabled();
     }
 
     [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential)]

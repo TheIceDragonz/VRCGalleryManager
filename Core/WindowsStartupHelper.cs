@@ -52,6 +52,32 @@ namespace VRCGalleryManager.Core
                 return false;
             }
         }
+
+        public static void SyncStartupPathIfEnabled()
+        {
+            try
+            {
+                using var key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(RegistryKeyPath, true);
+                if (key == null) return;
+
+                var value = key.GetValue(AppName) as string;
+                if (string.IsNullOrEmpty(value)) return;
+
+                string? exePath = Process.GetCurrentProcess().MainModule?.FileName;
+                if (string.IsNullOrEmpty(exePath)) return;
+
+                bool isBg = value.Contains("--background", StringComparison.OrdinalIgnoreCase);
+                string expected = isBg ? $"\"{exePath}\" --background" : $"\"{exePath}\"";
+                if (!string.Equals(value, expected, StringComparison.OrdinalIgnoreCase))
+                {
+                    key.SetValue(AppName, expected);
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error syncing startup path: {ex.Message}");
+            }
+        }
 #else
         public static void SetStartup(bool enable, bool startInBackground = false)
         {
@@ -61,6 +87,11 @@ namespace VRCGalleryManager.Core
         public static bool IsStartupEnabled()
         {
             return false;
+        }
+
+        public static void SyncStartupPathIfEnabled()
+        {
+            // Not supported on this platform
         }
 #endif
     }

@@ -37,19 +37,24 @@ VIAddVersionKey /LANG=0x409 "LegalCopyright" "${AppPublisher}"
 Function .onInit
     ${If} ${RunningX64}
         SetRegView 64
-        StrCpy $INSTDIR "$PROGRAMFILES64\${AppName}"
+        ReadRegStr $0 HKLM "Software\${AppName}" "Install_Dir"
+        ${If} $0 != ""
+            StrCpy $INSTDIR "$0"
+        ${Else}
+            StrCpy $INSTDIR "$PROGRAMFILES64\${AppName}"
+        ${EndIf}
     ${Else}
         MessageBox MB_OK|MB_ICONSTOP "This application requires a 64-bit version of Windows."
         Abort
     ${EndIf}
 
-    ; Check for Microsoft .NET Desktop Runtime 8.0 (x64)
-    FindFirst $0 $1 "$PROGRAMFILES64\dotnet\shared\Microsoft.WindowsDesktop.App\8.*"
+    ; Check for Microsoft .NET Desktop Runtime 9.0 (x64)
+    FindFirst $0 $1 "$PROGRAMFILES64\dotnet\shared\Microsoft.WindowsDesktop.App\9.*"
     FindClose $0
     ${If} $1 == ""
-        MessageBox MB_YESNO|MB_ICONEXCLAMATION "${AppName} requires Microsoft .NET Desktop Runtime 8.0 (x64) to run.$\n$\nWould you like to open the official download page now?" IDYES downloadRuntime IDNO continueInstall
+        MessageBox MB_YESNO|MB_ICONEXCLAMATION "${AppName} requires Microsoft .NET Desktop Runtime 9.0 (x64) to run.$\n$\nWould you like to open the official download page now?" IDYES downloadRuntime IDNO continueInstall
 downloadRuntime:
-        ExecShell "open" "https://aka.ms/dotnet/8.0/windowsdesktop-runtime-win-x64.exe"
+        ExecShell "open" "https://aka.ms/dotnet/9.0/windowsdesktop-runtime-win-x64.exe"
 continueInstall:
     ${EndIf}
 FunctionEnd
@@ -86,6 +91,54 @@ Section "Install"
     DetailPrint "Closing running instances of ${AppName}..."
     nsExec::Exec 'taskkill /F /IM "${AppName}.exe" /T'
     Sleep 500
+
+    ; -------------------------------------------------------------
+    ; Migrate / Clean legacy 32-bit installation (Program Files (x86))
+    ; -------------------------------------------------------------
+    ; 1. Check if legacy 32-bit install directory is in 32-bit registry
+    SetRegView 32
+    ReadRegStr $R0 HKLM "Software\${AppName}" "Install_Dir"
+    SetRegView 64
+
+    ${If} $R0 == ""
+        StrCpy $R0 "$PROGRAMFILES32\${AppName}"
+    ${EndIf}
+
+    ${If} $R0 != "$INSTDIR"
+    ${AndIf} ${FileExists} "$R0\VRCGalleryManager.exe"
+        DetailPrint "Legacy 32-bit installation detected at $R0. Migrating..."
+
+        ; Run legacy uninstaller silently if present to unregister cleanly
+        ${If} ${FileExists} "$R0\Uninstall.exe"
+            DetailPrint "Running legacy 32-bit uninstaller silently..."
+            ExecWait '"$R0\Uninstall.exe" /S _?=$R0'
+        ${EndIf}
+
+        ; Remove any residual files and directory
+        RMDir /r "$R0"
+
+        ; Clean 32-bit registry entries (WOW6432Node) to avoid duplicates in Windows Programs & Features
+        SetRegView 32
+        DeleteRegKey HKLM "Software\${AppName}"
+        DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${AppName}"
+        SetRegView 64
+
+        DetailPrint "Legacy 32-bit installation cleaned successfully."
+    ${EndIf}
+
+    ; 2. Fallback check for standard $PROGRAMFILES32\${AppName} directory
+    ${If} "$PROGRAMFILES32\${AppName}" != "$INSTDIR"
+    ${AndIf} ${FileExists} "$PROGRAMFILES32\${AppName}\*.*"
+        DetailPrint "Cleaning residual legacy files in $PROGRAMFILES32\${AppName}..."
+        ${If} ${FileExists} "$PROGRAMFILES32\${AppName}\Uninstall.exe"
+            ExecWait '"$PROGRAMFILES32\${AppName}\Uninstall.exe" /S _?=$PROGRAMFILES32\${AppName}'
+        ${EndIf}
+        RMDir /r "$PROGRAMFILES32\${AppName}"
+        SetRegView 32
+        DeleteRegKey HKLM "Software\${AppName}"
+        DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${AppName}"
+        SetRegView 64
+    ${EndIf}
     
     ; Clean legacy files and obsolete language folders from previous installations
     ${If} ${FileExists} "$INSTDIR\VRCGalleryManager.exe"
@@ -192,6 +245,12 @@ Section "Uninstall"
     RMDir /r "$INSTDIR"   ; Remove the entire installation folder recursively
     DeleteRegKey HKLM "Software\${AppName}"
     DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${AppName}"
+
+    ; Also clean 32-bit registry entries if any legacy keys remained
+    SetRegView 32
+    DeleteRegKey HKLM "Software\${AppName}"
+    DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${AppName}"
+    SetRegView 64
 SectionEnd
 
 !insertmacro MUI_LANGUAGE "English"
