@@ -72,6 +72,7 @@ namespace VRCGalleryManager.Core.Components
         protected abstract Task RefreshList();
         
         protected abstract int MaxImageCount { get; }
+        protected virtual bool SupportsAnimatedGif => false;
 
         protected async Task OnDropFile(InputFileChangeEventArgs e)
         {
@@ -112,25 +113,39 @@ namespace VRCGalleryManager.Core.Components
             }
         }
 
-        protected async Task LoadFileForEditing(IBrowserFile file)
+        protected virtual async Task LoadFileForEditing(IBrowserFile file)
         {
             try
             {
+                bool isGif = file.ContentType.Contains("gif", StringComparison.OrdinalIgnoreCase) || 
+                             file.Name.EndsWith(".gif", StringComparison.OrdinalIgnoreCase);
+
+                if (SupportsAnimatedGif && isGif)
+                {
+                    using var stream = file.OpenReadStream(maxAllowedSize: 20 * 1024 * 1024);
+                    using var memoryStream = new MemoryStream();
+                    await stream.CopyToAsync(memoryStream);
+                    byte[] bytes = memoryStream.ToArray();
+                    string base64String = Convert.ToBase64String(bytes);
+                    editingBase64Image = $"data:image/gif;base64,{base64String}";
+                    return;
+                }
+
                 // Resize image natively to avoid OutOfMemoryException with large base64 strings
                 var resizedFile = await file.RequestImageFileAsync("image/png", 2048, 2048);
                 
-                using var stream = resizedFile.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024);
-                using var memoryStream = new MemoryStream();
-                await stream.CopyToAsync(memoryStream);
+                using var stream2 = resizedFile.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024);
+                using var memoryStream2 = new MemoryStream();
+                await stream2.CopyToAsync(memoryStream2);
                 
-                if (file.ContentType.Contains("gif", StringComparison.OrdinalIgnoreCase))
+                if (isGif)
                 {
                     NotificationService.Show("GIFs are only supported for Emojis. The image was converted to a static format.", "GIF Converted", NotificationType.Info);
                 }
                 
-                byte[] bytes = memoryStream.ToArray();
-                string base64String = Convert.ToBase64String(bytes);
-                editingBase64Image = $"data:image/png;base64,{base64String}";
+                byte[] resizedBytes = memoryStream2.ToArray();
+                string resizedBase64 = Convert.ToBase64String(resizedBytes);
+                editingBase64Image = $"data:image/png;base64,{resizedBase64}";
             }
             catch (Exception ex)
             {
@@ -139,14 +154,14 @@ namespace VRCGalleryManager.Core.Components
             }
         }
 
-        protected async Task LoadLocalFileForEditing(string filePath)
+        protected virtual async Task LoadLocalFileForEditing(string filePath)
         {
             try
             {
                 byte[] bytes = await File.ReadAllBytesAsync(filePath);
                 string contentType = GetContentType(filePath);
 
-                if (contentType.Contains("gif", StringComparison.OrdinalIgnoreCase))
+                if (contentType.Contains("gif", StringComparison.OrdinalIgnoreCase) && !SupportsAnimatedGif)
                 {
                     NotificationService.Show("GIFs are only supported for Emojis. The image was converted to a static format.", "GIF Converted", NotificationType.Info);
                 }

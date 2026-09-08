@@ -121,7 +121,6 @@
                                     <li><button class="dropdown-item" @onclick="() => SetAdaptationMode(AdaptationMode.Fit)">Fit</button></li>
                                     <li><button class="dropdown-item" @onclick="() => SetAdaptationMode(AdaptationMode.Fill)">Fill</button></li>
                                     <li><button class="dropdown-item" @onclick="() => SetAdaptationMode(AdaptationMode.Stretch)">Stretch</button></li>
-                                    <li><button class="dropdown-item" @onclick="() => SetAdaptationMode(AdaptationMode.Center)">Center</button></li>
                                 </ul>
                             }
                         </div>
@@ -252,8 +251,11 @@
                 </div>
             }
             <div class="d-flex gap-2 mb-2">
-                <button class="btn btn-sm flex-grow-1 btn-reset" @onclick="Reset">Reset</button>
-                <button class="btn btn-sm btn-outline-danger flex-grow-1" @onclick="OnCancelClick">Cancel</button>
+                @if (!IsAnimatedMode)
+                {
+                    <button class="btn btn-sm flex-grow-1 btn-reset" @onclick="Reset">Reset</button>
+                }
+                <button class="btn btn-sm btn-outline-danger @(IsAnimatedMode ? "w-100" : "flex-grow-1")" @onclick="OnCancelClick">Cancel</button>
             </div>
             <button class="btn btn-sm w-100 fw-bold @(isUploading ? "btn-secondary" : "btn-primary")" @onclick="OnSaveClick" disabled="@(SizeMb > 10 || isUploading)">
                 @if (isUploading)
@@ -456,7 +458,7 @@
         if (!IsTransparentBg)
         {
             IsTransparentBg = true;
-            QueueUpdatePreview();
+            QueueTransformUpdate();
         }
     }
 
@@ -465,7 +467,7 @@
         if (IsTransparentBg)
         {
             IsTransparentBg = false;
-            QueueUpdatePreview();
+            QueueTransformUpdate();
         }
     }
 
@@ -487,11 +489,13 @@
     private void Rotate()
     {
         RotationAngle = (RotationAngle + 90) % 360;
-        QueueUpdatePreview();
+        QueueTransformUpdate();
     }
 
     private void Reset()
     {
+        if (IsAnimatedMode) return;
+
         CurrentAdaptationMode = AdaptationMode.Fit;
         ZoomFactor = 1.0f;
         PanX = 0f;
@@ -504,14 +508,18 @@
         ChokeRadius = 1;
         FeatherRadius = 2;
         CompressionQuality = 100;
+        SelectedEmojiType = "Select Type...";
+        isEmojiTypeDropdownOpen = false;
+        isAdaptationDropdownOpen = false;
         QueueUpdatePreview();
+        QueueTransformUpdate();
     }
 
     private void OnBgColorInput(ChangeEventArgs e)
     {
         HexBgColor = e.Value?.ToString() ?? "#ffffff";
         IsTransparentBg = false;
-        QueueUpdatePreview();
+        QueueTransformUpdate();
     }
 
     private void OnRemoveBgColorInput(ChangeEventArgs e)
@@ -525,7 +533,7 @@
         if (int.TryParse(e.Value?.ToString(), out int val))
         {
             ZoomFactor = val / 100f;
-            QueueUpdatePreview();
+            QueueTransformUpdate();
         }
     }
 
@@ -589,8 +597,8 @@
                 {
                     if (token.IsCancellationRequested) return null;
                     using Image<Rgba32> bmp = global::VRCGalleryManager.Core.Helpers.ImageEditor.RenderImage(
-                        originalImage, previewW, previewH, CurrentAdaptationMode, ZoomFactor, PanX, PanY, RotationAngle,
-                        IsTransparentBg ? Color.Transparent : ParseHex(HexBgColor), RemoveBgEnabled, rmColor, RemoveBgTolerance, false, Color.White, 0, FeatherEnabled, scaledFeather, scaledChoke, token);
+                        originalImage, previewW, previewH, AdaptationMode.Stretch, 1.0f, 0f, 0f, 0,
+                        Color.Transparent, RemoveBgEnabled, rmColor, RemoveBgTolerance, false, Color.White, 0, FeatherEnabled, scaledFeather, scaledChoke, token);
                     
                     if (outScale < 1.0f)
                     {
@@ -608,7 +616,7 @@
                         else
                             pixelatedBmp.SaveAsPng(ms, new SixLabors.ImageSharp.Formats.Png.PngEncoder { CompressionLevel = SixLabors.ImageSharp.Formats.Png.PngCompressionLevel.BestSpeed });
                         
-                        float areaRatio = (256f * 256f) / (float)(previewW * previewH);
+                        float areaRatio = (2048f * 2048f) / (float)(previewW * previewH);
                         SizeMb = ((ms.Length * areaRatio) / (1024.0 * 1024.0));
                         return Convert.ToBase64String(ms.ToArray());
                     }
@@ -620,7 +628,7 @@
                         else
                             bmp.SaveAsPng(ms, new SixLabors.ImageSharp.Formats.Png.PngEncoder { CompressionLevel = SixLabors.ImageSharp.Formats.Png.PngCompressionLevel.BestSpeed });
                         
-                        float areaRatio = (256f * 256f) / (float)(previewW * previewH);
+                        float areaRatio = (2048f * 2048f) / (float)(previewW * previewH);
                         SizeMb = ((ms.Length * areaRatio) / (1024.0 * 1024.0));
                         return Convert.ToBase64String(ms.ToArray());
                     }
@@ -835,11 +843,11 @@
                 lock (_imageLock)
                 {
                     using Image<Rgba32> rendered = global::VRCGalleryManager.Core.Helpers.ImageEditor.RenderImage(
-                        originalImage, 256, 256, CurrentAdaptationMode, ZoomFactor, PanX, PanY, RotationAngle,
+                        originalImage, 2048, 2048, CurrentAdaptationMode, ZoomFactor, PanX * (2048f / 800f), PanY * (2048f / 800f), RotationAngle,
                         bgColor, RemoveBgEnabled, rmColor, RemoveBgTolerance, false, Color.White, 0, FeatherEnabled, FeatherRadius, ChokeRadius);
                     
-                    int outW = Math.Max(1, (int)(256 * outScale));
-                    int outH = Math.Max(1, (int)(256 * outScale));
+                    int outW = Math.Max(1, (int)(2048 * outScale));
+                    int outH = Math.Max(1, (int)(2048 * outScale));
                     rendered.Mutate(x => x.Resize(outW, outH, KnownResamplers.Bicubic));
                     
                     using MemoryStream ms = new MemoryStream();
