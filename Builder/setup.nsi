@@ -21,6 +21,7 @@ BrandingText "Nullsoft Install System v3.10+"
 
 !include "MUI2.nsh"   ; Use Modern UI 2
 !include "x64.nsh"    ; 64-bit Windows support
+!include "FileFunc.nsh" ; For GetSize calculation
 
 ; Add version information
 VIProductVersion "${AppVersion}.0"
@@ -220,11 +221,20 @@ Section "Install"
     ; Write the uninstaller
     WriteUninstaller "$INSTDIR\Uninstall.exe"
     
+    ; Calculate installed size in KB for Windows "Programs and Features"
+    ${GetSize} "$INSTDIR" "/S=0K" $0 $1 $2
+    IntFmt $0 "0x%08X" $0
+
     ; Add the application to "Programs and Features"
     WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${AppName}" "DisplayName" "${AppName}"
+    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${AppName}" "DisplayVersion" "${AppVersion}"
     WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${AppName}" "UninstallString" "$INSTDIR\Uninstall.exe"
+    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${AppName}" "QuietUninstallString" "$INSTDIR\Uninstall.exe /S"
     WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${AppName}" "DisplayIcon" "$INSTDIR\VRCGalleryManager.exe"
     WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${AppName}" "Publisher" "${AppPublisher}"
+    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${AppName}" "InstallLocation" "$INSTDIR"
+    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${AppName}" "URLInfoAbout" "https://github.com/TheIceDragonz/VRCGalleryManager"
+    WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${AppName}" "EstimatedSize" "$0"
     WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${AppName}" "NoModify" 1
     WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${AppName}" "NoRepair" 1
 SectionEnd

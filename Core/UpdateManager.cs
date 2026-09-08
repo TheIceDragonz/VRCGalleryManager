@@ -32,6 +32,14 @@ namespace VRCGalleryManager
 
         public static string GetCurrentVersion()
         {
+            try
+            {
+                var v = Microsoft.Maui.ApplicationModel.AppInfo.Current.VersionString;
+                if (!string.IsNullOrWhiteSpace(v))
+                    return v;
+            }
+            catch { }
+
             var asm = typeof(UpdateManager).Assembly;
             var fileVersion = asm.GetCustomAttribute<AssemblyFileVersionAttribute>()?.Version;
             if (!string.IsNullOrWhiteSpace(fileVersion))
@@ -44,6 +52,19 @@ namespace VRCGalleryManager
                     : $"{asmVersion.Major}.{asmVersion.Minor}";
 
             return asm.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion?.Split('+')[0] ?? "";
+        }
+
+        public static bool IsNewerVersion(string latestVersion, string localVersion)
+        {
+            if (string.IsNullOrWhiteSpace(latestVersion) || string.IsNullOrWhiteSpace(localVersion))
+                return false;
+
+            if (Version.TryParse(latestVersion, out var latest) && Version.TryParse(localVersion, out var local))
+            {
+                return latest > local;
+            }
+
+            return !string.Equals(localVersion, latestVersion, StringComparison.OrdinalIgnoreCase);
         }
 
         public async Task<(bool isAvailable, string latestVersion, string localVersion)> IsUpdateAvailableAsync(bool forceRefresh = false)
@@ -61,7 +82,7 @@ namespace VRCGalleryManager
                 string latestVersion = Regex.Replace(root.GetProperty("tag_name").GetString() ?? "", @"[^\d\.]", "");
                 string localVersion = GetCurrentVersion();
 
-                bool isAvailable = !string.Equals(localVersion, latestVersion, StringComparison.OrdinalIgnoreCase);
+                bool isAvailable = IsNewerVersion(latestVersion, localVersion);
                 _cachedUpdate = (isAvailable, latestVersion, localVersion);
                 _lastCheckTime = DateTime.UtcNow;
                 return (isAvailable, latestVersion, localVersion);
@@ -281,48 +302,9 @@ namespace VRCGalleryManager
 
         public async Task CheckForUpdatesAsync(NotificationService notificationService, DialogService dialogService, Action<string, int, bool> updateProgressState, bool silentIfNotAvailable = false)
         {
-            if (!OperatingSystem.IsWindows())
-            {
-                if (!silentIfNotAvailable)
-                {
-                    var (isAvail, latestVer, curVer) = await IsUpdateAvailableAsync(true);
-                    if (isAvail)
-                    {
-                        bool download = await dialogService.ShowConfirmAsync(
-                            "Update Available",
-                            $"A new version ({latestVer}) is available.\nYou are currently on version {curVer}.\n\nDo you want to download and install the new Android APK?",
-                            "Install APK", "Later");
-                        if (download)
-                        {
-                            updateProgressState("Updating (0%)", 0, false);
-                            await DownloadAndroidApkAsync(notificationService, updateProgressState, latestVer);
-                        }
-                    }
-                    else
-                    {
-                        notificationService.Show(
-                            "You are already using the latest version.",
-                            "No Update",
-                            NotificationType.Info);
-                    }
-                }
-                return;
-            }
+            var (isAvail, latestVersion, localVersion) = await IsUpdateAvailableAsync(true);
 
-            string latestVersion;
-            string localVersion;
-
-            string jsonResponse = await _httpClient.GetStringAsync(apiUrl);
-            using (var doc = JsonDocument.Parse(jsonResponse))
-            {
-                var root = doc.RootElement;
-                latestVersion = Regex.Replace(root.GetProperty("tag_name").GetString() ?? "", @"[^\d\.]", "");
-                localVersion = GetCurrentVersion();
-            }
-
-            bool isAvailable = !string.Equals(localVersion, latestVersion, StringComparison.OrdinalIgnoreCase);
-
-            if (!isAvailable)
+            if (!isAvail)
             {
                 if (!silentIfNotAvailable)
                 {
@@ -330,6 +312,20 @@ namespace VRCGalleryManager
                         "You are already using the latest version.",
                         "No Update",
                         NotificationType.Info);
+                }
+                return;
+            }
+
+            if (!OperatingSystem.IsWindows())
+            {
+                bool download = await dialogService.ShowConfirmAsync(
+                    "Update Available",
+                    $"A new version ({latestVersion}) is available.\nYou are currently on version {localVersion}.\n\nDo you want to download and install the new Android APK?",
+                    "Install APK", "Later");
+                if (download)
+                {
+                    updateProgressState("Updating (0%)", 0, false);
+                    await DownloadAndroidApkAsync(notificationService, updateProgressState, latestVersion);
                 }
                 return;
             }
