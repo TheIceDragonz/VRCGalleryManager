@@ -71,9 +71,15 @@ powershell -NoProfile -Command "if (Test-Path '%OUTPUT_DIR%\Builder') { Remove-I
 rem 3. Extract version from project file
 echo.
 echo [*] Extracting version from project file...
-set "APP_VERSION=2.0.0"
-for /f "usebackq delims=" %%V in (`powershell -NoProfile -Command "[xml]$proj = Get-Content '%CSPROJ%'; $ver = $proj.Project.PropertyGroup.Version | Where-Object { $_ } | Select-Object -First 1; if (-not $ver) { $ver = $proj.Project.PropertyGroup.FileVersion | Where-Object { $_ } | Select-Object -First 1 }; if ($ver -and $ver -notlike '*$*') { $ver } else { '2.0.0' }"`) do (
+set "APP_VERSION="
+for /f "usebackq delims=" %%V in (`powershell -NoProfile -Command "[xml]$proj = Get-Content '%CSPROJ%'; $ver = $proj.Project.PropertyGroup.Version | Where-Object { $_ } | Select-Object -First 1; if (-not $ver) { $ver = $proj.Project.PropertyGroup.FileVersion | Where-Object { $_ } | Select-Object -First 1 }; if ($ver -and $ver -notlike '*$*') { $ver }"`) do (
     set "APP_VERSION=%%V"
+)
+if "!APP_VERSION!"=="" (
+    color 0C
+    echo [ERROR] Could not extract Version from %CSPROJ%!
+    if not defined NO_PAUSE pause
+    exit /b 1
 )
 echo     Version: !APP_VERSION!
 

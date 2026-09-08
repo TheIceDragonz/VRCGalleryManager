@@ -3,7 +3,13 @@
 ;--------------------------------
 !define AppName "VRCGalleryManager"
 !ifndef AppVersion
-  !define AppVersion "2.0.0"
+  !searchparse /noerrors /file "..\VRCGalleryManager.csproj" "<Version>" AppVersion "</Version>"
+!endif
+!ifndef AppVersion
+  !searchparse /noerrors /file "VRCGalleryManager.csproj" "<Version>" AppVersion "</Version>"
+!endif
+!ifndef AppVersion
+  !error "AppVersion could not be determined from VRCGalleryManager.csproj! Please specify <Version> in VRCGalleryManager.csproj."
 !endif
 !define AppPublisher "TheIceDragonz"
 !define AppDescription "Simple Tool for your VRChat gallery"

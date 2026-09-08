@@ -32,18 +32,14 @@ namespace VRCGalleryManager
 
         public static string GetCurrentVersion()
         {
-            try
-            {
-                var v = Microsoft.Maui.ApplicationModel.AppInfo.Current.VersionString;
-                if (!string.IsNullOrWhiteSpace(v))
-                    return v;
-            }
-            catch { }
-
             var asm = typeof(UpdateManager).Assembly;
             var fileVersion = asm.GetCustomAttribute<AssemblyFileVersionAttribute>()?.Version;
             if (!string.IsNullOrWhiteSpace(fileVersion))
                 return fileVersion;
+
+            var infoVersion = asm.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion?.Split('+')[0];
+            if (!string.IsNullOrWhiteSpace(infoVersion))
+                return infoVersion;
 
             var asmVersion = asm.GetName().Version;
             if (asmVersion != null)
@@ -51,7 +47,17 @@ namespace VRCGalleryManager
                     ? $"{asmVersion.Major}.{asmVersion.Minor}.{asmVersion.Build}" 
                     : $"{asmVersion.Major}.{asmVersion.Minor}";
 
-            return asm.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion?.Split('+')[0] ?? "";
+#if ANDROID
+            try
+            {
+                var v = Microsoft.Maui.ApplicationModel.AppInfo.Current.VersionString;
+                if (!string.IsNullOrWhiteSpace(v))
+                    return v;
+            }
+            catch { }
+#endif
+
+            return "";
         }
 
         public static bool IsNewerVersion(string latestVersion, string localVersion)

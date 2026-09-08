@@ -96,7 +96,8 @@ namespace VRCGalleryManager.Core
         public static async Task<(byte[] Bytes, string Extension)> DownloadBytesFromUrlAsync(string url)
         {
             var request = new HttpRequestMessage(HttpMethod.Get, url);
-            request.Headers.TryAddWithoutValidation("User-Agent", "VRCGalleryManager/1.0.0 contact@vrcgallerymanager.com");
+            string ver = UpdateManager.GetCurrentVersion();
+            request.Headers.TryAddWithoutValidation("User-Agent", string.IsNullOrEmpty(ver) ? "VRCGalleryManager contact@vrcgallerymanager.com" : $"VRCGalleryManager/{ver} contact@vrcgallerymanager.com");
             request.Headers.Add("Accept", "*/*");
             request.Headers.Add("Origin", "https://vrchat.com");
 

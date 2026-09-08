@@ -121,7 +121,8 @@ namespace VRCGalleryManager.Core
             try
             {
                 var request = new HttpRequestMessage(HttpMethod.Get, url);
-                request.Headers.TryAddWithoutValidation("User-Agent", "VRCGalleryManager/1.0.0 contact@vrcgallerymanager.com");
+                string ver = UpdateManager.GetCurrentVersion();
+                request.Headers.TryAddWithoutValidation("User-Agent", string.IsNullOrEmpty(ver) ? "VRCGalleryManager contact@vrcgallerymanager.com" : $"VRCGalleryManager/{ver} contact@vrcgallerymanager.com");
                 request.Headers.Add("Accept", "*/*");
                 request.Headers.Add("Origin", "https://vrchat.com");
                 

@@ -9,7 +9,7 @@
   [![Platform](https://img.shields.io/badge/Platforms-Windows%20%7C%20Android-512BD4?style=flat-square&logo=dotnet)](https://github.com/TheIceDragonz/VRCGalleryManager)
   [![Framework](https://img.shields.io/badge/Framework-.NET%209%20MAUI%20Blazor-blue?style=flat-square&logo=blazor)](https://dotnet.microsoft.com/download/dotnet/9.0)
   [![ImageSharp](https://img.shields.io/badge/ImageSharp-4.1.0-orange?style=flat-square)](https://github.com/SixLabors/ImageSharp)
-  [![Release](https://img.shields.io/badge/Release-v2.0.0-success?style=flat-square)](https://github.com/TheIceDragonz/VRCGalleryManager/releases/latest)
+  [![Release](https://img.shields.io/github/v/release/TheIceDragonz/VRCGalleryManager?style=flat-square&color=success)](https://github.com/TheIceDragonz/VRCGalleryManager/releases/latest)
 
   <p align="center">
     <a href="#key-features">Key Features</a> •
