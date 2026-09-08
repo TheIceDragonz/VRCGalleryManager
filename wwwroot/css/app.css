@@ -1530,9 +1530,18 @@ body.global-grabbing * {
     width: 100%;
     height: 8px;
     cursor: pointer;
-    background: #07242B;
-    border: 1px solid #053742;
-    border-radius: 4px;
+    background: var(--theme-btn-bg);
+    border: 1px solid var(--theme-btn-border);
+    border-radius: 1rem;
+}
+
+.form-range::-moz-range-track {
+    width: 100%;
+    height: 8px;
+    cursor: pointer;
+    background: var(--theme-btn-bg);
+    border: 1px solid var(--theme-btn-border);
+    border-radius: 1rem;
 }
 
 .form-range::-webkit-slider-thumb {
@@ -1547,22 +1556,36 @@ body.global-grabbing * {
     transition: background 0.2s, box-shadow 0.2s;
 }
 
-.form-range::-webkit-slider-thumb:hover {
+.form-range::-moz-range-thumb {
+    height: 16px;
+    width: 16px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+    border: 0;
+    box-shadow: 0 0 5px rgba(106, 227, 249, 0.5);
+    transition: background 0.2s, box-shadow 0.2s;
+}
+
+.form-range::-webkit-slider-thumb:hover,
+.form-range::-moz-range-thumb:hover {
     background: white;
     box-shadow: 0 0 8px rgba(106, 227, 249, 0.8);
 }
 
 /* Custom Toggles (form-switch) */
 .form-switch .form-check-input {
-    background-color: #07242B;
-    border: 2px solid #053742;
+    background-color: var(--theme-btn-bg);
+    border: 2px solid var(--theme-btn-border);
+    border-radius: 2em !important;
     background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='rgba(255, 255, 255, 0.5)'/%3e%3c/svg%3e");
-    transition: background-position .15s ease-in-out;
+    transition: background-position .15s ease-in-out, border-color .15s ease-in-out, background-color .15s ease-in-out;
 }
 
 .form-switch .form-check-input:checked {
-    background-color: #0A3540;
+    background-color: var(--theme-btn-hover-bg);
     border-color: var(--accent);
+    border-radius: 2em !important;
     background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%236ae3f9'/%3e%3c/svg%3e");
 }
 

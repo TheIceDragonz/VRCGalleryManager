@@ -85,7 +85,7 @@
 
 .has-vrc-theme .form-check-input {
     background-color: var(--theme-btn-bg) !important;
-    border: 1.5px solid var(--theme-btn-border) !important;
+    border: 2px solid var(--theme-btn-border) !important;
 }
 
 .has-vrc-theme .form-check-input:focus {
@@ -96,7 +96,8 @@
 /* Switch in deactivated (unchecked / OFF) state */
 .has-vrc-theme .form-switch .form-check-input {
     background-color: var(--theme-btn-bg) !important;
-    border-color: var(--theme-btn-border) !important;
+    border: 2px solid var(--theme-btn-border) !important;
+    border-radius: 2em !important;
     background-image: var(--theme-switch-knob-off) !important;
 }
 
@@ -109,6 +110,7 @@
 .has-vrc-theme .form-switch .form-check-input:checked {
     background-color: var(--theme-btn-hover-bg) !important;
     border-color: var(--accent) !important;
+    border-radius: 2em !important;
     background-image: var(--theme-switch-knob-on) !important;
     box-shadow: 0 0 8px rgba(var(--theme-rgb), 0.4) !important;
 }
@@ -116,44 +118,50 @@
 /* Sliders (form-range) track and thumb */
 .has-vrc-theme .form-range::-webkit-slider-runnable-track {
     background-color: var(--theme-btn-border) !important;
-    border-radius: 4px;
+    border-radius: 1rem !important;
 }
 
 .has-vrc-theme .form-range::-moz-range-track {
     background-color: var(--theme-btn-border) !important;
-    border-radius: 4px;
+    border-radius: 1rem !important;
 }
 
 .has-vrc-theme .form-range::-webkit-slider-thumb {
     background: var(--accent) !important;
+    border-radius: 1rem !important;
     box-shadow: 0 0 8px rgba(var(--theme-rgb), 0.7) !important;
 }
 
 .has-vrc-theme .form-range::-moz-range-thumb {
     background: var(--accent) !important;
+    border-radius: 1rem !important;
     box-shadow: 0 0 8px rgba(var(--theme-rgb), 0.7) !important;
 }
 
 /* Sliders when disabled (deactivated) */
 .has-vrc-theme .form-range:disabled::-webkit-slider-thumb {
     background: rgba(var(--theme-rgb), 0.45) !important;
-    border: 1px solid var(--theme-btn-border) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 1rem !important;
     box-shadow: none !important;
 }
 
 .has-vrc-theme .form-range:disabled::-moz-range-thumb {
     background: rgba(var(--theme-rgb), 0.45) !important;
-    border: 1px solid var(--theme-btn-border) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 1rem !important;
     box-shadow: none !important;
 }
 
 .has-vrc-theme .form-range:disabled::-webkit-slider-runnable-track {
     background-color: var(--theme-btn-bg) !important;
+    border-radius: 1rem !important;
     opacity: 0.6 !important;
 }
 
 .has-vrc-theme .form-range:disabled::-moz-range-track {
     background-color: var(--theme-btn-bg) !important;
+    border-radius: 1rem !important;
     opacity: 0.6 !important;
 }
 
