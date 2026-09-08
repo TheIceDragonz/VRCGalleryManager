@@ -93,9 +93,27 @@ public partial class App : MauiWinUIApplication
                 IntPtr windowHandle = WinRT.Interop.WindowNative.GetWindowHandle(window);
                 Microsoft.UI.WindowId windowId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(windowHandle);
                 var appWindow = Microsoft.UI.Windowing.AppWindow.GetFromWindowId(windowId);
-                
-                appWindow.Show();
-                window.Activate();
+                if (appWindow != null)
+                {
+                    if (appWindow.Position.X < -10000 || appWindow.Position.Y < -10000)
+                    {
+                        try
+                        {
+                            var displayArea = Microsoft.UI.Windowing.DisplayArea.GetFromWindowId(appWindow.Id, Microsoft.UI.Windowing.DisplayAreaFallback.Primary);
+                            if (displayArea != null)
+                            {
+                                var centeredPosition = appWindow.Position;
+                                centeredPosition.X = ((displayArea.WorkArea.Width - appWindow.Size.Width) / 2);
+                                centeredPosition.Y = ((displayArea.WorkArea.Height - appWindow.Size.Height) / 2);
+                                appWindow.Move(centeredPosition);
+                            }
+                        }
+                        catch { }
+                    }
+
+                    appWindow.Show();
+                    window.Activate();
+                }
             }
         });
     }

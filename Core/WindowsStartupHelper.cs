@@ -10,7 +10,7 @@ namespace VRCGalleryManager.Core
         private const string RegistryKeyPath = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Run";
         private const string AppName = "VRCGalleryManager";
 
-        public static void SetStartup(bool enable)
+        public static void SetStartup(bool enable, bool startInBackground = false)
         {
             try
             {
@@ -19,12 +19,11 @@ namespace VRCGalleryManager.Core
 
                 if (enable)
                 {
-                    // Use Process.GetCurrentProcess().MainModule.FileName to get the path to the exe
-                    // Add --background flag to start in background
                     string exePath = Process.GetCurrentProcess().MainModule?.FileName;
                     if (!string.IsNullOrEmpty(exePath))
                     {
-                        key.SetValue(AppName, $"\"{exePath}\" --background");
+                        string command = startInBackground ? $"\"{exePath}\" --background" : $"\"{exePath}\"";
+                        key.SetValue(AppName, command);
                     }
                 }
                 else
@@ -54,7 +53,7 @@ namespace VRCGalleryManager.Core
             }
         }
 #else
-        public static void SetStartup(bool enable)
+        public static void SetStartup(bool enable, bool startInBackground = false)
         {
             // Not supported on this platform
         }

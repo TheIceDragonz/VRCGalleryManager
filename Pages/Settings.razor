@@ -776,14 +776,27 @@
     private bool StartWithWindows
     {
         get => _startWithWindows;
-        set { _startWithWindows = value; Config.Set("StartWithWindows", value ? "true" : "false"); WindowsStartupHelper.SetStartup(value); }
+        set 
+        { 
+            _startWithWindows = value; 
+            Config.Set("StartWithWindows", value ? "true" : "false"); 
+            WindowsStartupHelper.SetStartup(value, _startInBackground); 
+        }
     }
 
     private bool _startInBackground;
     private bool StartInBackground
     {
         get => _startInBackground;
-        set { _startInBackground = value; Config.Set("StartInBackground", value ? "true" : "false"); }
+        set 
+        { 
+            _startInBackground = value; 
+            Config.Set("StartInBackground", value ? "true" : "false"); 
+            if (_startWithWindows)
+            {
+                WindowsStartupHelper.SetStartup(true, value);
+            }
+        }
     }
 
     private bool _minimizeToTray;

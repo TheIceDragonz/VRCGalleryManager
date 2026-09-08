@@ -131,7 +131,7 @@ public partial class App : Application
             ForegroundColor = Color.FromArgb("#E2E8F0"),
             LeadingContent = new HorizontalStackLayout
             {
-                Spacing = 8, // Distanza personalizzabile tra logo e testo (in pixel)
+                Spacing = 8,
                 VerticalOptions = LayoutOptions.Center,
                 Margin = new Thickness(10, 0, 0, 0),
                 InputTransparent = true,
@@ -211,7 +211,6 @@ public partial class App : Application
                         string? targetHex = !string.IsNullOrEmpty(themeIconColorHex) ? themeIconColorHex : themeButtonColorHex;
                         var themeColor = ParseHexColor(targetHex, Microsoft.UI.ColorHelper.FromArgb(255, 106, 227, 249));
 
-                        // Window Caption Buttons (Minimize, Maximize/Restore, Close)
                         nativeTitleBar.ButtonBackgroundColor = Microsoft.UI.Colors.Transparent;
                         nativeTitleBar.ButtonForegroundColor = themeColor;
                         nativeTitleBar.ButtonHoverBackgroundColor = Microsoft.UI.ColorHelper.FromArgb(60, themeColor.R, themeColor.G, themeColor.B);
@@ -223,7 +222,6 @@ public partial class App : Application
                     }
                     else
                     {
-                        // Default caption buttons styling: same as button text color (#6AE3F9)
                         var defaultColor = Microsoft.UI.ColorHelper.FromArgb(255, 106, 227, 249);
                         nativeTitleBar.ButtonBackgroundColor = Microsoft.UI.Colors.Transparent;
                         nativeTitleBar.ButtonForegroundColor = defaultColor;
@@ -289,7 +287,6 @@ public partial class App : Application
                 };
                 menuFlyout.Add(exitItem);
 
-                // Init tray icon
                 trayIcon = new H.NotifyIcon.TaskbarIcon
                 {
                     ToolTipText = "VRCGalleryManager",
@@ -306,12 +303,10 @@ public partial class App : Application
             }
             catch { }
 
-            // Handle start in background
             bool startInBackground = Config.Get("StartInBackground", "false") == "true";
             string[] args = Environment.GetCommandLineArgs();
             bool hasBackgroundFlag = args.Contains("--background");
 
-            // Handle minimize to tray and background start
             var winuiWindow = window.Handler?.PlatformView as Microsoft.UI.Xaml.Window;
             if (winuiWindow != null)
             {
@@ -329,7 +324,45 @@ public partial class App : Application
 
                     if (startInBackground && hasBackgroundFlag)
                     {
+                        appWindow.Move(new Windows.Graphics.PointInt32(-32000, -32000));
                         appWindow.Hide();
+                    }
+                }
+            }
+        };
+
+        bool isFirstActivation = true;
+        window.Activated += (s, e) =>
+        {
+            if (isFirstActivation)
+            {
+                isFirstActivation = false;
+                bool startInBackground = Config.Get("StartInBackground", "false") == "true";
+                string[] args = Environment.GetCommandLineArgs();
+                bool hasBackgroundFlag = args.Contains("--background");
+
+                if (startInBackground && hasBackgroundFlag)
+                {
+                    var winuiWindow = window.Handler?.PlatformView as Microsoft.UI.Xaml.Window;
+                    if (winuiWindow != null)
+                    {
+                        var appWindow = GetAppWindow(winuiWindow);
+                        if (appWindow != null)
+                        {
+                            appWindow.Hide();
+                            try
+                            {
+                                var displayArea = Microsoft.UI.Windowing.DisplayArea.GetFromWindowId(appWindow.Id, Microsoft.UI.Windowing.DisplayAreaFallback.Primary);
+                                if (displayArea != null)
+                                {
+                                    var centeredPosition = appWindow.Position;
+                                    centeredPosition.X = ((displayArea.WorkArea.Width - appWindow.Size.Width) / 2);
+                                    centeredPosition.Y = ((displayArea.WorkArea.Height - appWindow.Size.Height) / 2);
+                                    appWindow.Move(centeredPosition);
+                                }
+                            }
+                            catch { }
+                        }
                     }
                 }
             }
@@ -361,6 +394,22 @@ public partial class App : Application
                 var appWindow = GetAppWindow(winuiWindow);
                 if (appWindow != null)
                 {
+                    if (appWindow.Position.X < -10000 || appWindow.Position.Y < -10000)
+                    {
+                        try
+                        {
+                            var displayArea = Microsoft.UI.Windowing.DisplayArea.GetFromWindowId(appWindow.Id, Microsoft.UI.Windowing.DisplayAreaFallback.Primary);
+                            if (displayArea != null)
+                            {
+                                var centeredPosition = appWindow.Position;
+                                centeredPosition.X = ((displayArea.WorkArea.Width - appWindow.Size.Width) / 2);
+                                centeredPosition.Y = ((displayArea.WorkArea.Height - appWindow.Size.Height) / 2);
+                                appWindow.Move(centeredPosition);
+                            }
+                        }
+                        catch { }
+                    }
+
                     appWindow.Show();
                     winuiWindow.Activate();
                     
