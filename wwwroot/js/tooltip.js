@@ -8,6 +8,13 @@ document.addEventListener("DOMContentLoaded", () => {
     document.addEventListener("mouseover", (e) => {
         const target = e.target.closest('[title], [data-tooltip]');
         if (target) {
+            // Do not show tooltips inside the color picker popover
+            if (target.closest('.vrc-color-picker-popover')) {
+                tooltipEl.classList.remove('visible');
+                activeTarget = null;
+                return;
+            }
+
             // Move title attribute to data-tooltip to avoid native OS tooltips
             if (target.hasAttribute('title')) {
                 const titleText = target.getAttribute('title');

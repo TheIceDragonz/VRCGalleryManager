@@ -91,7 +91,7 @@
                 <label class="form-label small text-muted mb-1">Background Color</label>
                 <div class="d-flex align-items-center gap-2">
                     <button class="btn btn-sm flex-grow-1 @(IsTransparentBg ? "btn-info" : "btn-outline-secondary")" @onclick="SetTransparentBg">Transparent</button>
-                    <input type="color" class="form-control form-control-color form-control-sm p-1 color-picker-sm" value="@HexBgColor" @oninput="OnBgColorInput" @onclick="OnBgColorClick">
+                    <input type="color" class="form-control form-control-color form-control-sm p-1 color-picker-sm" value="@HexBgColor" @oninput="OnBgColorInput" @onchange="OnBgColorInput">
                 </div>
             </div>
 
@@ -102,7 +102,7 @@
                             <input class="form-check-input" type="checkbox" id="removeBgSwitch" @bind="RemoveBgEnabled" @bind:after="QueueUpdatePreview">
                             <label class="form-check-label small fw-bold" for="removeBgSwitch">Remove Background</label>
                         </div>
-                        <input type="color" class="form-control form-control-color form-control-sm p-1 color-picker-sm editor-section-transition @(RemoveBgEnabled ? "" : "editor-section-disabled")" value="@HexRemoveBgColor" @oninput="OnRemoveBgColorInput" disabled="@(!RemoveBgEnabled)">
+                        <input type="color" class="form-control form-control-color form-control-sm p-1 color-picker-sm editor-section-transition @(RemoveBgEnabled ? "" : "editor-section-disabled")" value="@HexRemoveBgColor" @oninput="OnRemoveBgColorInput" @onchange="OnRemoveBgColorInput" disabled="@(!RemoveBgEnabled)">
                     </div>
                     
                     <div class="editor-section-transition @(RemoveBgEnabled ? "" : "editor-section-disabled")">
@@ -283,17 +283,6 @@
         }
     }
 
-    private void OnBgColorClick()
-    {
-        if (IsTransparentBg)
-        {
-            IsTransparentBg = false;
-            QueueTransformUpdate();
-        }
-    }
-
-
-
     private void Rotate()
     {
         RotationAngle = (RotationAngle + 90) % 360;
@@ -329,6 +318,29 @@
     {
         HexRemoveBgColor = e.Value?.ToString() ?? "#ffffff";
         QueueUpdatePreview();
+    }
+
+    [JSInvokable]
+    public void OnColorPicked(string hexColor, string target)
+    {
+        if (target == "bgColor")
+        {
+            HexBgColor = hexColor;
+            IsTransparentBg = false;
+            QueueTransformUpdate();
+        }
+        else
+        {
+            HexRemoveBgColor = hexColor;
+            QueueUpdatePreview();
+        }
+        StateHasChanged();
+    }
+
+    [JSInvokable]
+    public void OnColorPickCancelled()
+    {
+        StateHasChanged();
     }
 
     private void OnQualityInput(ChangeEventArgs e)
@@ -541,6 +553,7 @@
 
     public void Dispose()
     {
+        _ = JSRuntime.InvokeVoidAsync("imageEditor.destroy");
         dotNetRef?.Dispose();
         originalImage?.Dispose();
     }

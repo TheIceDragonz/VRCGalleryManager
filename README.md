@@ -22,8 +22,8 @@
 
   <table>
     <tr>
-      <td align="center"><img src="https://github.com/user-attachments/assets/37d60ff7-d03b-44d2-8b03-c1d2a934001d" alt="login" width="380"></td>
-      <td align="center"><img src="https://github.com/user-attachments/assets/d0279e66-6370-4156-aeba-c0dfce009650" alt="2fa" width="380"></td>
+      <td align="center"><img src="https://github.com/user-attachments/assets/2ccd67c3-e4b6-4fd2-a093-b784425d6c37" alt="Settings" width="380"></td>
+      <td align="center"><img src="https://github.com/user-attachments/assets/c7112de7-ce0d-46ce-92fb-e245b14b6308" alt="Photos" width="380"></td>
     </tr>
   </table>
 </div>
@@ -73,6 +73,15 @@
 - **Refine Edge & Crop**: Built-in canvas tools for cropping and refining edges.
 - **GIF to Sprite Sheet Converter**: Convert animated GIFs into VRChat-compatible sprite sheet animations with configurable FPS and timeline settings.
 
+<div align="center">
+  <table>
+    <tr>
+      <td align="center"><img src="https://github.com/user-attachments/assets/ab81521f-9115-4f2f-9127-3eb84d09198a" alt="Image Editor" width="380"></td>
+      <td align="center"><img src="https://github.com/user-attachments/assets/3c6ccc5b-b4d9-48f8-a9b6-83133f5ea84b" alt="Emoji Editor" width="380"></td>
+    </tr>
+  </table>
+</div>
+
 ### 🌐 Picflow - Global Explorer & Local Database
 - **Worldwide Sticker Explorer**: Browse stickers placed across VRChat worlds with lazy-loading.
 - **Emoji & Print Discovery**: Discover emojis and prints alongside world stickers.
@@ -106,12 +115,14 @@ Integrates with the **[VRCX](https://github.com/vrcx-team/VRCX) Screenshot Helpe
 - **Instance Players**: Full list of players present in the instance at the exact moment the picture was taken.
 - **World Thumbnail & Capture Timestamp**: Exact date, time, and world details.
 
-<table>
-  <tr>
-    <td align="center"><img src="https://github.com/user-attachments/assets/2837570a-64ef-443c-a863-d42ab7ee58e2" alt="gallery_metadata" width="380"></td>
-    <td align="center"><img src="https://github.com/user-attachments/assets/04fbbe68-37ae-4409-a0e3-a129e2838bc9" alt="gallery_players" width="380"></td>
-  </tr>
-</table>
+<div align="center">
+  <table>
+    <tr>
+      <td align="center"><img src="https://github.com/user-attachments/assets/3106c976-8e23-4bb7-a43c-eab9edfaae8e" alt="Gallery" width="380"></td>
+      <td align="center"><img src="https://github.com/user-attachments/assets/1376d88c-c543-486a-bc6e-02af608f0bf0" alt="Image Viewer" width="380"></td>
+    </tr>
+  </table>
+</div>
 
 ---
 

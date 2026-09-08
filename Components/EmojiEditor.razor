@@ -141,7 +141,7 @@
                     <label class="form-label small text-muted mb-1">Background Color</label>
                     <div class="d-flex align-items-center gap-2">
                         <button class="btn btn-sm flex-grow-1 @(IsTransparentBg ? "btn-info" : "btn-outline-secondary")" @onclick="SetTransparentBg">Transparent</button>
-                        <input type="color" class="form-control form-control-color form-control-sm p-1 color-picker-sm" value="@HexBgColor" @oninput="OnBgColorInput" @onclick="OnBgColorClick">
+                        <input type="color" class="form-control form-control-color form-control-sm p-1 color-picker-sm" value="@HexBgColor" @oninput="OnBgColorInput" @onchange="OnBgColorInput">
                     </div>
                 </div>
 
@@ -156,7 +156,7 @@
                                 <button class="btn btn-sm @(IsColorPicking ? "btn-info" : "btn-outline-secondary") px-2 py-1" @onclick="ToggleColorPicker" disabled="@(!RemoveBgEnabled)" title="Pick color from image">
                                     <img src="/svg/color-picker-svgrepo-com.svg" class="icon-accent" style="width: 16px; height: 16px;" />
                                 </button>
-                                <input type="color" class="form-control form-control-color form-control-sm p-1 color-picker-sm" value="@HexRemoveBgColor" @oninput="OnRemoveBgColorInput" disabled="@(!RemoveBgEnabled)">
+                                <input type="color" class="form-control form-control-color form-control-sm p-1 color-picker-sm" value="@HexRemoveBgColor" @oninput="OnRemoveBgColorInput" @onchange="OnRemoveBgColorInput" disabled="@(!RemoveBgEnabled)">
                             </div>
                         </div>
                         
@@ -462,27 +462,41 @@
         }
     }
 
-    private void OnBgColorClick()
-    {
-        if (IsTransparentBg)
-        {
-            IsTransparentBg = false;
-            QueueTransformUpdate();
-        }
-    }
-
     private void ToggleColorPicker()
     {
         IsColorPicking = !IsColorPicking;
-        JSRuntime.InvokeVoidAsync("imageEditor.toggleColorPicker");
+        if (IsColorPicking)
+        {
+            _ = JSRuntime.InvokeVoidAsync("imageEditor.startColorPicker", "removeBg");
+        }
+        else
+        {
+            _ = JSRuntime.InvokeVoidAsync("imageEditor.stopColorPicker", false);
+        }
     }
 
     [JSInvokable]
-    public void OnColorPicked(string hexColor)
+    public void OnColorPicked(string hexColor, string target)
     {
-        HexRemoveBgColor = hexColor;
+        if (target == "bgColor")
+        {
+            HexBgColor = hexColor;
+            IsTransparentBg = false;
+            QueueTransformUpdate();
+        }
+        else
+        {
+            HexRemoveBgColor = hexColor;
+            QueueUpdatePreview();
+        }
         IsColorPicking = false;
-        QueueUpdatePreview();
+        StateHasChanged();
+    }
+
+    [JSInvokable]
+    public void OnColorPickCancelled()
+    {
+        IsColorPicking = false;
         StateHasChanged();
     }
 
@@ -504,6 +518,8 @@
         IsTransparentBg = true;
         RemoveBgEnabled = false;
         RemoveBgTolerance = 15;
+        IsColorPicking = false;
+        _ = JSRuntime.InvokeVoidAsync("imageEditor.stopColorPicker", false);
         FeatherEnabled = false;
         ChokeRadius = 1;
         FeatherRadius = 2;
@@ -902,6 +918,7 @@
 
     public void Dispose()
     {
+        _ = JSRuntime.InvokeVoidAsync("imageEditor.destroy");
         dotNetRef?.Dispose();
         originalImage?.Dispose();
         _imageStream?.Dispose();

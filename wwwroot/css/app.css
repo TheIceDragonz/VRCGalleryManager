@@ -2006,7 +2006,7 @@ canvas.picking-color {
 /* Custom Premium Tooltips */
 .vrc-custom-tooltip {
     position: fixed;
-    z-index: 10001;
+    z-index: 999999 !important;
     background: rgba(26, 29, 33, 0.85);
 
     color: var(--text-main);
@@ -3217,4 +3217,270 @@ canvas.picking-color {
         height: 34px !important;
         padding: 0.3rem !important;
     }
+}
+
+/* Custom VRC Color Picker Popover */
+.vrc-color-picker-popover {
+    position: fixed;
+    width: 250px;
+    max-width: calc(100vw - 20px);
+    box-sizing: border-box;
+    background: rgba(22, 26, 34, 0.96);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 12px;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(106, 227, 249, 0.25);
+    padding: 12px;
+    z-index: 20000;
+    color: #ffffff;
+    font-family: inherit;
+    user-select: none;
+    animation: vrcPickerFadeIn 0.15s ease-out;
+}
+
+@keyframes vrcPickerFadeIn {
+    from { opacity: 0; transform: scale(0.96) translateY(-4px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.vrc-picker-sv-box {
+    position: relative;
+    width: 100%;
+    height: 130px;
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: crosshair;
+    touch-action: none;
+    margin-bottom: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.vrc-picker-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.vrc-picker-title {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--accent, #6ae3f9);
+}
+
+.vrc-picker-close-btn {
+    background: transparent;
+    border: none;
+    color: #8e929b;
+    font-size: 0.8rem;
+    cursor: pointer;
+    padding: 2px 6px;
+    border-radius: 4px;
+    line-height: 1;
+    transition: color 0.15s;
+}
+
+.vrc-picker-close-btn:hover {
+    color: #ffffff;
+}
+
+.vrc-picker-sv-cursor {
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 2px solid #ffffff;
+    box-shadow: 0 0 4px rgba(0, 0, 0, 0.8), inset 0 0 2px rgba(0, 0, 0, 0.8);
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+}
+
+.vrc-picker-controls-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.vrc-picker-eyedropper-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+
+.vrc-picker-eyedropper-btn:hover {
+    background: rgba(106, 227, 249, 0.2);
+    border-color: var(--accent, #6ae3f9);
+    transform: scale(1.05);
+}
+
+.vrc-picker-preview-circle {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    box-shadow: inset 0 0 4px rgba(0, 0, 0, 0.3);
+    flex-shrink: 0;
+}
+
+.vrc-picker-hue-container {
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+}
+
+.vrc-picker-hue-slider {
+    width: 100%;
+    height: 12px;
+    -webkit-appearance: none;
+    appearance: none;
+    border-radius: 6px;
+    background: linear-gradient(to right, #ff0000 0%, #ffff00 17%, #00ff00 33%, #00ffff 50%, #0000ff 67%, #ff00ff 83%, #ff0000 100%);
+    outline: none;
+    cursor: pointer;
+}
+
+.vrc-picker-hue-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #ffffff;
+    border: 2px solid #222222;
+    box-shadow: 0 0 4px rgba(0, 0, 0, 0.5);
+    cursor: pointer;
+}
+
+.vrc-picker-inputs-bar {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 10px;
+}
+
+.vrc-picker-field {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.vrc-picker-field label {
+    font-size: 0.65rem;
+    color: #8e929b;
+    margin-bottom: 2px;
+    font-weight: 600;
+}
+
+.vrc-picker-field input {
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: #ffffff;
+    font-size: 0.75rem;
+    padding: 3px 4px;
+    border-radius: 6px;
+    text-align: center;
+    outline: none;
+    transition: border-color 0.15s;
+}
+
+.vrc-picker-field input:focus {
+    border-color: var(--accent, #6ae3f9);
+}
+
+.vrc-picker-field.hex-field {
+    flex: 2;
+}
+
+.vrc-picker-field.hex-field input {
+    width: 100%;
+    font-family: monospace;
+    text-transform: uppercase;
+}
+
+.vrc-picker-field.rgb-field {
+    flex: 1;
+}
+
+.vrc-picker-field.rgb-field input {
+    width: 100%;
+}
+
+.vrc-picker-field input::-webkit-inner-spin-button,
+.vrc-picker-field input::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.vrc-picker-swatches-bar {
+    display: flex;
+    justify-content: space-between;
+    gap: 4px;
+}
+
+.vrc-picker-swatch {
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    cursor: pointer;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: transform 0.15s, border-color 0.15s;
+}
+
+.vrc-picker-swatch:hover {
+    transform: scale(1.15);
+    border-color: #ffffff;
+}
+
+/* Floating Magnifier Loupe */
+.vrc-color-loupe {
+    position: fixed;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    pointer-events: none;
+    z-index: 25000;
+    transform: translate(-50%, -50%);
+}
+
+.vrc-loupe-circle {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 3px solid #ffffff;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6), inset 0 0 4px rgba(0, 0, 0, 0.5);
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.vrc-loupe-crosshair {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    border: 1.5px solid #ffffff;
+    box-shadow: 0 0 2px rgba(0, 0, 0, 0.8);
+}
+
+.vrc-loupe-badge {
+    margin-top: 4px;
+    background: rgba(0, 0, 0, 0.85);
+    color: #ffffff;
+    font-family: monospace;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
 }
