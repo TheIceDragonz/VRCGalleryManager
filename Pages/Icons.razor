@@ -1,0 +1,262 @@
+@page "/icons"
+@inherits VRCGalleryManager.Core.Components.MediaPageBase
+@using VRCGalleryManager.Core
+@using VRCGalleryManager.Core.DTO
+@using System.IO
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.JSInterop
+
+<div class="h-100 d-flex flex-column p-3 position-relative">
+    
+    @if (isDragging)
+    {
+        <div class="position-absolute top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center" 
+             style="z-index: 999; background: rgba(106, 227, 249, 0.15); border: 3px dashed var(--accent); border-radius: var(--radius-lg); pointer-events: none;">
+            <div class="text-accent fw-bold fs-3">
+                Drop image here to upload
+            </div>
+        </div>
+        
+    }
+
+    @if (editingBase64Image != null)
+    {
+        <div class="flex-grow-1 media-page-container">
+            <VRCGalleryManager.Components.ImageEditor Base64Image="@editingBase64Image" OnSave="OnEditorSave" OnCancel="OnEditorCancel" />
+        </div>
+    }
+    else
+    {
+        <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-secondary">
+            <div>
+                <h3 class="mb-0 text-accent d-flex align-items-center gap-2">
+                    <img src="/svg/profile-user-svgrepo-com.svg" class="media-page-icon" /> Icons
+                    <span class="@(imageCount >= 64 ? "badge bg-danger fs-6 ms-2" : "text-white-50 fs-6 ms-2")">@imageCount/64</span>
+                </h3>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <button class="btn btn-outline-secondary btn-sm" @onclick="RefreshList" disabled="@isRefreshing" title="Refresh">
+                    <img src="/svg/rotate-right-svgrepo-com.svg" class="btn-icon @(isRefreshing ? "spin" : "")" style="margin: 0;" />
+                </button>
+
+                <label class="btn btn-secondary btn-sm m-0 @(imageCount >= 64 ? "disabled" : "")">
+                    <InputFile OnChange="OnInputFileChange" class="d-none" disabled="@(imageCount >= 64)" accept="image/png, image/jpeg, image/gif, image/webp" />
+                    <img src="/svg/folder-open-svgrepo-com.svg" class="btn-icon" /> Upload
+                </label>
+                
+                <button class="btn btn-secondary btn-sm" @onclick="PasteFromClipboard" disabled="@(imageCount >= 64)">
+                    <img src="/svg/paste-svgrepo-com.svg" class="btn-icon" /> Paste
+                </button>
+            </div>
+        </div>
+
+        @if (isLoading)
+        {
+            <div class="flex-grow-1 d-flex justify-content-center align-items-center">
+                <div class="spinner-border text-primary" role="status"></div>
+            </div>
+        }
+        else if (hasNetworkError)
+        {
+            <div class="flex-grow-1 d-flex flex-column justify-content-center align-items-center text-center p-4">
+                <div class="p-3 mb-3 rounded-circle" style="background-color: var(--bg-active); width: 64px; height: 64px; display: flex; align-items: center; justify-content: center;">
+                    <img src="/svg/wifi-off-svgrepo-com.svg" class="icon-danger" style="width: 32px; height: 32px;" alt="Connection Error" />
+                </div>
+                <h5 class="text-white fw-bold mb-1">Connection Error</h5>
+                <p class="text-muted mb-3" style="max-width: 400px; font-size: 0.9rem;">@errorMessage</p>
+                <button class="btn btn-primary d-flex align-items-center gap-2 px-3 py-2" @onclick="RetryLoadAsync" disabled="@isRefreshing">
+                    @if (isRefreshing)
+                    {
+                        <span class="spinner-border spinner-border-sm" role="status"></span>
+                    }
+                    else
+                    {
+                        <img src="/svg/rotate-right-svgrepo-com.svg" class="btn-icon" style="margin: 0;" />
+                    }
+                    <span>Retry</span>
+                </button>
+            </div>
+        }
+        else if (icons.Count == 0)
+        {
+            <div class="flex-grow-1 d-flex flex-column justify-content-center align-items-center text-center p-4">
+                <div class="p-3 mb-3 rounded-circle" style="background-color: var(--bg-active); width: 64px; height: 64px; display: flex; align-items: center; justify-content: center;">
+                    <img src="/svg/profile-user-svgrepo-com.svg" style="width: 32px; height: 32px; opacity: 0.6;" />
+                </div>
+                <h5 class="text-white fw-bold mb-1">No Icons Found</h5>
+                <p class="text-muted mb-3" style="max-width: 400px; font-size: 0.9rem;">You haven't uploaded any custom icons to VRChat yet. Upload a new icon to get started!</p>
+            </div>
+        }
+        else
+        {
+            <div class="flex-grow-1 overflow-auto">
+                <div class="media-grid gap-3">
+                    @foreach (var icon in icons)
+                    {
+                        <div class="position-relative icon-droplet-card media-card-container @(IsSelected(icon) ? "border-selected" : "")">
+                            <img src="@icon.ImageUrl" class="w-100 h-100 object-fit-cover" style="cursor: pointer;" @onclick="() => SetAsProfileIcon(icon)" title="Set as Profile Icon" />
+                            
+                            <button class="btn btn-dark btn-sm rounded-circle position-absolute btn-action media-btn-open" @onclick="() => OpenImage(icon)" title="View Image">
+                                <img src="/svg/eye-svgrepo-com.svg" class="btn-icon" style="margin: 0;" />
+                            </button>
+                            
+                            <button class="btn btn-danger btn-sm rounded-circle position-absolute btn-action media-btn-delete" @onclick="() => DeleteIcon(icon)" title="Delete">
+                                <img src="/svg/trash-bin-trash-svgrepo-com.svg" class="btn-icon" style="margin: 0;" />
+                            </button>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    }
+</div>
+
+<VRCGalleryManager.Components.ImageViewer @ref="imageViewer" OnDeleteRequested="HandleViewerDelete" />
+
+@code {
+    private List<IconItem> icons = new();
+    private VRCGalleryManager.Components.ImageViewer imageViewer;
+    private static string ICONS_TAG = "icon";
+    private static string ICONS_MASK_TYPE = "square";
+
+    public class IconItem
+    {
+        public string Id { get; set; }
+        public string ImageUrl { get; set; }
+    }
+
+    private string selectedImageUrl;
+
+    protected override int MaxImageCount => 64;
+
+    protected override async Task LoadInitialDataAsync()
+    {
+        selectedImageUrl = Auth.CurrentUser?.UserIcon;
+        var cached = CacheService.Get<List<IconItem>>("Icons");
+        if (cached != null)
+        {
+            icons = new List<IconItem>(cached);
+            imageCount = CacheService.Get<int>("IconsCount");
+            isLoading = false;
+        }
+        else
+        {
+            await RefreshList();
+        }
+    }
+
+    protected override async Task RefreshList()
+    {
+        if (isRefreshing) return;
+        
+        isRefreshing = true;
+        isLoading = true;
+        hasNetworkError = false;
+        errorMessage = "";
+        icons.Clear();
+        CacheService.Set("Icons", (List<IconItem>)null);
+        StateHasChanged();
+
+        try
+        {
+            var fileList = await apiRequest.GetFilesAsync(ICONS_TAG);
+            imageCount = fileList.Count;
+            CacheService.Set("IconsCount", imageCount);
+            
+            foreach (var file in fileList)
+            {
+                icons.Add(new IconItem
+                {
+                    Id = file.Id,
+                    ImageUrl = ApiRequest.ImageThumbnailUrl(file.Id)
+                });
+            }
+            
+            CacheService.Set("Icons", new List<IconItem>(icons));
+            CacheService.Set("IconsCount", imageCount);
+        }
+        catch (Exception ex)
+        {
+            hasNetworkError = true;
+            errorMessage = !NetworkStatus.IsOnline 
+                ? "No internet connection. Please check your network and try again." 
+                : "Unable to reach VRChat servers. Please try again later.";
+            Console.WriteLine($"Error loading icons: {ex.Message}");
+            NotificationService.Show(errorMessage, "Connection Error", NotificationType.Error);
+        }
+        finally
+        {
+            isLoading = false;
+            isRefreshing = false;
+            StateHasChanged();
+        }
+    }
+
+    private void OpenImage(IconItem item)
+    {
+        var viewerItems = icons.Select(i => new VRCGalleryManager.Components.ImageViewer.ViewerItem {
+            HighResSource = i.ImageUrl.Replace("/image/", "/file/").Replace("/256", "/file"),
+            LowResSource = i.ImageUrl,
+            Title = "Icon"
+        }).ToList();
+        
+        var currentUrl = item.ImageUrl.Replace("/image/", "/file/").Replace("/256", "/file");
+        var index = viewerItems.FindIndex(i => i.HighResSource == currentUrl);
+        if (index == -1) index = 0;
+        
+        imageViewer.Open(viewerItems, index);
+    }
+
+    private async Task DeleteIcon(IconItem item)
+    {
+        await ConfirmAndDeleteItemAsync(item, item.Id, "Icon", icons, "Icons", "IconsCount", id => apiRequest.DeleteApiData(id));
+    }
+
+    private async Task OnEditorSave(string base64Result)
+    {
+        try
+        {
+            string tempPath = await SaveBase64ToTempFileAsync(base64Result, "upload_icon");
+            await apiRequest.UploadImage(tempPath, ICONS_MASK_TYPE, TagType.Icon, "");
+            try { File.Delete(tempPath); } catch { }
+
+            // Wait for VRChat API indexing
+            await Task.Delay(2000);
+            await RefreshList();
+            editingBase64Image = null;
+        }
+        catch (Exception ex)
+        {
+            NotificationService.Show($"Upload failed: {ex.Message}", "Error", NotificationType.Error);
+        }
+    }
+
+    private bool IsSelected(IconItem icon)
+    {
+        if (!string.IsNullOrEmpty(selectedImageUrl) && selectedImageUrl == icon.ImageUrl) return true;
+        if (!string.IsNullOrEmpty(Auth.CurrentUser?.UserIcon) && Auth.CurrentUser.UserIcon.Contains(icon.Id)) return true;
+        return false;
+    }
+
+    private async Task SetAsProfileIcon(IconItem item)
+    {
+        try
+        {
+            selectedImageUrl = item.ImageUrl; // Update UI immediately
+            await apiRequest.SetProfileIcon(item.ImageUrl);
+            if (Auth.CurrentUser != null) Auth.CurrentUser.UserIcon = item.ImageUrl;
+            Auth.NotifyAuthStateChanged();
+            NotificationService.Show("Profile icon updated successfully!", "Success", NotificationType.Success);
+        }
+        catch (Exception ex)
+        {
+            NotificationService.Show($"Error setting profile icon: {ex.Message}", "Error", NotificationType.Error);
+        }
+    }
+
+    private async Task HandleViewerDelete(int index)
+    {
+        await HandleViewerDeleteAsync(index, icons, DeleteIcon, imageViewer);
+    }
+}
+

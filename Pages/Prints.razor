@@ -1,0 +1,296 @@
+@page "/prints"
+@inherits VRCGalleryManager.Core.Components.MediaPageBase
+@using VRCGalleryManager.Core
+@using VRCGalleryManager.Core.DTO
+@using System.IO
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.JSInterop
+
+<div class="h-100 d-flex flex-column p-3 position-relative">
+    
+    @if (isDragging)
+    {
+        <div class="position-absolute top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center" 
+             style="z-index: 999; background: rgba(106, 227, 249, 0.15); border: 3px dashed var(--accent); border-radius: var(--radius-lg); pointer-events: none;">
+            <div class="text-accent fw-bold fs-3">
+                Drop image here to upload
+            </div>
+        </div>
+        
+    }
+
+    @if (editingBase64Image != null)
+    {
+        <div class="flex-grow-1 media-page-container">
+            <VRCGalleryManager.Components.ImageEditor Base64Image="@editingBase64Image" TargetWidth="1920" TargetHeight="1080" OnSave="OnEditorSave" OnCancel="OnEditorCancel">
+                <EditorBottomContent>
+                    @if (OperatingSystem.IsWindows())
+                    {
+                        <div class="rounded-pill d-flex align-items-center mx-auto" style="background: rgba(0, 0, 0, 0.5); border: 1px solid rgba(255, 255, 255, 0.12); width: 100%; max-width: 400px; padding: 0.5rem 1.2rem; box-shadow: 0 4px 15px rgba(0,0,0,0.4);">
+                            <img src="/svg/write-f-svgrepo-com.svg" style="width: 16px; height: 16px;" class="icon-muted me-2 flex-shrink-0" />
+                            <input type="text" class="form-control text-white border-0 bg-transparent shadow-none p-0 m-0 w-100" @bind="printNote" placeholder="Add a custom note..." style="outline: none; font-size: 0.95rem;" />
+                        </div>
+                    }
+                </EditorBottomContent>
+                <EditorExtraContent>
+                    @if (!OperatingSystem.IsWindows())
+                    {
+                        <label class="form-label small text-muted mb-1">Print Note</label>
+                        <input type="text" class="form-control form-control-sm bg-dark text-white border-secondary" @bind="printNote" placeholder="Custom print note..." />
+                    }
+                </EditorExtraContent>
+            </VRCGalleryManager.Components.ImageEditor>
+        </div>
+    }
+    else
+    {
+        <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-secondary">
+            <div>
+                <h3 class="mb-0 text-accent d-flex align-items-center gap-2">
+                    <img src="/svg/camera-svgrepo-com.svg" class="media-page-icon" /> Prints
+                    <span class="@(imageCount >= 64 ? "badge bg-danger fs-6 ms-2" : "text-white-50 fs-6 ms-2")">@imageCount/64</span>
+                </h3>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <button class="btn btn-outline-secondary btn-sm" @onclick="RefreshList" disabled="@isRefreshing" title="Refresh">
+                    <img src="/svg/rotate-right-svgrepo-com.svg" class="btn-icon @(isRefreshing ? "spin" : "")" style="margin: 0;" />
+                </button>
+
+                <label class="btn btn-secondary btn-sm m-0 @(imageCount >= 64 ? "disabled" : "")">
+                    <InputFile OnChange="OnInputFileChange" class="d-none" disabled="@(imageCount >= 64)" accept="image/png, image/jpeg, image/gif, image/webp" />
+                    <img src="/svg/folder-open-svgrepo-com.svg" class="btn-icon" /> Upload
+                </label>
+                
+                <button class="btn btn-secondary btn-sm" @onclick="PasteFromClipboard">
+                    <img src="/svg/paste-svgrepo-com.svg" class="btn-icon" /> Paste
+                </button>
+            </div>
+        </div>
+
+        @if (isLoading)
+        {
+            <div class="flex-grow-1 d-flex justify-content-center align-items-center">
+                <div class="spinner-border text-primary" role="status"></div>
+            </div>
+        }
+        else if (hasNetworkError)
+        {
+            <div class="flex-grow-1 d-flex flex-column justify-content-center align-items-center text-center p-4">
+                <div class="p-3 mb-3 rounded-circle" style="background-color: var(--bg-active); width: 64px; height: 64px; display: flex; align-items: center; justify-content: center;">
+                    <img src="/svg/wifi-off-svgrepo-com.svg" class="icon-danger" style="width: 32px; height: 32px;" alt="Connection Error" />
+                </div>
+                <h5 class="text-white fw-bold mb-1">Connection Error</h5>
+                <p class="text-muted mb-3" style="max-width: 400px; font-size: 0.9rem;">@errorMessage</p>
+                <button class="btn btn-primary d-flex align-items-center gap-2 px-3 py-2" @onclick="RetryLoadAsync" disabled="@isRefreshing">
+                    @if (isRefreshing)
+                    {
+                        <span class="spinner-border spinner-border-sm" role="status"></span>
+                    }
+                    else
+                    {
+                        <img src="/svg/rotate-right-svgrepo-com.svg" class="btn-icon" style="margin: 0;" />
+                    }
+                    <span>Retry</span>
+                </button>
+            </div>
+        }
+        else if (prints.Count == 0)
+        {
+            <div class="flex-grow-1 d-flex flex-column justify-content-center align-items-center text-center p-4">
+                <div class="p-3 mb-3 rounded-circle" style="background-color: var(--bg-active); width: 64px; height: 64px; display: flex; align-items: center; justify-content: center;">
+                    <img src="/svg/card-outline-svgrepo-com.svg" style="width: 32px; height: 32px; opacity: 0.6;" />
+                </div>
+                <h5 class="text-white fw-bold mb-1">No Prints Found</h5>
+                <p class="text-muted mb-3" style="max-width: 400px; font-size: 0.9rem;">You don't have any prints on your VRChat account yet. Upload a new print to get started!</p>
+            </div>
+        }
+        else
+        {
+            <div class="flex-grow-1 overflow-auto">
+                <div class="media-grid grid-medium gap-3">
+                    @foreach (var print in prints)
+                    {
+                        <div class="position-relative print-card media-card-container">
+                            <img src="@print.ImageUrl" class="w-100 h-100 object-fit-cover" />
+                            
+                            <button class="btn btn-dark btn-sm rounded-circle position-absolute btn-action media-btn-open" @onclick="() => OpenImage(print)" title="View Image">
+                                <img src="/svg/eye-svgrepo-com.svg" class="btn-icon" style="margin: 0;" />
+                            </button>
+                            
+                            <button class="btn btn-danger btn-sm rounded-circle position-absolute btn-action media-btn-delete" @onclick="() => DeletePrint(print)" title="Delete">
+                                <img src="/svg/trash-bin-trash-svgrepo-com.svg" class="btn-icon" style="margin: 0;" />
+                            </button>
+                            
+                            @if (!string.IsNullOrEmpty(print.AuthorName))
+                            {
+                                <div class="position-absolute w-100 text-center media-card-label picflow-label fw-bold @(!string.IsNullOrEmpty(print.AuthorId) ? "cursor-pointer" : "") @(!string.IsNullOrEmpty(print.AuthorId) && print.AuthorId == Auth.CurrentUser?.Id ? "text-self-user" : (!string.IsNullOrEmpty(print.AuthorId) && Auth.CurrentUser?.Friends?.Contains(print.AuthorId) == true ? "text-warning" : ""))" @onclick="() => OpenUserInBrowser(print.AuthorId)" title="@(!string.IsNullOrEmpty(print.AuthorId) ? "Open Profile in Browser" : "")">
+                                    @print.AuthorName
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    }
+</div>
+
+<VRCGalleryManager.Components.ImageViewer @ref="imageViewer" OnDeleteRequested="HandleViewerDelete" />
+
+@code {
+    private List<PrintItem> prints = new();
+    private VRCGalleryManager.Components.ImageViewer imageViewer;
+    
+    private string printNote = "";
+
+    public class PrintItem
+    {
+        public string Id { get; set; }
+        public string ImageUrl { get; set; }
+        public string AuthorName { get; set; }
+        public string AuthorId { get; set; }
+    }
+
+    protected override int MaxImageCount => 64;
+
+    protected override async Task LoadInitialDataAsync()
+    {
+        var cached = CacheService.Get<List<PrintItem>>("Prints");
+        if (cached != null)
+        {
+            prints = new List<PrintItem>(cached);
+            imageCount = CacheService.Get<int>("PrintsCount");
+            isLoading = false;
+        }
+        else
+        {
+            await RefreshList();
+        }
+    }
+
+    protected override async Task RefreshList()
+    {
+        if (isRefreshing) return;
+        isRefreshing = true;
+        isLoading = true;
+        hasNetworkError = false;
+        errorMessage = "";
+        prints.Clear();
+        CacheService.Set("Prints", (List<PrintItem>)null);
+        StateHasChanged();
+
+        try
+        {
+            var printList = await apiRequest.GetPrintsAsync();
+            imageCount = printList.Count;
+            CacheService.Set("PrintsCount", imageCount);
+
+            foreach (var print in printList)
+            {
+                string fileId = print.Files?.FileId;
+                if (string.IsNullOrEmpty(fileId) && !string.IsNullOrEmpty(print.Files?.Image))
+                {
+                    var match = System.Text.RegularExpressions.Regex.Match(print.Files.Image, @"file_[a-f0-9\-]+");
+                    if (match.Success)
+                    {
+                        fileId = match.Value;
+                    }
+                }
+
+                if (!string.IsNullOrEmpty(print.Id) && !string.IsNullOrEmpty(fileId))
+                {
+                    prints.Add(new PrintItem
+                    {
+                        Id = print.Id,
+                        ImageUrl = ApiRequest.ImageThumbnailUrl(fileId),
+                        AuthorName = print.AuthorName,
+                        AuthorId = print.AuthorId
+                    });
+                }
+            }
+            
+            CacheService.Set("Prints", new List<PrintItem>(prints));
+            CacheService.Set("PrintsCount", imageCount);
+        }
+        catch (Exception ex)
+        {
+            hasNetworkError = true;
+            errorMessage = !NetworkStatus.IsOnline 
+                ? "No internet connection. Please check your network and try again." 
+                : "Unable to reach VRChat servers. Please try again later.";
+            Console.WriteLine($"Error loading prints: {ex.Message}");
+            NotificationService.Show(errorMessage, "Connection Error", NotificationType.Error);
+        }
+        finally
+        {
+            isLoading = false;
+            isRefreshing = false;
+            StateHasChanged();
+        }
+    }
+
+    private void OpenImage(PrintItem item)
+    {
+        var viewerItems = prints.Select(p => new VRCGalleryManager.Components.ImageViewer.ViewerItem {
+            HighResSource = p.ImageUrl.Replace("/image/", "/file/").Replace("/256", "/file"),
+            LowResSource = p.ImageUrl,
+            Title = "Print"
+        }).ToList();
+        
+        var currentUrl = item.ImageUrl.Replace("/image/", "/file/").Replace("/256", "/file");
+        var index = viewerItems.FindIndex(i => i.HighResSource == currentUrl);
+        if (index == -1) index = 0;
+        
+        imageViewer.Open(viewerItems, index);
+    }
+
+    private async Task DeletePrint(PrintItem item)
+    {
+        await ConfirmAndDeleteItemAsync(item, item.Id, "Print", prints, "Prints", "PrintsCount", id => apiRequest.DeleteApiDataPrint(id));
+    }
+
+    private async Task OnEditorSave(string base64Result)
+    {
+        try
+        {
+            string tempPath = await SaveBase64ToTempFileAsync(base64Result, "upload_print");
+            await apiRequest.UploadPrint(tempPath, printNote);
+            try { File.Delete(tempPath); } catch { }
+
+            await RefreshList();
+            editingBase64Image = null;
+            printNote = "";
+        }
+        catch (Exception ex)
+        {
+            NotificationService.Show($"Upload failed: {ex.Message}", "Error", NotificationType.Error);
+        }
+    }
+
+    private new void OnEditorCancel()
+    {
+        base.OnEditorCancel();
+        printNote = "";
+    }
+
+    private async Task HandleViewerDelete(int index)
+    {
+        await HandleViewerDeleteAsync(index, prints, DeletePrint, imageViewer);
+    }
+
+    private void OpenUserInBrowser(string userId)
+    {
+        if (!string.IsNullOrEmpty(userId))
+        {
+            try
+            {
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = $"https://vrchat.com/home/user/{userId}",
+                    UseShellExecute = true
+                });
+            }
+            catch { }
+        }
+    }
+}

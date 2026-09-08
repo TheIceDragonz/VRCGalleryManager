@@ -1,0 +1,405 @@
+/* ==========================================================================
+   VRChat Custom Theme Engine Stylesheet
+   Rules apply dynamically when .has-vrc-theme is active on the container.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   Generic Buttons (.btn) Theming
+   -------------------------------------------------------------------------- */
+.has-vrc-theme .btn:not(.btn-danger):not(.btn-outline-danger):not(.btn-warning):not(.btn-outline-warning):not(.btn-viewer-action):not(.btn-icon-only):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.media-btn-open):not(.btn-dark):not(.btn-outline-dark) {
+    color: var(--accent) !important;
+    background-color: var(--theme-btn-bg) !important;
+    border-color: var(--theme-btn-border) !important;
+    opacity: 1 !important;
+}
+
+.has-vrc-theme .btn:not(.btn-danger):not(.btn-outline-danger):not(.btn-warning):not(.btn-outline-warning):not(.btn-viewer-action):not(.btn-icon-only):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.media-btn-open):not(.btn-dark):not(.btn-outline-dark):hover {
+    background-color: var(--theme-btn-hover-bg) !important;
+    border-color: var(--theme-btn-hover-border) !important;
+    color: #ffffff !important;
+}
+
+.has-vrc-theme .btn:not(.btn-danger):not(.btn-outline-danger):not(.btn-warning):not(.btn-outline-warning):not(.btn-viewer-action):not(.btn-icon-only):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.media-btn-open):not(.btn-dark):not(.btn-outline-dark):active,
+.has-vrc-theme .btn:not(.btn-danger):not(.btn-outline-danger):not(.btn-warning):not(.btn-outline-warning):not(.btn-viewer-action):not(.btn-icon-only):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.media-btn-open):not(.btn-dark):not(.btn-outline-dark):focus {
+    background-color: var(--theme-btn-active-bg) !important;
+    border-color: var(--accent) !important;
+    color: #ffffff !important;
+}
+
+.has-vrc-theme .btn:not(.btn-danger):not(.btn-outline-danger):not(.btn-warning):not(.btn-outline-warning):not(.btn-viewer-action):not(.btn-icon-only):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.media-btn-open):not(.btn-dark):not(.btn-outline-dark):hover .btn-icon:not(.icon-danger):not(.icon-white):not(.icon-dark):not(.icon-success),
+.has-vrc-theme .btn:not(.btn-danger):not(.btn-outline-danger):not(.btn-warning):not(.btn-outline-warning):not(.btn-viewer-action):not(.btn-icon-only):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.media-btn-open):not(.btn-dark):not(.btn-outline-dark):active .btn-icon:not(.icon-danger):not(.icon-white):not(.icon-dark):not(.icon-success),
+.has-vrc-theme .btn:not(.btn-danger):not(.btn-outline-danger):not(.btn-warning):not(.btn-outline-warning):not(.btn-viewer-action):not(.btn-icon-only):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.media-btn-open):not(.btn-dark):not(.btn-outline-dark):focus .btn-icon:not(.icon-danger):not(.icon-white):not(.icon-dark):not(.icon-success) {
+    filter: var(--filter-white) !important;
+}
+
+/* --------------------------------------------------------------------------
+   Navigation Sidebar (.custom-nav-link)
+   -------------------------------------------------------------------------- */
+.has-vrc-theme .custom-nav-link {
+    color: var(--accent) !important;
+    background-color: var(--theme-btn-bg) !important;
+    border-color: var(--theme-btn-border) !important;
+    opacity: 1 !important;
+}
+
+.has-vrc-theme .custom-nav-link:hover {
+    background-color: var(--theme-btn-hover-bg) !important;
+    border-color: var(--theme-btn-hover-border) !important;
+    color: #ffffff !important;
+}
+
+.has-vrc-theme .custom-nav-link:hover .nav-icon {
+    filter: var(--filter-white) !important;
+}
+
+.has-vrc-theme .custom-nav-link.active {
+    background-color: var(--theme-btn-active-bg) !important;
+    border-color: var(--accent) !important;
+    color: #ffffff !important;
+}
+
+.has-vrc-theme .custom-nav-link.active .nav-icon {
+    filter: var(--filter-white) !important;
+}
+
+.has-vrc-theme .custom-nav-link .nav-icon {
+    filter: url(#theme-icon-filter) !important;
+}
+
+/* --------------------------------------------------------------------------
+   Typography, Links & Form Controls
+   -------------------------------------------------------------------------- */
+.has-vrc-theme .text-muted {
+    color: var(--text-muted) !important;
+}
+
+.has-vrc-theme a {
+    color: var(--accent) !important;
+}
+
+.has-vrc-theme .form-control:focus,
+.has-vrc-theme .form-select:focus {
+    border-color: var(--accent) !important;
+    box-shadow: 0 0 0 0.25rem var(--theme-focus-shadow) !important;
+}
+
+.has-vrc-theme .form-check-input {
+    background-color: var(--theme-btn-bg) !important;
+    border: 2px solid var(--theme-btn-border) !important;
+}
+
+.has-vrc-theme .form-check-input:focus {
+    border-color: var(--accent) !important;
+    box-shadow: 0 0 0 0.25rem var(--theme-focus-shadow) !important;
+}
+
+/* Switch in deactivated (unchecked / OFF) state */
+.has-vrc-theme .form-switch .form-check-input {
+    background-color: var(--theme-btn-bg) !important;
+    border: 2px solid var(--theme-btn-border) !important;
+    border-radius: 2em !important;
+    background-image: var(--theme-switch-knob-off) !important;
+}
+
+.has-vrc-theme .form-switch .form-check-input:hover:not(:checked) {
+    border-color: var(--theme-btn-hover-border) !important;
+    background-image: var(--theme-switch-knob-off-hover) !important;
+}
+
+/* Switch in activated (checked / ON) state */
+.has-vrc-theme .form-switch .form-check-input:checked {
+    background-color: var(--theme-btn-hover-bg) !important;
+    border-color: var(--accent) !important;
+    border-radius: 2em !important;
+    background-image: var(--theme-switch-knob-on) !important;
+    box-shadow: 0 0 8px rgba(var(--theme-rgb), 0.4) !important;
+}
+
+/* Sliders (form-range) track and thumb */
+.has-vrc-theme .form-range::-webkit-slider-runnable-track {
+    background-color: var(--theme-btn-border) !important;
+    border-radius: 1rem !important;
+}
+
+.has-vrc-theme .form-range::-moz-range-track {
+    background-color: var(--theme-btn-border) !important;
+    border-radius: 1rem !important;
+}
+
+.has-vrc-theme .form-range::-webkit-slider-thumb {
+    background: var(--accent) !important;
+    border-radius: 1rem !important;
+    box-shadow: 0 0 8px rgba(var(--theme-rgb), 0.7) !important;
+}
+
+.has-vrc-theme .form-range::-moz-range-thumb {
+    background: var(--accent) !important;
+    border-radius: 1rem !important;
+    box-shadow: 0 0 8px rgba(var(--theme-rgb), 0.7) !important;
+}
+
+/* Sliders when disabled (deactivated) */
+.has-vrc-theme .form-range:disabled::-webkit-slider-thumb {
+    background: rgba(var(--theme-rgb), 0.45) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 1rem !important;
+    box-shadow: none !important;
+}
+
+.has-vrc-theme .form-range:disabled::-moz-range-thumb {
+    background: rgba(var(--theme-rgb), 0.45) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 1rem !important;
+    box-shadow: none !important;
+}
+
+.has-vrc-theme .form-range:disabled::-webkit-slider-runnable-track {
+    background-color: var(--theme-btn-bg) !important;
+    border-radius: 1rem !important;
+    opacity: 0.6 !important;
+}
+
+.has-vrc-theme .form-range:disabled::-moz-range-track {
+    background-color: var(--theme-btn-bg) !important;
+    border-radius: 1rem !important;
+    opacity: 0.6 !important;
+}
+
+/* --------------------------------------------------------------------------
+   SVG Icon Theming Filters
+   -------------------------------------------------------------------------- */
+.has-vrc-theme .nav-icon:not(.custom-nav-link:hover .nav-icon):not(.custom-nav-link.active .nav-icon),
+.has-vrc-theme .icon-accent:not(.icon-danger):not(.icon-success):not(.icon-white):not(.icon-dark),
+.has-vrc-theme .folder-svg-icon {
+    filter: url(#theme-icon-filter) !important;
+}
+
+.has-vrc-theme .btn:not(.btn-danger):not(.btn-outline-danger):not(.btn-warning):not(.btn-outline-warning):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.media-btn-open):not(.btn-dark):not(.btn-outline-dark):not(:hover):not(:active) .btn-icon:not(.icon-danger):not(.icon-white):not(.icon-dark):not(.icon-success) {
+    filter: url(#theme-icon-filter) !important;
+}
+
+/* --------------------------------------------------------------------------
+   Strictly Protect System Buttons (Red / Green / Dark)
+   -------------------------------------------------------------------------- */
+.has-vrc-theme .btn-danger,
+.has-vrc-theme .btn-outline-danger,
+.has-vrc-theme .media-btn-delete,
+.has-vrc-theme .btn-viewer-delete {
+    color: var(--danger) !important;
+    background-color: #420505 !important;
+    border-color: #6a0b0b !important;
+}
+
+.has-vrc-theme .btn-danger:hover,
+.has-vrc-theme .btn-outline-danger:hover,
+.has-vrc-theme .media-btn-delete:hover,
+.has-vrc-theme .btn-viewer-delete:hover,
+.has-vrc-theme .btn-danger:active,
+.has-vrc-theme .btn-outline-danger:active,
+.has-vrc-theme .btn-danger:focus,
+.has-vrc-theme .btn-outline-danger:focus {
+    color: #ffffff !important;
+    background-color: #6a0b0b !important;
+    border-color: #9e1414 !important;
+}
+
+.has-vrc-theme .btn-danger .btn-icon,
+.has-vrc-theme .btn-outline-danger .btn-icon,
+.has-vrc-theme .media-btn-delete .btn-icon,
+.has-vrc-theme .btn-viewer-delete img,
+.has-vrc-theme .icon-danger {
+    filter: var(--filter-danger) !important;
+}
+
+.has-vrc-theme .btn-danger:hover .btn-icon,
+.has-vrc-theme .btn-outline-danger:hover .btn-icon,
+.has-vrc-theme .media-btn-delete:hover .btn-icon,
+.has-vrc-theme .btn-viewer-delete:hover img {
+    filter: var(--filter-white) !important;
+}
+
+/* Green (Upload) Buttons */
+.has-vrc-theme .media-btn-upload,
+.has-vrc-theme .btn-success,
+.has-vrc-theme .btn-outline-success,
+.has-vrc-theme .btn-viewer-upload {
+    background-color: #0b3d16 !important;
+    border-color: #125e22 !important;
+    color: #ffffff !important;
+}
+
+.has-vrc-theme .media-btn-upload:hover,
+.has-vrc-theme .btn-success:hover,
+.has-vrc-theme .btn-outline-success:hover,
+.has-vrc-theme .btn-viewer-upload:hover {
+    background-color: #125e22 !important;
+    border-color: #1a822f !important;
+    color: #ffffff !important;
+}
+
+.has-vrc-theme .media-btn-upload .btn-icon,
+.has-vrc-theme .btn-success .btn-icon,
+.has-vrc-theme .btn-outline-success .btn-icon,
+.has-vrc-theme .media-btn-upload img,
+.has-vrc-theme .btn-viewer-upload img {
+    filter: var(--filter-white) !important;
+}
+
+/* Dark (Open / Viewer) Buttons */
+.has-vrc-theme .media-btn-open,
+.has-vrc-theme .btn-dark,
+.has-vrc-theme .btn-outline-dark {
+    background-color: #07242B !important;
+    border-color: #0d4b59 !important;
+    color: #ffffff !important;
+}
+
+.has-vrc-theme .media-btn-open:hover,
+.has-vrc-theme .btn-dark:hover,
+.has-vrc-theme .btn-outline-dark:hover {
+    background-color: #0A3540 !important;
+    border-color: #136173 !important;
+    color: #ffffff !important;
+}
+
+.has-vrc-theme .media-btn-open .btn-icon,
+.has-vrc-theme .btn-dark .btn-icon,
+.has-vrc-theme .btn-outline-dark .btn-icon,
+.has-vrc-theme .media-btn-open img {
+    filter: var(--filter-white) !important;
+}
+
+/* Profile Name & Self Indicators */
+.has-vrc-theme .nav-profile-name {
+    color: #ffffff !important;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.9), 0 0 4px rgba(0, 0, 0, 0.8) !important;
+}
+
+.has-vrc-theme .text-self-user,
+.has-vrc-theme .picflow-label.text-accent,
+.has-vrc-theme .picflow-label.text-self-user {
+    color: #6ae3f9 !important;
+}
+
+/* --------------------------------------------------------------------------
+   Image Viewer Theming
+   -------------------------------------------------------------------------- */
+.has-vrc-theme .image-viewer-bottom-bar {
+    background: rgba(10, 14, 18, 0.85) !important;
+    border: 2px solid var(--theme-btn-border) !important;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7), 0 0 16px rgba(var(--theme-rgb), 0.25) !important;
+}
+
+.has-vrc-theme .btn-viewer-close,
+.has-vrc-theme .btn-nav,
+.has-vrc-theme .btn-viewer-action:not(.btn-danger):not(.btn-success):not(.btn-viewer-delete):not(.btn-viewer-upload) {
+    background-color: var(--theme-btn-bg) !important;
+    border: 2px solid var(--theme-btn-border) !important;
+    opacity: 1 !important;
+}
+
+.has-vrc-theme .btn-viewer-close img,
+.has-vrc-theme .btn-nav img,
+.has-vrc-theme .btn-viewer-action:not(.btn-viewer-delete):not(.btn-viewer-upload) img:not(.icon-danger):not(.icon-success) {
+    filter: url(#theme-icon-filter) !important;
+}
+
+.has-vrc-theme .btn-viewer-close:hover,
+.has-vrc-theme .btn-nav:hover,
+.has-vrc-theme .btn-viewer-action:not(.btn-danger):not(.btn-success):not(.btn-viewer-delete):not(.btn-viewer-upload):hover {
+    background-color: var(--theme-btn-hover-bg) !important;
+    border-color: var(--accent) !important;
+    box-shadow: 0 0 12px rgba(var(--theme-rgb), 0.5) !important;
+}
+
+.has-vrc-theme .btn-viewer-close:hover img,
+.has-vrc-theme .btn-nav:hover img,
+.has-vrc-theme .btn-viewer-action:not(.btn-viewer-delete):not(.btn-viewer-upload):hover img:not(.icon-danger):not(.icon-success) {
+    filter: var(--filter-white) !important;
+}
+
+.has-vrc-theme .btn-viewer-action.active {
+    background-color: var(--theme-btn-active-bg) !important;
+    border-color: var(--accent) !important;
+    box-shadow: 0 0 14px rgba(var(--theme-rgb), 0.6) !important;
+}
+
+.has-vrc-theme .btn-viewer-action.active img:not(.icon-danger):not(.icon-success) {
+    filter: var(--filter-white) !important;
+}
+
+.has-vrc-theme .image-viewer-info-panel {
+    border: 1px solid var(--theme-btn-border) !important;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.75), 0 0 24px rgba(var(--theme-rgb), 0.25) !important;
+}
+
+.has-vrc-theme .viewer-info-header {
+    border-bottom-color: var(--theme-btn-border) !important;
+}
+
+.has-vrc-theme .viewer-info-icon-box {
+    background-color: rgba(var(--theme-rgb), 0.15) !important;
+    border-color: var(--theme-btn-border) !important;
+}
+
+.has-vrc-theme .viewer-world-card {
+    border-color: var(--theme-btn-border) !important;
+}
+
+.has-vrc-theme .viewer-world-card:hover {
+    border-color: var(--accent) !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5), 0 0 12px rgba(var(--theme-rgb), 0.25) !important;
+}
+
+.has-vrc-theme .viewer-world-title.clickable:hover {
+    color: var(--accent) !important;
+    text-shadow: 0 0 8px var(--accent) !important;
+}
+
+.has-vrc-theme .viewer-world-meta.clickable:hover {
+    background-color: rgba(var(--theme-rgb), 0.12) !important;
+    color: var(--accent) !important;
+}
+
+.has-vrc-theme .viewer-world-meta.clickable:hover .badge {
+    background-color: rgba(var(--theme-rgb), 0.25) !important;
+    color: var(--accent) !important;
+}
+
+.has-vrc-theme .viewer-world-btn {
+    background-color: var(--theme-btn-bg) !important;
+    border-color: var(--theme-btn-border) !important;
+    color: var(--accent) !important;
+}
+
+.has-vrc-theme .viewer-world-btn:hover {
+    background-color: var(--theme-btn-active-bg) !important;
+    border-color: var(--accent) !important;
+    color: #ffffff !important;
+    box-shadow: 0 0 12px rgba(var(--theme-rgb), 0.5) !important;
+}
+
+.has-vrc-theme .viewer-count-badge {
+    border-color: var(--theme-btn-border) !important;
+}
+
+.has-vrc-theme .viewer-player-item:hover {
+    border-color: var(--accent) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3), 0 0 8px rgba(var(--theme-rgb), 0.2) !important;
+}
+
+.has-vrc-theme .viewer-player-dot.self,
+.has-vrc-theme .viewer-player-dot.author {
+    background-color: var(--accent) !important;
+    box-shadow: 0 0 8px var(--accent) !important;
+}
+
+.has-vrc-theme .viewer-player-badge.self {
+    background-color: rgba(var(--theme-rgb), 0.15) !important;
+    border-color: rgba(var(--theme-rgb), 0.4) !important;
+    color: var(--accent) !important;
+}
+
+.has-vrc-theme .image-container .spinner-border {
+    color: var(--accent) !important;
+}

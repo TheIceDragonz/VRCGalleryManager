@@ -1,0 +1,319 @@
+@using VRCGalleryManager.Core
+@using VRCGalleryManager.Core.Api.Models
+@implements IDisposable
+@inject VRCAuth Auth
+@inject NavigationManager NavManager
+@inject ProfileBackgroundService BackgroundService
+
+@if (BackgroundService.DisplayVRCCosmetics && OperatingSystem.IsAndroid() && !string.IsNullOrEmpty(ProfileEffectUrl))
+{
+    <img src="@ProfileEffectUrl" class="nav-profile-effect-android" />
+}
+<div class="top-row flex-shrink-0 p-3 d-flex align-items-center justify-content-center nav-top-row @(!IsLoggedIn ? "logged-out-mode" : "")">
+    <a class="navbar-brand m-0 d-flex align-items-center justify-content-center w-100" href="">
+        <img src="/VRCGM.png" class="nav-brand-img @(!IsLoggedIn ? "logged-out-img" : "")" />
+    </a>
+</div>
+
+@if (CurrentUser != null && !string.IsNullOrEmpty(CurrentUser.Id))
+{
+    <div class="profile-card flex-shrink-0 position-relative m-3 nav-profile-card-container">
+        <img src="@(string.IsNullOrEmpty(CurrentUser.ProfilePicOverrideThumbnail) ? CurrentUser.CurrentAvatarThumbnailImageUrl : CurrentUser.ProfilePicOverrideThumbnail)" 
+             class="nav-profile-bg" />
+        
+        @if (BackgroundService.DisplayVRCCosmetics && !OperatingSystem.IsAndroid() && !string.IsNullOrEmpty(ProfileEffectUrl))
+        {
+            <img src="@ProfileEffectUrl" class="nav-profile-effect" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; object-position: top; z-index: 1; pointer-events: none;" />
+        }
+        
+        <div class="position-absolute w-100 h-100 d-flex flex-column align-items-center justify-content-center nav-profile-content" style="z-index: 2;">
+            <div class="position-relative d-flex align-items-center justify-content-center">
+                <img src="@(string.IsNullOrEmpty(CurrentUser.UserIcon) ? CurrentUser.CurrentAvatarThumbnailImageUrl : CurrentUser.UserIcon)" class="nav-profile-icon" />
+                @if (BackgroundService.DisplayVRCCosmetics && !string.IsNullOrEmpty(IconFrameUrl))
+                {
+                    <img src="@IconFrameUrl" class="nav-icon-frame" style="position: absolute; top: -15%; left: -15%; width: 130%; height: 130%; pointer-events: none;" />
+                }
+            </div>
+            <span class="mt-1 fw-bold text-truncate w-100 text-center px-2 nav-profile-name" style="color: #ffffff !important;">@CurrentUser.DisplayName</span>
+            
+            @if (CurrentUser.Badges != null)
+            {
+                <div class="d-flex justify-content-center gap-1 mt-0">
+                    @foreach (var badgeJson in CurrentUser.Badges.Where(b => b.Showcased).Take(4))
+                    {
+                        <img src="@badgeJson.BadgeImageUrl" class="nav-badge-icon" title="@badgeJson.BadgeName" />
+                    }
+                </div>
+            }
+        </div>
+    </div>
+}
+
+<div class="nav-scrollable flex-grow-1 py-3 px-3 nav-scrollable-container d-flex flex-column">
+    <nav class="flex-column d-flex gap-1 p-2 flex-grow-1 nav-buttons-bg">
+        <div class="nav-item">
+            <NavLink class="@($"nav-link custom-nav-link {VrcPlusDisabledClass}")" href="icons" Match="NavLinkMatch.All">
+                <img src="/svg/profile-user-svgrepo-com.svg" class="nav-icon" /> Icons
+            </NavLink>
+        </div>
+        <div class="nav-item">
+            <NavLink class="@($"nav-link custom-nav-link {VrcPlusDisabledClass}")" href="photos">
+                <img src="/svg/gallery-minimalistic-svgrepo-com.svg" class="nav-icon" /> Photos
+            </NavLink>
+        </div>
+        <div class="nav-item">
+            <NavLink class="@($"nav-link custom-nav-link {VrcPlusDisabledClass}")" href="emoji">
+                <img src="/svg/emoji-funny-circle-svgrepo-com.svg" class="nav-icon" /> Emoji
+            </NavLink>
+        </div>
+        <div class="nav-item">
+            <NavLink class="@($"nav-link custom-nav-link {VrcPlusDisabledClass}")" href="sticker">
+                <img src="/svg/sticker-smile-square-svgrepo-com.svg" class="nav-icon" /> Sticker
+            </NavLink>
+        </div>
+        <div class="nav-item">
+            <NavLink class="@($"nav-link custom-nav-link {VrcPlusDisabledClass}")" href="prints">
+                <img src="/svg/camera-svgrepo-com.svg" class="nav-icon" /> Prints
+            </NavLink>
+        </div>
+        
+        <div class="mt-auto d-flex flex-column gap-1 nav-bottom-group">
+            @if (OperatingSystem.IsWindows())
+            {
+                <div class="nav-item">
+                    <NavLink class="@($"nav-link custom-nav-link {VrcPlusDisabledClass}")" href="picflow">
+                        <img src="/svg/traffic-economy-svgrepo-com.svg" class="nav-icon" /> Picflow
+                    </NavLink>
+                </div>
+            }
+            @if (!OperatingSystem.IsAndroid())
+            {
+                <div class="nav-item">
+                    <NavLink class="@($"nav-link custom-nav-link {VrcPlusDisabledClass}")" href="gallery">
+                        <img src="/svg/gallery-wide-svgrepo-com.svg" class="nav-icon" /> Gallery
+                    </NavLink>
+                </div>
+            }
+
+            <div class="my-1 border-bottom nav-divider"></div>
+
+            <div class="nav-item">
+                <NavLink class="nav-link custom-nav-link" href="settings">
+                    <img src="/svg/settings-svgrepo-com.svg" class="nav-icon" /> Settings
+                </NavLink>
+            </div>
+        </div>
+    </nav>
+</div>
+
+
+
+@code {
+    private CurrentUser? CurrentUser;
+    private VRChatPublicProfile? PublicProfile;
+    private VRCProfileTheme ProfileTheme = new();
+    private string ProfileEffectUrl;
+    private string IconFrameUrl;
+    private bool IsLoggedIn => CurrentUser != null && !string.IsNullOrEmpty(CurrentUser.Id);
+    private bool HasVrcPlus => IsLoggedIn && VRCAuth.CheckHasVRCPlus(CurrentUser);
+    private string DisabledClass => IsLoggedIn ? "" : "disabled-nav";
+    private string VrcPlusDisabledClass => HasVrcPlus ? "" : "disabled-nav";
+
+    private static readonly System.Net.Http.HttpClient _cosmeticsHttpClient = new System.Net.Http.HttpClient
+    {
+        BaseAddress = new Uri("https://api.vrchat.cloud/api/1/")
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        Auth.OnAuthStateChanged += AuthStateChanged;
+        Auth.On2FARequiredEvent += Handle2FARequired;
+        BackgroundService.OnSettingsChanged += HandleSettingsChanged;
+        await Auth.EnsureInitializedAsync();
+        await LoadUser();
+    }
+
+    private void Handle2FARequired()
+    {
+        InvokeAsync(() => {
+            NavManager.NavigateTo("/settings");
+        });
+    }
+
+    private async void AuthStateChanged()
+    {
+        await LoadUser();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private void HandleSettingsChanged()
+    {
+        ProfileTheme = BackgroundService.GetProfileTheme(PublicProfile, isDarkMode: true);
+        UpdateSidebarBackground();
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void UpdateSidebarBackground()
+    {
+        BackgroundService.UpdateSidebarBackground(PublicProfile);
+    }
+
+    private async Task LoadUser()
+    {
+        if (Auth.LoggedIn || Auth.CookieLoaded)
+        {
+            try
+            {
+                var user = Auth.CurrentUser ?? await Auth.AuthApi.GetCurrentUserAsync();
+                if (user != null && !string.IsNullOrEmpty(user.Id))
+                {
+                    CurrentUser = user;
+                    Auth.CurrentUser = user;
+                    await LoadCosmetics();
+                }
+                else
+                {
+                    CurrentUser = null;
+                    Auth.CurrentUser = null;
+                }
+            }
+            catch (ApiException ex) when (ex.ErrorCode == 401)
+            {
+                bool success = await Auth.TryAutoReloginAsync();
+                if (success)
+                {
+                    var user = Auth.CurrentUser ?? await Auth.AuthApi.GetCurrentUserAsync();
+                    if (user != null && !string.IsNullOrEmpty(user.Id))
+                    {
+                        CurrentUser = user;
+                        Auth.CurrentUser = user;
+                        await LoadCosmetics();
+                    }
+                    else
+                    {
+                        CurrentUser = null;
+                        Auth.CurrentUser = null;
+                    }
+                }
+                else
+                {
+                    CurrentUser = null;
+                    Auth.CurrentUser = null;
+                    if (!Auth.Is2FARequired) 
+                    {
+                        Auth.Logout(keepCredentials: true);
+                    }
+                }
+            }
+            catch
+            {
+                CurrentUser = null;
+                Auth.CurrentUser = null;
+                Auth.Logout(keepCredentials: true);
+            }
+        }
+        else
+        {
+            CurrentUser = null;
+            PublicProfile = null;
+            ProfileTheme = new();
+            ProfileEffectUrl = null;
+            IconFrameUrl = null;
+            BackgroundService.UpdateSidebarBackground(null);
+        }
+    }
+
+    private async Task LoadCosmetics()
+    {
+        ProfileEffectUrl = null;
+        IconFrameUrl = null;
+        PublicProfile = null;
+        ProfileTheme = new();
+        if (CurrentUser == null) return;
+        
+        try
+        {
+            PublicProfile = await BackgroundService.GetPublicProfileAsync(CurrentUser.Id);
+            ProfileTheme = BackgroundService.GetProfileTheme(PublicProfile, isDarkMode: true);
+            UpdateSidebarBackground();
+        }
+        catch { }
+
+        try
+        {
+            if (!string.IsNullOrEmpty(CurrentUser.ProfileEffect))
+            {
+                using var request = new System.Net.Http.HttpRequestMessage(System.Net.Http.HttpMethod.Get, "cosmetics/index/profileEffect");
+                request.Headers.TryAddWithoutValidation("User-Agent", VRChatApiClient.DefaultUserAgent);
+                if (!string.IsNullOrEmpty(Auth.CookieHeader))
+                {
+                    request.Headers.TryAddWithoutValidation("Cookie", Auth.CookieHeader);
+                }
+
+                var response = await _cosmeticsHttpClient.SendAsync(request);
+                if (response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    ProfileEffectUrl = ExtractCosmeticAnimationUrl(content, CurrentUser.ProfileEffect);
+                }
+            }
+        }
+        catch { }
+        
+        try
+        {
+            if (!string.IsNullOrEmpty(CurrentUser.IconFrame))
+            {
+                using var request = new System.Net.Http.HttpRequestMessage(System.Net.Http.HttpMethod.Get, "cosmetics/index/iconFrame");
+                request.Headers.TryAddWithoutValidation("User-Agent", VRChatApiClient.DefaultUserAgent);
+                if (!string.IsNullOrEmpty(Auth.CookieHeader))
+                {
+                    request.Headers.TryAddWithoutValidation("Cookie", Auth.CookieHeader);
+                }
+
+                var response = await _cosmeticsHttpClient.SendAsync(request);
+                if (response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    IconFrameUrl = ExtractCosmeticAnimationUrl(content, CurrentUser.IconFrame);
+                }
+            }
+        }
+        catch { }
+    }
+
+    private static string? ExtractCosmeticAnimationUrl(string json, string targetId)
+    {
+        try
+        {
+            using var doc = System.Text.Json.JsonDocument.Parse(json);
+            foreach (var el in doc.RootElement.EnumerateArray())
+            {
+                if (el.TryGetProperty("id", out var idEl) && idEl.GetString() == targetId)
+                {
+                    if (el.TryGetProperty("metadata", out var meta) && meta.TryGetProperty("assets", out var assets) && assets.ValueKind == System.Text.Json.JsonValueKind.Array)
+                    {
+                        foreach (var asset in assets.EnumerateArray())
+                        {
+                            if (asset.TryGetProperty("type", out var t) && t.GetString() == "mainAnimation" &&
+                                asset.TryGetProperty("url", out var u))
+                            {
+                                return u.GetString();
+                            }
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+        catch { }
+        return null;
+    }
+
+    public void Dispose()
+    {
+        Auth.OnAuthStateChanged -= AuthStateChanged;
+        Auth.On2FARequiredEvent -= Handle2FARequired;
+        BackgroundService.OnSettingsChanged -= HandleSettingsChanged;
+    }
+}

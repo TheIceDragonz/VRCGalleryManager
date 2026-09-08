@@ -1,0 +1,264 @@
+@page "/photos"
+@inherits VRCGalleryManager.Core.Components.MediaPageBase
+@using VRCGalleryManager.Core
+@using VRCGalleryManager.Core.DTO
+@using System.IO
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.JSInterop
+
+<div class="h-100 d-flex flex-column p-3 position-relative">
+    
+    @if (isDragging)
+    {
+        <div class="position-absolute top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center" 
+             style="z-index: 999; background: rgba(106, 227, 249, 0.15); border: 3px dashed var(--accent); border-radius: var(--radius-lg); pointer-events: none;">
+            <div class="text-accent fw-bold fs-3">
+                Drop image here to upload
+            </div>
+        </div>
+        
+    }
+
+    @if (editingBase64Image != null)
+    {
+        <div class="flex-grow-1 media-page-container">
+            <VRCGalleryManager.Components.ImageEditor Base64Image="@editingBase64Image" TargetWidth="1920" TargetHeight="1080" OnSave="OnEditorSave" OnCancel="OnEditorCancel" />
+        </div>
+    }
+    else
+    {
+        <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-secondary">
+            <div>
+                <h3 class="mb-0 text-accent d-flex align-items-center gap-2">
+                    <img src="/svg/gallery-minimalistic-svgrepo-com.svg" class="media-page-icon" /> Photos
+                    <span class="@(imageCount >= 64 ? "badge bg-danger fs-6 ms-2" : "text-white-50 fs-6 ms-2")">@imageCount/64</span>
+                </h3>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <button class="btn btn-outline-secondary btn-sm" @onclick="RefreshList" disabled="@isRefreshing" title="Refresh">
+                    <img src="/svg/rotate-right-svgrepo-com.svg" class="btn-icon @(isRefreshing ? "spin" : "")" style="margin: 0;" />
+                </button>
+
+                <label class="btn btn-secondary btn-sm m-0 @(imageCount >= 64 ? "disabled" : "")">
+                    <InputFile OnChange="OnInputFileChange" class="d-none" disabled="@(imageCount >= 64)" accept="image/png, image/jpeg, image/gif, image/webp" />
+                    <img src="/svg/folder-open-svgrepo-com.svg" class="btn-icon" /> Upload
+                </label>
+                
+                <button class="btn btn-secondary btn-sm" @onclick="PasteFromClipboard" disabled="@(imageCount >= 64)">
+                    <img src="/svg/paste-svgrepo-com.svg" class="btn-icon" /> Paste
+                </button>
+            </div>
+        </div>
+
+        @if (isLoading)
+        {
+            <div class="flex-grow-1 d-flex justify-content-center align-items-center">
+                <div class="spinner-border text-primary" role="status"></div>
+            </div>
+        }
+        else if (hasNetworkError)
+        {
+            <div class="flex-grow-1 d-flex flex-column justify-content-center align-items-center text-center p-4">
+                <div class="p-3 mb-3 rounded-circle" style="background-color: var(--bg-active); width: 64px; height: 64px; display: flex; align-items: center; justify-content: center;">
+                    <img src="/svg/wifi-off-svgrepo-com.svg" class="icon-danger" style="width: 32px; height: 32px;" alt="Connection Error" />
+                </div>
+                <h5 class="text-white fw-bold mb-1">Connection Error</h5>
+                <p class="text-muted mb-3" style="max-width: 400px; font-size: 0.9rem;">@errorMessage</p>
+                <button class="btn btn-primary d-flex align-items-center gap-2 px-3 py-2" @onclick="RetryLoadAsync" disabled="@isRefreshing">
+                    @if (isRefreshing)
+                    {
+                        <span class="spinner-border spinner-border-sm" role="status"></span>
+                    }
+                    else
+                    {
+                        <img src="/svg/rotate-right-svgrepo-com.svg" class="btn-icon" style="margin: 0;" />
+                    }
+                    <span>Retry</span>
+                </button>
+            </div>
+        }
+        else if (photos.Count == 0)
+        {
+            <div class="flex-grow-1 d-flex flex-column justify-content-center align-items-center text-center p-4">
+                <div class="p-3 mb-3 rounded-circle" style="background-color: var(--bg-active); width: 64px; height: 64px; display: flex; align-items: center; justify-content: center;">
+                    <img src="/svg/image-svgrepo-com.svg" style="width: 32px; height: 32px; opacity: 0.6;" />
+                </div>
+                <h5 class="text-white fw-bold mb-1">No Photos Found</h5>
+                <p class="text-muted mb-3" style="max-width: 400px; font-size: 0.9rem;">You haven't uploaded any gallery photos to VRChat yet. Upload a new photo to get started!</p>
+            </div>
+        }
+        else
+        {
+            <div class="flex-grow-1 overflow-auto">
+                <div class="media-grid grid-wide gap-3">
+                    @foreach (var photo in photos)
+                    {
+                        <div class="position-relative photo-card media-card-container @(IsSelected(photo) ? "border-selected" : "")">
+                            <img src="@photo.ImageUrl" class="w-100 h-100 object-fit-cover" style="cursor: pointer;" @onclick="() => SetAsProfilePicture(photo)" title="Set as Profile Picture" />
+                            
+                            <button class="btn btn-dark btn-sm rounded-circle position-absolute btn-action media-btn-open" @onclick="() => OpenImage(photo)" title="View Image">
+                                <img src="/svg/eye-svgrepo-com.svg" class="btn-icon" style="margin: 0;" />
+                            </button>
+                            
+                            <button class="btn btn-danger btn-sm rounded-circle position-absolute btn-action media-btn-delete" @onclick="() => DeletePhoto(photo)" title="Delete">
+                                <img src="/svg/trash-bin-trash-svgrepo-com.svg" class="btn-icon" style="margin: 0;" />
+                            </button>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    }
+</div>
+
+<VRCGalleryManager.Components.ImageViewer @ref="imageViewer" OnDeleteRequested="HandleViewerDelete" />
+
+@code {
+    private List<PhotoItem> photos = new();
+    private VRCGalleryManager.Components.ImageViewer imageViewer;
+    
+    private static string PHOTOS_TAG = "gallery";
+    private static string PHOTOS_MASK_TYPE = "square";
+
+    public class PhotoItem
+    {
+        public string Id { get; set; }
+        public string ImageUrl { get; set; }
+    }
+
+    private string selectedImageUrl;
+
+    protected override int MaxImageCount => 64;
+
+    protected override async Task LoadInitialDataAsync()
+    {
+        selectedImageUrl = Auth.CurrentUser?.ProfilePicOverride;
+        var cached = CacheService.Get<List<PhotoItem>>("Photos");
+        if (cached != null)
+        {
+            photos = new List<PhotoItem>(cached);
+            imageCount = CacheService.Get<int>("PhotosCount");
+            isLoading = false;
+        }
+        else
+        {
+            await RefreshList();
+        }
+    }
+
+    protected override async Task RefreshList()
+    {
+        if (isRefreshing) return;
+        
+        isRefreshing = true;
+        isLoading = true;
+        hasNetworkError = false;
+        errorMessage = "";
+        photos.Clear();
+        CacheService.Set("Photos", (List<PhotoItem>)null);
+        StateHasChanged();
+
+        try
+        {
+            var fileList = await apiRequest.GetFilesAsync(PHOTOS_TAG);
+            imageCount = fileList.Count;
+            CacheService.Set("PhotosCount", imageCount);
+
+            foreach (var file in fileList)
+            {
+                photos.Add(new PhotoItem
+                {
+                    Id = file.Id,
+                    ImageUrl = ApiRequest.ImageThumbnailUrl(file.Id)
+                });
+            }
+            
+            CacheService.Set("Photos", new List<PhotoItem>(photos));
+            CacheService.Set("PhotosCount", imageCount);
+        }
+        catch (Exception ex)
+        {
+            hasNetworkError = true;
+            errorMessage = !NetworkStatus.IsOnline 
+                ? "No internet connection. Please check your network and try again." 
+                : "Unable to reach VRChat servers. Please try again later.";
+            Console.WriteLine($"Error loading photos: {ex.Message}");
+            NotificationService.Show(errorMessage, "Connection Error", NotificationType.Error);
+        }
+        finally
+        {
+            isLoading = false;
+            isRefreshing = false;
+            StateHasChanged();
+        }
+    }
+
+    private void OpenImage(PhotoItem item)
+    {
+        var viewerItems = photos.Select(p => new VRCGalleryManager.Components.ImageViewer.ViewerItem {
+            HighResSource = p.ImageUrl.Replace("/image/", "/file/").Replace("/256", "/file"),
+            LowResSource = p.ImageUrl,
+            Title = "Photo"
+        }).ToList();
+        
+        var currentUrl = item.ImageUrl.Replace("/image/", "/file/").Replace("/256", "/file");
+        var index = viewerItems.FindIndex(i => i.HighResSource == currentUrl);
+        if (index == -1) index = 0;
+        
+        imageViewer.Open(viewerItems, index);
+    }
+
+    private async Task DeletePhoto(PhotoItem item)
+    {
+        await ConfirmAndDeleteItemAsync(item, item.Id, "Photo", photos, "Photos", "PhotosCount", id => apiRequest.DeleteApiData(id));
+    }
+
+    private async Task OnEditorSave(string base64Result)
+    {
+        try
+        {
+            string tempPath = await SaveBase64ToTempFileAsync(base64Result, "upload_photo");
+            await apiRequest.UploadImage(tempPath, PHOTOS_MASK_TYPE, TagType.Gallery, "");
+            try { File.Delete(tempPath); } catch { }
+
+            await RefreshList();
+            editingBase64Image = null;
+        }
+        catch (Exception ex)
+        {
+            NotificationService.Show($"Upload failed: {ex.Message}", "Error", NotificationType.Error);
+        }
+    }
+
+    private bool IsSelected(PhotoItem photo)
+    {
+        if (!string.IsNullOrEmpty(selectedImageUrl) && selectedImageUrl == photo.ImageUrl) return true;
+        if (!string.IsNullOrEmpty(Auth.CurrentUser?.ProfilePicOverride) && Auth.CurrentUser.ProfilePicOverride.Contains(photo.Id)) return true;
+        return false;
+    }
+
+    private async Task SetAsProfilePicture(PhotoItem item)
+    {
+        try
+        {
+            selectedImageUrl = item.ImageUrl; // Update UI immediately
+            await apiRequest.SetProfilePicture(item.ImageUrl);
+            if (Auth.CurrentUser != null) 
+            {
+                Auth.CurrentUser.ProfilePicOverride = item.ImageUrl;
+                Auth.CurrentUser.ProfilePicOverrideThumbnail = item.ImageUrl;
+            }
+            Auth.NotifyAuthStateChanged();
+            NotificationService.Show("Profile picture updated successfully!", "Success", NotificationType.Success);
+        }
+        catch (Exception ex)
+        {
+            NotificationService.Show($"Error setting profile picture: {ex.Message}", "Error", NotificationType.Error);
+        }
+    }
+
+    private async Task HandleViewerDelete(int index)
+    {
+        await HandleViewerDeleteAsync(index, photos, DeletePhoto, imageViewer);
+    }
+}

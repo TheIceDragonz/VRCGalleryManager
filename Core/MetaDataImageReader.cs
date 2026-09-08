@@ -1,8 +1,9 @@
-﻿using Newtonsoft.Json;
-using System.Diagnostics;
 using System.Text.Json;
-using VRCGalleryManager.Design;
-using VRCGalleryManager.Forms;
+using System.IO;
+using System.Text.Json.Serialization;
+using System;
+using System.Collections.Generic;
+using System.Buffers;
 
 namespace VRCGalleryManager.Core
 {
@@ -10,45 +11,75 @@ namespace VRCGalleryManager.Core
     {
         public class VrcxData
         {
+            [JsonPropertyName("author")]
             public AuthorInfo Author { get; set; }
+            [JsonPropertyName("world")]
             public WorldInfo World { get; set; }
+            [JsonPropertyName("players")]
             public List<PlayerInfo> Players { get; set; }
         }
 
         public class AuthorInfo
         {
+            [JsonPropertyName("id")]
             public string Id { get; set; }
+            [JsonPropertyName("displayName")]
             public string DisplayName { get; set; }
         }
 
         public class WorldInfo
         {
+            [JsonPropertyName("name")]
             public string Name { get; set; }
+            [JsonPropertyName("id")]
             public string Id { get; set; }
+            [JsonPropertyName("instanceId")]
             public string InstanceId { get; set; }
+            [JsonPropertyName("imageUrl")]
+            public string ImageUrl { get; set; }
         }
 
         public class PlayerInfo
         {
+            [JsonPropertyName("id")]
             public string Id { get; set; }
+            [JsonPropertyName("displayName")]
             public string DisplayName { get; set; }
         }
 
         public static VrcxData? ExtractVrcxData(string filePath)
         {
+            if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath)) return null;
+
             try
             {
-                var bytes = File.ReadAllBytes(filePath);
-                int idx = Array.IndexOf(bytes, (byte)'{');
-                if (idx < 0) return null;
+                using var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                
+                int maxRead = (int)Math.Min(stream.Length, 512 * 1024);
+                byte[] buffer = ArrayPool<byte>.Shared.Rent(maxRead);
 
-                var reader = new Utf8JsonReader(bytes.AsSpan(idx), isFinalBlock: true, state: default);
-                using var doc = JsonDocument.ParseValue(ref reader);
+                try
+                {
+                    int bytesRead = stream.Read(buffer, 0, maxRead);
+                    var data = TryParseVrcxJson(buffer.AsSpan(0, bytesRead));
+                    if (data != null) return data;
 
-                string raw = doc.RootElement.GetRawText();
-                return raw.Contains("\"application\":\"VRCX\"")
-                    ? JsonConvert.DeserializeObject<VrcxData>(raw)
-                    : null;
+                    // If not found in header and file is larger, check tail
+                    if (stream.Length > maxRead)
+                    {
+                        int tailSize = (int)Math.Min(stream.Length - maxRead, 64 * 1024);
+                        stream.Seek(-tailSize, SeekOrigin.End);
+                        int tailRead = stream.Read(buffer, 0, tailSize);
+                        data = TryParseVrcxJson(buffer.AsSpan(0, tailRead));
+                        if (data != null) return data;
+                    }
+                }
+                finally
+                {
+                    ArrayPool<byte>.Shared.Return(buffer);
+                }
+
+                return null;
             }
             catch
             {
@@ -56,95 +87,43 @@ namespace VRCGalleryManager.Core
             }
         }
 
-        public static async void ApiWorldInfo(VrcxData vrcxData, ApiRequest apiRequest, RoundedPictureBox worldImage, Label worldNameLabel)
+        private static VrcxData? TryParseVrcxJson(ReadOnlySpan<byte> span)
         {
-            try
-            {
-                var worldApi = await apiRequest.GetWorldInfo(vrcxData.World.Id);
-                var finalImageUrl = await HttpImage.GetFinalUrlAsync(worldApi.ThumbnailUrl);
-                worldImage.LoadAsync(finalImageUrl);
-                worldImage.Cursor = Cursors.Hand;
-                worldNameLabel.Text = vrcxData.World.Name;
-            }
-            catch (HttpRequestException httpEx)
-            {
-                System.Diagnostics.Debug.WriteLine($"HTTP error: {httpEx.Message}");
-            }
-            catch (Newtonsoft.Json.JsonException jsonEx)
-            {
-                System.Diagnostics.Debug.WriteLine($"JSON error: {jsonEx.Message}");
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Unexpected error: {ex.Message}");
-            }
-        }
+            int searchStart = 0;
+            ReadOnlySpan<byte> vrcxMarker = "VRCX"u8;
 
-        public static (RoundedLabel, bool, bool) UsersInfo(PlayerInfo player)
-        {
-            bool isfriend = IsFriend(player.Id).Result;
-            bool isme = IsMe(player.Id).Result;
-
-            Color userColor;
-            if (isme) userColor = Settings.MeColor;
-            else if (isfriend) userColor = Settings.FriendColor;
-            else userColor = Color.White;
-
-            RoundedLabel usersName = new RoundedLabel
+            while (searchStart < span.Length)
             {
-                Text = player.DisplayName,
-                Dock = DockStyle.Top,
-                Height = 30,
-                TextAlign = ContentAlignment.MiddleCenter,
-                ForeColor = userColor,
-                Font = new Font("Arial", 8, FontStyle.Bold),
-                Location = new Point(5, 5),
-                BackColor = Color.FromArgb(24, 27, 31),
-                BorderSize = 0,
-                BorderColor = Color.FromArgb(5, 55, 66),
-            };
+                int braceIdx = span.Slice(searchStart).IndexOf((byte)'{');
+                if (braceIdx < 0) break;
 
-            if (!string.IsNullOrEmpty(player.Id))
-            {
-                usersName.Cursor = Cursors.Hand;
-                usersName.MouseEnter += (sender, e) => {
-                    usersName.BorderSize = 2;
-                };
-                usersName.MouseLeave += (sender, e) => {
-                    usersName.BorderSize = 0;
-                };
-
-                usersName.Click += async (s, e) =>
+                int jsonStart = searchStart + braceIdx;
+                
+                if (span.Slice(jsonStart).IndexOf(vrcxMarker) < 0)
                 {
-                    Process.Start("explorer.exe", "https://vrchat.com/home/user/" + player.Id);
-                };
-            }
-            else
-            {
-                usersName.BackColor = Color.FromArgb(16, 18, 20);
-                usersName.ForeColor = Color.FromArgb(100, 100, 100);
+                    break;
+                }
+
+                try
+                {
+                    var reader = new Utf8JsonReader(span.Slice(jsonStart), isFinalBlock: false, state: default);
+                    using var doc = JsonDocument.ParseValue(ref reader);
+                    string raw = doc.RootElement.GetRawText();
+                    if (raw.Contains("\"application\":\"VRCX\"") || raw.Contains("\"application\": \"VRCX\""))
+                    {
+                        return JsonSerializer.Deserialize<VrcxData>(raw, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                    }
+                }
+                catch
+                {
+                    // Continue search if JSON was malformed at this point
+                }
+
+                searchStart = jsonStart + 1;
             }
 
-
-            return (usersName, isfriend, isme);
-        }
-
-        private static Task<bool> IsFriend(string userId)
-        {
-            if (Settings.Friends.Contains(userId))
-            {
-                return Task.FromResult(true);
-            }
-            return Task.FromResult(false);
-        }
-
-        private static Task<bool> IsMe(string userId)
-        {
-            if (Settings.UserId == userId)
-            {
-                return Task.FromResult(true);
-            }
-            return Task.FromResult(false);
+            return null;
         }
     }
 }
+

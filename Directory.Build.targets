@@ -1,0 +1,5 @@
+<Project>
+  <Target Name="SixLabors_ValidateLicense" BeforeTargets="CoreCompile">
+    <Message Text="Skipping SixLabors License Validation" Importance="high" />
+  </Target>
+</Project>

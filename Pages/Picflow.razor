@@ -1,0 +1,717 @@
+@page "/picflow"
+@using System.Text.RegularExpressions
+@using System.IO
+@using VRCGalleryManager.Core
+@inject VRCAuth Auth
+@inject NotificationService NotificationService
+@implements IDisposable
+@inject NavigationManager NavManager
+@inject DialogService dialogService
+
+<div class="h-100 d-flex flex-column p-3">
+    <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-secondary">
+        <div>
+            <h3 class="mb-0 text-accent d-flex align-items-center gap-2">
+                <img src="/svg/traffic-economy-svgrepo-com.svg" class="media-page-icon" /> Picflow
+                <span class="text-white-50 fs-6 ms-2">@Images.Count</span>
+                <span class="fs-6 text-muted ms-2">@LogStatus</span>
+            </h3>
+        </div>
+        
+        <div class="d-flex align-items-center gap-2">
+            <button class="btn btn-outline-secondary btn-sm" @onclick="Refresh" disabled="@IsStreamingProp" title="Refresh">
+                <img src="/svg/rotate-right-svgrepo-com.svg" class="btn-icon" style="margin: 0;" />
+            </button>
+            <button class="btn btn-outline-danger btn-sm" @onclick="ClearItems" title="Clear">
+                <img src="/svg/broom-svgrepo-com.svg" class="btn-icon" style="margin: 0;" />
+            </button>
+            <button class="btn btn-info btn-sm" @onclick="ToggleInfo">
+                <img src="/svg/info-circle-svgrepo-com.svg" class="btn-icon" /> Info
+            </button>
+        </div>
+    </div>
+
+    <div class="mb-3 d-flex gap-1 p-1 rounded-pill shadow-sm mx-auto align-items-center" style="width: fit-content; background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255,255,255,0.1); padding-right: 1.25rem !important;">
+        <div class="d-flex gap-1">
+            <button class="btn btn-sm rounded-pill px-3 @GetCategoryBtnClass(null)" @onclick="() => SetCategory(null)">All</button>
+            <button class="btn btn-sm rounded-pill px-3 @GetCategoryBtnClass(ItemCategory.Sticker)" @onclick="() => SetCategory(ItemCategory.Sticker)">Stickers</button>
+            <button class="btn btn-sm rounded-pill px-3 @GetCategoryBtnClass(ItemCategory.Emoji)" @onclick="() => SetCategory(ItemCategory.Emoji)">Emojis</button>
+            <button class="btn btn-sm rounded-pill px-3 @GetCategoryBtnClass(ItemCategory.Print)" @onclick="() => SetCategory(ItemCategory.Print)">Prints</button>
+        </div>
+        
+        <div class="bg-secondary opacity-50 mx-2" style="width: 1px; height: 24px;"></div>
+        
+        <div class="form-check form-switch d-flex align-items-center mb-0 ms-1 me-2" title="Automatically load new items in real-time as they appear in logs">
+            <input class="form-check-input mt-0 me-2 cursor-pointer" type="checkbox" id="streamSwitch" @bind="IsStreamingProp" @bind:after="OnStreamingChanged">
+            <label class="form-check-label text-white cursor-pointer small fw-bold" for="streamSwitch">Stream</label>
+        </div>
+        
+        <div class="form-check form-switch d-flex align-items-center mb-0 me-1" title="Automatically remove white borders from Prints when uploading">
+            <input class="form-check-input mt-0 me-2 cursor-pointer" type="checkbox" id="cropBorderSwitch" checked="@CropPrints" @onchange="OnCropPrintsChanged">
+            <label class="form-check-label text-white cursor-pointer small fw-bold" for="cropBorderSwitch">Crop Prints</label>
+        </div>
+    </div>
+
+
+
+    <div class="flex-grow-1 overflow-auto">
+        <div class="media-grid gap-3 align-items-center">
+            @foreach (var img in FilteredImages)
+            {
+                <div class="position-relative media-card-container overflow-hidden @(img.Category == ItemCategory.Print ? (CropPrints ? "photo-card-ratio" : "print-card-ratio") : "picflow-card")">
+                    @if (string.IsNullOrEmpty(img.Url))
+                    {
+                        <div class="w-100 h-100 d-flex justify-content-center align-items-center">
+                            <div class="spinner-border spinner-border-sm text-secondary" role="status"></div>
+                        </div>
+                    }
+                    else
+                    {
+                        if (img.Category == ItemCategory.Print && CropPrints)
+                        {
+                            <img src="@img.Url" style="width: 106.66%; height: 133.33%; object-fit: fill; position: absolute; top: -6.38%; left: -3.33%;" loading="lazy" />
+                        }
+                        else
+                        {
+                            <img src="@img.Url" class="w-100 h-100 object-fit-cover" loading="lazy" />
+                        }
+                    }
+                    <div class="position-absolute w-100 text-center media-card-label picflow-label fw-bold @(!string.IsNullOrEmpty(img.UserId) ? "cursor-pointer" : "") @(!string.IsNullOrEmpty(img.UserId) && img.UserId == Auth.CurrentUser?.Id ? "text-self-user" : (!string.IsNullOrEmpty(img.UserId) && Auth.CurrentUser?.Friends?.Contains(img.UserId) == true ? "text-warning" : ""))" @onclick="() => OpenUserInBrowser(img.UserId)" title="@(!string.IsNullOrEmpty(img.UserId) ? "Open Profile in Browser" : "")">
+                        @img.Username
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(img.Url))
+                    {
+                        <button class="btn btn-success btn-sm rounded-circle position-absolute btn-action media-btn-upload" style="right: 40px;" @onclick="() => ToggleUploadMenu(img)" title="Add (upload)">
+                            <img src="/svg/add-circle-svgrepo-com.svg" class="btn-icon icon-white" style="margin: 0;" />
+                        </button>
+
+                        <button class="btn btn-dark btn-sm rounded-circle position-absolute btn-action media-btn-open" style="right: 5px;" @onclick="() => OpenImage(img)" title="View Image">
+                            <img src="/svg/eye-svgrepo-com.svg" class="btn-icon" style="margin: 0;" />
+                        </button>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@if (UploadMenuImage != null)
+{
+    <div class="position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center dialog-overlay" style="z-index: 10000;" @onclick="CloseUploadMenu">
+        <div class="dialog-panel d-flex flex-column" @onclick:stopPropagation="true" style="min-width: 300px;">
+            <div class="p-4 flex-grow-1 border-bottom border-secondary text-center">
+                <h5 class="fw-bold text-white mb-2">Upload to...</h5>
+                <p class="text-light mb-3 small">Select the category where you want to upload this image.</p>
+                
+                @if (UploadMenuImage.Category == ItemCategory.Print && CropPrints)
+                {
+                    <div class="overflow-hidden position-relative d-inline-block rounded shadow-sm mx-auto" style="height: 200px; aspect-ratio: 16/9;">
+                        <img src="@UploadMenuImage.Url" style="width: 106.66%; height: 133.33%; object-fit: fill; position: absolute; top: -6.38%; left: -3.33%;" />
+                    </div>
+                }
+                else
+                {
+                    <img src="@UploadMenuImage.Url" class="rounded shadow-sm" style="max-height: 200px; max-width: 100%; object-fit: contain;" />
+                }
+            </div>
+            <div class="p-3 d-flex flex-column gap-2 dialog-footer">
+                <button class="btn btn-outline-secondary d-flex align-items-center gap-2" @onclick='() => UploadForCategory(UploadMenuImage, "icons")'><img src="/svg/profile-user-svgrepo-com.svg" class="icon-accent" style="width:20px;height:20px;" /> Icons</button>
+                <button class="btn btn-outline-secondary d-flex align-items-center gap-2" @onclick='() => UploadForCategory(UploadMenuImage, "photos")'><img src="/svg/gallery-minimalistic-svgrepo-com.svg" class="icon-accent" style="width:20px;height:20px;" /> Photos</button>
+                <button class="btn btn-outline-secondary d-flex align-items-center gap-2" @onclick='() => UploadForCategory(UploadMenuImage, "emoji")'><img src="/svg/emoji-funny-circle-svgrepo-com.svg" class="icon-accent" style="width:20px;height:20px;" /> Emoji</button>
+                <button class="btn btn-outline-secondary d-flex align-items-center gap-2" @onclick='() => UploadForCategory(UploadMenuImage, "sticker")'><img src="/svg/sticker-smile-square-svgrepo-com.svg" class="icon-accent" style="width:20px;height:20px;" /> Sticker</button>
+                <button class="btn btn-outline-secondary d-flex align-items-center gap-2" @onclick='() => UploadForCategory(UploadMenuImage, "prints")'><img src="/svg/camera-svgrepo-com.svg" class="icon-accent" style="width:20px;height:20px;" /> Prints</button>
+                
+                <button class="btn btn-danger mt-2 fw-bold" @onclick="CloseUploadMenu">Cancel</button>
+            </div>
+        </div>
+    </div>
+}
+
+<VRCGalleryManager.Components.ImageViewer @ref="imageViewer" OnUploadRequested="HandleViewerUpload" />
+
+@if (ShowInfo)
+{
+    <div class="position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center dialog-overlay" style="z-index: 10005;" @onclick="ToggleInfo">
+        <div class="dialog-panel d-flex flex-column picflow-info-dialog" @onclick:stopPropagation="true">
+            <div class="p-3 px-4 d-flex align-items-center justify-content-between border-bottom border-secondary" style="background: rgba(0, 0, 0, 0.2);">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="viewer-info-icon-box" style="width: 28px; height: 28px;">
+                        <img src="/svg/info-circle-svgrepo-com.svg" class="icon-accent" style="width: 15px; height: 15px;" />
+                    </div>
+                    <h5 class="fw-bold text-white mb-0 fs-6">Picflow Setup & Launch Option</h5>
+                </div>
+                <button class="btn-viewer-info-close" @onclick="ToggleInfo" title="Close">
+                    <img src="/svg/close-bold-svgrepo-com.svg" class="icon-white" style="width: 12px; height: 12px;" />
+                </button>
+            </div>
+
+            <div class="p-4 flex-grow-1 d-flex flex-column gap-3">
+                <p class="text-light mb-0" style="font-size: 0.88rem; line-height: 1.5;">
+                    To allow <strong>Picflow</strong> to read stickers, emojis and prints in real-time, VRChat must be started with extended SDK logging enabled.
+                </p>
+
+                <div class="picflow-code-box d-flex align-items-center justify-content-between p-2 px-3 rounded" @onclick="CopyInfoText" title="Click to copy">
+                    <div class="d-flex align-items-center gap-2 overflow-hidden">
+                        <span class="text-muted user-select-none font-monospace small">$</span>
+                        <code class="text-accent font-monospace fw-bold text-truncate" style="font-size: 0.95rem;">--enable-sdk-log-levels</code>
+                    </div>
+                    <button class="btn btn-sm @(isCopied ? "btn-success" : "btn-outline-secondary") d-flex align-items-center gap-1 flex-shrink-0 ms-2" @onclick="CopyInfoText" @onclick:stopPropagation="true">
+                        <img src="/svg/copy-svgrepo-com.svg" class="icon-white" style="width: 14px; height: 14px;" />
+                        <span style="font-size: 0.78rem;">@(isCopied ? "Copied!" : "Copy")</span>
+                    </button>
+                </div>
+
+                <div class="p-3 rounded" style="background: rgba(0, 0, 0, 0.25); border: 1px solid rgba(255, 255, 255, 0.06); font-size: 0.82rem;">
+                    <div class="text-white-50 fw-bold mb-2 text-uppercase" style="font-size: 0.72rem; letter-spacing: 0.5px;">How to configure in Steam:</div>
+                    <ol class="mb-0 ps-3 text-light d-flex flex-column gap-1" style="line-height: 1.45;">
+                        <li>Open <strong>Steam</strong> and go to your <strong>Library</strong>.</li>
+                        <li>Right-click <strong>VRChat</strong> &rarr; <strong>Properties...</strong></li>
+                        <li>Under the <strong>General</strong> tab, paste the parameter into <strong>Launch Options</strong>.</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="p-3 px-4 d-flex justify-content-end dialog-footer">
+                <button class="btn btn-secondary px-4 fw-bold btn-sm" @onclick="ToggleInfo">Close</button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Inject] protected ApiRequest ApiReq { get; set; }
+    [Inject] protected MediaCacheService CacheService { get; set; }
+    [Inject] protected NetworkStatusService NetworkStatus { get; set; }
+    private List<ImageModel> Images = new();
+    private bool ShowInfo = false;
+    private string LogStatus = "";
+    private HashSet<string> _allItems = new();
+    private ItemCategory? SelectedCategory = null;
+
+    private IEnumerable<ImageModel> FilteredImages => SelectedCategory.HasValue 
+        ? Images.Where(i => i.Category == SelectedCategory.Value) 
+        : Images;
+
+    private bool IsStreamingProp 
+    {
+        get => CacheService.Get<bool>("PicflowStreaming");
+        set => CacheService.Set("PicflowStreaming", value);
+    }
+
+    private static readonly Regex StickerRegex = new Regex(
+        @"User\s+(?<userId>usr_[a-f0-9\-]+)\s+\((?<username>[^)]+)\).*?sticker\s+(?<sticker>inv_[a-f0-9\-]+)",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase
+    );
+
+    private static readonly Regex EmojiRegex = new Regex(
+        @"https://api\.vrchat\.cloud/api/1/user/(?<userId>usr_[a-f0-9\-]+)/inventory/(?<emoji>inv_[a-f0-9\-]+)",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase
+    );
+
+    private static readonly Regex PrintRegex = new Regex(
+        @"https://api\.vrchat\.cloud/api/1/prints/(?<print>prnt?_[a-f0-9\-]+)",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase
+    );
+
+    public enum ItemCategory { Sticker, Emoji, Print }
+
+    public class ImageModel
+    {
+        public string Username { get; set; } = "Unknown";
+        public string UserId { get; set; } = "";
+        public string ItemId { get; set; }
+        public string Url { get; set; }
+        public ItemCategory Category { get; set; }
+    }
+
+    private bool CropPrints = true;
+    private VRCGalleryManager.Components.ImageViewer imageViewer;
+
+    protected override async Task OnInitializedAsync()
+    {
+        CropPrints = Config.Get("CropWhiteBorder", "true") == "true";
+        NetworkStatus.OnNetworkStatusChanged += HandlePicflowNetworkChange;
+
+        var cachedImg = CacheService.Get<List<ImageModel>>("PicflowImages");
+        if (cachedImg != null)
+        {
+            Images = cachedImg;
+            _allItems = CacheService.Get<HashSet<string>>("PicflowAllItems") ?? new HashSet<string>();
+            LogStatus = CacheService.Get<string>("PicflowLogStatus") ?? "";
+        }
+        else
+        {
+            await LoadFromLogs();
+        }
+    }
+
+    private void HandlePicflowNetworkChange(bool isOnline)
+    {
+        if (isOnline)
+        {
+            // Re-fetch any images that were skipped while offline
+            foreach (var img in Images.Where(i => string.IsNullOrEmpty(i.Url)))
+            {
+                _ = FetchImageUrl(img);
+            }
+        }
+    }
+
+
+
+    private async Task Refresh()
+    {
+        ClearItems();
+        await LoadFromLogs();
+    }
+
+    private void ClearItems()
+    {
+        Images.Clear();
+        _allItems.Clear();
+        LogStatus = "";
+        CacheService.Set("PicflowImages", (List<ImageModel>)null);
+        CacheService.Set("PicflowAllItems", (HashSet<string>)null);
+        CacheService.Set<string>("PicflowLogStatus", null);
+        StateHasChanged();
+    }
+
+    private string GetCategoryBtnClass(ItemCategory? cat)
+    {
+        if (SelectedCategory == cat)
+            return "btn-primary fw-bold";
+        
+        if (SelectedCategory == null)
+            return "text-white border-0"; // Normal brightness if "All" is active
+
+        return "text-white border-0 btn-hover-light"; // Darkened if another category is active
+    }
+
+    private void SetCategory(ItemCategory? category)
+    {
+        if (SelectedCategory == category && category != null)
+        {
+            SelectedCategory = null;
+        }
+        else
+        {
+            SelectedCategory = category;
+        }
+        StateHasChanged();
+    }
+
+    private bool isCopied = false;
+
+    private void ToggleInfo()
+    {
+        ShowInfo = !ShowInfo;
+        if (ShowInfo) isCopied = false;
+    }
+
+    private async Task CopyInfoText()
+    {
+        try
+        {
+            await Microsoft.Maui.ApplicationModel.DataTransfer.Clipboard.Default.SetTextAsync("--enable-sdk-log-levels");
+            NotificationService.Show("Copied '--enable-sdk-log-levels' to clipboard!", "Copied", NotificationType.Success);
+            isCopied = true;
+            StateHasChanged();
+
+            _ = Task.Run(async () =>
+            {
+                await Task.Delay(2000);
+                isCopied = false;
+                await InvokeAsync(StateHasChanged);
+            });
+        }
+        catch (Exception ex)
+        {
+            NotificationService.Show($"Failed to copy: {ex.Message}", "Error", NotificationType.Error);
+        }
+    }
+
+    private void OnCropPrintsChanged(ChangeEventArgs e)
+    {
+        if (e.Value is bool val)
+        {
+            CropPrints = val;
+            Config.Set("CropWhiteBorder", val ? "true" : "false");
+        }
+    }
+
+    private void OnStreamingChanged()
+    {
+        var cts = CacheService.Get<CancellationTokenSource>("PicflowCts");
+        if (IsStreamingProp)
+        {
+            cts?.Cancel();
+            cts = new CancellationTokenSource();
+            _ = StreamLogsAsync(cts.Token);
+            CacheService.Set("PicflowCts", cts);
+        }
+        else
+        {
+            cts?.Cancel();
+            CacheService.Set<CancellationTokenSource>("PicflowCts", null);
+        }
+    }
+
+    private async Task LoadFromLogs()
+    {
+        var oldCts = CacheService.Get<CancellationTokenSource>("PicflowCts");
+        oldCts?.Cancel();
+        IsStreamingProp = false;
+        var cts = new CancellationTokenSource();
+        CacheService.Set("PicflowCts", cts);
+        var token = cts.Token;
+
+        string userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        string vrchatLogPath = Path.Combine(userProfile, "AppData", "LocalLow", "VRChat", "VRChat");
+
+        if (!Directory.Exists(vrchatLogPath))
+        {
+            LogStatus = "| No data found";
+            return;
+        }
+
+        var logFiles = Directory.EnumerateFiles(vrchatLogPath, "output_log_*.txt")
+                                .OrderByDescending(f => File.GetLastWriteTimeUtc(f));
+
+        if (!logFiles.Any())
+        {
+            LogStatus = "| No data found";
+            return;
+        }
+
+        LogStatus = "| Processing...";
+        CacheService.Set("PicflowLogStatus", LogStatus);
+        StateHasChanged();
+
+        foreach (var logFile in logFiles)
+        {
+            token.ThrowIfCancellationRequested();
+
+            try
+            {
+                using var fileStream = new FileStream(logFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                using var reader = new StreamReader(fileStream);
+
+                string? line;
+                while ((line = await reader.ReadLineAsync()) != null)
+                {
+                    token.ThrowIfCancellationRequested();
+                    ProcessLogLine(line);
+                }
+            }
+            catch (IOException) { }
+        }
+
+        LogStatus = "";
+        CacheService.Set("PicflowLogStatus", LogStatus);
+        CacheService.Set("PicflowImages", Images);
+        CacheService.Set("PicflowAllItems", _allItems);
+        StateHasChanged();
+    }
+
+    private async Task StreamLogsAsync(CancellationToken token)
+    {
+        string userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        string vrchatLogPath = Path.Combine(userProfile, "AppData", "LocalLow", "VRChat", "VRChat");
+
+        string[] logFiles = Directory.GetFiles(vrchatLogPath, "output_log_*.txt");
+
+        if (logFiles.Length == 0) return;
+
+        string lastLogFile = logFiles.OrderByDescending(f => File.GetLastWriteTime(f)).First();
+
+        try
+        {
+            using FileStream fileStream = new(lastLogFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+            using StreamReader reader = new(fileStream);
+
+            fileStream.Seek(0, SeekOrigin.End);
+
+            while (!token.IsCancellationRequested)
+            {
+                string? line = await reader.ReadLineAsync();
+
+                if (line != null)
+                {
+                    ProcessLogLine(line);
+                    InvokeAsync(StateHasChanged);
+                }
+                else
+                {
+                    await Task.Delay(500, token);
+                }
+            }
+        }
+        catch (IOException) { }
+    }
+
+    private void ProcessLogLine(string line)
+    {
+        var stickerMatch = StickerRegex.Match(line);
+        if (stickerMatch.Success)
+        {
+            string userId = stickerMatch.Groups["userId"].Value;
+            string username = stickerMatch.Groups["username"].Value;
+            string itemId = stickerMatch.Groups["sticker"].Value;
+            TryAddItem(itemId, userId, username, ItemCategory.Sticker);
+            return;
+        }
+
+        var emojiMatch = EmojiRegex.Match(line);
+        if (emojiMatch.Success)
+        {
+            string userId = emojiMatch.Groups["userId"].Value;
+            string itemId = emojiMatch.Groups["emoji"].Value;
+            TryAddItem(itemId, userId, "Emoji User", ItemCategory.Emoji);
+            return;
+        }
+
+        var printMatch = PrintRegex.Match(line);
+        if (printMatch.Success)
+        {
+            string itemId = printMatch.Groups["print"].Value;
+            TryAddItem(itemId, "", "Print Author", ItemCategory.Print);
+            return;
+        }
+    }
+
+    private void TryAddItem(string itemId, string userId, string username, ItemCategory category)
+    {
+        if (_allItems.Add(itemId))
+        {
+            var imgModel = new ImageModel
+            {
+                Username = username,
+                UserId = userId,
+                ItemId = itemId,
+                Url = "", // Will fetch asynchronously
+                Category = category
+            };
+            
+            InvokeAsync(() => {
+                Images.Insert(0, imgModel);
+                StateHasChanged();
+            });
+            
+            // Fetch the actual image URL asynchronously
+            _ = FetchImageUrl(imgModel);
+        }
+    }
+    
+    private async Task FetchImageUrl(ImageModel imgModel)
+    {
+        try
+        {
+            var cachedItem = PicflowDatabase.GetItem(imgModel.ItemId);
+            if (cachedItem != null)
+            {
+                if (cachedItem.Url == "INVALID")
+                {
+                    InvokeAsync(() => { Images.Remove(imgModel); StateHasChanged(); });
+                    return;
+                }
+                
+                if (!string.IsNullOrEmpty(cachedItem.Url))
+                {
+                    imgModel.Url = cachedItem.Url;
+                    if (!string.IsNullOrEmpty(cachedItem.Username))
+                    {
+                        imgModel.Username = cachedItem.Username;
+                    }
+                    if (!string.IsNullOrEmpty(cachedItem.UserId))
+                    {
+                        imgModel.UserId = cachedItem.UserId;
+                    }
+                    InvokeAsync(StateHasChanged);
+                    return;
+                }
+            }
+
+            if (imgModel.Category == ItemCategory.Sticker || imgModel.Category == ItemCategory.Emoji)
+            {
+                var invInfo = await ApiReq.GetInventoryInfo(imgModel.UserId, imgModel.ItemId);
+                if (invInfo != null)
+                {
+                    if (imgModel.Category == ItemCategory.Emoji && (invInfo.Tags == null || !invInfo.Tags.Contains("Custom Emoji")))
+                    {
+                        PicflowDatabase.SaveItem(imgModel.ItemId, "", "", "INVALID", (int)imgModel.Category);
+                        InvokeAsync(() => { Images.Remove(imgModel); StateHasChanged(); });
+                        return;
+                    }
+                    
+                    if (imgModel.Category == ItemCategory.Emoji)
+                    {
+                        imgModel.Username = await ApiReq.GetUserName(imgModel.UserId);
+                    }
+
+                    string fileId = invInfo.Metadata?.FileId;
+                    if (!string.IsNullOrEmpty(fileId))
+                    {
+                        imgModel.Url = ApiRequest.ImageThumbnailUrl(fileId);
+                    }
+                    else if (!string.IsNullOrEmpty(invInfo.ImageUrl))
+                    {
+                        string url = invInfo.ImageUrl;
+                        if (url.Contains("/file/"))
+                        {
+                            url = url.Replace("/file/", "/image/").Replace("/file", "/256");
+                        }
+                        imgModel.Url = url;
+                    }
+                }
+                else if (NetworkStatus.IsOnline)
+                {
+                    PicflowDatabase.SaveItem(imgModel.ItemId, "", "", "INVALID", (int)imgModel.Category);
+                    InvokeAsync(() => { Images.Remove(imgModel); StateHasChanged(); });
+                    return;
+                }
+            }
+            else if (imgModel.Category == ItemCategory.Print)
+            {
+                var printInfo = await ApiReq.GetPrintInfo(imgModel.ItemId);
+                if (printInfo != null && !string.IsNullOrEmpty(printInfo.FileId))
+                {
+                    if (!string.IsNullOrEmpty(printInfo.AuthorName))
+                    {
+                        imgModel.Username = printInfo.AuthorName;
+                    }
+                    if (!string.IsNullOrEmpty(printInfo.AuthorId))
+                    {
+                        imgModel.UserId = printInfo.AuthorId;
+                    }
+                    imgModel.Url = ApiRequest.ImageThumbnailUrl(printInfo.FileId);
+                }
+                else if (NetworkStatus.IsOnline)
+                {
+                    PicflowDatabase.SaveItem(imgModel.ItemId, "", "", "INVALID", (int)imgModel.Category);
+                    InvokeAsync(() => { Images.Remove(imgModel); StateHasChanged(); });
+                    return;
+                }
+            }
+
+            if (!string.IsNullOrEmpty(imgModel.Url))
+            {
+                PicflowDatabase.SaveItem(imgModel.ItemId, imgModel.Username, imgModel.UserId, imgModel.Url, (int)imgModel.Category);
+                InvokeAsync(StateHasChanged);
+            }
+        }
+        catch
+        {
+            // If it completely fails (e.g. 404), cache it as invalid so we don't retry forever
+            PicflowDatabase.SaveItem(imgModel.ItemId, "", "", "INVALID", (int)imgModel.Category);
+            InvokeAsync(() => { Images.Remove(imgModel); StateHasChanged(); });
+        }
+    }
+
+    private ImageModel UploadMenuImage;
+
+    private void ToggleUploadMenu(ImageModel img)
+    {
+        if (UploadMenuImage == img)
+            UploadMenuImage = null;
+        else
+            UploadMenuImage = img;
+    }
+
+    private void CloseUploadMenu()
+    {
+        if (UploadMenuImage != null)
+        {
+            UploadMenuImage = null;
+            StateHasChanged();
+        }
+    }
+
+    private void UploadForCategory(ImageModel img, string route)
+    {
+        UploadMenuImage = null;
+        if (img == null || string.IsNullOrEmpty(img.Url)) return;
+        
+        _ = ProcessUploadRoute(img, route);
+    }
+
+    private async Task ProcessUploadRoute(ImageModel img, string route)
+    {
+        string highResUrl = img.Url.Replace("/image/", "/file/").Replace("/256", "/file");
+        bool cropBorder = img.Category == ItemCategory.Print && CropPrints;
+        string localPath = await ClipboardHandler.SaveImageFromUrlAsync(highResUrl, cropBorder);
+        if (!string.IsNullOrEmpty(localPath))
+        {
+            var encoded = Uri.EscapeDataString(localPath);
+            NavManager.NavigateTo($"/{route}?uploadPath={encoded}");
+        }
+        else
+        {
+            NotificationService.Show("Failed to download image.", "Download Error", NotificationType.Error);
+        }
+    }
+
+    private async Task DeleteImage(ImageModel img)
+    {
+        bool confirm = await dialogService.ShowConfirmAsync("Delete Image", "Are you sure you want to delete this image?", "Delete", "Cancel");
+        if (confirm)
+        {
+            DeleteItem(img);
+        }
+    }
+
+    private void OpenImage(ImageModel img)
+    {
+        var viewerItems = Images.Select(i => new VRCGalleryManager.Components.ImageViewer.ViewerItem {
+            HighResSource = i.Url.Replace("/image/", "/file/").Replace("/256", "/file"),
+            LowResSource = i.Url,
+            Title = $"{i.Username} - {i.Category}"
+        }).ToList();
+        
+        var currentUrl = img.Url.Replace("/image/", "/file/").Replace("/256", "/file");
+        var index = viewerItems.FindIndex(i => i.HighResSource == currentUrl);
+        if (index == -1) index = 0;
+        
+        imageViewer.Open(viewerItems, index);
+    }
+
+    private void DeleteItem(ImageModel img)
+    {
+        Images.Remove(img);
+        _allItems.Remove(img.ItemId);
+        CacheService.Set("PicflowImages", Images);
+        CacheService.Set("PicflowAllItems", _allItems);
+    }
+
+    public void Dispose()
+    {
+        NetworkStatus.OnNetworkStatusChanged -= HandlePicflowNetworkChange;
+        CacheService.Set("PicflowImages", Images);
+        CacheService.Set("PicflowAllItems", _allItems);
+    }
+    private void HandleViewerUpload(int index)
+    {
+        var targetList = Images;
+        if (index >= 0 && index < targetList.Count)
+        {
+            var item = targetList[index];
+            ToggleUploadMenu(item);
+        }
+    }
+
+    private void OpenUserInBrowser(string userId)
+    {
+        if (!string.IsNullOrEmpty(userId))
+        {
+            try
+            {
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = $"https://vrchat.com/home/user/{userId}",
+                    UseShellExecute = true
+                });
+            }
+            catch { }
+        }
+    }
+}

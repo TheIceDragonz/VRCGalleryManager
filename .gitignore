@@ -21,3 +21,11 @@
 /Assemblyinfo.cs
 /VRCGalleryManager_Setup.exe
 Properties/PublishProfiles/FolderProfile.pubxml.user
+/bin
+/Builder/Output/
+/Builder/*.exe
+**/Output/
+*.apk
+*.aab
+*.msix
+*.exe

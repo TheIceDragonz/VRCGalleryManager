@@ -1,0 +1,913 @@
+@using Microsoft.JSInterop
+@using SixLabors.ImageSharp
+@using SixLabors.ImageSharp.PixelFormats
+@using SixLabors.ImageSharp.Processing
+@using System.IO
+@using global::VRCGalleryManager.Core.Helpers
+@using global::VRCGalleryManager.Core
+@inject IJSRuntime JSRuntime
+@inject NotificationService NotificationService
+
+<div class="emoji-editor-container position-relative d-flex h-100 bg-main text-white rounded overflow-hidden">
+    @if (isLoading || isUploading)
+    {
+        <div class="position-absolute top-0 start-0 w-100 h-100 d-flex flex-column justify-content-center align-items-center" style="background-color: rgba(0,0,0,0.7); z-index: 1000; backdrop-filter: blur(2px);">
+            <div class="spinner-border text-accent mb-3" style="width: 3rem; height: 3rem;" role="status">
+                <span class="visually-hidden">@(isUploading ? "Processing..." : "Loading...")</span>
+            </div>
+            @if (isUploading)
+            {
+                <span class="text-white fw-bold fs-5">Processing final emoji...</span>
+            }
+            else
+            {
+                <span class="text-white fw-bold fs-5">Loading emoji...</span>
+            }
+        </div>
+    }
+    <div class="canvas-container flex-grow-1 position-relative d-flex justify-content-center align-items-center bg-black p-4" style="min-width: 0; min-height: 0;">
+        @if (isRendering)
+        {
+            <div class="position-absolute top-0 start-0 w-100 h-100 d-flex flex-column justify-content-center align-items-center" style="background-color: rgba(0,0,0,0.5); z-index: 10;">
+                <div class="spinner-border text-accent mb-2" style="width: 2rem; height: 2rem;" role="status">
+                    <span class="visually-hidden">Calculating...</span>
+                </div>
+            </div>
+        }
+        @if (IsAnimatedMode)
+        {
+            <div class="d-flex flex-column align-items-center w-100 h-100" style="min-width: 0; min-height: 0;">
+                <div class="spritesheet-preview-container d-flex align-items-center justify-content-center w-100 flex-grow-1" style="min-height: 0; min-width: 0;">
+                    <img src="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='800'%3E%3C/svg%3E"
+                         class="spritesheet-animator editor-canvas-img emoji-preview-pixelated"
+                         style="background-image: url('@AnimatedPreviewBase64'); background-repeat: no-repeat; width: auto; height: auto;" 
+                         data-animated="true" 
+                         data-frames="@FinalFrameCount" 
+                         data-fps="@FramesOverTime" />
+                </div>
+                
+                @if (GifFrameThumbnails.Count > 0)
+                {
+                    <div class="timeline-scroll d-flex overflow-auto py-2 gap-2 mt-3" style="white-space: nowrap; max-height: 80px; max-width: 100%; flex-shrink: 0; min-width: 0; margin-left: auto; margin-right: auto;">
+                        @for (int i = 0; i < GifFrameThumbnails.Count; i++)
+                        {
+                            var index = i;
+                            var isSelected = index >= StartFrame && index <= EndFrame;
+                            var thumbB64 = GifFrameThumbnails[i];
+                            <div class="rounded @(isSelected ? "border border-info bg-info bg-opacity-25" : "border border-secondary bg-dark")" 
+                                 style="min-width: 44px; height: 44px; cursor: pointer; padding: 2px; transition: all 0.2s ease; flex-shrink: 0;"
+                                 @onclick="() => OnThumbnailClicked(index)">
+                                <img src="@thumbB64" class="w-100 h-100 rounded" style="object-fit: cover;" />
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <canvas id="emojiEditorCanvas" width="800" height="800" class="editor-canvas-img"></canvas>
+        }
+    </div>
+    <div class="editor-sidebar d-flex flex-column flex-shrink-0 bg-panel">
+        <div class="p-3 border-bottom">
+            <div class="d-flex justify-content-center align-items-center">
+                <h4 class="fw-bold text-accent m-0">Emoji Editor</h4>
+            </div>
+        </div>
+        <div class="flex-grow-1 overflow-auto d-flex flex-column">
+            <div class="p-3 editor-sidebar-content flex-shrink-0">
+
+            
+            <div class="mb-2">
+                <label class="form-label small text-muted mb-1">Preset Type</label>
+                <div class="dropdown w-100 position-relative">
+                    <button class="btn btn-sm btn-dark w-100 dropdown-toggle text-start d-flex justify-content-between align-items-center editor-dropdown-btn" type="button" @onclick="() => isEmojiTypeDropdownOpen = !isEmojiTypeDropdownOpen">
+                        @SelectedEmojiType
+                    </button>
+                    @if (isEmojiTypeDropdownOpen)
+                    {
+                        <div class="position-fixed top-0 start-0 w-100 h-100 editor-dropdown-overlay emoji-type-overlay" @onclick="() => isEmojiTypeDropdownOpen = false"></div>
+                        <div class="dropdown-menu dropdown-menu-dark shadow show editor-dropdown-menu p-2 emoji-type-dropdown-menu">
+                            <div class="d-flex flex-wrap gap-2 justify-content-center">
+                                @foreach (var style in EmojiStyles)
+                                {
+                                    <div class="emoji-style-item rounded-3 p-2 d-flex flex-row align-items-center @(SelectedEmojiType == style.Name ? "bg-info bg-opacity-25 border-info" : "border-secondary bg-dark")"
+                                         @onclick="@(() => { SelectedEmojiType = style.Name; isEmojiTypeDropdownOpen = false; })">
+                                        <img src="/animationStyle/@style.GifFile" class="rounded emoji-style-img" />
+                                        <span class="ms-2 fw-bold emoji-style-name">@style.Name</span>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            @if (!IsAnimatedMode)
+            {
+
+                <div class="mb-2">
+                    <label class="form-label small text-muted mb-1">Adaptation</label>
+                    <div class="d-flex gap-2">
+                        <div class="dropdown w-50">
+                            <button class="btn btn-sm btn-dark w-100 dropdown-toggle text-start d-flex justify-content-between align-items-center editor-dropdown-btn" type="button" @onclick="() => isAdaptationDropdownOpen = !isAdaptationDropdownOpen">
+                                @CurrentAdaptationMode.ToString()
+                            </button>
+                            @if (isAdaptationDropdownOpen)
+                            {
+                                <div class="position-fixed top-0 start-0 w-100 h-100 editor-dropdown-overlay" @onclick="() => isAdaptationDropdownOpen = false"></div>
+                                <ul class="dropdown-menu dropdown-menu-dark w-100 shadow show editor-dropdown-menu">
+                                    <li><button class="dropdown-item" @onclick="() => SetAdaptationMode(AdaptationMode.Fit)">Fit</button></li>
+                                    <li><button class="dropdown-item" @onclick="() => SetAdaptationMode(AdaptationMode.Fill)">Fill</button></li>
+                                    <li><button class="dropdown-item" @onclick="() => SetAdaptationMode(AdaptationMode.Stretch)">Stretch</button></li>
+                                </ul>
+                            }
+                        </div>
+                        <button class="btn btn-sm btn-dark w-50 d-flex justify-content-center align-items-center editor-dropdown-btn" @onclick="Rotate" title="Rotate 90°">
+                            <img src="/svg/rotate-right-svgrepo-com.svg" class="btn-icon me-2" style="width: 16px; height: 16px;" /> Rotate
+                        </button>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label small text-muted mb-1 d-flex justify-content-between">
+                        <span>Zoom</span> <span>@Math.Round(ZoomFactor * 100)%</span>
+                    </label>
+                    <input type="range" class="form-range" min="100" max="500" value="@(Math.Round(ZoomFactor * 100))" @oninput="OnZoomInput">
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label small text-muted mb-1">Background Color</label>
+                    <div class="d-flex align-items-center gap-2">
+                        <button class="btn btn-sm flex-grow-1 @(IsTransparentBg ? "btn-info" : "btn-outline-secondary")" @onclick="SetTransparentBg">Transparent</button>
+                        <input type="color" class="form-control form-control-color form-control-sm p-1 color-picker-sm" value="@HexBgColor" @oninput="OnBgColorInput" @onclick="OnBgColorClick">
+                    </div>
+                </div>
+
+                <div class="card bg-dark mb-3 editor-card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div class="form-check form-switch m-0">
+                                <input class="form-check-input" type="checkbox" id="removeBgSwitchEmoji" @bind="RemoveBgEnabled" @bind:after="QueueUpdatePreview">
+                                <label class="form-check-label fw-bold small" for="removeBgSwitchEmoji">Remove Background</label>
+                            </div>
+                            <div class="d-flex align-items-center gap-1 editor-section-transition @(RemoveBgEnabled ? "" : "editor-section-disabled")">
+                                <button class="btn btn-sm @(IsColorPicking ? "btn-info" : "btn-outline-secondary") px-2 py-1" @onclick="ToggleColorPicker" disabled="@(!RemoveBgEnabled)" title="Pick color from image">
+                                    <img src="/svg/color-picker-svgrepo-com.svg" class="icon-accent" style="width: 16px; height: 16px;" />
+                                </button>
+                                <input type="color" class="form-control form-control-color form-control-sm p-1 color-picker-sm" value="@HexRemoveBgColor" @oninput="OnRemoveBgColorInput" disabled="@(!RemoveBgEnabled)">
+                            </div>
+                        </div>
+                        
+                        <div class="editor-section-transition @(RemoveBgEnabled ? "" : "editor-section-disabled")">
+                            <div>
+                                <label class="form-label small text-muted mb-1 d-flex justify-content-between">
+                                    <span>Tolerance</span> <span>@RemoveBgTolerance</span>
+                                </label>
+                                <input type="range" class="form-range" min="0" max="100" @bind="RemoveBgTolerance" @bind:event="oninput" @bind:after="QueueUpdatePreview" disabled="@(!RemoveBgEnabled)">
+                            </div>
+
+                            <div class="form-check form-switch mt-3 mb-2">
+                                <input class="form-check-input" type="checkbox" id="featherSwitchEmoji" @bind="FeatherEnabled" @bind:after="QueueUpdatePreview" disabled="@(!RemoveBgEnabled)">
+                                <label class="form-check-label fw-bold small" for="featherSwitchEmoji">Feathering</label>
+                            </div>
+
+                            <div class="editor-section-transition @(FeatherEnabled ? "" : "editor-section-disabled")">
+                                <div class="mb-2">
+                                    <label class="form-label small text-muted mb-1 d-flex justify-content-between">
+                                        <span>Choke</span> <span>@ChokeRadius px</span>
+                                    </label>
+                                    <input type="range" class="form-range" min="0" max="20" @bind="ChokeRadius" @bind:event="oninput" @bind:after="QueueUpdatePreview" disabled="@(!FeatherEnabled)">
+                                </div>
+                                <div>
+                                    <label class="form-label small text-muted mb-1 d-flex justify-content-between">
+                                        <span>Blur</span> <span>@FeatherRadius px</span>
+                                    </label>
+                                    <input type="range" class="form-range" min="0" max="20" @bind="FeatherRadius" @bind:event="oninput" @bind:after="QueueUpdatePreview" disabled="@(!FeatherEnabled)">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            }
+            else
+            {
+
+
+                @if (TotalFrames > 1)
+                {
+                    <div class="mb-2">
+                        <label class="form-label small text-muted mb-1 d-flex justify-content-between">
+                            <span>Start Frame</span> <span>@(StartFrame + 1)</span>
+                        </label>
+                        <input type="range" class="form-range" min="0" max="@(TotalFrames - 1)" value="@StartFrame" @oninput="OnStartFrameInput" @onchange="UpdateAnimatedPreview">
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label small text-muted mb-1 d-flex justify-content-between">
+                            <span>End Frame</span> <span>@(EndFrame + 1)</span>
+                        </label>
+                        <input type="range" class="form-range" min="0" max="@(TotalFrames - 1)" value="@EndFrame" @oninput="OnEndFrameInput" @onchange="UpdateAnimatedPreview">
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label small text-muted mb-1 d-flex justify-content-between">
+                            <span>FPS</span> <span>@FramesOverTime</span>
+                        </label>
+                        <input type="range" class="form-range" min="1" max="64" value="@FramesOverTime" @oninput="OnFpsInput" @onchange="UpdateAnimatedPreview">
+                    </div>
+
+                }
+            }
+            </div>
+
+            
+            <div class="d-lg-none mt-auto">
+                @EditorFooter
+            </div>
+        </div>
+        
+        <div class="d-none d-lg-block mt-auto border-top" style="background-color: var(--bg-panel);">
+            @EditorFooter
+        </div>
+    </div>
+</div>
+
+@code {
+    private RenderFragment EditorFooter => __builder =>
+    {
+        <div class="p-3 editor-sidebar-footer flex-shrink-0">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="text-muted small fw-bold">SIZE</span>
+                <span class="fw-bold @(SizeMb > 10 ? "text-danger" : "text-accent")">@SizeMb.ToString("0.00") MB</span>
+            </div>
+            @if (!IsAnimatedMode)
+            {
+                <div class="mb-3">
+                    <label class="form-label small text-muted mb-1 d-flex justify-content-between">
+                        <span>Export Quality</span> <span>@CompressionQuality%</span>
+                    </label>
+                    <input type="range" class="form-range" min="10" max="100" value="@CompressionQuality" @oninput="OnQualityInput">
+                </div>
+            }
+            <div class="d-flex gap-2 mb-2">
+                @if (!IsAnimatedMode)
+                {
+                    <button class="btn btn-sm flex-grow-1 btn-reset" @onclick="Reset">Reset</button>
+                }
+                <button class="btn btn-sm btn-outline-danger @(IsAnimatedMode ? "w-100" : "flex-grow-1")" @onclick="OnCancelClick">Cancel</button>
+            </div>
+            <button class="btn btn-sm w-100 fw-bold @(isUploading ? "btn-secondary" : "btn-primary")" @onclick="OnSaveClick" disabled="@(SizeMb > 10 || isUploading)">
+                @if (isUploading)
+                {
+                    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                    <span>Processing...</span>
+                }
+                else
+                {
+                    <span>Upload</span>
+                }
+            </button>
+        </div>
+    };
+    [Parameter] public string Base64Image { get; set; }
+    [Parameter] public EventCallback<(string Base64, bool IsAnimated, string AnimStyle, int Frames, int FramesOverTime)> OnSave { get; set; }
+    [Parameter] public EventCallback OnCancel { get; set; }
+    [Parameter] public bool IsAnimatedMode { get; set; } = false;
+
+    private DotNetObjectReference<EmojiEditor> dotNetRef;
+    private Image<Rgba32> originalImage;
+    private readonly object _imageLock = new object();
+
+    // Static State
+    private AdaptationMode CurrentAdaptationMode = AdaptationMode.Fit;
+    private float ZoomFactor = 1.0f;
+    private float PanX = 0f;
+    private float PanY = 0f;
+    private int RotationAngle = 0;
+    private string HexBgColor = "#ffffff";
+    private bool IsTransparentBg = true;
+    private bool RemoveBgEnabled = false;
+    private string HexRemoveBgColor = "#ffffff";
+    private int RemoveBgTolerance = 15;
+    private bool IsColorPicking = false;
+
+    private bool FeatherEnabled = false;
+    private int ChokeRadius = 1;
+    private int FeatherRadius = 2;
+    private int CompressionQuality = 100;
+    private double SizeMb = 0;
+    private bool isAdaptationDropdownOpen = false;
+    private bool isEmojiTypeDropdownOpen = false;
+
+
+    private string SelectedEmojiType = "Select Type...";
+
+    private record EmojiStyleInfo(string Name, string GifFile);
+    private List<EmojiStyleInfo> EmojiStyles = new()
+    {
+        new("Aura", "Preview_B2-Aura.gif"),
+        new("Bats", "Preview_B2-Fall_Bats.gif"),
+        new("Bees", "Preview_B2-Bees.gif"),
+        new("Bounce", "Preview_B2-Bounce.gif"),
+        new("Cloud", "Preview_B2-Cloud.gif"),
+        new("Confetti", "Preview_B2-Winter_Confetti.gif"),
+        new("Crying", "Preview_B2-Crying.gif"),
+        new("Dislike", "Preview_B2-Dislike.gif"),
+        new("Fire", "Preview_B2-Fire.gif"),
+        new("Idea", "Preview_B2-Idea.gif"),
+        new("Lasers", "Preview_B2-Lasers.gif"),
+        new("Like", "Preview_B2-Like.gif"),
+        new("Magnet", "Preview_B2-Magnet.gif"),
+        new("Mistletoe", "Preview_B2-Winter_Mistletoe.gif"),
+        new("Money", "Preview_B2-Money.gif"),
+        new("Noise", "Preview_B2-Noise.gif"),
+        new("Orbit", "Preview_B2-Orbit.gif"),
+        new("Pizza", "Preview_B2-Pizza.gif"),
+        new("Rain", "Preview_B2-Rain.gif"),
+        new("Rotate", "Preview_B2-Rotate.gif"),
+        new("Shake", "Preview_B2-Shake.gif"),
+        new("Snow", "Preview_B2-Spin.gif"),
+        new("Snowball", "Preview_B2-Winter_Snowball.gif"),
+        new("Spin", "Preview_B2-Spin.gif"),
+        new("Splash", "Preview_B2-SummerSplash.gif"),
+        new("Stop", "Preview_B2-Stop.gif"),
+        new("ZZZ", "Preview_B2-ZZZ.gif")
+    };
+
+    // Animated State
+    [Parameter] public string AnimationStyle { get; set; } = "Loop";
+    [Parameter] public int FramesOverTime { get; set; } = 30;
+    private int TotalFrames = 1;
+    private int StartFrame = 0;
+    private int EndFrame = 0;
+    private int FinalFrameCount = 1;
+    private string AnimatedPreviewBase64 = "";
+    private string TempGifPath = "";
+    private List<string> GifFrameThumbnails = new();
+    private MemoryStream _imageStream;
+
+    private CancellationTokenSource cts = new();
+    private int _previewVersion = 0;
+    private string lastRenderHash = "";
+    private bool isLoading = true;
+    private bool isUploading = false;
+    private bool isRendering = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!string.IsNullOrEmpty(Base64Image))
+        {
+            isLoading = true;
+            await Task.Run(async () =>
+            {
+                var parts = Base64Image.Split(',');
+                var base64Data = parts.Length > 1 ? parts[1] : parts[0];
+                byte[] bytes = Convert.FromBase64String(base64Data);
+
+                TempGifPath = Path.Combine(Path.GetTempPath(), $"temp_emoji_{Guid.NewGuid()}.gif");
+                await File.WriteAllBytesAsync(TempGifPath, bytes);
+
+                _imageStream = new MemoryStream(bytes);
+                originalImage = Image.Load<Rgba32>(_imageStream);
+                
+                try
+                {
+                    TotalFrames = originalImage.Frames.Count;
+                }
+                catch { TotalFrames = 1; }
+            });
+
+            if (TotalFrames > 1)
+            {
+                IsAnimatedMode = true;
+                EndFrame = Math.Min(TotalFrames - 1, 63);
+                _ = ExtractGifThumbnailsAsync();
+            }
+
+            isLoading = false;
+
+            if (!IsAnimatedMode && dotNetRef != null)
+            {
+                QueueUpdatePreview();
+            }
+            else if (IsAnimatedMode)
+            {
+                UpdateAnimatedPreview();
+            }
+        }
+        else
+        {
+            isLoading = false;
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && !IsAnimatedMode)
+        {
+            dotNetRef = DotNetObjectReference.Create(this);
+            await JSRuntime.InvokeVoidAsync("imageEditor.init", "emojiEditorCanvas", dotNetRef);
+            if (originalImage != null)
+            {
+                QueueUpdatePreview();
+            }
+        }
+        else if (firstRender && IsAnimatedMode)
+        {
+            if (originalImage != null)
+            {
+                UpdateAnimatedPreview();
+            }
+        }
+    }
+
+    private void OnModeChanged()
+    {
+        if (IsAnimatedMode)
+        {
+            UpdateAnimatedPreview();
+        }
+        else
+        {
+            // Wait for canvas to be rendered, then init
+            _ = Task.Run(async () =>
+            {
+                await Task.Delay(100);
+                await InvokeAsync(async () =>
+                {
+                    dotNetRef = DotNetObjectReference.Create(this);
+                    await JSRuntime.InvokeVoidAsync("imageEditor.init", "emojiEditorCanvas", dotNetRef);
+                    QueueUpdatePreview();
+                });
+            });
+        }
+    }
+
+    private Color ParseHex(string hex)
+    {
+        try {
+            return Color.ParseHex(hex);
+        } catch {
+            return Color.Transparent;
+        }
+    }
+
+    private void SetTransparentBg()
+    {
+        if (!IsTransparentBg)
+        {
+            IsTransparentBg = true;
+            QueueTransformUpdate();
+        }
+    }
+
+    private void OnBgColorClick()
+    {
+        if (IsTransparentBg)
+        {
+            IsTransparentBg = false;
+            QueueTransformUpdate();
+        }
+    }
+
+    private void ToggleColorPicker()
+    {
+        IsColorPicking = !IsColorPicking;
+        JSRuntime.InvokeVoidAsync("imageEditor.toggleColorPicker");
+    }
+
+    [JSInvokable]
+    public void OnColorPicked(string hexColor)
+    {
+        HexRemoveBgColor = hexColor;
+        IsColorPicking = false;
+        QueueUpdatePreview();
+        StateHasChanged();
+    }
+
+    private void Rotate()
+    {
+        RotationAngle = (RotationAngle + 90) % 360;
+        QueueTransformUpdate();
+    }
+
+    private void Reset()
+    {
+        if (IsAnimatedMode) return;
+
+        CurrentAdaptationMode = AdaptationMode.Fit;
+        ZoomFactor = 1.0f;
+        PanX = 0f;
+        PanY = 0f;
+        RotationAngle = 0;
+        IsTransparentBg = true;
+        RemoveBgEnabled = false;
+        RemoveBgTolerance = 15;
+        FeatherEnabled = false;
+        ChokeRadius = 1;
+        FeatherRadius = 2;
+        CompressionQuality = 100;
+        SelectedEmojiType = "Select Type...";
+        isEmojiTypeDropdownOpen = false;
+        isAdaptationDropdownOpen = false;
+        QueueUpdatePreview();
+        QueueTransformUpdate();
+    }
+
+    private void OnBgColorInput(ChangeEventArgs e)
+    {
+        HexBgColor = e.Value?.ToString() ?? "#ffffff";
+        IsTransparentBg = false;
+        QueueTransformUpdate();
+    }
+
+    private void OnRemoveBgColorInput(ChangeEventArgs e)
+    {
+        HexRemoveBgColor = e.Value?.ToString() ?? "#ffffff";
+        QueueUpdatePreview();
+    }
+
+    private void OnZoomInput(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out int val))
+        {
+            ZoomFactor = val / 100f;
+            QueueTransformUpdate();
+        }
+    }
+
+    private void QueueTransformUpdate()
+    {
+        if (IsAnimatedMode) return;
+        JSRuntime.InvokeVoidAsync("imageEditor.setTransform", 
+            ZoomFactor, PanX, PanY, RotationAngle, (int)CurrentAdaptationMode, HexBgColor, IsTransparentBg);
+    }
+
+    private void OnQualityInput(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out int val))
+        {
+            CompressionQuality = val;
+            QueueUpdatePreview();
+        }
+    }
+
+    private void QueueUpdatePreview()
+    {
+        if (IsAnimatedMode) return;
+        int currentVersion = Interlocked.Increment(ref _previewVersion);
+        cts.Cancel();
+        cts = new CancellationTokenSource();
+        _ = UpdatePreviewAsync(cts.Token, currentVersion);
+    }
+
+    private async Task UpdatePreviewAsync(CancellationToken token, int version)
+    {
+        try
+        {
+            await Task.Delay(250, token); // Debounce
+            if (token.IsCancellationRequested || originalImage == null) return;
+
+            string currentHash = $"{RemoveBgEnabled}_{HexRemoveBgColor}_{RemoveBgTolerance}_{FeatherEnabled}_{ChokeRadius}_{FeatherRadius}_{CompressionQuality}";
+            if (currentHash == lastRenderHash) return;
+
+            if (version == _previewVersion)
+            {
+                isRendering = true;
+                await InvokeAsync(StateHasChanged);
+            }
+
+            Color rmColor = ParseHex(HexRemoveBgColor);
+            float outScale = CompressionQuality / 100f;
+
+            float baseScale = Math.Min(800f / originalImage.Width, 800f / originalImage.Height);
+            int previewW = (int)Math.Max(1, originalImage.Width * baseScale);
+            int previewH = (int)Math.Max(1, originalImage.Height * baseScale);
+            
+            int scaledFeather = FeatherEnabled && FeatherRadius > 0 ? (int)Math.Max(1, Math.Round(FeatherRadius * baseScale * outScale)) : 0;
+            int scaledChoke = FeatherEnabled && ChokeRadius > 0 ? (int)Math.Max(1, Math.Round(ChokeRadius * baseScale * outScale)) : 0;
+
+            bool useJpeg = !IsTransparentBg && !RemoveBgEnabled;
+
+            string b64Preview = await Task.Run(() =>
+            {
+                if (token.IsCancellationRequested) return null;
+                lock (_imageLock)
+                {
+                    if (token.IsCancellationRequested) return null;
+                    using Image<Rgba32> bmp = global::VRCGalleryManager.Core.Helpers.ImageEditor.RenderImage(
+                        originalImage, previewW, previewH, AdaptationMode.Stretch, 1.0f, 0f, 0f, 0,
+                        Color.Transparent, RemoveBgEnabled, rmColor, RemoveBgTolerance, false, Color.White, 0, FeatherEnabled, scaledFeather, scaledChoke, token);
+                    
+                    if (outScale < 1.0f)
+                    {
+                        int smallW = Math.Max(1, (int)(previewW * outScale));
+                        int smallH = Math.Max(1, (int)(previewH * outScale));
+                        
+                        using Image<Rgba32> pixelatedBmp = bmp.Clone(x => {
+                            x.Resize(smallW, smallH, KnownResamplers.Bicubic);
+                            x.Resize(previewW, previewH, KnownResamplers.Bicubic);
+                        });
+                        
+                        using MemoryStream ms = new MemoryStream();
+                        if (useJpeg)
+                            pixelatedBmp.SaveAsJpeg(ms, new SixLabors.ImageSharp.Formats.Jpeg.JpegEncoder { Quality = CompressionQuality });
+                        else
+                            pixelatedBmp.SaveAsPng(ms, new SixLabors.ImageSharp.Formats.Png.PngEncoder { CompressionLevel = SixLabors.ImageSharp.Formats.Png.PngCompressionLevel.BestSpeed });
+                        
+                        float areaRatio = (2048f * 2048f) / (float)(previewW * previewH);
+                        SizeMb = ((ms.Length * areaRatio) / (1024.0 * 1024.0));
+                        return Convert.ToBase64String(ms.ToArray());
+                    }
+                    else
+                    {
+                        using MemoryStream ms = new MemoryStream();
+                        if (useJpeg)
+                            bmp.SaveAsJpeg(ms, new SixLabors.ImageSharp.Formats.Jpeg.JpegEncoder { Quality = CompressionQuality });
+                        else
+                            bmp.SaveAsPng(ms, new SixLabors.ImageSharp.Formats.Png.PngEncoder { CompressionLevel = SixLabors.ImageSharp.Formats.Png.PngCompressionLevel.BestSpeed });
+                        
+                        float areaRatio = (2048f * 2048f) / (float)(previewW * previewH);
+                        SizeMb = ((ms.Length * areaRatio) / (1024.0 * 1024.0));
+                        return Convert.ToBase64String(ms.ToArray());
+                    }
+                }
+            });
+
+            if (!token.IsCancellationRequested && b64Preview != null)
+            {
+                string mimeType = useJpeg ? "image/jpeg" : "image/png";
+                await JSRuntime.InvokeVoidAsync("imageEditor.loadImagePreview", $"data:{mimeType};base64," + b64Preview);
+                lastRenderHash = currentHash;
+                QueueTransformUpdate();
+            }
+        }
+        catch (OperationCanceledException) { }
+        finally
+        {
+            if (version == _previewVersion && isRendering)
+            {
+                isRendering = false;
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+    }
+
+    private async void UpdateAnimatedPreview()
+    {
+        if (StartFrame > EndFrame)
+        {
+            int temp = StartFrame;
+            StartFrame = EndFrame;
+            EndFrame = temp;
+        }
+        
+        FinalFrameCount = EndFrame - StartFrame + 1;
+        if (FinalFrameCount > 64)
+        {
+            EndFrame = StartFrame + 63;
+            FinalFrameCount = 64;
+        }
+
+        isRendering = true;
+        await InvokeAsync(StateHasChanged);
+        await Task.Delay(50); // Yield to allow UI to show spinner
+
+        try
+        {
+            await Task.Run(() => 
+            {
+                using var converter = new GifToSpriteSheetConverter();
+                var result = converter.ConvertGifToSpriteSheet(TempGifPath, StartFrame, EndFrame);
+                
+                using var safeBitmap = result.spriteSheet.Clone();
+
+                using MemoryStream ms = new MemoryStream();
+                safeBitmap.SaveAsPng(ms, new SixLabors.ImageSharp.Formats.Png.PngEncoder { CompressionLevel = SixLabors.ImageSharp.Formats.Png.PngCompressionLevel.BestSpeed });
+                AnimatedPreviewBase64 = "data:image/png;base64," + Convert.ToBase64String(ms.ToArray());
+                
+                SizeMb = ms.Length / (1024.0 * 1024.0);
+            });
+        }
+        finally
+        {
+            isRendering = false;
+            await InvokeAsync(StateHasChanged);
+        }
+        
+        // Wait for Blazor to update the DOM with new data-frames and data-fps before calling initAll
+        _ = Task.Run(async () => {
+            await Task.Delay(50);
+            await InvokeAsync(() => JSRuntime.InvokeVoidAsync("spritesheetAnimator.initAll"));
+        });
+    }
+
+    private async Task ExtractGifThumbnailsAsync()
+    {
+        try
+        {
+            var thumbnails = new List<string>();
+            await Task.Run(() =>
+            {
+                lock (_imageLock)
+                {
+                    if (originalImage == null) return;
+                    int count = Math.Min(TotalFrames, 256); // Extract up to 256 thumbnails for the timeline
+                    for (int i = 0; i < count; i++)
+                    {
+                        using Image<Rgba32> thumb = new Image<Rgba32>(64, 64);
+                        using Image<Rgba32> clone = originalImage.Clone(x => {
+                            int minDim = Math.Min(originalImage.Width, originalImage.Height);
+                            int srcX = (originalImage.Width - minDim) / 2;
+                            int srcY = (originalImage.Height - minDim) / 2;
+                            x.Crop(new Rectangle(srcX, srcY, minDim, minDim));
+                            x.Resize(64, 64, KnownResamplers.Bicubic);
+                        });
+                        thumb.Mutate(x => x.DrawImage(clone, new Point(0, 0), 1f));
+                        using MemoryStream ms = new MemoryStream();
+                        thumb.SaveAsPng(ms, new SixLabors.ImageSharp.Formats.Png.PngEncoder { CompressionLevel = SixLabors.ImageSharp.Formats.Png.PngCompressionLevel.BestSpeed });;
+                        thumbnails.Add("data:image/png;base64," + Convert.ToBase64String(ms.ToArray()));
+                    }
+                }
+            });
+            GifFrameThumbnails = thumbnails;
+            await InvokeAsync(StateHasChanged);
+        }
+        catch { }
+    }
+
+    private void OnThumbnailClicked(int index)
+    {
+        if (index < StartFrame) StartFrame = index;
+        else if (index > EndFrame) EndFrame = index;
+        else 
+        {
+            StartFrame = index;
+            if (EndFrame < StartFrame) EndFrame = StartFrame;
+        }
+        UpdateAnimatedPreview();
+    }
+
+    private void OnStartFrameInput(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out int val))
+        {
+            StartFrame = val;
+            if (StartFrame > EndFrame)
+            {
+                EndFrame = StartFrame;
+            }
+            else if (EndFrame - StartFrame > 63)
+            {
+                EndFrame = StartFrame + 63;
+                if (EndFrame >= TotalFrames) EndFrame = TotalFrames - 1;
+            }
+        }
+    }
+
+    private void OnEndFrameInput(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out int val))
+        {
+            EndFrame = val;
+            if (EndFrame < StartFrame)
+            {
+                StartFrame = EndFrame;
+            }
+            else if (EndFrame - StartFrame > 63)
+            {
+                StartFrame = EndFrame - 63;
+                if (StartFrame < 0) StartFrame = 0;
+            }
+        }
+    }
+
+    private void OnFpsInput(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out int val))
+            FramesOverTime = val;
+    }
+
+
+
+    [JSInvokable]
+    public void OnTransformUpdate(float zoom, float panX, float panY)
+    {
+        if (IsAnimatedMode) return;
+        
+        ZoomFactor = zoom;
+        PanX = panX;
+        PanY = panY;
+        
+        StateHasChanged();
+    }
+
+
+
+    private async Task OnSaveClick()
+    {
+        if (isUploading) return;
+
+        if (SelectedEmojiType == "Select Type...")
+        {
+            NotificationService.Show("Please select a Preset Type before proceeding!", "Type Required", NotificationType.Error);
+            return;
+        }
+
+        isUploading = true;
+        await InvokeAsync(StateHasChanged);
+        await Task.Delay(50); // Yield to allow UI update
+
+        try
+        {
+            string styleToPass = SelectedEmojiType;
+
+            if (IsAnimatedMode)
+            {
+                if (OnSave.HasDelegate)
+                {
+                    await OnSave.InvokeAsync((AnimatedPreviewBase64, IsAnimatedMode, styleToPass, FinalFrameCount, FramesOverTime));
+                }
+                return;
+            }
+
+            Color bgColor = IsTransparentBg ? Color.Transparent : ParseHex(HexBgColor);
+            Color rmColor = ParseHex(HexRemoveBgColor);
+            float outScale = CompressionQuality / 100f;
+
+            bool useJpeg = !IsTransparentBg && !RemoveBgEnabled;
+
+            string finalB64 = await Task.Run(() =>
+            {
+                lock (_imageLock)
+                {
+                    using Image<Rgba32> rendered = global::VRCGalleryManager.Core.Helpers.ImageEditor.RenderImage(
+                        originalImage, 2048, 2048, CurrentAdaptationMode, ZoomFactor, PanX * (2048f / 800f), PanY * (2048f / 800f), RotationAngle,
+                        bgColor, RemoveBgEnabled, rmColor, RemoveBgTolerance, false, Color.White, 0, FeatherEnabled, FeatherRadius, ChokeRadius);
+                    
+                    int outW = Math.Max(1, (int)(2048 * outScale));
+                    int outH = Math.Max(1, (int)(2048 * outScale));
+                    rendered.Mutate(x => x.Resize(outW, outH, KnownResamplers.Bicubic));
+                    
+                    using MemoryStream ms = new MemoryStream();
+                    if (useJpeg)
+                        rendered.SaveAsJpeg(ms, new SixLabors.ImageSharp.Formats.Jpeg.JpegEncoder { Quality = CompressionQuality });
+                    else
+                        rendered.SaveAsPng(ms, new SixLabors.ImageSharp.Formats.Png.PngEncoder { CompressionLevel = SixLabors.ImageSharp.Formats.Png.PngCompressionLevel.BestSpeed });
+                    return Convert.ToBase64String(ms.ToArray());
+                }
+            });
+
+            if (OnSave.HasDelegate)
+            {
+                string mimeType = useJpeg ? "image/jpeg" : "image/png";
+                await OnSave.InvokeAsync(($"data:{mimeType};base64," + finalB64, IsAnimatedMode, styleToPass, FinalFrameCount, FramesOverTime));
+            }
+        }
+        finally
+        {
+            isUploading = false;
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private void SetAdaptationMode(AdaptationMode mode)
+    {
+        CurrentAdaptationMode = mode;
+        isAdaptationDropdownOpen = false;
+        QueueTransformUpdate();
+    }
+
+    private void SetAnimationStyle(string style)
+    {
+        AnimationStyle = style;
+        // Animated styles typically don't change preview scale, just logic for saving,
+        // but triggering a UI update is good
+    }
+
+    private void SetEmojiType(string typeName)
+    {
+        SelectedEmojiType = typeName;
+        isEmojiTypeDropdownOpen = false;
+    }
+
+    private async Task OnCancelClick()
+    {
+        if (OnCancel.HasDelegate)
+        {
+            await OnCancel.InvokeAsync();
+        }
+    }
+
+    public void Dispose()
+    {
+        dotNetRef?.Dispose();
+        originalImage?.Dispose();
+        _imageStream?.Dispose();
+        if (File.Exists(TempGifPath))
+        {
+            try { File.Delete(TempGifPath); } catch { }
+        }
+    }
+}

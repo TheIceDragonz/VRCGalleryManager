@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <title>VRCGalleryManager</title>
+    <base href="/" />
+    <link rel="stylesheet" href="css/bootstrap/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="css/app.css?v=3" />
+    <link rel="stylesheet" href="css/vrc-theme.css" />
+    <link rel="stylesheet" href="VRCGalleryManager.Maui.styles.css" />
+    <link rel="icon" type="image/png" href="favicon.png" />
+</head>
+
+<body>
+
+    <div class="status-bar-safe-area"></div>
+
+    <div id="app">
+        <div style="height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; background-color: #111418; color: #ffffff;">
+            <img src="VRCGM.png" alt="VRC Gallery Manager Logo" style="width: 128px; margin-bottom: 2rem; filter: drop-shadow(0 0 10px rgba(0,0,0,0.5));" />
+            <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem; margin-bottom: 1rem;">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <h4 style="margin: 0;">VRC Gallery Manager</h4>
+            <p style="color: #aaaaaa; margin-top: 0.5rem;">Loading...</p>
+        </div>
+    </div>
+
+    <div id="blazor-error-ui">
+        An unhandled error has occurred.
+        <a href="" class="reload">Reload</a>
+        <a class="dismiss">🗙</a>
+    </div>
+
+    <script src="_framework/blazor.webview.js" autostart="false"></script>
+    <script src="js/imageEditor.js"></script>
+    <script src="js/clipboard.js"></script>
+    <script src="js/dragDropGlobal.js"></script>
+    <script src="js/tooltip.js"></script>
+    <script src="js/imageZoom.js"></script>
+</body>
+
+</html>

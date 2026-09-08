@@ -1,0 +1,620 @@
+@page "/gallery"
+@using System.IO
+@using System.Threading
+@using VRCGalleryManager.Core
+@using SixLabors.ImageSharp
+@using SixLabors.ImageSharp.Processing
+@inject VRCAuth Auth
+@inject NavigationManager Nav
+@inject DialogService dialogService
+@inject NotificationService NotificationService
+
+<div class="h-100 d-flex flex-column p-3">
+    @* TOP TOOLBAR *@
+    <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-secondary">
+        <div class="d-flex align-items-center text-truncate me-2">
+            <h3 class="mb-0 text-accent d-flex align-items-center gap-2 text-nowrap">
+                <img src="/svg/gallery-wide-svgrepo-com.svg" class="media-page-icon" /> Gallery
+            </h3>
+            @if (!string.IsNullOrEmpty(CurrentFolder))
+            {
+                <span class="text-white-50 ms-3 small mb-0 text-truncate" style="max-width: 450px;" title="@CurrentFolder">@CurrentFolder</span>
+            }
+        </div>
+
+        <div class="d-flex align-items-center gap-2 flex-shrink-0">
+            <button class="btn btn-outline-secondary btn-sm" @onclick="GoBack" disabled="@(!CanGoBack)" title="Go back">
+                <img src="/svg/back-arrow-svgrepo-com.svg" class="btn-icon" style="margin: 0;" />
+            </button>
+            <button class="btn btn-outline-secondary btn-sm" @onclick="Refresh" disabled="@IsLoading" title="Refresh">
+                <img src="/svg/rotate-right-svgrepo-com.svg" class="btn-icon @(IsLoading ? "spin" : "")" style="margin: 0;" />
+            </button>
+            <button class="btn btn-secondary btn-sm" @onclick="ChangeFolder" title="Change folder">
+                <img src="/svg/folder-open-svgrepo-com.svg" class="btn-icon" /> Change
+            </button>
+        </div>
+    </div>
+
+    @* MAIN CONTENT *@
+    <div class="flex-grow-1 overflow-hidden d-flex gap-3" @onclick="CloseUploadMenu">
+        
+        @* GRID *@
+        <div class="flex-grow-1 overflow-auto h-100 pe-2" @key="CurrentFolder">
+            @if (string.IsNullOrEmpty(RootFolder) || !Directory.Exists(RootFolder))
+            {
+                <div class="h-100 d-flex flex-column align-items-center justify-content-center text-white-50">
+                    <img src="/svg/folder-open-svgrepo-com.svg" class="mb-3 opacity-50 folder-svg-icon" />
+                    <h5 class="text-white">No folder selected</h5>
+                    <p>Click <strong>Change</strong> or select below to pick your VRChat screenshots folder.</p>
+                    <button class="btn btn-primary mt-2 d-flex align-items-center gap-2" @onclick="ChangeFolder">
+                        <img src="/svg/folder-open-svgrepo-com.svg" class="btn-icon icon-white" /> Select Folder
+                    </button>
+                </div>
+            }
+            else if (Items.Count == 0 && !IsLoading)
+            {
+                <div class="h-100 d-flex flex-column align-items-center justify-content-center text-white-50">
+                    <img src="/svg/folder-open-svgrepo-com.svg" class="mb-3 opacity-50 folder-svg-icon" />
+                    <h5>This folder is empty</h5>
+                </div>
+            }
+            else
+            {
+                <div class="media-grid gap-3 pb-3">
+                    @foreach (var item in Items)
+                    {
+                        <div class="position-relative gallery-icon-card media-card-container"
+                             style="@(item.IsFolder ? "cursor: pointer;" : "")"
+                             @onclick="() => { if(item.IsFolder) OnItemClick(item); }"
+                             title="@item.Name">
+
+                            @if (item.IsFolder)
+                            {
+                                <div class="w-100 h-100 d-flex flex-column" style="background-color: var(--bg-hover);">
+                                    @if (!string.IsNullOrEmpty(item.ThumbnailBase64))
+                                    {
+                                        <img src="@item.ThumbnailBase64" class="position-absolute top-0 start-0 w-100 h-100 object-fit-cover" style="filter: brightness(0.4);" />
+                                    }
+                                    <div class="folder-icon position-relative z-1" style="flex: 1; display: flex; align-items: center; justify-content: center;">
+                                        @if (item.IsThumbLoading && string.IsNullOrEmpty(item.ThumbnailBase64))
+                                        {
+                                            <div class="spinner-border spinner-border-sm text-primary"></div>
+                                        }
+                                        else
+                                        {
+                                            <img src="/svg/folder-open-svgrepo-com.svg" class="folder-svg-icon" />
+                                        }
+                                    </div>
+                                    <div class="media-card-label position-absolute w-100 text-truncate text-center z-2">
+                                        @item.Name
+                                    </div>
+                                </div>
+                            }
+                            else
+                            {
+                                @if (!string.IsNullOrEmpty(item.ThumbnailBase64))
+                                {
+                                    <img src="@item.ThumbnailBase64" class="w-100 h-100 object-fit-cover" />
+                                    <button class="btn btn-success btn-sm rounded-circle position-absolute btn-action media-btn-upload" style="right: 40px;" @onclick:stopPropagation="true" @onclick="() => { SelectedImage = item; ToggleUploadMenu(); }" title="Upload">
+                                        <img src="/svg/add-circle-svgrepo-com.svg" class="btn-icon icon-white" style="margin: 0;" />
+                                    </button>
+
+                                    <button class="btn btn-dark btn-sm rounded-circle position-absolute btn-action media-btn-open" style="right: 5px;" @onclick:stopPropagation="true" @onclick="() => OpenFile(item.Path)" title="View Image">
+                                        <img src="/svg/eye-svgrepo-com.svg" class="btn-icon" style="margin: 0;" />
+                                    </button>
+                                }
+                                else if (item.IsThumbLoading)
+                                {
+                                    <div class="w-100 h-100 d-flex align-items-center justify-content-center">
+                                        <div class="spinner-border spinner-border-sm text-primary"></div>
+                                    </div>
+                                }
+                            }
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+
+
+    </div>
+</div>
+
+@if (ShowUploadMenu)
+{
+    <div class="position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center dialog-overlay" style="z-index: 10000;" @onclick="CloseUploadMenu">
+        <div class="dialog-panel d-flex flex-column" @onclick:stopPropagation="true" style="min-width: 300px;">
+            <div class="p-4 flex-grow-1 border-bottom border-secondary text-center">
+                <h5 class="fw-bold text-white mb-2">Upload to...</h5>
+                <p class="text-light mb-3 small">Select the category where you want to upload this image.</p>
+                <img src="@(string.IsNullOrEmpty(SelectedImage.FullBase64) ? SelectedImage.ThumbnailBase64 : SelectedImage.FullBase64)" class="rounded shadow-sm" style="max-height: 200px; max-width: 100%; object-fit: contain;" alt="@SelectedImage.Name" />
+            </div>
+            <div class="p-3 d-flex flex-column gap-2 dialog-footer">
+                <button class="btn btn-outline-secondary d-flex align-items-center gap-2" @onclick='() => UploadForCategory("Icons", "icons")'><img src="/svg/profile-user-svgrepo-com.svg" class="icon-accent" style="width:20px;height:20px;" /> Icons</button>
+                <button class="btn btn-outline-secondary d-flex align-items-center gap-2" @onclick='() => UploadForCategory("Photos", "photos")'><img src="/svg/gallery-minimalistic-svgrepo-com.svg" class="icon-accent" style="width:20px;height:20px;" /> Photos</button>
+                <button class="btn btn-outline-secondary d-flex align-items-center gap-2" @onclick='() => UploadForCategory("Emoji", "emoji")'><img src="/svg/emoji-funny-circle-svgrepo-com.svg" class="icon-accent" style="width:20px;height:20px;" /> Emoji</button>
+                <button class="btn btn-outline-secondary d-flex align-items-center gap-2" @onclick='() => UploadForCategory("Sticker", "sticker")'><img src="/svg/sticker-smile-square-svgrepo-com.svg" class="icon-accent" style="width:20px;height:20px;" /> Sticker</button>
+                <button class="btn btn-outline-secondary d-flex align-items-center gap-2" @onclick='() => UploadForCategory("Prints", "prints")'><img src="/svg/camera-svgrepo-com.svg" class="icon-accent" style="width:20px;height:20px;" /> Prints</button>
+                
+                <button class="btn btn-danger mt-2 fw-bold" @onclick="CloseUploadMenu">Cancel</button>
+            </div>
+        </div>
+    </div>
+}
+
+<VRCGalleryManager.Components.ImageViewer @ref="imageViewer" OnUploadRequested="HandleViewerUpload" OnDeleteRequested="HandleViewerDelete" ShowDownloadButton="false" />
+
+@code {
+    // ── State ─────────────────────────────────────────────────────────────
+    private string RootFolder;
+    private string CurrentFolder;
+    private List<GalleryItem> Items = new();
+    private GalleryItem SelectedImage;
+
+    private static string cachedRootFolder = null;
+    private static string cachedCurrentFolder = null;
+    private static List<GalleryItem> cachedItems = null;
+
+    private bool IsLoading;
+    private bool ShowUploadMenu;
+
+    private CancellationTokenSource _cts;
+    private VRCGalleryManager.Components.ImageViewer imageViewer;
+
+    private bool CanGoBack =>
+        !string.IsNullOrEmpty(CurrentFolder) &&
+        !string.IsNullOrEmpty(RootFolder) &&
+        Directory.Exists(CurrentFolder) &&
+        Directory.Exists(RootFolder) &&
+        !string.Equals(
+            Path.GetFullPath(CurrentFolder).TrimEnd(Path.DirectorySeparatorChar),
+            Path.GetFullPath(RootFolder).TrimEnd(Path.DirectorySeparatorChar),
+            StringComparison.OrdinalIgnoreCase);
+
+    // ── Model ─────────────────────────────────────────────────────────────
+    public class GalleryItem
+    {
+        public bool IsFolder { get; set; }
+        public string Path { get; set; }
+        public string Name { get; set; }
+        public string ThumbnailBase64 { get; set; }
+        public string FullBase64 { get; set; }
+        public bool IsThumbLoading { get; set; }
+    }
+
+    // ── Lifecycle ─────────────────────────────────────────────────────────
+    protected override async Task OnInitializedAsync()
+    {
+        var path = Config.GetPath("PathGallery");
+        if (string.IsNullOrEmpty(path) || !Directory.Exists(path))
+        {
+            var defaultVrc = FolderPickerHelper.GetDefaultVRChatPhotoPath();
+            if (!string.IsNullOrEmpty(defaultVrc) && Directory.Exists(defaultVrc))
+            {
+                path = defaultVrc;
+                Config.Set("PathGallery", path);
+            }
+        }
+
+        if (!string.IsNullOrEmpty(path) && Directory.Exists(path))
+        {
+            if (cachedItems != null && cachedRootFolder == path)
+            {
+                RootFolder = cachedRootFolder;
+                CurrentFolder = cachedCurrentFolder ?? cachedRootFolder;
+                Items = cachedItems;
+            }
+            else
+            {
+                RootFolder = path;
+                CurrentFolder = path;
+                await LoadFolderAsync();
+            }
+        }
+    }
+
+    // ── Navigation ────────────────────────────────────────────────────────
+    private async Task GoBack()
+    {
+        if (!CanGoBack) return;
+        SelectedImage = null;
+        var parent = Directory.GetParent(CurrentFolder);
+        if (parent != null)
+        {
+            CurrentFolder = parent.FullName;
+            await LoadFolderAsync();
+        }
+    }
+
+    private async Task Refresh() => await LoadFolderAsync();
+
+    private async Task ChangeFolder()
+    {
+        try
+        {
+            string? startPath = !string.IsNullOrEmpty(CurrentFolder) && Directory.Exists(CurrentFolder)
+                ? CurrentFolder
+                : (!string.IsNullOrEmpty(RootFolder) && Directory.Exists(RootFolder) ? RootFolder : FolderPickerHelper.GetDefaultVRChatPhotoPath());
+
+            var picked = await FolderPickerHelper.PickFolderAsync(startPath, "Select VRChat Screenshots Folder");
+            if (!string.IsNullOrEmpty(picked) && Directory.Exists(picked))
+            {
+                Config.Set("PathGallery", picked);
+                RootFolder = picked;
+                CurrentFolder = picked;
+                cachedItems = null;
+                cachedRootFolder = picked;
+                cachedCurrentFolder = picked;
+                SelectedImage = null;
+                await LoadFolderAsync();
+            }
+        }
+        catch (Exception ex)
+        {
+            NotificationService.Show($"Error selecting folder: {ex.Message}", "Error", NotificationType.Error);
+        }
+    }
+
+    // ── Folder Loading ─────────────────────────────────────────────────────
+    private async Task LoadFolderAsync()
+    {
+        _cts?.Cancel();
+        _cts = new CancellationTokenSource();
+        var token = _cts.Token;
+
+        IsLoading = true;
+        Items = new List<GalleryItem>();
+        SelectedImage = null;
+        StateHasChanged();
+
+        if (string.IsNullOrEmpty(CurrentFolder) || !Directory.Exists(CurrentFolder))
+        {
+            IsLoading = false;
+            StateHasChanged();
+            return;
+        }
+
+        var dirs = Directory.GetDirectories(CurrentFolder);
+        foreach (var dir in dirs)
+        {
+            if (token.IsCancellationRequested) break;
+            Items.Add(new GalleryItem
+            {
+                IsFolder = true,
+                Path = dir,
+                Name = Path.GetFileName(dir),
+                IsThumbLoading = true
+            });
+        }
+
+        try
+        {
+            var files = Directory.EnumerateFiles(CurrentFolder).Where(IsImageFile).ToList();
+            foreach (var file in files)
+            {
+                if (token.IsCancellationRequested) break;
+                Items.Add(new GalleryItem
+                {
+                    IsFolder = false,
+                    Path = file,
+                    Name = Path.GetFileName(file),
+                    IsThumbLoading = true
+                });
+            }
+        }
+        catch (Exception ex)
+        {
+            Items.Add(new GalleryItem
+            {
+                IsFolder = false,
+                Path = "",
+                Name = "Error: " + ex.Message,
+                IsThumbLoading = false
+            });
+        }
+
+        cachedItems = Items;
+        cachedRootFolder = RootFolder;
+        cachedCurrentFolder = CurrentFolder;
+
+        IsLoading = false;
+        StateHasChanged();
+
+        _ = LoadThumbnailsAsync(token);
+    }
+
+    private async Task LoadThumbnailsAsync(CancellationToken token)
+    {
+        var snapshot = Items.ToList();
+        if (snapshot.Count == 0) return;
+
+        int degreeOfParallelism = Math.Clamp(Environment.ProcessorCount, 2, 6);
+        var parallelOptions = new ParallelOptions
+        {
+            MaxDegreeOfParallelism = degreeOfParallelism,
+            CancellationToken = token
+        };
+
+        long lastUpdateTicks = DateTime.UtcNow.Ticks;
+        int completedCount = 0;
+
+        try
+        {
+            await Parallel.ForEachAsync(snapshot, parallelOptions, async (item, ct) =>
+            {
+                try
+                {
+                    if (item.IsFolder)
+                    {
+                        var firstImg = Directory.EnumerateFiles(item.Path)
+                                                .Where(IsImageFile)
+                                                .LastOrDefault();
+                        if (!string.IsNullOrEmpty(firstImg))
+                        {
+                            item.ThumbnailBase64 = await MakeThumbnailBase64Async(firstImg, 256, ct);
+                        }
+                        item.IsThumbLoading = false;
+                    }
+                    else
+                    {
+                        item.ThumbnailBase64 = await MakeThumbnailBase64Async(item.Path, 256, ct);
+                        item.IsThumbLoading = false;
+                    }
+                }
+                catch
+                {
+                    item.IsThumbLoading = false;
+                }
+
+                int count = Interlocked.Increment(ref completedCount);
+                long nowTicks = DateTime.UtcNow.Ticks;
+                long prevTicks = Interlocked.Read(ref lastUpdateTicks);
+
+                // Throttle StateHasChanged to at most once per 100ms or every 10 items
+                if (count == snapshot.Count || count % 10 == 0 || (nowTicks - prevTicks) > TimeSpan.TicksPerMillisecond * 100)
+                {
+                    Interlocked.Exchange(ref lastUpdateTicks, nowTicks);
+                    if (!ct.IsCancellationRequested)
+                    {
+                        await InvokeAsync(StateHasChanged);
+                    }
+                }
+            });
+        }
+        catch (OperationCanceledException) { }
+        finally
+        {
+            if (!token.IsCancellationRequested)
+            {
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+    }
+
+    private static async Task<string> MakeThumbnailBase64Async(string path, int maxSize, CancellationToken token)
+    {
+        if (token.IsCancellationRequested) return null;
+        try
+        {
+#if WINDOWS
+            return await Task.Run(() =>
+            {
+#pragma warning disable CA1416
+                using var image = SixLabors.ImageSharp.Image.Load<SixLabors.ImageSharp.PixelFormats.Rgba32>(path);
+                if (image.Width <= maxSize && image.Height <= maxSize)
+                {
+                    using var ms = new MemoryStream();
+                    image.SaveAsJpeg(ms);
+                    return $"data:image/jpeg;base64,{Convert.ToBase64String(ms.ToArray())}";
+                }
+                
+                var ratio = (double)maxSize / Math.Max(image.Width, image.Height);
+                var width = (int)(image.Width * ratio);
+                var height = (int)(image.Height * ratio);
+                
+                using var thumb = image.Clone(x => x.Resize(width, height, SixLabors.ImageSharp.Processing.KnownResamplers.Bicubic));
+                
+                using var ms2 = new MemoryStream();
+                thumb.SaveAsJpeg(ms2);
+                return $"data:image/jpeg;base64,{Convert.ToBase64String(ms2.ToArray())}";
+#pragma warning restore CA1416
+            }, token);
+#else
+            using var stream = File.OpenRead(path);
+            var image = Microsoft.Maui.Graphics.Platform.PlatformImage.FromStream(stream);
+            if (image != null)
+            {
+                if (image.Width <= maxSize && image.Height <= maxSize)
+                {
+                    using var ms = new MemoryStream();
+                    image.Save(ms);
+                    return $"data:image/png;base64,{Convert.ToBase64String(ms.ToArray())}";
+                }
+
+                var ratio = (double)maxSize / Math.Max(image.Width, image.Height);
+                var width = (int)(image.Width * ratio);
+                var height = (int)(image.Height * ratio);
+                
+                using var resized = image.Downsize((float)width, (float)height, true);
+                using var ms2 = new MemoryStream();
+                resized.Save(ms2);
+                return $"data:image/png;base64,{Convert.ToBase64String(ms2.ToArray())}";
+            }
+            return null;
+#endif
+        }
+        catch { return null; }
+    }
+
+    // ── Item Interaction ──────────────────────────────────────────────────
+    private void OnItemClick(GalleryItem item)
+    {
+        ShowUploadMenu = false;
+
+        if (item.IsFolder)
+        {
+            CurrentFolder = item.Path;
+            _ = LoadFolderAsync();
+        }
+        else
+        {
+            SelectedImage = item;
+        }
+    }
+
+    private void OnItemDoubleClick(GalleryItem item)
+    {
+        // Disabled opening on click as requested
+    }
+
+    private void OpenSelectedFile()
+    {
+        if (SelectedImage != null)
+            OpenFile(SelectedImage.Path);
+    }
+
+    private void OpenFile(string path)
+    {
+        try
+        {
+            var viewerItems = Items.Where(x => !x.IsFolder).Select(x => new VRCGalleryManager.Components.ImageViewer.ViewerItem {
+                HighResSource = x.Path,
+                LowResSource = x.ThumbnailBase64,
+                Title = x.Name
+            }).ToList();
+            
+            var index = viewerItems.FindIndex(i => i.HighResSource == path);
+            if (index == -1)
+            {
+                var item = Items.FirstOrDefault(x => x.Path == path);
+                viewerItems = new List<VRCGalleryManager.Components.ImageViewer.ViewerItem> {
+                    new VRCGalleryManager.Components.ImageViewer.ViewerItem {
+                        HighResSource = path,
+                        LowResSource = item?.ThumbnailBase64,
+                        Title = item?.Name ?? System.IO.Path.GetFileName(path)
+                    }
+                };
+                index = 0;
+            }
+            imageViewer.Open(viewerItems, index);
+        }
+        catch { }
+    }
+
+    private void OpenInExplorer(string filePath)
+    {
+        try
+        {
+            if (File.Exists(filePath))
+            {
+                System.Diagnostics.Process.Start("explorer.exe", $"/select,\"{filePath}\"");
+            }
+        }
+        catch { }
+    }
+
+    private async Task LoadFullPreviewAsync(GalleryItem item)
+    {
+        try
+        {
+            item.FullBase64 = await MakeThumbnailBase64Async(item.Path, 800, _cts.Token);
+            await InvokeAsync(StateHasChanged);
+        }
+        catch { }
+    }
+
+
+
+    // ── Upload menu ───────────────────────────────────────────────────────
+    private void ToggleUploadMenu() => ShowUploadMenu = !ShowUploadMenu;
+    private void CloseUploadMenu() { if (ShowUploadMenu) ShowUploadMenu = false; }
+
+    private void HandleViewerUpload(int index)
+    {
+        var targetList = Items.Where(x => !x.IsFolder).ToList();
+        if (index >= 0 && index < targetList.Count)
+        {
+            SelectedImage = targetList[index];
+            ShowUploadMenu = true;
+            StateHasChanged();
+        }
+    }
+
+    private void UploadForCategory(string category, string route)
+    {
+        ShowUploadMenu = false;
+
+        string filePath = SelectedImage?.Path ?? string.Empty;
+        if (!string.IsNullOrEmpty(filePath))
+        {
+            var encoded = Uri.EscapeDataString(filePath);
+            Nav.NavigateTo($"/{route}?uploadPath={encoded}");
+        }
+        else
+        {
+            Nav.NavigateTo($"/{route}");
+        }
+    }
+
+    private async Task HandleViewerDelete(int index)
+    {
+        var targetList = Items.Where(x => !x.IsFolder).ToList();
+        if (index < 0 || index >= targetList.Count) return;
+        var item = targetList[index];
+
+        bool confirm = await dialogService.ShowConfirmAsync("Delete Photo", $"Are you sure you want to move \"{item.Name}\" to the Recycle Bin?", "Delete", "Cancel");
+        if (confirm)
+        {
+            try
+            {
+                bool deleted = FileHelper.DeleteToRecycleBin(item.Path);
+                if (!deleted)
+                {
+                    NotificationService.Show("Failed to delete the photo.", "Delete Error", NotificationType.Error);
+                    return;
+                }
+
+                Items.Remove(item);
+                if (SelectedImage == item)
+                {
+                    SelectedImage = null;
+                }
+
+                var remainingPhotos = Items.Where(x => !x.IsFolder).ToList();
+                if (remainingPhotos.Count > 0)
+                {
+                    var viewerItems = remainingPhotos.Select(x => new VRCGalleryManager.Components.ImageViewer.ViewerItem
+                    {
+                        HighResSource = x.Path,
+                        LowResSource = x.ThumbnailBase64,
+                        Title = x.Name
+                    }).ToList();
+                    int nextIndex = Math.Min(index, viewerItems.Count - 1);
+                    imageViewer.Open(viewerItems, nextIndex);
+                }
+                else
+                {
+                    imageViewer.Close();
+                }
+
+                StateHasChanged();
+                NotificationService.Show("Photo moved to the Recycle Bin.", "Deleted", NotificationType.Success);
+            }
+            catch (Exception ex)
+            {
+                NotificationService.Show($"Delete failed: {ex.Message}", "Delete Error", NotificationType.Error);
+            }
+        }
+    }
+
+    // ── Helpers ───────────────────────────────────────────────────────────
+    private static bool IsImageFile(string filename)
+    {
+        var ext = Path.GetExtension(filename);
+        return ext.Equals(".png", StringComparison.OrdinalIgnoreCase) ||
+               ext.Equals(".jpg", StringComparison.OrdinalIgnoreCase) ||
+               ext.Equals(".jpeg", StringComparison.OrdinalIgnoreCase);
+    }
+}
+
+

@@ -1,0 +1,1469 @@
+@page "/settings"
+@using VRCGalleryManager.Core
+@using VRCGalleryManager.Core.Api
+@using VRCGalleryManager.Core.Api.Models
+@using System.IO
+@using System.Reflection
+@using Microsoft.AspNetCore.Components.Web
+@inject VRCAuth Auth
+@inject DialogService dialogService
+@inject UpdateManager Updater
+@inject NotificationService Notifications
+@inject ProfileBackgroundService BackgroundService
+@implements IDisposable
+
+<div class="settings-page container-fluid h-100 p-4 overflow-y-auto">
+    <div class="d-flex flex-column gap-4 max-w-600 mx-auto w-100">
+        <h3 class="mb-1 text-center">Settings</h3>
+
+        @if (IsLoggedIn && Auth.CurrentUser != null && !string.IsNullOrEmpty(Auth.CurrentUser.Id) && !HasVRCPlus)
+        {
+            <div class="alert mb-0 p-3 d-flex align-items-center justify-content-between gap-3 flex-wrap alert-vrcplus">
+                <div class="d-flex align-items-center gap-2">
+                    <img src="/svg/error-svgrepo-com.svg" class="icon-warning flex-shrink-0" style="width: 20px; height: 20px;" />
+                    <span>You need <strong>VRChat Plus</strong> to use this program.</span>
+                </div>
+                <button type="button" class="btn-vrcplus-subscribe" @onclick="OpenVRCPlusSubscriptions">
+                    <img src="/svg/link-svgrepo-com.svg" class="btn-icon" alt="" />
+                    <span>Get VRChat Plus</span>
+                </button>
+            </div>
+        }
+
+        <!-- Login Panel -->
+        <div class="panel d-flex flex-column gap-3">
+            @if (Show2FA)
+            {
+                <h4 class="mb-2 text-accent">Two-Factor Authentication</h4>
+                <p class="text-muted mb-2 text-09rem">@(IsEmail2FA ? "Enter the code sent to your email." : "Enter the code from your Authenticator app.")</p>
+                
+                <div class="mb-4">
+                    <label class="form-label text-muted mb-1">Auth Code</label>
+                    <input type="text" class="form-control" @bind="Code2FA" @onkeydown="On2FAKeyDown" placeholder="123456" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code" />
+                </div>
+                
+                <div class="d-flex gap-2">
+                    <button class="btn btn-outline-secondary flex-fill py-2" @onclick="Cancel2FA" disabled="@IsLoggingIn">Cancel</button>
+                    <button class="btn btn-primary flex-fill py-2" @onclick="Submit2FA" disabled="@IsLoggingIn">
+                        @if (IsLoggingIn)
+                        {
+                            <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                        }
+                        Verify
+                    </button>
+                    @if (IsEmail2FA)
+                    {
+                        <button type="button" class="btn btn-square" @onclick="Resend2FA" disabled="@IsLoggingIn" title="Resend Email Code">
+                            <img src="/svg/rotate-right-svgrepo-com.svg" class="btn-icon" style="width: 18px; height: 18px; margin: 0;" />
+                        </button>
+                    }
+                </div>
+                
+
+            }
+            else if (IsLoggedIn && Auth.CurrentUser != null && !string.IsNullOrEmpty(Auth.CurrentUser.Id))
+            {
+                var user = Auth.CurrentUser;
+                string avatarUrl = !string.IsNullOrEmpty(user.UserIcon) 
+                    ? user.UserIcon 
+                    : (!string.IsNullOrEmpty(user.ProfilePicOverrideThumbnail) 
+                        ? user.ProfilePicOverrideThumbnail 
+                        : user.CurrentAvatarThumbnailImageUrl);
+
+                <h4 class="mb-2 text-accent">VRChat Account</h4>
+
+                <div class="settings-account-card d-flex flex-column p-3">
+                    <div class="settings-account-top d-flex align-items-center justify-content-between gap-3">
+                        <div class="d-flex align-items-center gap-3 min-w-0 flex-grow-1">
+                            <img src="@(string.IsNullOrEmpty(avatarUrl) ? "/svg/profile-user-svgrepo-com.svg" : avatarUrl)" class="settings-account-avatar flex-shrink-0" />
+                            <div class="d-flex flex-column gap-1 min-w-0 flex-grow-1">
+                                <div class="d-flex align-items-center gap-2 flex-wrap">
+                                    <span class="settings-account-name text-truncate" title="@user.DisplayName">@user.DisplayName</span>
+                                    @if (!string.IsNullOrWhiteSpace(user.Pronouns))
+                                    {
+                                        <span class="settings-account-pronouns" title="Pronouns: @user.Pronouns">@user.Pronouns</span>
+                                    }
+                                    @if (user.Badges != null && user.Badges.Any(b => b.Hidden != true))
+                                    {
+                                        <div class="settings-badge-list settings-account-desktop-badges">
+                                            @foreach (var badge in user.Badges.Where(b => b.Hidden != true))
+                                            {
+                                                <img src="@badge.BadgeImageUrl" class="settings-badge-item" title="@badge.BadgeName" />
+                                            }
+                                        </div>
+                                    }
+                                </div>
+                                <div class="settings-account-tags settings-account-desktop-tags d-flex align-items-center gap-1 flex-wrap mt-1">
+                                    <div class="settings-pill @user.TrustClass" title="Trust Rank: @user.TrustLevel">
+                                        <span>@user.TrustLevel</span>
+                                    </div>
+
+                                    @if (HasVRCPlus)
+                                    {
+                                        <div class="settings-pill pill-vrcplus" title="VRChat Plus Subscriber">
+                                            <span>VRChat Plus</span>
+                                        </div>
+                                    }
+
+                                    @if (user.AgeVerified || user.AgeVerificationStatus == "18+")
+                                    {
+                                        <div class="settings-pill pill-age-verified" title="Age Verified (@(user.AgeVerificationStatus ?? "18+"))">
+                                            <span>@(user.AgeVerificationStatus ?? "18+") Verified</span>
+                                        </div>
+                                    }
+
+                                    @if (user.Languages != null && user.Languages.Any())
+                                    {
+                                        @foreach (var lang in user.Languages)
+                                        {
+                                            <div class="settings-pill pill-language" title="Language: @lang.DisplayName">
+                                                <span>@lang.Code</span>
+                                            </div>
+                                        }
+                                    }
+                                </div>
+                            </div>
+                        </div>
+
+                        <button class="btn btn-outline-danger px-3 py-2 flex-shrink-0 settings-logout-btn" @onclick="ToggleLogin" disabled="@IsLoggingIn">
+                            @if (IsLoggingIn)
+                            {
+                                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                            }
+                            Logout
+                        </button>
+                    </div>
+
+                    <!-- Mobile Badges & Tags (Displayed below Avatar, Name, and Logout) -->
+                    <div class="settings-account-mobile-bottom">
+                        @if (user.Badges != null && user.Badges.Any(b => b.Hidden != true))
+                        {
+                            <div class="settings-badge-list justify-content-center w-100">
+                                @foreach (var badge in user.Badges.Where(b => b.Hidden != true))
+                                {
+                                    <img src="@badge.BadgeImageUrl" class="settings-badge-item" title="@badge.BadgeName" />
+                                }
+                            </div>
+                        }
+
+                        <div class="settings-account-tags d-flex align-items-center justify-content-center flex-nowrap w-100">
+                            <div class="settings-pill @user.TrustClass" title="Trust Rank: @user.TrustLevel">
+                                <span>@user.TrustLevel</span>
+                            </div>
+
+                            @if (HasVRCPlus)
+                            {
+                                <div class="settings-pill pill-vrcplus" title="VRChat Plus Subscriber">
+                                    <span>VRChat Plus</span>
+                                </div>
+                            }
+
+                            @if (user.AgeVerified || user.AgeVerificationStatus == "18+")
+                            {
+                                <div class="settings-pill pill-age-verified" title="Age Verified (@(user.AgeVerificationStatus ?? "18+"))">
+                                    <span>@(user.AgeVerificationStatus ?? "18+") Verified</span>
+                                </div>
+                            }
+
+                            @if (user.Languages != null && user.Languages.Any())
+                            {
+                                @foreach (var lang in user.Languages)
+                                {
+                                    <div class="settings-pill pill-language" title="Language: @lang.DisplayName">
+                                        <span>@lang.Code</span>
+                                    </div>
+                                }
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <h4 class="mb-2">VRChat Login</h4>
+
+                <div class="mb-2">
+                    <label class="form-label text-muted mb-1">Username</label>
+                    <input type="text" class="form-control" @bind="Username" @onkeydown="OnUsernameKeyDown" placeholder="Enter username or email" autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="username" />
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label text-muted mb-1">Password</label>
+                    <div class="input-group">
+                        <input type="@(ShowPassword ? "text" : "password")" class="form-control password-input" @bind="Password" @bind:event="oninput" @onkeydown="OnPasswordKeyDown" placeholder="Enter password" autocomplete="current-password" autocorrect="off" autocapitalize="none" />
+                        @if (!string.IsNullOrEmpty(Password))
+                        {
+                            <button class="btn btn-password-toggle p-2" type="button" @onclick="() => ShowPassword = !ShowPassword" title="@(ShowPassword ? "Hide password" : "Show password")">
+                                <img src="/svg/eye-svgrepo-com.svg" class="btn-icon" style="margin-right: 0;" />
+                            </button>
+                        }
+                    </div>
+                </div>
+
+                <button class="btn btn-primary w-100 py-2" @onclick="ToggleLogin" disabled="@IsLoggingIn">
+                    @if (IsLoggingIn)
+                    {
+                        <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                    }
+                    Login
+                </button>
+            }
+        </div>
+
+        <!-- About Panel -->
+        <div class="panel d-flex flex-column gap-3 about-panel">
+            <h4 class="mb-1">About</h4>
+
+            <!-- App Branding Box with Action Links -->
+            <div class="about-brand-box p-3 d-flex flex-column gap-3">
+                <div class="about-brand-top d-flex align-items-center justify-content-between gap-3 flex-wrap">
+                    <div class="d-flex align-items-center gap-3 min-w-0">
+                        <img src="/VRCGM.png" alt="VRCGalleryManager Logo" class="about-logo flex-shrink-0" />
+                        <div class="d-flex flex-column min-w-0">
+                            <div class="d-flex align-items-center gap-2 flex-wrap">
+                                <span class="fs-5 fw-bold text-white text-truncate">VRCGalleryManager</span>
+                                @if (OperatingSystem.IsAndroid())
+                                {
+                                    <span class="badge about-platform-badge about-platform-badge-android" title="Android">
+                                        <img src="/svg/android-svgrepo-com.svg" class="about-platform-icon" alt="Android" />
+                                    </span>
+                                }
+                                else if (OperatingSystem.IsWindows())
+                                {
+                                    <span class="badge about-platform-badge about-platform-badge-win" title="Windows">
+                                        <img src="/svg/windows-svgrepo-com.svg" class="about-platform-icon" alt="Windows" />
+                                    </span>
+                                }
+                                else if (OperatingSystem.IsMacOS() || OperatingSystem.IsMacCatalyst() || OperatingSystem.IsIOS())
+                                {
+                                    <span class="badge about-platform-badge about-platform-badge-apple" title="Apple">
+                                        <img src="/svg/apple-svgrepo-com.svg" class="about-platform-icon" alt="Apple" />
+                                    </span>
+                                }
+                            </div>
+                            <div class="d-flex align-items-center gap-2 flex-wrap mt-1">
+                                <span class="badge about-version-badge">v@(LocalVersion)</span>
+                                @if (HasUpdate && !string.IsNullOrEmpty(LatestUpdateVersion))
+                                {
+                                    <span class="badge about-update-badge" title="New version available: v@(LatestUpdateVersion)">
+                                        ➜ v@(LatestUpdateVersion)
+                                    </span>
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="about-actions-col">
+                        <button class="btn about-action-btn" @onclick="OpenGitHub" title="Open GitHub Page">
+                            <img src="/svg/info-circle-svgrepo-com.svg" class="btn-icon" />
+                            <span>GitHub</span>
+                        </button>
+                        <button class="btn about-action-btn" @onclick="OpenReleases" title="View Release Notes and Changelog">
+                            <img src="/svg/files-fill-svgrepo-com.svg" class="btn-icon" />
+                            <span>Changelog</span>
+                        </button>
+                        <button class="btn about-action-btn" @onclick="OpenIssues" title="Report a Bug or Request a Feature">
+                            <img src="/svg/error-svgrepo-com.svg" class="btn-icon" />
+                            <span>Issues</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            @if (HasUpdate)
+            {
+                <!-- Update Banner Card -->
+                <div class="p-3 about-update-card d-flex flex-column gap-2">
+                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                        <div class="d-flex align-items-center gap-2">
+                            <img src="/svg/rotate-right-svgrepo-com.svg" class="icon-warning flex-shrink-0" style="width: 20px; height: 20px;" />
+                            <span class="fw-bold text-white">@(OperatingSystem.IsAndroid() ? "New Android Version Available!" : "New Version Available!")</span>
+                        </div>
+                        <span class="badge about-update-badge">v@(LatestUpdateVersion)</span>
+                    </div>
+
+                    <p class="text-muted small mb-1" style="font-size: 0.8rem; line-height: 1.4;">
+                        @(OperatingSystem.IsAndroid() 
+                            ? "A new release of VRCGalleryManager is available. Tap below to download the latest APK directly to your device." 
+                            : "A new release of VRCGalleryManager is available. Click below to install the update.")
+                    </p>
+
+                    @if (OperatingSystem.IsWindows() || OperatingSystem.IsAndroid())
+                    {
+                        @if (IsUpdating)
+                        {
+                            <div class="mt-1 d-flex flex-column gap-2">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="spinner-border spinner-border-sm" style="color: var(--accent);" role="status"></span>
+                                        <span class="fw-bold small" style="color: var(--accent);">@(OperatingSystem.IsAndroid() ? "Downloading APK..." : "Downloading Update...")</span>
+                                    </div>
+                                    <span class="text-white small fw-bold">@(UpdateProgressPercentage)%</span>
+                                </div>
+                                <div class="progress" style="height: 8px; background-color: var(--bg-active);">
+                                    <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: @(UpdateProgressPercentage)%; background-color: var(--accent);"></div>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <button class="btn btn-warning w-100 fw-bold py-2 d-flex align-items-center justify-content-center gap-2" @onclick="StartUpdate">
+                                <img src="/svg/@(OperatingSystem.IsAndroid() ? "download-svgrepo-com.svg" : "rotate-right-svgrepo-com.svg")" class="btn-icon" />
+                                <span>@(OperatingSystem.IsAndroid() ? "Install Update (APK)" : "Install Update")</span>
+                            </button>
+                        }
+                    }
+                    else
+                    {
+                        <button class="btn btn-warning w-100 fw-bold py-2 d-flex align-items-center justify-content-center gap-2" @onclick="OpenAndroidUpdate">
+                            <img src="/svg/download-svgrepo-com.svg" class="btn-icon" alt="" />
+                            <span>Download APK</span>
+                        </button>
+                    }
+                </div>
+            }
+
+        </div>
+        <!-- Appearance Panel -->
+        <div class="panel d-flex flex-column">
+            <h4 class="mb-4">Appearance</h4>
+            <h5 class="mt-0 mb-3 text-muted fw-bold text-uppercase" style="letter-spacing: 0.5px; font-size: 0.8rem;">VRChat Profile</h5>
+            <div class="d-flex flex-column panel shadow-none border-0" style="background-color: var(--bg-hover); padding: 0;">
+                
+                <!-- Display VRChat Profile Backgrounds -->
+                <div class="settings-toggle-row p-3 border-bottom" style="border-color: var(--border-color) !important;">
+                    <div class="settings-toggle-info">
+                        <div class="settings-toggle-icon">
+                            <img src="/svg/gallery-wide-svgrepo-com.svg" class="icon-accent" style="width: 20px; height: 20px;" alt="Backgrounds" />
+                        </div>
+                        <div class="settings-toggle-text">
+                            <h6>VRChat Profile Backgrounds</h6>
+                            <div class="settings-toggle-desc">Show profile backgrounds</div>
+                        </div>
+                    </div>
+                    <div class="form-check form-switch fs-4 m-0">
+                        <input class="form-check-input cursor-pointer" type="checkbox" id="displayVRCProfileBackgrounds" @bind="DisplayVRCProfileBackgrounds">
+                    </div>
+                </div>
+
+                <!-- Display VRChat Profile Themes -->
+                <div class="settings-toggle-row p-3 border-bottom" style="border-color: var(--border-color) !important;">
+                    <div class="settings-toggle-info">
+                        <div class="settings-toggle-icon">
+                            <img src="/svg/color-picker-svgrepo-com.svg" class="icon-accent" style="width: 20px; height: 20px;" alt="Themes" />
+                        </div>
+                        <div class="settings-toggle-text">
+                            <h6>VRChat Profile Themes</h6>
+                            <div class="settings-toggle-desc">Show custom theme colors on buttons, icons and text</div>
+                        </div>
+                    </div>
+                    <div class="form-check form-switch fs-4 m-0">
+                        <input class="form-check-input cursor-pointer" type="checkbox" id="displayVRCProfileThemes" @bind="DisplayVRCProfileThemes">
+                    </div>
+                </div>
+
+                <!-- Display VRChat Cosmetics -->
+                <div class="settings-toggle-row p-3">
+                    <div class="settings-toggle-info">
+                        <div class="settings-toggle-icon">
+                            <img src="/svg/sticker-smile-square-svgrepo-com.svg" class="icon-accent" style="width: 20px; height: 20px;" alt="Cosmetics" />
+                        </div>
+                        <div class="settings-toggle-text">
+                            <h6>VRChat Profile Cosmetics</h6>
+                            <div class="settings-toggle-desc">Show profile effects and icon frames</div>
+                        </div>
+                    </div>
+                    <div class="form-check form-switch fs-4 m-0">
+                        <input class="form-check-input cursor-pointer" type="checkbox" id="displayVRCCosmetics" @bind="DisplayVRCCosmetics">
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- System Panel -->
+        <div class="panel d-flex flex-column">
+            <h4 class="mb-4">System</h4>
+
+                @if (!OperatingSystem.IsAndroid())
+                {
+                    <h5 class="mt-0 mb-3 text-muted fw-bold text-uppercase" style="letter-spacing: 0.5px; font-size: 0.8rem;">Application Behavior</h5>
+                    <div class="d-flex flex-column mb-4 panel shadow-none border-0" style="background-color: var(--bg-hover); padding: 0;">
+                        
+                        <!-- Start with Windows -->
+                        <div class="settings-toggle-row p-3 border-bottom" style="border-color: var(--border-color) !important;">
+                            <div class="settings-toggle-info">
+                                <div class="settings-toggle-icon">
+                                    <img src="/svg/windows-svgrepo-com.svg" class="icon-accent" style="width: 20px; height: 20px;" alt="Windows" />
+                                </div>
+                                <div class="settings-toggle-text">
+                                    <h6>Start with Windows</h6>
+                                    <div class="settings-toggle-desc">Automatically launch the app when your PC boots</div>
+                                </div>
+                            </div>
+                            <div class="form-check form-switch fs-4 m-0">
+                                <input class="form-check-input cursor-pointer" type="checkbox" id="startWithWindows" @bind="StartWithWindows">
+                            </div>
+                        </div>
+                        
+                        <!-- Start in Background -->
+                        <div class="settings-toggle-row p-3 border-bottom" style="border-color: var(--border-color) !important;">
+                            <div class="settings-toggle-info">
+                                <div class="settings-toggle-icon">
+                                    <img src="/svg/shield-minus-svgrepo-com.svg" class="icon-accent" style="width: 20px; height: 20px;" alt="Background" />
+                                </div>
+                                <div class="settings-toggle-text">
+                                    <h6>Start in Background</h6>
+                                    <div class="settings-toggle-desc">Launch silently into the system tray without showing the window</div>
+                                </div>
+                            </div>
+                            <div class="form-check form-switch fs-4 m-0">
+                                <input class="form-check-input cursor-pointer" type="checkbox" id="startInBackground" @bind="StartInBackground" disabled="@(!StartWithWindows)">
+                            </div>
+                        </div>
+
+                        <!-- Minimize to Tray -->
+                        <div class="settings-toggle-row p-3">
+                            <div class="settings-toggle-info">
+                                <div class="settings-toggle-icon">
+                                    <img src="/svg/minimize-square-minimalistic-svgrepo-com.svg" class="icon-accent" style="width: 20px; height: 20px;" alt="Minimize" />
+                                </div>
+                                <div class="settings-toggle-text">
+                                    <h6>Minimize to Tray</h6>
+                                    <div class="settings-toggle-desc">Hide to the system tray instead of closing the application</div>
+                                </div>
+                            </div>
+                            <div class="form-check form-switch fs-4 m-0">
+                                <input class="form-check-input cursor-pointer" type="checkbox" id="minimizeToTray" @bind="MinimizeToTray">
+                            </div>
+                        </div>
+
+                    </div>
+                }   
+
+                @if (OperatingSystem.IsWindows())
+                {
+                    <h5 class="mt-4 mb-2 text-muted text-09rem">VRChat Logs Information</h5>
+                    @if (VrcLogsExists)
+                    {
+                        <div class="row g-2 mb-3">
+                            <div class="col-6">
+                                <div class="p-3 cache-info-box h-100 d-flex align-items-center gap-3">
+                                    <img src="/svg/files-fill-svgrepo-com.svg" class="icon-accent" style="width: 28px; height: 28px;" />
+                                    <div class="d-flex flex-column">
+                                        <span class="text-muted small text-uppercase fw-bold">Files</span>
+                                        <span class="fw-bold fs-5">@VrcLogsFilesCount</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="p-3 cache-info-box h-100 d-flex align-items-center gap-3">
+                                    <img src="/svg/storage-svgrepo-com.svg" class="icon-success" style="width: 28px; height: 28px;" />
+                                    <div class="d-flex flex-column">
+                                        <span class="text-muted small text-uppercase fw-bold">Total Size</span>
+                                        <span class="fw-bold fs-5">@VrcLogsTotalSize</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="p-3 cache-info-box text-warning d-flex align-items-center mb-3">
+                            <img src="/svg/error-svgrepo-com.svg" class="icon-danger me-2" style="width: 16px; height: 16px;" /> VRChat logs folder not found.
+                        </div>
+                    }
+
+                    <div class="d-flex flex-column gap-2 mb-4">
+                        <button class="btn text-nowrap w-100" @onclick="OpenVRChatLogs">
+                            <img src="/svg/folder-open-svgrepo-com.svg" class="btn-icon" />Open Logs
+                        </button>
+                        <button class="btn btn-danger text-nowrap w-100" @onclick="ClearVRChatLogs">
+                            <img src="/svg/trash-bin-trash-svgrepo-com.svg" class="btn-icon" />Clear Logs
+                        </button>
+                    </div>
+                }
+
+                <h5 class="mt-4 mb-2 text-muted text-09rem">Cache Information</h5>
+                @if (CacheExists)
+                {
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <div class="p-3 cache-info-box h-100 d-flex align-items-center gap-3">
+                                <img src="/svg/files-fill-svgrepo-com.svg" class="icon-accent" style="width: 28px; height: 28px;" />
+                                <div class="d-flex flex-column">
+                                    <span class="text-muted small text-uppercase fw-bold">Files</span>
+                                    <span class="fw-bold fs-5">@CacheFilesCount</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="p-3 cache-info-box h-100 d-flex align-items-center gap-3">
+                                <img src="/svg/storage-svgrepo-com.svg" class="icon-success" style="width: 28px; height: 28px;" />
+                                <div class="d-flex flex-column">
+                                    <span class="text-muted small text-uppercase fw-bold">Total Size</span>
+                                    <span class="fw-bold fs-5">@CacheTotalSize</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="p-3 cache-info-box text-warning d-flex align-items-center mb-3">
+                        <img src="/svg/error-svgrepo-com.svg" class="icon-danger me-2" style="width: 16px; height: 16px;" /> Cache folder not found.
+                    </div>
+                }
+
+                <div class="d-flex flex-column gap-2 mb-4">
+                    @if (!OperatingSystem.IsAndroid())
+                    {
+                        <button class="btn text-nowrap w-100" @onclick="OpenCacheFolder">
+                            <img src="/svg/folder-open-svgrepo-com.svg" class="btn-icon" />Open Cache
+                        </button>
+                    }
+                    <button class="btn btn-danger text-nowrap w-100" @onclick="ClearCacheFiles">
+                        <img src="/svg/trash-bin-trash-svgrepo-com.svg" class="btn-icon" />Clear Cache
+                    </button>
+                </div>
+                
+                @if (OperatingSystem.IsWindows())
+                {
+                    <h5 class="mt-4 mb-2 text-muted text-09rem">Picflow Database</h5>
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <div class="p-3 cache-info-box h-100 d-flex align-items-center gap-3">
+                                <img src="/svg/database-svgrepo-com.svg" class="icon-accent" style="width: 28px; height: 28px;" />
+                                <div class="d-flex flex-column">
+                                    <span class="text-muted small text-uppercase fw-bold">Total Saved</span>
+                                    <span class="fw-bold fs-5">@PicflowDbTotal</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="p-3 cache-info-box h-100 d-flex flex-column justify-content-center gap-1">
+                                <div class="d-flex justify-content-between">
+                                    <span class="small text-muted">Stickers</span><span class="small fw-bold">@PicflowDbStickers</span>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <span class="small text-muted">Emojis</span><span class="small fw-bold">@PicflowDbEmojis</span>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <span class="small text-muted">Prints</span><span class="small fw-bold">@PicflowDbPrints</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="btn btn-outline-danger w-100" @onclick="ClearPicflowDb" disabled="@(PicflowDbTotal == 0)">
+                        <img src="/svg/trash-bin-trash-svgrepo-com.svg" class="btn-icon" /> Clear Picflow Database
+                    </button>
+                }
+            </div>
+
+            <!-- Legal Notice & Open Source Notice -->
+            <div class="about-legal-card p-3">
+                <div class="d-flex align-items-center justify-content-between mb-2 flex-wrap gap-1">
+                    <span class="fw-bold text-white small">Legal Notice</span>
+                    <span class="text-muted" style="font-size: 0.72rem;">© 2025–2026 TheIceDragonz</span>
+                </div>
+                
+                <p class="text-muted mb-2" style="font-size: 0.72rem; line-height: 1.45;">
+                    VRCGalleryManager is an independent utility designed to organize media and profile assets via web requests. It operates outside the VRChat client and makes no alterations to the game installation.
+                </p>
+
+                <p class="text-muted mb-2" style="font-size: 0.72rem; line-height: 1.45;">
+                    All trademarks referenced belong to their respective owners. This application is distributed freely as open-source software under the MIT License without liability or warranty.
+                </p>
+
+                <div class="d-flex align-items-center justify-content-between pt-2 border-top" style="border-color: rgba(255, 255, 255, 0.08) !important;">
+                    <span class="text-muted" style="font-size: 0.7rem;">Open Source Software Notice</span>
+                    <button type="button" class="btn btn-sm py-0 px-2" style="font-size: 0.7rem; height: 26px; border-width: 1px;" @onclick="OpenLicenses">
+                        Licenses
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+@if (ShowLicensesModal)
+{
+    <div class="position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center dialog-overlay" style="z-index: 10005;" @onclick="CloseLicenses">
+        <div class="dialog-panel d-flex flex-column licenses-dialog-panel" @onclick:stopPropagation="true">
+            <!-- Modal Header -->
+            <div class="p-3 px-4 d-flex align-items-center justify-content-between border-bottom" style="border-color: rgba(255, 255, 255, 0.08) !important; background: rgba(0, 0, 0, 0.25);">
+                <div class="d-flex align-items-center gap-2">
+                    <img src="/svg/files-fill-svgrepo-com.svg" class="icon-accent" style="width: 18px; height: 18px;" />
+                    <h5 class="fw-bold text-white mb-0 fs-6">Open Source Software Notice</h5>
+                </div>
+                <button class="btn-viewer-info-close" @onclick="CloseLicenses" title="Close">
+                    <img src="/svg/close-bold-svgrepo-com.svg" class="icon-white" style="width: 12px; height: 12px;" />
+                </button>
+            </div>
+
+            <!-- Modal Subheader -->
+            <div class="px-4 pt-3 pb-2">
+                <p class="text-muted mb-0" style="font-size: 0.78rem; line-height: 1.45;">
+                    VRCGalleryManager is built with the help of the open-source community. The following third-party components and libraries are used in this software under their respective licenses:
+                </p>
+            </div>
+
+            <!-- Scrollable Component List -->
+            <div class="px-4 py-2 flex-grow-1 overflow-y-auto licenses-list d-flex flex-column gap-2">
+                
+                <!-- Microsoft .NET MAUI & Blazor -->
+                <div class="license-item-card p-3">
+                    <div class="d-flex align-items-center justify-content-between gap-2 mb-1">
+                        <span class="fw-bold text-white" style="font-size: 0.88rem;">Microsoft .NET MAUI & Blazor</span>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge badge-license-mit">MIT</span>
+                            <button class="btn license-link-btn" @onclick='() => OpenExternalUrl("https://github.com/dotnet/maui")' title="Open dotnet/maui repository">
+                                <img src="/svg/link-svgrepo-com.svg" class="btn-icon" />
+                            </button>
+                        </div>
+                    </div>
+                    <div class="text-muted small mb-1" style="font-size: 0.72rem;">© Microsoft Corporation. All rights reserved.</div>
+                    <div class="text-light" style="font-size: 0.78rem; line-height: 1.4; color: #b8c2cc !important;">
+                        Cross-platform native application framework and Razor component WebView integration.
+                    </div>
+                </div>
+
+                <!-- SixLabors ImageSharp -->
+                <div class="license-item-card p-3">
+                    <div class="d-flex align-items-center justify-content-between gap-2 mb-1">
+                        <span class="fw-bold text-white" style="font-size: 0.88rem;">SixLabors ImageSharp & Drawing</span>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge badge-license-apache">Apache 2.0 / Split</span>
+                            <button class="btn license-link-btn" @onclick='() => OpenExternalUrl("https://github.com/SixLabors/ImageSharp")' title="Open SixLabors/ImageSharp repository">
+                                <img src="/svg/link-svgrepo-com.svg" class="btn-icon" />
+                            </button>
+                        </div>
+                    </div>
+                    <div class="text-muted small mb-1" style="font-size: 0.72rem;">© Six Labors and contributors</div>
+                    <div class="text-light" style="font-size: 0.78rem; line-height: 1.4; color: #b8c2cc !important;">
+                        High-performance, managed cross-platform 2D graphics, image decoding, and manipulation engine.
+                    </div>
+                </div>
+
+                <!-- CommunityToolkit.Maui -->
+                <div class="license-item-card p-3">
+                    <div class="d-flex align-items-center justify-content-between gap-2 mb-1">
+                        <span class="fw-bold text-white" style="font-size: 0.88rem;">CommunityToolkit.Maui</span>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge badge-license-mit">MIT</span>
+                            <button class="btn license-link-btn" @onclick='() => OpenExternalUrl("https://github.com/CommunityToolkit/Maui")' title="Open CommunityToolkit/Maui repository">
+                                <img src="/svg/link-svgrepo-com.svg" class="btn-icon" />
+                            </button>
+                        </div>
+                    </div>
+                    <div class="text-muted small mb-1" style="font-size: 0.72rem;">© .NET Foundation and Contributors</div>
+                    <div class="text-light" style="font-size: 0.78rem; line-height: 1.4; color: #b8c2cc !important;">
+                        Community-maintained collection of animations, converters, and native platform helpers for MAUI.
+                    </div>
+                </div>
+
+                <!-- H.NotifyIcon.Maui -->
+                <div class="license-item-card p-3">
+                    <div class="d-flex align-items-center justify-content-between gap-2 mb-1">
+                        <span class="fw-bold text-white" style="font-size: 0.88rem;">H.NotifyIcon.Maui</span>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge badge-license-mit">MIT</span>
+                            <button class="btn license-link-btn" @onclick='() => OpenExternalUrl("https://github.com/HavenDV/H.NotifyIcon")' title="Open H.NotifyIcon repository">
+                                <img src="/svg/link-svgrepo-com.svg" class="btn-icon" />
+                            </button>
+                        </div>
+                    </div>
+                    <div class="text-muted small mb-1" style="font-size: 0.72rem;">© HavenDV (Valerii Hazun)</div>
+                    <div class="text-light" style="font-size: 0.78rem; line-height: 1.4; color: #b8c2cc !important;">
+                        Windows tray icon support, taskbar notification area integration, and background lifecycle handling.
+                    </div>
+                </div>
+
+                <!-- Bootstrap -->
+                <div class="license-item-card p-3">
+                    <div class="d-flex align-items-center justify-content-between gap-2 mb-1">
+                        <span class="fw-bold text-white" style="font-size: 0.88rem;">Bootstrap & Bootstrap Icons</span>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge badge-license-mit">MIT</span>
+                            <button class="btn license-link-btn" @onclick='() => OpenExternalUrl("https://github.com/twbs/bootstrap")' title="Open Bootstrap repository">
+                                <img src="/svg/link-svgrepo-com.svg" class="btn-icon" />
+                            </button>
+                        </div>
+                    </div>
+                    <div class="text-muted small mb-1" style="font-size: 0.72rem;">© 2011-2026 The Bootstrap Authors & Twitter, Inc.</div>
+                    <div class="text-light" style="font-size: 0.78rem; line-height: 1.4; color: #b8c2cc !important;">
+                        Modern front-end CSS framework for responsive design, grid layout, and foundational utility classes.
+                    </div>
+                </div>
+
+                <!-- SVGRepo Community Vectors -->
+                <div class="license-item-card p-3">
+                    <div class="d-flex align-items-center justify-content-between gap-2 mb-1">
+                        <span class="fw-bold text-white" style="font-size: 0.88rem;">SVGRepo Community Vectors</span>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge badge-license-mit">MIT / CC0</span>
+                            <button class="btn license-link-btn" @onclick='() => OpenExternalUrl("https://www.svgrepo.com")' title="Open SVGRepo website">
+                                <img src="/svg/link-svgrepo-com.svg" class="btn-icon" />
+                            </button>
+                        </div>
+                    </div>
+                    <div class="text-muted small mb-1" style="font-size: 0.72rem;">© SVGRepo and respective vector authors</div>
+                    <div class="text-light" style="font-size: 0.78rem; line-height: 1.4; color: #b8c2cc !important;">
+                        Vector iconography and visual symbols utilized throughout navigation, buttons, and interface menus.
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="p-3 px-4 d-flex justify-content-end dialog-footer border-top" style="border-color: rgba(255, 255, 255, 0.08) !important;">
+                <button class="btn btn-sm px-4 fw-bold" style="background-color: var(--bg-hover); border: 1px solid var(--border-color); color: #fff;" @onclick="CloseLicenses">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private string Username = "";
+    private string Password = "";
+    private string Code2FA = "";
+    private int CacheFilesCount = 0;
+    private string CacheTotalSize = "0 B";
+    private bool CacheExists = false;
+    private int VrcLogsFilesCount = 0;
+    private string VrcLogsTotalSize = "0 B";
+    private bool VrcLogsExists = false;
+    private bool IsLoggingIn = false;
+    private bool HasVRCPlus = false;
+    private bool HasUpdate = false;
+    private string LatestUpdateVersion = "";
+    private string LocalVersion = "";
+    private bool IsUpdating = false;
+    private int UpdateProgressPercentage = 0;
+    private bool _isPromptingUpdate = false;
+    [SupplyParameterFromQuery]
+    public bool? PromptUpdate { get; set; }
+    private bool ShowPassword = false;
+    private bool Show2FA = false;
+    private bool IsEmail2FA = false;
+    private bool ShowLicensesModal = false;
+
+    private int PicflowDbTotal = 0;
+    private int PicflowDbStickers = 0;
+    private int PicflowDbEmojis = 0;
+    private int PicflowDbPrints = 0;
+
+    private bool DisplayVRCProfileBackgrounds
+    {
+        get => BackgroundService.DisplayVRCProfileBackgrounds;
+        set => BackgroundService.DisplayVRCProfileBackgrounds = value;
+    }
+
+    private bool DisplayVRCProfileThemes
+    {
+        get => BackgroundService.DisplayVRCProfileThemes;
+        set => BackgroundService.DisplayVRCProfileThemes = value;
+    }
+
+    private bool DisplayVRCCosmetics
+    {
+        get => BackgroundService.DisplayVRCCosmetics;
+        set => BackgroundService.DisplayVRCCosmetics = value;
+    }
+
+    private bool _startWithWindows;
+    private bool StartWithWindows
+    {
+        get => _startWithWindows;
+        set 
+        { 
+            _startWithWindows = value; 
+            Config.Set("StartWithWindows", value ? "true" : "false"); 
+            WindowsStartupHelper.SetStartup(value, _startInBackground); 
+        }
+    }
+
+    private bool _startInBackground;
+    private bool StartInBackground
+    {
+        get => _startInBackground;
+        set 
+        { 
+            _startInBackground = value; 
+            Config.Set("StartInBackground", value ? "true" : "false"); 
+            if (_startWithWindows)
+            {
+                WindowsStartupHelper.SetStartup(true, value);
+            }
+        }
+    }
+
+    private bool _minimizeToTray;
+    private bool MinimizeToTray
+    {
+        get => _minimizeToTray;
+        set { _minimizeToTray = value; Config.Set("MinimizeToTray", value ? "true" : "false"); }
+    }
+
+    private bool IsLoggedIn => (Auth.LoggedIn || Auth.CookieLoaded) && Auth.CurrentUser != null && !string.IsNullOrEmpty(Auth.CurrentUser.Id);
+
+    protected override async Task OnInitializedAsync()
+    {
+        AppEvents.RequestPromptUpdate += HandleRequestPromptUpdate;
+        await Auth.EnsureInitializedAsync();
+        _startWithWindows = Config.Get("StartWithWindows", "false") == "true";
+        _startInBackground = Config.Get("StartInBackground", "false") == "true";
+        _minimizeToTray = Config.Get("MinimizeToTray", "true") == "true";
+
+        _ = Task.Run(() =>
+        {
+            UpdateCacheInfo();
+            UpdateVRChatLogsInfo();
+            UpdatePicflowDbStats();
+            InvokeAsync(StateHasChanged);
+        });
+
+        LocalVersion = UpdateManager.GetCurrentVersion();
+
+        try
+        {
+            var updateCheck = await Updater.IsUpdateAvailableAsync();
+            HasUpdate = updateCheck.isAvailable;
+            if (!string.IsNullOrEmpty(updateCheck.localVersion))
+            {
+                LocalVersion = updateCheck.localVersion;
+            }
+            if (HasUpdate)
+            {
+                LatestUpdateVersion = updateCheck.latestVersion;
+            }
+        }
+        catch { }
+
+        if (Auth.Is2FARequired)
+        {
+            var creds = await Auth.LoadCredentialsAsync();
+            if (creds != null && !string.IsNullOrEmpty(creds.Value.username))
+            {
+                Username = creds.Value.username;
+            }
+            else
+            {
+                try { Username = await SecureStorage.Default.GetAsync("auth_username") ?? Username; } catch { }
+            }
+            Password = "";
+            ShowPassword = false;
+            IsEmail2FA = Auth.IsEmail2FA;
+            Show2FA = true;
+            Notifications.Show("Authentication required. Please enter the new 2FA code.", "2FA Required", VRCGalleryManager.Core.NotificationType.Info);
+            return;
+        }
+
+        if (Auth.LoggedIn || Auth.CookieLoaded)
+        {
+            if (Auth.CurrentUser != null && !string.IsNullOrEmpty(Auth.CurrentUser.Id))
+            {
+                ApplyCurrentUser(Auth.CurrentUser);
+            }
+            else
+            {
+                await LoadCurrentUser();
+            }
+        }
+        else
+        {
+            var creds = await Auth.LoadCredentialsAsync();
+            if (creds != null && !string.IsNullOrEmpty(creds.Value.username))
+            {
+                Username = creds.Value.username;
+            }
+            else
+            {
+                try { Username = await SecureStorage.Default.GetAsync("auth_username") ?? Username; } catch { }
+            }
+            Password = "";
+            ShowPassword = false;
+        }
+    }
+
+    private void ApplyCurrentUser(CurrentUser user)
+    {
+        if (user == null) return;
+        Username = user.DisplayName;
+        Password = "";
+        ShowPassword = false;
+
+        // Check VRChat Plus badge or tag
+        HasVRCPlus = VRCAuth.CheckHasVRCPlus(user);
+    }
+
+    private async Task LoadCurrentUser()
+    {
+        try
+        {
+            var user = Auth.CurrentUser ?? await Auth.AuthApi.GetCurrentUserAsync();
+            if (user != null && !string.IsNullOrEmpty(user.Id))
+            {
+                Auth.CurrentUser = user;
+                ApplyCurrentUser(user);
+            }
+            else
+            {
+                Auth.CurrentUser = null;
+                throw new VRChatApiException(401, "User is not authenticated or 2FA is required.");
+            }
+        }
+        catch (VRChatApiException ex) when (ex.StatusCode == 401)
+        {
+            try
+            {
+                IsLoggingIn = true;
+                StateHasChanged();
+
+                bool success = await Auth.TryAutoReloginAsync();
+                if (success)
+                {
+                    var user = await Auth.AuthApi.GetCurrentUserAsync();
+                    Auth.CurrentUser = user;
+                    ApplyCurrentUser(user);
+                }
+                else if (Auth.Is2FARequired)
+                {
+                    Password = "";
+                    ShowPassword = false;
+                    IsEmail2FA = Auth.IsEmail2FA;
+                    Show2FA = true;
+                    Notifications.Show("IP changed. Please enter your 2FA code.", "2FA Required", VRCGalleryManager.Core.NotificationType.Info);
+                }
+                else
+                {
+                    var creds = await Auth.LoadCredentialsAsync();
+                    if (creds != null && !string.IsNullOrEmpty(creds.Value.username))
+                    {
+                        Username = creds.Value.username;
+                    }
+                    Password = "";
+                    ShowPassword = false;
+                    Auth.Logout(keepCredentials: true);
+                    Notifications.Show("Session expired and auto-login failed. Please log in again.", "Session Expired", VRCGalleryManager.Core.NotificationType.Error);
+                }
+            }
+            catch
+            {
+                var creds = await Auth.LoadCredentialsAsync();
+                if (creds != null && !string.IsNullOrEmpty(creds.Value.username))
+                {
+                    Username = creds.Value.username;
+                }
+                Password = "";
+                ShowPassword = false;
+                Auth.Logout(keepCredentials: true);
+                Notifications.Show("Session expired and auto-login failed. Please log in again.", "Session Expired", VRCGalleryManager.Core.NotificationType.Error);
+            }
+            finally
+            {
+                IsLoggingIn = false;
+                StateHasChanged();
+            }
+        }
+        catch
+        {
+            var creds = await Auth.LoadCredentialsAsync();
+            if (creds != null && !string.IsNullOrEmpty(creds.Value.username))
+            {
+                Username = creds.Value.username;
+            }
+            Password = "";
+            ShowPassword = false;
+            Auth.Logout(keepCredentials: true);
+            Notifications.Show("Session expired. Please log in again.", "Session Expired", VRCGalleryManager.Core.NotificationType.Error);
+            StateHasChanged();
+        }
+    }
+
+    private async Task ToggleLogin()
+    {
+        if (IsLoggedIn)
+        {
+            try { await Auth.AuthApi.LogoutAsync(); } catch { }
+            finally
+            {
+                Auth.Logout();
+                Username = "";
+                Password = "";
+                HasVRCPlus = false;
+                ShowPassword = false;
+                Show2FA = false;
+                Code2FA = "";
+            }
+        }
+        else
+        {
+            IsLoggingIn = true;
+            StateHasChanged();
+            try
+            {
+                var status = await Auth.LoginAsync(Username, Password, isManualLogin: true);
+                if (status == VRCAuthStatus.RequiresEmail2FA || status == VRCAuthStatus.RequiresApp2FA)
+                {
+                    await Auth.SaveCredentialsAsync(Username, Password);
+                    Password = "";
+                    ShowPassword = false;
+                    IsEmail2FA = status == VRCAuthStatus.RequiresEmail2FA;
+                    Show2FA = true;
+                }
+                else if (status == VRCAuthStatus.Success)
+                {
+                    await Auth.SaveCredentialsAsync(Username, Password);
+                    Password = "";
+                    ShowPassword = false;
+                    await LoadCurrentUser();
+                }
+                else
+                {
+                    Password = "";
+                    ShowPassword = false;
+                    Notifications.Show(string.IsNullOrEmpty(Auth.LastErrorMessage) ? "Invalid credentials or connection error." : Auth.LastErrorMessage, "Login Error", VRCGalleryManager.Core.NotificationType.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                Password = "";
+                ShowPassword = false;
+                Notifications.Show(ex.Message, "Login Error", VRCGalleryManager.Core.NotificationType.Error);
+            }
+            finally
+            {
+                IsLoggingIn = false;
+            }
+        }
+    }
+
+    private async Task Submit2FA()
+    {
+        if (string.IsNullOrWhiteSpace(Code2FA)) return;
+        
+        IsLoggingIn = true;
+        StateHasChanged();
+        
+        try
+        {
+            var status = await Auth.Verify2FAAsync(Code2FA, IsEmail2FA);
+            if (status == VRCAuthStatus.Success)
+            {
+                Show2FA = false;
+                Code2FA = "";
+                Password = "";
+                ShowPassword = false;
+                if (Auth.CurrentUser != null)
+                {
+                    ApplyCurrentUser(Auth.CurrentUser);
+                }
+                else
+                {
+                    await LoadCurrentUser();
+                }
+            }
+            else
+            {
+                Notifications.Show(string.IsNullOrEmpty(Auth.LastErrorMessage) ? "Invalid 2FA code." : Auth.LastErrorMessage, "Login Error", VRCGalleryManager.Core.NotificationType.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Notifications.Show(ex.Message, "Login Error", VRCGalleryManager.Core.NotificationType.Error);
+        }
+        finally
+        {
+            IsLoggingIn = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task Cancel2FA()
+    {
+        Show2FA = false;
+        Code2FA = "";
+        Password = "";
+        ShowPassword = false;
+        IsLoggingIn = false;
+
+        // Reset auth state and remove unverified partial session cookies
+        Auth.Logout(keepCredentials: true);
+
+        // Remove stored password so auto-login won't immediately re-trigger 2FA without user action
+        try
+        {
+            SecureStorage.Default.Remove("auth_password");
+        }
+        catch { }
+
+        // Keep username prefilled in the login form for convenience
+        try
+        {
+            var storedUser = await SecureStorage.Default.GetAsync("auth_username");
+            if (!string.IsNullOrEmpty(storedUser))
+            {
+                Username = storedUser;
+            }
+        }
+        catch { }
+
+        StateHasChanged();
+    }
+
+    private async Task Resend2FA()
+    {
+        IsLoggingIn = true;
+        StateHasChanged();
+        
+        try
+        {
+            var creds = await Auth.LoadCredentialsAsync();
+            if (creds == null)
+            {
+                Notifications.Show("Saved credentials not found. Please log in again.", "Login Error", VRCGalleryManager.Core.NotificationType.Error);
+                Cancel2FA();
+                return;
+            }
+
+            var status = await Auth.LoginAsync(creds.Value.username, creds.Value.password, isManualLogin: false);
+            Password = "";
+            ShowPassword = false;
+            if (status == VRCAuthStatus.RequiresEmail2FA)
+            {
+                Notifications.Show("New code sent to your email!", "2FA", VRCGalleryManager.Core.NotificationType.Success);
+            }
+            else if (status == VRCAuthStatus.Success)
+            {
+                Show2FA = false;
+                Code2FA = "";
+                await LoadCurrentUser();
+            }
+            else
+            {
+                Notifications.Show(string.IsNullOrEmpty(Auth.LastErrorMessage) ? "Unexpected status when resending code." : Auth.LastErrorMessage, "Login Error", VRCGalleryManager.Core.NotificationType.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Password = "";
+            ShowPassword = false;
+            Notifications.Show(ex.Message, "Login Error", VRCGalleryManager.Core.NotificationType.Error);
+        }
+        finally
+        {
+            IsLoggingIn = false;
+        }
+    }
+
+    private async Task On2FAKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter") await Submit2FA();
+    }
+
+    private async Task OnUsernameKeyDown(KeyboardEventArgs e)
+    {
+        if (!IsLoggedIn && e.Key == "Enter") await ToggleLogin();
+    }
+
+    private async Task OnPasswordKeyDown(KeyboardEventArgs e)
+    {
+        if (!IsLoggedIn && e.Key == "Enter") await ToggleLogin();
+    }
+
+    private async Task OpenGitHub()
+    {
+        await Microsoft.Maui.ApplicationModel.Launcher.Default.OpenAsync(new Uri("https://github.com/TheIceDragonz/VRCGalleryManager"));
+    }
+
+    private async Task OpenReleases()
+    {
+        await Microsoft.Maui.ApplicationModel.Launcher.Default.OpenAsync(new Uri("https://github.com/TheIceDragonz/VRCGalleryManager/releases"));
+    }
+
+    private async Task OpenIssues()
+    {
+        await Microsoft.Maui.ApplicationModel.Launcher.Default.OpenAsync(new Uri("https://github.com/TheIceDragonz/VRCGalleryManager/issues"));
+    }
+
+    private void OpenLicenses()
+    {
+        ShowLicensesModal = true;
+    }
+
+    private void CloseLicenses()
+    {
+        ShowLicensesModal = false;
+    }
+
+    private async Task OpenExternalUrl(string url)
+    {
+        try
+        {
+            if (Uri.TryCreate(url, UriKind.Absolute, out var uri))
+            {
+                await Microsoft.Maui.ApplicationModel.Launcher.Default.OpenAsync(uri);
+            }
+        }
+        catch { }
+    }
+
+    private async Task OpenVRCPlusSubscriptions()
+    {
+        await Microsoft.Maui.ApplicationModel.Launcher.Default.OpenAsync(new Uri("https://vrchat.com/home/subscriptions"));
+    }
+
+    private async Task OpenAndroidUpdate()
+    {
+        await StartUpdate();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (PromptUpdate == true)
+        {
+            PromptUpdate = null;
+            _ = InvokeAsync(async () =>
+            {
+                await Task.Delay(200);
+                await StartUpdate();
+            });
+        }
+    }
+
+    private void HandleRequestPromptUpdate()
+    {
+        _ = InvokeAsync(async () =>
+        {
+            await Task.Delay(100);
+            await StartUpdate();
+        });
+    }
+
+    private async Task StartUpdate()
+    {
+        if (IsUpdating || _isPromptingUpdate) return;
+
+        _isPromptingUpdate = true;
+        try
+        {
+            if (string.IsNullOrEmpty(LatestUpdateVersion))
+            {
+                var updateCheck = await Updater.IsUpdateAvailableAsync();
+                if (updateCheck.isAvailable)
+                {
+                    HasUpdate = true;
+                    LatestUpdateVersion = updateCheck.latestVersion;
+                    LocalVersion = updateCheck.localVersion;
+                }
+            }
+
+            bool confirmed = await dialogService.ShowConfirmAsync(
+                "Update Available", 
+                $"A new version ({LatestUpdateVersion}) is available.\nYou are currently on version {LocalVersion}.\n\nDo you want to download and install it?", 
+                "Yes", "No");
+            if (!confirmed) return;
+
+            IsUpdating = true;
+            UpdateProgressPercentage = 0;
+            StateHasChanged();
+
+            try
+            {
+                await Updater.DownloadAndInstallUpdateAsync(Notifications, (progressText, progressInt, isError) => 
+                {
+                    if (!isError)
+                    {
+                        UpdateProgressPercentage = progressInt;
+                        InvokeAsync(StateHasChanged);
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                Notifications.Show($"Update failed: {ex.Message}", "Update Error", VRCGalleryManager.Core.NotificationType.Error);
+            }
+            finally
+            {
+                IsUpdating = false;
+                InvokeAsync(StateHasChanged);
+            }
+        }
+        finally
+        {
+            _isPromptingUpdate = false;
+        }
+    }
+
+    private void OpenCacheFolder()
+    {
+        if (!OperatingSystem.IsWindows())
+        {
+            ShowSystemMessage("Opening folders is only supported on Windows.", true);
+            return;
+        }
+
+        string cacheFolderPath = Path.Combine(Path.GetTempPath(), "VRCGalleryManager");
+        if (Directory.Exists(cacheFolderPath))
+            System.Diagnostics.Process.Start("explorer.exe", cacheFolderPath);
+        else
+            ShowSystemMessage("Cache folder does not exist.", true);
+    }
+
+    private void OpenVRChatLogs()
+    {
+        string vrchatLogPath = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData).Replace("Local", "LocalLow"),
+            "VRChat", "VRChat");
+        if (Directory.Exists(vrchatLogPath))
+            System.Diagnostics.Process.Start("explorer.exe", vrchatLogPath);
+        else
+            ShowSystemMessage("VRChat logs folder does not exist.", true);
+    }
+
+    private async Task ClearVRChatLogs()
+    {
+        string vrchatLogPath = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData).Replace("Local", "LocalLow"),
+            "VRChat", "VRChat");
+
+        string[] logFiles = Directory.Exists(vrchatLogPath)
+            ? Directory.GetFiles(vrchatLogPath, "output_log_*.txt")
+            : Array.Empty<string>();
+
+        if (logFiles.Length == 0)
+        {
+            ShowSystemMessage("No log files found.", true);
+            return;
+        }
+
+        bool confirmed = await dialogService.ShowConfirmAsync("Clear Logs", $"Do you want to delete {logFiles.Length} VRChat log file(s)?", "Delete", "Cancel");
+        if (confirmed)
+        {
+            foreach (var file in logFiles)
+                try { System.IO.File.Delete(file); } catch { }
+            Notifications.Show("All VRChat logs have been successfully deleted!", "System", VRCGalleryManager.Core.NotificationType.Success);
+            UpdateVRChatLogsInfo();
+        }
+    }
+
+    private async Task ClearCacheFiles()
+    {
+        string cacheFolderPath = Path.Combine(Path.GetTempPath(), "VRCGalleryManager");
+
+        if (!Directory.Exists(cacheFolderPath))
+        {
+            ShowSystemMessage("Cache folder does not exist.", true);
+            return;
+        }
+
+        string[] cacheFiles = Directory.GetFiles(cacheFolderPath);
+        if (cacheFiles.Length == 0)
+        {
+            ShowSystemMessage("No cache files found.", true);
+            return;
+        }
+
+        bool confirmed = await dialogService.ShowConfirmAsync("Clear Cache", "Do you want to delete all cache files?", "Delete", "Cancel");
+        if (confirmed)
+        {
+            foreach (var file in cacheFiles)
+                try { System.IO.File.Delete(file); } catch { }
+            ShowSystemMessage("All cache files have been successfully deleted!", false);
+            UpdateCacheInfo();
+        }
+    }
+
+    private void ShowSystemMessage(string message, bool isError)
+    {
+        Notifications.Show(message, isError ? "Error" : "System", isError ? VRCGalleryManager.Core.NotificationType.Error : VRCGalleryManager.Core.NotificationType.Success);
+    }
+
+    private void UpdateCacheInfo()
+    {
+        string cacheFolder = Path.Combine(Path.GetTempPath(), "VRCGalleryManager");
+        if (!Directory.Exists(cacheFolder))
+        {
+            try { Directory.CreateDirectory(cacheFolder); } catch { }
+        }
+        
+        CacheExists = Directory.Exists(cacheFolder);
+        if (CacheExists)
+        {
+            string[] files = Directory.GetFiles(cacheFolder);
+            CacheFilesCount = files.Length;
+            long totalSize = files.Sum(file => new FileInfo(file).Length);
+
+            string[] units = { "B", "KB", "MB", "GB", "TB" };
+            double size = totalSize;
+            int unitIndex = 0;
+            while (size >= 1024 && unitIndex < units.Length - 1) { size /= 1024; unitIndex++; }
+
+            CacheTotalSize = $"{size:0.##} {units[unitIndex]}";
+        }
+        else
+        {
+            CacheFilesCount = 0;
+            CacheTotalSize = "0 B";
+        }
+    }
+
+    private void UpdateVRChatLogsInfo()
+    {
+        if (!OperatingSystem.IsWindows()) return;
+        
+        string vrchatLogPath = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData).Replace("Local", "LocalLow"),
+            "VRChat", "VRChat");
+        
+        VrcLogsExists = Directory.Exists(vrchatLogPath);
+        if (VrcLogsExists)
+        {
+            string[] files = Directory.GetFiles(vrchatLogPath, "output_log_*.txt");
+            VrcLogsFilesCount = files.Length;
+            long totalSize = files.Sum(file => new FileInfo(file).Length);
+
+            string[] units = { "B", "KB", "MB", "GB", "TB" };
+            double size = totalSize;
+            int unitIndex = 0;
+            while (size >= 1024 && unitIndex < units.Length - 1) { size /= 1024; unitIndex++; }
+
+            VrcLogsTotalSize = $"{size:0.##} {units[unitIndex]}";
+        }
+        else
+        {
+            VrcLogsFilesCount = 0;
+            VrcLogsTotalSize = "0 B";
+        }
+    }
+
+    private void UpdatePicflowDbStats()
+    {
+        PicflowDatabase.Load();
+        var allItems = PicflowDatabase.GetAll().Values;
+        PicflowDbTotal = allItems.Count;
+        
+        // 0 = Sticker, 1 = Emoji, 2 = Print (assuming Picflow.ItemCategory maps to 0, 1, 2)
+        PicflowDbStickers = allItems.Count(x => x.CategoryInt == 0);
+        PicflowDbEmojis = allItems.Count(x => x.CategoryInt == 1);
+        PicflowDbPrints = allItems.Count(x => x.CategoryInt == 2);
+    }
+
+    private async Task ClearPicflowDb()
+    {
+        bool confirmed = await dialogService.ShowConfirmAsync("Clear Picflow DB", "Are you sure you want to delete all saved items from the Picflow database?", "Delete", "Cancel");
+        if (confirmed)
+        {
+            PicflowDatabase.Clear();
+            UpdatePicflowDbStats();
+            Notifications.Show("Picflow database has been successfully cleared!", "System", VRCGalleryManager.Core.NotificationType.Success);
+        }
+    }
+
+    public void Dispose()
+    {
+        AppEvents.RequestPromptUpdate -= HandleRequestPromptUpdate;
+    }
+}

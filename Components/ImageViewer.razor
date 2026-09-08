@@ -1,0 +1,648 @@
+@using System.IO
+@using System.Threading.Tasks
+@inject IJSRuntime JS
+@inject VRCGalleryManager.Core.NotificationService NotificationService
+@inject VRCGalleryManager.Core.VRCAuth Auth
+
+@if (IsVisible)
+{
+    <div class="image-viewer-overlay" @onclick="Close" tabindex="0" @onkeydown="HandleKeyDown" @ref="overlayRef" style="outline: none;">
+        
+        <div class="image-viewer-top-bar" @onclick:stopPropagation="true">
+            <div class="image-viewer-title" title="@(CurrentItem?.Title)">
+                @(CurrentItem?.Title)
+            </div>
+            <button class="btn btn-icon-only btn-viewer-close" @onclick="Close" title="Close">
+                <img src="/svg/close-bold-svgrepo-com.svg" class="icon-white" />
+            </button>
+        </div>
+
+        @if (Items != null && Items.Count > 1)
+        {
+            <button class="btn btn-icon-only btn-nav left" @onclick="Prev" @onclick:stopPropagation="true" disabled="@(CurrentIndex == 0)">
+                <img src="/svg/back-arrow-svgrepo-com.svg" class="icon-white" />
+            </button>
+        }
+
+        <div class="image-container" @ref="imageContainerRef">
+            @if (!isHighResLoaded)
+            {
+                <div class="spinner-border text-accent position-absolute" style="width: 3rem; height: 3rem; border-width: 0.25em; z-index: 10;"></div>
+                @if (!string.IsNullOrEmpty(CurrentItem?.LowResSource))
+                {
+                    <img src="@CurrentItem.LowResSource" class="viewer-img opacity-50" style="transform: scale(1.05);" @onclick:stopPropagation="true" draggable="false" />
+                }
+            }
+            
+            @if (!string.IsNullOrEmpty(CurrentHighResSource))
+            {
+                <img src="@CurrentHighResSource" class="viewer-img @(isHighResLoaded ? "opacity-100" : "opacity-0 position-absolute")" @onload="OnHighResLoaded" @onclick:stopPropagation="true" draggable="false" />
+            }
+        </div>
+
+        <div class="image-viewer-bottom-bar" @onclick:stopPropagation="true">
+            @if (CurrentItem?.HighResSource?.StartsWith("http") == false)
+            {
+                <button class="btn btn-icon-only btn-viewer-action" title="Open Location" @onclick="OpenLocationCurrent">
+                    <img src="/svg/folder-open-svgrepo-com.svg" class="icon-white" />
+                </button>
+            }
+            <button class="btn btn-icon-only btn-viewer-action" title="Copy Image" @onclick="CopyCurrent">
+                <img src="/svg/copy-svgrepo-com.svg" class="icon-white" />
+            </button>
+            @if (ShowDownloadButton)
+            {
+                <button class="btn btn-icon-only btn-viewer-action" title="Download" @onclick="DownloadCurrent">
+                    <img src="/svg/download-svgrepo-com.svg" class="icon-white" />
+                </button>
+            }
+            @if (CurrentItem?.HighResSource?.StartsWith("http") == true)
+            {
+                <button class="btn btn-icon-only btn-viewer-action" title="Copy Link" @onclick="CopyLinkCurrent">
+                    <img src="/svg/link-svgrepo-com.svg" class="icon-white" />
+                </button>
+            }
+
+            @if (OnDeleteRequested.HasDelegate)
+            {
+                <button class="btn btn-icon-only btn-viewer-action btn-viewer-delete" title="Delete" @onclick="DeleteCurrent">
+                    <img src="/svg/trash-bin-trash-svgrepo-com.svg" class="icon-danger" />
+                </button>
+            }
+            @if (OnUploadRequested.HasDelegate)
+            {
+                <button class="btn btn-icon-only btn-viewer-action btn-viewer-upload" title="Upload" @onclick="UploadCurrent">
+                    <img src="/svg/add-circle-svgrepo-com.svg" class="icon-success" />
+                </button>
+            }
+            @if (CurrentVrcxData != null && (CurrentVrcxData.World != null || (CurrentVrcxData.Players != null && CurrentVrcxData.Players.Count > 0)))
+            {
+                <button class="btn btn-icon-only btn-viewer-action @(ShowInfoPanel ? "active" : "")" title="Toggle Info Panel" @onclick="ToggleInfoPanel">
+                    <img src="/svg/info-circle-svgrepo-com.svg" class="icon-white" />
+                </button>
+            }
+        </div>
+
+        @if (ShowInfoPanel && CurrentVrcxData != null && (CurrentVrcxData.World != null || (CurrentVrcxData.Players != null && CurrentVrcxData.Players.Count > 0)))
+        {
+            <div class="image-viewer-info-panel" @onclick:stopPropagation="true">
+                <!-- Panel Header -->
+                <div class="viewer-info-header">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="viewer-info-icon-box">
+                            <img src="/svg/info-circle-svgrepo-com.svg" class="icon-accent" style="width: 16px; height: 16px;" />
+                        </div>
+                        <span class="fw-bold text-white fs-6">Photo Details</span>
+                    </div>
+                    <button class="btn-viewer-info-close" @onclick="ToggleInfoPanel" title="Close Panel">
+                        <img src="/svg/close-bold-svgrepo-com.svg" class="icon-white" style="width: 13px; height: 13px;" />
+                    </button>
+                </div>
+
+                <!-- Panel Body -->
+                <div class="viewer-info-body">
+                    <!-- World Card -->
+                    @if (CurrentVrcxData.World != null)
+                    {
+                        <div class="viewer-world-card">
+                            <div class="viewer-world-preview">
+                                @if (!string.IsNullOrEmpty(CurrentVrcxData.World.ImageUrl))
+                                {
+                                    <img src="@CurrentVrcxData.World.ImageUrl" class="viewer-world-img" alt="@CurrentVrcxData.World.Name" />
+                                }
+                                else
+                                {
+                                    <div class="viewer-world-placeholder">
+                                        <img src="/svg/gallery-wide-svgrepo-com.svg" class="icon-accent" style="width: 28px; height: 28px; opacity: 0.5;" />
+                                        <span>World Preview</span>
+                                    </div>
+                                }
+                                <div class="viewer-world-badge">
+                                    <img src="/svg/gallery-wide-svgrepo-com.svg" class="icon-white" style="width: 11px; height: 11px;" /> World
+                                </div>
+                            </div>
+
+                            <div class="viewer-world-details">
+                                <div class="viewer-world-title clickable" title="Copy: @CurrentVrcxData.World.Name" @onclick="CopyWorldName">
+                                    <span class="text-truncate">@CurrentVrcxData.World.Name</span>
+                                    <img src="/svg/copy-svgrepo-com.svg" class="icon-accent viewer-copy-hint" title="Copy" />
+                                </div>
+
+                                @if (!string.IsNullOrEmpty(CurrentVrcxData.World.InstanceId))
+                                {
+                                    <div class="viewer-world-meta clickable" title="Copy: @CurrentVrcxData.World.InstanceId" @onclick="CopyInstanceId">
+                                        <span class="badge bg-secondary bg-opacity-25 text-muted px-1 py-0 fw-normal flex-shrink-0" style="font-size: 0.68rem;">Instance</span>
+                                        <span class="text-truncate">@CurrentVrcxData.World.InstanceId</span>
+                                        <img src="/svg/copy-svgrepo-com.svg" class="icon-accent viewer-copy-hint ms-auto" title="Copy" />
+                                    </div>
+                                }
+
+                                <button class="btn btn-sm viewer-world-btn" @onclick="() => OpenWorld(CurrentVrcxData.World.Id)" title="Open world in VRChat">
+                                    <img src="/svg/link-svgrepo-com.svg" class="icon-accent" style="width: 14px; height: 14px;" />
+                                    <span>Open in VRChat</span>
+                                </button>
+                            </div>
+                        </div>
+                    }
+
+
+
+                    <!-- Players in Instance -->
+                    @if (CurrentVrcxData.Players != null && CurrentVrcxData.Players.Count > 0)
+                    {
+                        <div class="viewer-players-container">
+                            <div class="viewer-section-header">
+                                <div class="d-flex align-items-center gap-2">
+                                    <img src="/svg/profile-user-svgrepo-com.svg" class="icon-accent" style="width: 13px; height: 13px;" />
+                                    <span>Players</span>
+                                </div>
+                                <span class="viewer-count-badge">@CurrentVrcxData.Players.Count</span>
+                            </div>
+
+                            <div class="viewer-players-list">
+                                @foreach (var player in CurrentVrcxData.Players
+                                    .OrderByDescending(p => p.Id == Auth.CurrentUser?.Id)
+                                    .ThenByDescending(p => Auth.CurrentUser?.Friends?.Contains(p.Id) == true)
+                                    .ThenBy(p => p.DisplayName))
+                                {
+                                    bool isAuthor = CurrentVrcxData.Author?.Id == player.Id;
+                                    bool isSelf = player.Id == Auth.CurrentUser?.Id;
+                                    bool isFriend = Auth.CurrentUser?.Friends?.Contains(player.Id) == true;
+
+                                    <div class="viewer-player-item @(isSelf ? "is-self" : "") @(isAuthor ? "is-author" : "")"
+                                         @onclick="() => OpenUserInBrowser(player.Id)"
+                                         title="@player.DisplayName (Click to view profile)">
+                                        
+                                        <div class="viewer-player-dot @(isSelf ? "self" : (isFriend ? "friend" : (isAuthor ? "author" : "other")))"></div>
+                                        
+                                        <div class="viewer-player-name @(isSelf ? "text-self-user" : (isFriend ? "text-warning" : "text-white"))">
+                                            @player.DisplayName
+                                        </div>
+
+                                        @if (isAuthor)
+                                        {
+                                            <img src="/svg/camera-svgrepo-com.svg" class="icon-accent flex-shrink-0" style="width: 14px; height: 14px;" title="Author" />
+                                        }
+
+                                        @if (isSelf)
+                                        {
+                                            <span class="viewer-player-badge self">You</span>
+                                        }
+                                        else if (isFriend)
+                                        {
+                                            <span class="viewer-player-badge friend">Friend</span>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+
+        @if (Items != null && Items.Count > 1)
+        {
+            <button class="btn btn-icon-only btn-nav right" @onclick="Next" @onclick:stopPropagation="true" disabled="@(CurrentIndex == Items.Count - 1)">
+                <img src="/svg/back-arrow-svgrepo-com.svg" class="icon-white" style="transform: scaleX(-1);" />
+            </button>
+        }
+        
+        @if (Items != null && Items.Count > 1)
+        {
+            <div class="image-viewer-counter" @onclick:stopPropagation="true">
+                @(CurrentIndex + 1) / @Items.Count
+            </div>
+        }
+    </div>
+}
+
+@code {
+    public class ViewerItem
+    {
+        public string HighResSource { get; set; }
+        public string LowResSource { get; set; }
+        public string Title { get; set; }
+    }
+    
+    private VRCGalleryManager.Core.ApiRequest ApiReq;
+
+    protected override void OnInitialized()
+    {
+        ApiReq = new VRCGalleryManager.Core.ApiRequest(Auth);
+    }
+    
+    [Parameter] public EventCallback OnClosed { get; set; }
+    [Parameter] public EventCallback<int> OnDeleteRequested { get; set; }
+    [Parameter] public EventCallback<int> OnUploadRequested { get; set; }
+    [Parameter] public bool ShowDownloadButton { get; set; } = true;
+
+    public bool IsVisible { get; private set; }
+    public IReadOnlyList<ViewerItem> Items { get; private set; }
+    public int CurrentIndex { get; private set; }
+    
+    private ElementReference overlayRef;
+    private bool _hasFocused = false;
+    private ElementReference imageContainerRef;
+
+    private void HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (Items == null || Items.Count <= 1)
+        {
+            if (e.Key == "Escape") Close();
+            return;
+        }
+
+        if (e.Key == "ArrowLeft" || e.Key == "ArrowUp")
+        {
+            Prev();
+        }
+        else if (e.Key == "ArrowRight" || e.Key == "ArrowDown")
+        {
+            Next();
+        }
+        else if (e.Key == "Escape")
+        {
+            Close();
+        }
+    }
+    private ViewerItem CurrentItem => Items != null && Items.Count > 0 && CurrentIndex >= 0 && CurrentIndex < Items.Count ? Items[CurrentIndex] : null;
+    private string CurrentHighResSource = null;
+    private bool isHighResLoaded = false;
+    private CancellationTokenSource _cts;
+    private VRCGalleryManager.Core.MetaDataImageReader.VrcxData CurrentVrcxData;
+    private bool ShowInfoPanel = false;
+    
+    private void ToggleInfoPanel() => ShowInfoPanel = !ShowInfoPanel;
+
+    public void Open(IReadOnlyList<ViewerItem> items, int startIndex)
+    {
+        Items = items;
+        CurrentIndex = startIndex;
+        IsVisible = true;
+        _hasFocused = false;
+        _ = LoadCurrentImageAsync();
+        StateHasChanged();
+    }
+    
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (IsVisible)
+        {
+            if (!_hasFocused)
+            {
+                _hasFocused = true;
+                try { await overlayRef.FocusAsync(); } catch { }
+            }
+            if (!firstRender)
+            {
+                try {
+                    await JS.InvokeVoidAsync("imageViewerZoom.init", imageContainerRef);
+                } catch { }
+            }
+        }
+    }
+    
+    public void Close()
+    {
+        IsVisible = false;
+        CurrentHighResSource = null;
+        Items = null;
+        _cts?.Cancel();
+        StateHasChanged();
+        OnClosed.InvokeAsync();
+        try { JS.InvokeVoidAsync("imageViewerZoom.reset", imageContainerRef); } catch { }
+    }
+    
+    private void Prev()
+    {
+        if (CurrentIndex > 0)
+        {
+            CurrentIndex--;
+            _ = LoadCurrentImageAsync();
+            StateHasChanged();
+            try { JS.InvokeVoidAsync("imageViewerZoom.reset", imageContainerRef); } catch { }
+        }
+    }
+    
+    private void Next()
+    {
+        if (CurrentIndex < Items.Count - 1)
+        {
+            CurrentIndex++;
+            _ = LoadCurrentImageAsync();
+            StateHasChanged();
+            try { JS.InvokeVoidAsync("imageViewerZoom.reset", imageContainerRef); } catch { }
+        }
+    }
+
+    private void OnHighResLoaded()
+    {
+        isHighResLoaded = true;
+        StateHasChanged();
+    }
+    
+    private async Task LoadCurrentImageAsync()
+    {
+        _cts?.Cancel();
+        _cts = new CancellationTokenSource();
+        var token = _cts.Token;
+
+        var item = CurrentItem;
+        if (item == null || string.IsNullOrEmpty(item.HighResSource)) return;
+        
+        isHighResLoaded = false;
+        CurrentHighResSource = null;
+        CurrentVrcxData = null;
+        StateHasChanged();
+        
+        try
+        {
+            if (item.HighResSource.StartsWith("http://", StringComparison.OrdinalIgnoreCase) || 
+                item.HighResSource.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+            {
+                // For web URLs, just pass the URL to the img src
+                CurrentHighResSource = item.HighResSource;
+            }
+            else
+            {
+                // For local files, read to Base64 to bypass browser local file restrictions
+                var path = item.HighResSource;
+                var base64 = await Task.Run(() => {
+                    var bytes = File.ReadAllBytes(path);
+                    var ext = Path.GetExtension(path).ToLowerInvariant();
+                    var mime = ext == ".png" ? "image/png" : "image/jpeg";
+                    return $"data:{mime};base64,{Convert.ToBase64String(bytes)}";
+                }, token);
+                
+                if (!token.IsCancellationRequested)
+                {
+                    CurrentHighResSource = base64;
+                    CurrentVrcxData = VRCGalleryManager.Core.MetaDataImageReader.ExtractVrcxData(path);
+                    
+                    if (CurrentVrcxData?.World != null && string.IsNullOrEmpty(CurrentVrcxData.World.ImageUrl) && !string.IsNullOrEmpty(CurrentVrcxData.World.Id))
+                    {
+                        _ = FetchWorldImageAsync(CurrentVrcxData.World.Id);
+                    }
+
+                    if (CurrentVrcxData != null && (CurrentVrcxData.World != null || (CurrentVrcxData.Players != null && CurrentVrcxData.Players.Count > 0)))
+                    {
+                        ShowInfoPanel = true;
+                    }
+                    else
+                    {
+                        ShowInfoPanel = false;
+                    }
+                }
+            }
+        }
+        catch 
+        {
+            if (!token.IsCancellationRequested)
+            {
+                CurrentHighResSource = null;
+                isHighResLoaded = true; // Stop spinner if failed
+            }
+        }
+        
+        if (!token.IsCancellationRequested)
+            StateHasChanged();
+    }
+    
+    private async Task FetchWorldImageAsync(string worldId)
+    {
+        try
+        {
+            var worldInfo = await ApiReq.GetWorldInfo(worldId);
+            if (worldInfo != null && !string.IsNullOrEmpty(worldInfo.ImageUrl))
+            {
+                if (CurrentVrcxData != null && CurrentVrcxData.World != null && CurrentVrcxData.World.Id == worldId)
+                {
+                    CurrentVrcxData.World.ImageUrl = worldInfo.ThumbnailUrl ?? worldInfo.ImageUrl;
+                    await InvokeAsync(StateHasChanged);
+                }
+            }
+        }
+        catch { }
+    }
+    
+    private async Task DownloadCurrent()
+    {
+        var src = CurrentItem?.HighResSource;
+        if (string.IsNullOrEmpty(src)) return;
+        
+        try 
+        {
+            string fileName = CurrentItem?.Title ?? "download";
+            if (string.IsNullOrWhiteSpace(fileName))
+            {
+                fileName = "download";
+            }
+
+            byte[] fileBytes;
+            string ext;
+
+            if (src.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+            {
+                var (downloadedBytes, downloadedExt) = await VRCGalleryManager.Core.FileHelper.DownloadBytesFromUrlAsync(src);
+                if (downloadedBytes == null || downloadedBytes.Length == 0)
+                {
+                    NotificationService.Show("Failed to download image file.", "Error", VRCGalleryManager.Core.NotificationType.Error);
+                    return;
+                }
+                fileBytes = downloadedBytes;
+                ext = downloadedExt;
+            }
+            else
+            {
+                if (!System.IO.File.Exists(src))
+                {
+                    NotificationService.Show("Source file not found.", "Error", VRCGalleryManager.Core.NotificationType.Error);
+                    return;
+                }
+                ext = System.IO.Path.GetExtension(src);
+                if (string.IsNullOrEmpty(ext)) ext = ".png";
+                fileBytes = await System.IO.File.ReadAllBytesAsync(src);
+            }
+
+            var (saved, destination) = await VRCGalleryManager.Core.FileHelper.SaveImageToDownloadsAsync(fileName, fileBytes, ext);
+            if (saved)
+            {
+                string successMsg = OperatingSystem.IsAndroid()
+                    ? "Image saved directly to Downloads."
+                    : "Image saved successfully.";
+                NotificationService.Show(successMsg, "Saved", VRCGalleryManager.Core.NotificationType.Success);
+
+                if (!string.IsNullOrEmpty(destination))
+                {
+                    string mime = ext.ToLowerInvariant() switch
+                    {
+                        ".jpg" or ".jpeg" => "image/jpeg",
+                        ".png" => "image/png",
+                        ".gif" => "image/gif",
+                        ".webp" => "image/webp",
+                        _ => "image/*"
+                    };
+                    await VRCGalleryManager.Core.FileHelper.OpenFileAsync(destination, mime);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            NotificationService.Show($"Download failed: {ex.Message}", "Error", VRCGalleryManager.Core.NotificationType.Error);
+        }
+    }
+
+    private void OpenLocationCurrent()
+    {
+        var src = CurrentItem?.HighResSource;
+        if (!string.IsNullOrEmpty(src) && !src.StartsWith("http"))
+        {
+            try
+            {
+                if (System.IO.File.Exists(src))
+                {
+                    System.Diagnostics.Process.Start("explorer.exe", $"/select,\"{src}\"");
+                }
+            }
+            catch { }
+        }
+    }
+
+    private async Task CopyCurrent()
+    {
+        var src = CurrentItem?.HighResSource;
+        if (string.IsNullOrEmpty(src)) return;
+        
+        try {
+            bool success = false;
+            if (src.StartsWith("http"))
+            {
+                string tempPath = await VRCGalleryManager.Core.ClipboardHandler.SaveImageFromUrlAsync(src, false);
+                if (!string.IsNullOrEmpty(tempPath)) {
+                    success = await VRCGalleryManager.Core.ClipboardHandler.CopyImageToClipboardAsync(tempPath);
+                }
+            }
+            else
+            {
+                success = await VRCGalleryManager.Core.ClipboardHandler.CopyImageToClipboardAsync(src);
+            }
+            
+            if (success) {
+                NotificationService.Show("Image copied to clipboard.", "Copied", VRCGalleryManager.Core.NotificationType.Success);
+            } else {
+                NotificationService.Show("Failed to copy image.", "Error", VRCGalleryManager.Core.NotificationType.Error);
+            }
+        } catch (Exception ex) {
+            NotificationService.Show($"Failed to copy image: {ex.Message}", "Error", VRCGalleryManager.Core.NotificationType.Error);
+        }
+    }
+    
+    private async Task CopyLinkCurrent()
+    {
+        var src = CurrentItem?.HighResSource;
+        if (!string.IsNullOrEmpty(src) && src.StartsWith("http"))
+        {
+            try {
+                bool success = await JS.InvokeAsync<bool>("clipboardInterop.writeText", src);
+                if (success) {
+                    NotificationService.Show("Link copied to clipboard", "Copied", VRCGalleryManager.Core.NotificationType.Success);
+                }
+            } catch { }
+        }
+    }
+    
+    private async Task DeleteCurrent()
+    {
+        if (OnDeleteRequested.HasDelegate)
+        {
+            await OnDeleteRequested.InvokeAsync(CurrentIndex);
+        }
+    }
+    
+    private async Task UploadCurrent()
+    {
+        if (OnUploadRequested.HasDelegate)
+        {
+            await OnUploadRequested.InvokeAsync(CurrentIndex);
+        }
+    }
+
+    private async Task CopyWorldName()
+    {
+        if (CurrentVrcxData?.World?.Name != null)
+        {
+            await CopyTextToClipboard(CurrentVrcxData.World.Name, "World name copied to clipboard");
+        }
+    }
+
+    private async Task CopyInstanceId()
+    {
+        if (CurrentVrcxData?.World?.InstanceId != null)
+        {
+            await CopyTextToClipboard(CurrentVrcxData.World.InstanceId, "Instance ID copied to clipboard");
+        }
+    }
+
+    private async Task CopyTextToClipboard(string? text, string message = "Copied to clipboard")
+    {
+        if (string.IsNullOrWhiteSpace(text)) return;
+        try
+        {
+            bool success = false;
+            try
+            {
+                success = await JS.InvokeAsync<bool>("clipboardInterop.writeText", text);
+            }
+            catch { }
+
+            if (!success)
+            {
+                await Microsoft.Maui.ApplicationModel.DataTransfer.Clipboard.Default.SetTextAsync(text);
+                success = true;
+            }
+
+            if (success)
+            {
+                NotificationService.Show(message, "Copied", VRCGalleryManager.Core.NotificationType.Success);
+            }
+        }
+        catch (Exception ex)
+        {
+            NotificationService.Show($"Failed to copy: {ex.Message}", "Error", VRCGalleryManager.Core.NotificationType.Error);
+        }
+    }
+
+    private void OpenWorld(string worldId)
+    {
+        if (!string.IsNullOrEmpty(worldId))
+        {
+            try
+            {
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = $"https://vrchat.com/home/world/{worldId}",
+                    UseShellExecute = true
+                });
+            }
+            catch { }
+        }
+    }
+
+    private void OpenUserInBrowser(string userId)
+    {
+        if (!string.IsNullOrEmpty(userId))
+        {
+            try
+            {
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = $"https://vrchat.com/home/user/{userId}",
+                    UseShellExecute = true
+                });
+            }
+            catch { }
+        }
+    }
+}
+

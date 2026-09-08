@@ -1,0 +1,179 @@
+@inherits LayoutComponentBase
+@using VRCGalleryManager.Core
+@implements IDisposable
+
+@if (!string.IsNullOrEmpty(ThemeCssRules))
+{
+    <svg style="position: absolute; width: 0; height: 0; overflow: hidden; pointer-events: none;" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+            <filter id="theme-icon-filter" color-interpolation-filters="sRGB">
+                <feColorMatrix type="matrix" values="0 0 0 @IconFilterR 0  0 0 0 @IconFilterG 0  0 0 0 @IconFilterB 0  0 0 0 1 0" />
+            </filter>
+            <filter id="theme-btn-filter" color-interpolation-filters="sRGB">
+                <feColorMatrix type="matrix" values="0 0 0 @BtnFilterR 0  0 0 0 @BtnFilterG 0  0 0 0 @BtnFilterB 0  0 0 0 1 0" />
+            </filter>
+        </defs>
+    </svg>
+    <style>
+        @((MarkupString)ThemeCssRules)
+    </style>
+}
+
+<div class="page main-page-container @(!string.IsNullOrEmpty(ThemeCssRules) ? "has-vrc-theme" : "") @(!string.IsNullOrEmpty(SidebarBackgroundStyle) ? "has-vrc-background" : "") @(BackgroundService.DisplayVRCProfileBackgrounds ? "has-vrc-background-enabled" : "") @(Microsoft.Maui.Devices.DeviceInfo.Current.Platform == Microsoft.Maui.Devices.DevicePlatform.Android ? "android-layout" : "")">
+    <div class="sidebar main-sidebar-container" style="@SidebarBackgroundStyle">
+        <NavMenu />
+    </div>
+
+    <main class="main-content-container d-flex flex-column">
+        @if (!IsOnline)
+        {
+            <div class="offline-banner d-flex align-items-center justify-content-between px-3 py-2 bg-danger text-white shadow-sm" style="z-index: 1050; font-size: 0.9rem; animation: slideDown 0.3s ease;">
+                <div class="d-flex align-items-center gap-2">
+                    <img src="/svg/wifi-off-svgrepo-com.svg" class="icon-white" style="width: 18px; height: 18px;" alt="Offline" />
+                    <span><strong>You are offline</strong> &mdash; No internet connection. Some features may not be available.</span>
+                </div>
+                <button class="btn btn-sm btn-outline-light d-flex align-items-center gap-1 py-0 px-2" @onclick="CheckConnectivity" disabled="@isCheckingConnection">
+                    @if (isCheckingConnection)
+                    {
+                        <span class="spinner-border spinner-border-sm" role="status"></span>
+                    }
+                    else
+                    {
+                        <img src="/svg/rotate-right-svgrepo-com.svg" class="icon-white" style="width: 14px; height: 14px;" />
+                    }
+                    <span>Retry</span>
+                </button>
+            </div>
+        }
+
+        <article class="content w-100 flex-grow-1 p-0 m-0 main-article overflow-hidden">
+            @Body
+        </article>
+    </main>
+
+    <NotificationDisplay />
+    <DialogDisplay />
+</div>
+
+@code {
+    [Inject] private NavigationManager NavManager { get; set; } = default!;
+    [Inject] private UpdateManager Updater { get; set; } = default!;
+    [Inject] private NotificationService Notifications { get; set; } = default!;
+    [Inject] private DialogService Dialogs { get; set; } = default!;
+    [Inject] private NetworkStatusService NetworkStatus { get; set; } = default!;
+    [Inject] private ProfileBackgroundService BackgroundService { get; set; } = default!;
+
+    private string SidebarBackgroundStyle = "";
+    private string ThemeCssRules = "";
+    private string IconFilterR = "0";
+    private string IconFilterG = "0";
+    private string IconFilterB = "0";
+    private string BtnFilterR = "0";
+    private string BtnFilterG = "0";
+    private string BtnFilterB = "0";
+    private bool IsOnline => NetworkStatus.IsOnline;
+    private bool isCheckingConnection = false;
+
+    protected override void OnInitialized()
+    {
+        AppEvents.RequestNavigateToSettings += HandleRequestNavigateToSettings;
+        NetworkStatus.OnNetworkStatusChanged += HandleNetworkStatusChanged;
+        BackgroundService.OnSidebarBackgroundChanged += HandleSidebarBgChanged;
+        BackgroundService.OnSettingsChanged += HandleSidebarBgChanged;
+        SidebarBackgroundStyle = BackgroundService.CurrentSidebarBackgroundStyle;
+        ThemeCssRules = BackgroundService.CurrentThemeCss;
+        UpdateFilterMatrix();
+    }
+
+    private void HandleRequestNavigateToSettings(bool promptUpdate)
+    {
+        InvokeAsync(() =>
+        {
+            if (promptUpdate)
+            {
+                if (NavManager.Uri.Contains("/settings"))
+                {
+                    AppEvents.PromptUpdate();
+                }
+                else
+                {
+                    NavManager.NavigateTo("/settings?promptUpdate=true");
+                }
+            }
+            else
+            {
+                NavManager.NavigateTo("/settings");
+            }
+        });
+    }
+
+    private void HandleSidebarBgChanged()
+    {
+        SidebarBackgroundStyle = BackgroundService.CurrentSidebarBackgroundStyle;
+        ThemeCssRules = BackgroundService.CurrentThemeCss;
+        UpdateFilterMatrix();
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void UpdateFilterMatrix()
+    {
+        IconFilterR = BackgroundService.IconColorMatrix.r.ToString("0.####", System.Globalization.CultureInfo.InvariantCulture);
+        IconFilterG = BackgroundService.IconColorMatrix.g.ToString("0.####", System.Globalization.CultureInfo.InvariantCulture);
+        IconFilterB = BackgroundService.IconColorMatrix.b.ToString("0.####", System.Globalization.CultureInfo.InvariantCulture);
+
+        BtnFilterR = BackgroundService.ButtonColorMatrix.r.ToString("0.####", System.Globalization.CultureInfo.InvariantCulture);
+        BtnFilterG = BackgroundService.ButtonColorMatrix.g.ToString("0.####", System.Globalization.CultureInfo.InvariantCulture);
+        BtnFilterB = BackgroundService.ButtonColorMatrix.b.ToString("0.####", System.Globalization.CultureInfo.InvariantCulture);
+    }
+
+    private void HandleNetworkStatusChanged(bool isOnline)
+    {
+        InvokeAsync(() =>
+        {
+            if (isOnline)
+            {
+                Notifications.Show("Internet connection restored.", "Online", NotificationType.Success, 3500);
+            }
+            StateHasChanged();
+        });
+    }
+
+    private async Task CheckConnectivity()
+    {
+        isCheckingConnection = true;
+        StateHasChanged();
+        await Task.Delay(300);
+        bool online = await NetworkStatus.CheckConnectionAsync();
+        isCheckingConnection = false;
+        if (!online)
+        {
+            Notifications.Show("Still offline. Please check your network connection.", "No Connection", NotificationType.Error, 3000);
+        }
+        StateHasChanged();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                var updateCheck = await Updater.IsUpdateAvailableAsync();
+                AppEvents.NotifyUpdateStatus(updateCheck.isAvailable, updateCheck.latestVersion);
+                if (updateCheck.isAvailable)
+                {
+                    Notifications.Show("A new update is available! You can download it from Settings.", "Update Available", VRCGalleryManager.Core.NotificationType.Info, 8000);
+                }
+            }
+            catch (Exception) { }
+        }
+    }
+
+    public void Dispose()
+    {
+        AppEvents.RequestNavigateToSettings -= HandleRequestNavigateToSettings;
+        NetworkStatus.OnNetworkStatusChanged -= HandleNetworkStatusChanged;
+        BackgroundService.OnSidebarBackgroundChanged -= HandleSidebarBgChanged;
+        BackgroundService.OnSettingsChanged -= HandleSidebarBgChanged;
+    }
+}

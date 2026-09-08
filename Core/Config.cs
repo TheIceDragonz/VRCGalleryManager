@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
@@ -26,14 +26,28 @@ namespace VRCGalleryManager.Core
 
         private static void LoadAllSettings()
         {
-            if (File.Exists(PathConfigJson))
+            try
             {
-                var json = File.ReadAllText(PathConfigJson);
-                _settings = JsonSerializer.Deserialize<Dictionary<string, string>>(json)
-                            ?? new Dictionary<string, string>();
+                if (File.Exists(PathConfigJson))
+                {
+                    var options = new JsonSerializerOptions
+                    {
+                        AllowTrailingCommas = true,
+                        ReadCommentHandling = JsonCommentHandling.Skip,
+                        PropertyNameCaseInsensitive = true
+                    };
+                    var json = File.ReadAllText(PathConfigJson);
+                    _settings = JsonSerializer.Deserialize<Dictionary<string, string>>(json, options)
+                                ?? new Dictionary<string, string>();
+                }
+                else
+                {
+                    _settings = new Dictionary<string, string>();
+                }
             }
-            else
+            catch (Exception ex)
             {
+                System.Diagnostics.Debug.WriteLine($"Error loading config.json: {ex.Message}");
                 _settings = new Dictionary<string, string>();
             }
         }
@@ -48,17 +62,7 @@ namespace VRCGalleryManager.Core
 
         public static void Set(string key, string value)
         {
-            if (!string.IsNullOrWhiteSpace(value))
-            {
-                var fullPath = Path.GetFullPath(value);
-                var normalized = fullPath.Replace(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
-                _settings[key] = normalized;
-            }
-            else
-            {
-                _settings[key] = value;
-            }
-
+            _settings[key] = value;
             SaveAllSettings();
         }
 
