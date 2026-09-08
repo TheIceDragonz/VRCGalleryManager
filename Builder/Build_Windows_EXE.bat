@@ -21,7 +21,7 @@ where dotnet >nul 2>nul
 if %ERRORLEVEL% neq 0 (
     color 0C
     echo [ERROR] .NET SDK was not found in PATH!
-    echo Please install .NET 8 SDK from https://dotnet.microsoft.com/download
+    echo Please install .NET 9 SDK from https://dotnet.microsoft.com/download/dotnet/9.0
     pause
     exit /b 1
 )

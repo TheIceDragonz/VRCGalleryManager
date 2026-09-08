@@ -39,6 +39,8 @@ Function .onInit
         SetRegView 64
         ReadRegStr $0 HKLM "Software\${AppName}" "Install_Dir"
         ${If} $0 != ""
+        ${AndIf} $0 != "$PROGRAMFILES32\${AppName}"
+        ${AndIf} $0 != "$PROGRAMFILES\${AppName}"
             StrCpy $INSTDIR "$0"
         ${Else}
             StrCpy $INSTDIR "$PROGRAMFILES64\${AppName}"
