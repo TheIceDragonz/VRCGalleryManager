@@ -56,16 +56,6 @@ Function .onInit
         MessageBox MB_OK|MB_ICONSTOP "This application requires a 64-bit version of Windows."
         Abort
     ${EndIf}
-
-    ; Check for Microsoft .NET Desktop Runtime 9.0 (x64)
-    FindFirst $0 $1 "$PROGRAMFILES64\dotnet\shared\Microsoft.WindowsDesktop.App\9.*"
-    FindClose $0
-    ${If} $1 == ""
-        MessageBox MB_YESNO|MB_ICONEXCLAMATION "${AppName} requires Microsoft .NET Desktop Runtime 9.0 (x64) to run.$\n$\nWould you like to open the official download page now?" IDYES downloadRuntime IDNO continueInstall
-downloadRuntime:
-        ExecShell "open" "https://aka.ms/dotnet/9.0/windowsdesktop-runtime-win-x64.exe"
-continueInstall:
-    ${EndIf}
 FunctionEnd
 
 Function un.onInit

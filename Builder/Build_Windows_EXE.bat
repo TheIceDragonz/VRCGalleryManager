@@ -38,7 +38,7 @@ mkdir "%OUTPUT_DIR%"
 if not exist "%OUTPUT_ROOT%" mkdir "%OUTPUT_ROOT%"
 
 echo.
-echo [*] Publishing VRCGalleryManager for Windows (x64 Release, Framework-Dependent)...
+echo [*] Publishing VRCGalleryManager for Windows (x64 Release, Self-Contained)...
 echo     Target: net9.0-windows10.0.19041.0
 echo     Output: %OUTPUT_DIR%
 echo.
@@ -47,7 +47,7 @@ dotnet publish "%CSPROJ%" ^
     -f net9.0-windows10.0.19041.0 ^
     -c Release ^
     -r win-x64 ^
-    --self-contained false ^
+    --self-contained true ^
     -p:WindowsPackageType=None ^
     -p:GeneratePackageOnBuild=false ^
     -p:EmbedAssembliesIntoApk=false ^
