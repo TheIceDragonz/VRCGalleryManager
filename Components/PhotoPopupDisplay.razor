@@ -78,6 +78,20 @@
                                     @popup.WorldName
                                 </span>
                             }
+                            @if (popup.DetectedQrCodes != null && popup.DetectedQrCodes.Count > 0)
+                            {
+                                var firstQr = popup.DetectedQrCodes[0];
+                                <span class="photo-notification-tag qr-tag cursor-pointer" 
+                                      @onclick="() => HandleQrAction(firstQr)" 
+                                      title="@(firstQr.IsUrl ? $"Click to open: {firstQr.Url}" : $"Click to copy: {firstQr.Text}")">
+                                    <img src="/svg/qr-detailed-svgrepo-com.svg" style="width: 11px; height: 11px;" class="icon-accent" />
+                                    @(firstQr.IsUrl ? firstQr.DisplayTitle : "QR Code")
+                                    @if (popup.DetectedQrCodes.Count > 1)
+                                    {
+                                        <span class="badge bg-secondary ms-1 p-0 px-1">+@(popup.DetectedQrCodes.Count - 1)</span>
+                                    }
+                                </span>
+                            }
                         </div>
                     </div>
                 </div>
@@ -88,6 +102,15 @@
                         <img src="/svg/eye-svgrepo-com.svg" class="btn-icon" style="width: 13px; height: 13px; margin: 0;" />
                         <span>View</span>
                     </button>
+
+                    @if (popup.DetectedQrCodes != null && popup.DetectedQrCodes.Count > 0)
+                    {
+                        var primaryQr = popup.DetectedQrCodes[0];
+                        <button class="photo-notif-btn photo-notif-btn-qr" @onclick="() => HandleQrAction(primaryQr)" title="@(primaryQr.IsUrl ? $"Open link: {primaryQr.Url}" : $"Copy text: {primaryQr.Text}")">
+                            <img src="/svg/qr-detailed-svgrepo-com.svg" class="btn-icon icon-accent" style="width: 13px; height: 13px; margin: 0;" />
+                            <span>@(primaryQr.IsUrl ? "Open Link" : "Copy QR")</span>
+                        </button>
+                    }
 
                     <button class="photo-notif-btn photo-notif-btn-success" @onclick="() => OpenUploadMenu(popup)" title="Upload to VRChat">
                         <img src="/svg/add-circle-svgrepo-com.svg" class="btn-icon icon-white" style="width: 13px; height: 13px; margin: 0;" />
@@ -299,6 +322,37 @@
         catch (Exception ex)
         {
             NotificationService.Show($"Could not open folder: {ex.Message}", "Error", NotificationType.Error, 3000);
+        }
+    }
+
+    private async Task HandleQrAction(QrCodeItem qr)
+    {
+        if (qr.IsUrl && !string.IsNullOrEmpty(qr.Url))
+        {
+            try
+            {
+                await Launcher.Default.OpenAsync(new Uri(qr.Url));
+                NotificationService.Show($"Opening {qr.DisplayTitle}...", "QR Code", NotificationType.Success, 2000);
+            }
+            catch (Exception ex)
+            {
+                NotificationService.Show($"Could not open URL: {ex.Message}", "QR Error", NotificationType.Error, 3000);
+            }
+        }
+        else if (!string.IsNullOrEmpty(qr.Text))
+        {
+            try
+            {
+#if WINDOWS
+                var dataPackage = new Windows.ApplicationModel.DataTransfer.DataPackage();
+                dataPackage.SetText(qr.Text);
+                Windows.ApplicationModel.DataTransfer.Clipboard.SetContent(dataPackage);
+#else
+                await Microsoft.Maui.ApplicationModel.DataTransfer.Clipboard.Default.SetTextAsync(qr.Text);
+#endif
+                NotificationService.Show("QR text copied to clipboard!", "Copied", NotificationType.Success, 2000);
+            }
+            catch { }
         }
     }
 

@@ -3838,3 +3838,98 @@ canvas.picking-color {
         opacity: 1;
     }
 }
+
+/* ==========================================================================
+   QR Code Scanner & Panel Styles
+   ========================================================================== */
+
+.image-viewer-qr-panel {
+    position: absolute;
+    bottom: 85px;
+    right: 95px;
+    width: 360px;
+    max-width: calc(100vw - 40px);
+    background: rgba(17, 20, 24, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: var(--radius-lg, 12px);
+    display: flex;
+    flex-direction: column;
+    z-index: 10003;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.08);
+    animation: qrPanelSlideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    overflow: hidden;
+}
+
+@keyframes qrPanelSlideUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@media (max-width: 600px) {
+    .image-viewer-qr-panel {
+        right: 12px;
+        left: 12px;
+        bottom: 80px;
+        width: auto;
+        max-width: none;
+    }
+}
+
+.viewer-qr-badge {
+    position: absolute;
+    top: -3px;
+    right: -3px;
+    background: var(--accent-color, #20b2aa);
+    color: #ffffff;
+    font-size: 0.62rem;
+    font-weight: 700;
+    border-radius: 999px;
+    padding: 2px 5px;
+    line-height: 1;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+    animation: qrBadgePop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes qrBadgePop {
+    0% { transform: scale(0); }
+    80% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+}
+
+.btn-viewer-action.has-qr {
+    border-color: rgba(var(--accent-rgb, 32, 178, 170), 0.4) !important;
+}
+
+.photo-notification-tag.qr-tag {
+    background: rgba(var(--accent-rgb, 32, 178, 170), 0.15);
+    color: var(--accent-color, #20b2aa);
+    border: 1px solid rgba(var(--accent-rgb, 32, 178, 170), 0.3);
+    transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.photo-notification-tag.qr-tag:hover {
+    background: rgba(var(--accent-rgb, 32, 178, 170), 0.28);
+    transform: translateY(-1px);
+}
+
+.photo-notif-btn-qr {
+    background: rgba(var(--accent-rgb, 32, 178, 170), 0.15);
+    color: var(--accent-color, #20b2aa);
+    border: 1px solid rgba(var(--accent-rgb, 32, 178, 170), 0.35);
+}
+
+.photo-notif-btn-qr:hover {
+    background: var(--accent-color, #20b2aa);
+    color: #ffffff;
+}
+
+.photo-notif-btn-qr:hover .btn-icon {
+    filter: brightness(0) invert(1);
+}

@@ -81,6 +81,7 @@
         <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.0" />
         <PackageReference Include="SixLabors.ImageSharp" Version="4.1.0" />
         <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="2.1.4" />
+        <PackageReference Include="ZXing.Net" Version="0.16.10" />
     </ItemGroup>
 
     <Target Name="SixLabors_ValidateLicense">

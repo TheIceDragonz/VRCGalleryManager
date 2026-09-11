@@ -25,6 +25,7 @@ namespace VRCGalleryManager.Core
         public bool IsLeaving { get; set; }
         public bool IsCollapsed { get; set; }
         public CancellationTokenSource? DismissCts { get; set; }
+        public List<QrCodeItem> DetectedQrCodes { get; set; } = new();
     }
 
     public class VRCLogWatcherService : IDisposable
@@ -66,8 +67,11 @@ namespace VRCGalleryManager.Core
             set => Config.Set("EnableScreenshotPopup", value ? "true" : "false");
         }
 
-        public VRCLogWatcherService()
+        private readonly QrCodeService _qrCodeService;
+
+        public VRCLogWatcherService(QrCodeService? qrCodeService = null)
         {
+            _qrCodeService = qrCodeService ?? new QrCodeService();
             StartWatcher();
         }
 
@@ -239,6 +243,13 @@ namespace VRCGalleryManager.Core
             }
             catch { }
 
+            List<QrCodeItem> detectedQrs = new();
+            try
+            {
+                detectedQrs = await _qrCodeService.ScanFileAsync(normalizedPath, token);
+            }
+            catch { }
+
             var popup = new PhotoPopupModel
             {
                 FilePath = normalizedPath,
@@ -247,7 +258,8 @@ namespace VRCGalleryManager.Core
                 WorldName = worldName,
                 WorldId = worldId,
                 Timestamp = DateTime.Now,
-                ThumbnailBase64 = thumbBase64
+                ThumbnailBase64 = thumbBase64,
+                DetectedQrCodes = detectedQrs
             };
 
             lock (_lock)
