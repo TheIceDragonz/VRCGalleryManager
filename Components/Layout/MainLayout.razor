@@ -51,9 +51,12 @@
         </article>
     </main>
 
-    <NotificationDisplay />
+    <!-- Unified Notifications Stack (Screenshot Popups & App Toasts) -->
+    <div class="notifications-host">
+        <PhotoPopupDisplay />
+        <NotificationDisplay />
+    </div>
     <DialogDisplay />
-    <PhotoPopupDisplay />
 </div>
 
 @code {

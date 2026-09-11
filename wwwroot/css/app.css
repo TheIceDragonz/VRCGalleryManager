@@ -912,9 +912,10 @@ h6 {
 .settings-account-mobile-bottom .settings-account-tags:has(> :nth-child(4)) {
     gap: 5px !important;
 }
+
 .settings-account-mobile-bottom .settings-account-tags:has(> :nth-child(4)) .settings-pill,
 .settings-account-mobile-bottom .settings-account-tags .settings-pill:nth-last-child(n+4),
-.settings-account-mobile-bottom .settings-account-tags .settings-pill:nth-last-child(n+4) ~ .settings-pill {
+.settings-account-mobile-bottom .settings-account-tags .settings-pill:nth-last-child(n+4)~.settings-pill {
     font-size: 0.62rem !important;
     padding: 2px 7px !important;
 }
@@ -923,9 +924,10 @@ h6 {
 .settings-account-mobile-bottom .settings-account-tags:has(> :nth-child(5)) {
     gap: 4px !important;
 }
+
 .settings-account-mobile-bottom .settings-account-tags:has(> :nth-child(5)) .settings-pill,
 .settings-account-mobile-bottom .settings-account-tags .settings-pill:nth-last-child(n+5),
-.settings-account-mobile-bottom .settings-account-tags .settings-pill:nth-last-child(n+5) ~ .settings-pill {
+.settings-account-mobile-bottom .settings-account-tags .settings-pill:nth-last-child(n+5)~.settings-pill {
     font-size: 0.56rem !important;
     padding: 1.5px 5.5px !important;
 }
@@ -934,9 +936,10 @@ h6 {
 .settings-account-mobile-bottom .settings-account-tags:has(> :nth-child(6)) {
     gap: 3px !important;
 }
+
 .settings-account-mobile-bottom .settings-account-tags:has(> :nth-child(6)) .settings-pill,
 .settings-account-mobile-bottom .settings-account-tags .settings-pill:nth-last-child(n+6),
-.settings-account-mobile-bottom .settings-account-tags .settings-pill:nth-last-child(n+6) ~ .settings-pill {
+.settings-account-mobile-bottom .settings-account-tags .settings-pill:nth-last-child(n+6)~.settings-pill {
     font-size: 0.51rem !important;
     padding: 1px 4.5px !important;
     letter-spacing: -0.15px !important;
@@ -1318,31 +1321,52 @@ h6 {
     filter: var(--filter-white) !important;
 }
 
-/* Notification Styles */
-.notification-container {
+/* ==========================================================================
+   Unified Notifications & Screenshot Popup Host (Adaptive Bottom-to-Top Stack)
+   ========================================================================== */
+.notifications-host {
     position: fixed;
     bottom: 20px;
     right: 20px;
-    z-index: 10000;
+    z-index: 10020;
     display: flex;
-    flex-direction: column;
+    flex-direction: column-reverse;
     gap: 10px;
+    align-items: flex-end;
+    pointer-events: none;
+    max-height: calc(100vh - 40px);
+    overflow: visible;
+}
+
+.notifications-host:empty {
+    display: none;
+}
+
+.notification-container {
+    display: contents;
+}
+
+.notification-container:empty {
+    display: none;
 }
 
 .notification-panel {
-    min-width: 250px;
-    max-width: 350px;
+    pointer-events: auto;
+    flex-shrink: 0;
+    min-width: 260px;
+    max-width: 360px;
     background-color: var(--bg-panel);
     border-radius: var(--radius-sm);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-    padding: 15px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.6);
+    padding: 12px 14px;
     border-left: 4px solid transparent;
     cursor: pointer;
-    transition: transform 0.2s;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .notification-panel:hover {
-    transform: scale(1.02);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.72);
 }
 
 .notification-success {
@@ -1358,29 +1382,30 @@ h6 {
 }
 
 .notification-title {
-    margin: 0 0 5px 0;
-    font-size: 1rem;
+    margin: 0;
+    font-size: 0.95rem;
     font-weight: bold;
-    color: white;
+    color: #ffffff;
 }
 
 .notification-message {
     margin: 0;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     color: var(--text-main);
+    line-height: 1.35;
 }
 
 .slide-in {
-    animation: slideIn 0.3s forwards;
+    animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .slide-out {
-    animation: slideOut 0.3s forwards;
+    animation: slideOut 0.35s ease forwards;
 }
 
 @keyframes slideIn {
     from {
-        transform: translateX(100%);
+        transform: translateX(110%);
         opacity: 0;
     }
 
@@ -1391,14 +1416,30 @@ h6 {
 }
 
 @keyframes slideOut {
-    from {
+    0% {
         transform: translateX(0);
         opacity: 1;
+        max-height: 220px;
+        margin-bottom: 0;
     }
 
-    to {
-        transform: translateX(100%);
+    60% {
+        transform: translateX(110%);
         opacity: 0;
+        max-height: 220px;
+        margin-bottom: 0;
+    }
+
+    100% {
+        transform: translateX(110%);
+        opacity: 0;
+        max-height: 0;
+        margin-bottom: -10px;
+        padding-top: 0;
+        padding-bottom: 0;
+        border-top-width: 0;
+        border-bottom-width: 0;
+        overflow: hidden;
     }
 }
 
@@ -1664,7 +1705,7 @@ canvas.picking-color {
 .dialog-overlay {
     z-index: 10005;
     background-color: rgba(0, 0, 0, 0.75);
-
+    pointer-events: auto;
 }
 
 .dialog-panel {
@@ -2039,7 +2080,7 @@ canvas.picking-color {
     right: 0;
     bottom: 0;
     background-color: rgba(0, 0, 0, 0.9);
-
+    pointer-events: auto;
     z-index: 9999;
     display: flex;
     flex-direction: column;
@@ -2965,7 +3006,7 @@ canvas.picking-color {
     gap: 12px !important;
 }
 
-.android-layout .alert-vrcplus > div {
+.android-layout .alert-vrcplus>div {
     justify-content: center !important;
     text-align: center !important;
 }
@@ -3100,7 +3141,7 @@ canvas.picking-color {
         gap: 12px !important;
     }
 
-    .alert-vrcplus > div {
+    .alert-vrcplus>div {
         justify-content: center !important;
         text-align: center !important;
     }
@@ -3239,8 +3280,15 @@ canvas.picking-color {
 }
 
 @keyframes vrcPickerFadeIn {
-    from { opacity: 0; transform: scale(0.96) translateY(-4px); }
-    to { opacity: 1; transform: scale(1) translateY(0); }
+    from {
+        opacity: 0;
+        transform: scale(0.96) translateY(-4px);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
 }
 
 .vrc-picker-sv-box {
@@ -3490,25 +3538,22 @@ canvas.picking-color {
    ========================================================================== */
 
 .photo-notification-container {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    z-index: 10020;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    pointer-events: none;
+    display: contents;
+}
+
+.photo-notification-container:empty {
+    display: none;
 }
 
 .photo-notification-panel {
     pointer-events: auto;
+    flex-shrink: 0;
     min-width: 320px;
     max-width: 380px;
     background-color: var(--bg-panel);
     border-radius: var(--radius-sm);
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.65);
     padding: 14px;
-    border: 1px solid var(--border-color);
     border-left: 4px solid var(--accent);
     cursor: default;
     position: relative;
@@ -3527,7 +3572,6 @@ canvas.picking-color {
     justify-content: space-between;
     margin-bottom: 10px;
     padding-bottom: 6px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
 }
 
 .photo-notification-title {
@@ -3737,13 +3781,16 @@ canvas.picking-color {
    ========================================================================== */
 
 .photo-bubble-container {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    z-index: 10025;
+    display: contents;
+}
+
+.photo-bubble-container:empty {
+    display: none;
 }
 
 .photo-bubble {
+    pointer-events: auto;
+    flex-shrink: 0;
     width: 54px;
     height: 54px;
     border-radius: 50%;
@@ -3780,7 +3827,8 @@ canvas.picking-color {
 .photo-bubble-count {
     position: absolute;
     top: -4px;
-    right: -4px;
+    left: -4px;
+    z-index: 2;
     background: var(--accent);
     color: #0d1117;
     font-size: 0.7rem;
@@ -3799,7 +3847,8 @@ canvas.picking-color {
 .photo-bubble-close {
     position: absolute;
     top: -4px;
-    left: -4px;
+    right: -4px;
+    z-index: 3;
     background: rgba(30, 35, 45, 0.95);
     border: 1px solid var(--border-color);
     color: #ffffff;
@@ -3829,10 +3878,12 @@ canvas.picking-color {
         transform: scale(0.2) translateY(20px);
         opacity: 0;
     }
+
     75% {
         transform: scale(1.15) translateY(-3px);
         opacity: 1;
     }
+
     100% {
         transform: scale(1) translateY(0);
         opacity: 1;
@@ -3866,6 +3917,7 @@ canvas.picking-color {
         transform: translateY(20px);
         opacity: 0;
     }
+
     to {
         transform: translateY(0);
         opacity: 1;
@@ -3898,9 +3950,17 @@ canvas.picking-color {
 }
 
 @keyframes qrBadgePop {
-    0% { transform: scale(0); }
-    80% { transform: scale(1.2); }
-    100% { transform: scale(1); }
+    0% {
+        transform: scale(0);
+    }
+
+    80% {
+        transform: scale(1.2);
+    }
+
+    100% {
+        transform: scale(1);
+    }
 }
 
 .btn-viewer-action.has-qr {
@@ -3932,4 +3992,21 @@ canvas.picking-color {
 
 .photo-notif-btn-qr:hover .btn-icon {
     filter: brightness(0) invert(1);
+}
+
+/* Responsive Notification Stack */
+@media (max-width: 480px) {
+    .notifications-host {
+        right: 12px;
+        bottom: 12px;
+        left: 12px;
+        align-items: stretch;
+    }
+
+    .photo-notification-panel,
+    .notification-panel {
+        min-width: 0;
+        max-width: 100%;
+        width: 100%;
+    }
 }
