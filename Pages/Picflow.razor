@@ -196,8 +196,8 @@
 
     private bool IsStreamingProp 
     {
-        get => CacheService.Get<bool>("PicflowStreaming");
-        set => CacheService.Set("PicflowStreaming", value);
+        get => Config.Get("PicflowStreaming", "false") == "true";
+        set => Config.Set("PicflowStreaming", value ? "true" : "false");
     }
 
     private static readonly Regex StickerRegex = new Regex(
@@ -240,15 +240,16 @@
             Images = cachedImg;
             _allItems = CacheService.Get<HashSet<string>>("PicflowAllItems") ?? new HashSet<string>();
             LogStatus = CacheService.Get<string>("PicflowLogStatus") ?? "";
+
+            if (IsStreamingProp)
+            {
+                LogWatcher.OnLogLine -= HandleLiveLogLine;
+                LogWatcher.OnLogLine += HandleLiveLogLine;
+            }
         }
         else
         {
             await LoadFromLogs();
-        }
-
-        if (IsStreamingProp)
-        {
-            LogWatcher.OnLogLine += HandleLiveLogLine;
         }
     }
 
@@ -366,11 +367,7 @@
 
     private async Task LoadFromLogs()
     {
-        if (IsStreamingProp)
-        {
-            LogWatcher.OnLogLine -= HandleLiveLogLine;
-            IsStreamingProp = false;
-        }
+        LogWatcher.OnLogLine -= HandleLiveLogLine;
 
         using var cts = new CancellationTokenSource();
         var token = cts.Token;
@@ -420,6 +417,11 @@
         CacheService.Set("PicflowLogStatus", LogStatus);
         CacheService.Set("PicflowImages", Images);
         CacheService.Set("PicflowAllItems", _allItems);
+        if (IsStreamingProp)
+        {
+            LogWatcher.OnLogLine -= HandleLiveLogLine;
+            LogWatcher.OnLogLine += HandleLiveLogLine;
+        }
         StateHasChanged();
     }
 
