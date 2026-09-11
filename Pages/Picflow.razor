@@ -7,6 +7,7 @@
 @implements IDisposable
 @inject NavigationManager NavManager
 @inject DialogService dialogService
+@inject VRCLogWatcherService LogWatcher
 
 <div class="h-100 d-flex flex-column p-3">
     <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-secondary">
@@ -244,6 +245,11 @@
         {
             await LoadFromLogs();
         }
+
+        if (IsStreamingProp)
+        {
+            LogWatcher.OnLogLine += HandleLiveLogLine;
+        }
     }
 
     private void HandlePicflowNetworkChange(bool isOnline)
@@ -342,28 +348,31 @@
 
     private void OnStreamingChanged()
     {
-        var cts = CacheService.Get<CancellationTokenSource>("PicflowCts");
+        LogWatcher.OnLogLine -= HandleLiveLogLine;
         if (IsStreamingProp)
         {
-            cts?.Cancel();
-            cts = new CancellationTokenSource();
-            _ = StreamLogsAsync(cts.Token);
-            CacheService.Set("PicflowCts", cts);
+            LogWatcher.OnLogLine += HandleLiveLogLine;
         }
-        else
+    }
+
+    private void HandleLiveLogLine(string line)
+    {
+        try
         {
-            cts?.Cancel();
-            CacheService.Set<CancellationTokenSource>("PicflowCts", null);
+            ProcessLogLine(line);
         }
+        catch { }
     }
 
     private async Task LoadFromLogs()
     {
-        var oldCts = CacheService.Get<CancellationTokenSource>("PicflowCts");
-        oldCts?.Cancel();
-        IsStreamingProp = false;
-        var cts = new CancellationTokenSource();
-        CacheService.Set("PicflowCts", cts);
+        if (IsStreamingProp)
+        {
+            LogWatcher.OnLogLine -= HandleLiveLogLine;
+            IsStreamingProp = false;
+        }
+
+        using var cts = new CancellationTokenSource();
         var token = cts.Token;
 
         string userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
@@ -412,42 +421,6 @@
         CacheService.Set("PicflowImages", Images);
         CacheService.Set("PicflowAllItems", _allItems);
         StateHasChanged();
-    }
-
-    private async Task StreamLogsAsync(CancellationToken token)
-    {
-        string userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-        string vrchatLogPath = Path.Combine(userProfile, "AppData", "LocalLow", "VRChat", "VRChat");
-
-        string[] logFiles = Directory.GetFiles(vrchatLogPath, "output_log_*.txt");
-
-        if (logFiles.Length == 0) return;
-
-        string lastLogFile = logFiles.OrderByDescending(f => File.GetLastWriteTime(f)).First();
-
-        try
-        {
-            using FileStream fileStream = new(lastLogFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-            using StreamReader reader = new(fileStream);
-
-            fileStream.Seek(0, SeekOrigin.End);
-
-            while (!token.IsCancellationRequested)
-            {
-                string? line = await reader.ReadLineAsync();
-
-                if (line != null)
-                {
-                    ProcessLogLine(line);
-                    InvokeAsync(StateHasChanged);
-                }
-                else
-                {
-                    await Task.Delay(500, token);
-                }
-            }
-        }
-        catch (IOException) { }
     }
 
     private void ProcessLogLine(string line)
@@ -685,6 +658,7 @@
 
     public void Dispose()
     {
+        LogWatcher.OnLogLine -= HandleLiveLogLine;
         NetworkStatus.OnNetworkStatusChanged -= HandlePicflowNetworkChange;
         CacheService.Set("PicflowImages", Images);
         CacheService.Set("PicflowAllItems", _allItems);

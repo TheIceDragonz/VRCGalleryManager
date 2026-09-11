@@ -10,6 +10,7 @@
 @inject UpdateManager Updater
 @inject NotificationService Notifications
 @inject ProfileBackgroundService BackgroundService
+@inject VRCLogWatcherService PhotoWatcher
 @implements IDisposable
 
 <div class="settings-page container-fluid h-100 p-4 overflow-y-auto">
@@ -423,7 +424,7 @@
                         </div>
 
                         <!-- Minimize to Tray -->
-                        <div class="settings-toggle-row p-3">
+                        <div class="settings-toggle-row p-3 border-bottom" style="border-color: var(--border-color) !important;">
                             <div class="settings-toggle-info">
                                 <div class="settings-toggle-icon">
                                     <img src="/svg/minimize-square-minimalistic-svgrepo-com.svg" class="icon-accent" style="width: 20px; height: 20px;" alt="Minimize" />
@@ -435,6 +436,22 @@
                             </div>
                             <div class="form-check form-switch fs-4 m-0">
                                 <input class="form-check-input cursor-pointer" type="checkbox" id="minimizeToTray" @bind="MinimizeToTray">
+                            </div>
+                        </div>
+
+                        <!-- Screenshot Popup -->
+                        <div class="settings-toggle-row p-3">
+                            <div class="settings-toggle-info">
+                                <div class="settings-toggle-icon">
+                                    <img src="/svg/camera-svgrepo-com.svg" class="icon-accent" style="width: 20px; height: 20px;" alt="Camera" />
+                                </div>
+                                <div class="settings-toggle-text">
+                                    <h6>Screenshot Popup</h6>
+                                    <div class="settings-toggle-desc">Show a popup preview in the bottom-right when you take a photo in VRChat</div>
+                                </div>
+                            </div>
+                            <div class="form-check form-switch fs-4 m-0">
+                                <input class="form-check-input cursor-pointer" type="checkbox" id="enableScreenshotPopup" @bind="EnableScreenshotPopup">
                             </div>
                         </div>
 
@@ -804,6 +821,12 @@
     {
         get => _minimizeToTray;
         set { _minimizeToTray = value; Config.Set("MinimizeToTray", value ? "true" : "false"); }
+    }
+
+    private bool EnableScreenshotPopup
+    {
+        get => PhotoWatcher.IsEnabled;
+        set => PhotoWatcher.IsEnabled = value;
     }
 
     private bool IsLoggedIn => (Auth.LoggedIn || Auth.CookieLoaded) && Auth.CurrentUser != null && !string.IsNullOrEmpty(Auth.CurrentUser.Id);

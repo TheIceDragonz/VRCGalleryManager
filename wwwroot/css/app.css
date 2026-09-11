@@ -3484,3 +3484,357 @@ canvas.picking-color {
     border: 1px solid rgba(255, 255, 255, 0.2);
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
 }
+
+/* ==========================================================================
+   VRChat Screenshot Notification & Bubble Styles (Matching App Notifications)
+   ========================================================================== */
+
+.photo-notification-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 10020;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none;
+}
+
+.photo-notification-panel {
+    pointer-events: auto;
+    min-width: 320px;
+    max-width: 380px;
+    background-color: var(--bg-panel);
+    border-radius: var(--radius-sm);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.65);
+    padding: 14px;
+    border: 1px solid var(--border-color);
+    border-left: 4px solid var(--accent);
+    cursor: default;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.photo-notification-panel:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.75);
+}
+
+.photo-notification-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.photo-notification-title {
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.photo-notification-time {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-family: monospace;
+}
+
+.photo-notification-controls {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.photo-notification-ctrl-btn {
+    background: transparent;
+    border: none;
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: var(--text-muted);
+    cursor: pointer;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    transition: all 0.15s ease;
+}
+
+.photo-notification-ctrl-btn:hover {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.photo-notification-body {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.photo-notification-thumb-box {
+    position: relative;
+    width: 96px;
+    height: 58px;
+    flex-shrink: 0;
+    border-radius: 6px;
+    overflow: hidden;
+    background: #000;
+    border: 1px solid var(--border-color);
+    cursor: pointer;
+}
+
+.photo-notification-thumb {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.2s ease;
+}
+
+.photo-notification-thumb-box:hover .photo-notification-thumb {
+    transform: scale(1.08);
+}
+
+.photo-notification-thumb-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.photo-notification-thumb-box:hover .photo-notification-thumb-overlay {
+    opacity: 1;
+}
+
+.photo-notification-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.photo-notification-filename {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-main);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.photo-notification-badges {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    flex-wrap: wrap;
+}
+
+.photo-notification-tag {
+    font-size: 0.7rem;
+    padding: 1px 6px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+
+.photo-notification-tag.res-tag {
+    color: var(--accent);
+    border-color: rgba(106, 227, 249, 0.3);
+    font-family: monospace;
+    font-weight: 600;
+}
+
+.photo-notification-tag.world-tag {
+    color: #ffd166;
+    border-color: rgba(255, 209, 102, 0.3);
+}
+
+.photo-notification-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding-top: 4px;
+}
+
+.photo-notif-btn {
+    flex: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    padding: 5px 8px;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all 0.18s ease;
+    white-space: nowrap;
+}
+
+.photo-notif-btn-primary {
+    background: rgba(106, 227, 249, 0.15);
+    border-color: rgba(106, 227, 249, 0.35);
+    color: var(--accent);
+}
+
+.photo-notif-btn-primary:hover {
+    background: var(--accent);
+    color: #111418;
+}
+
+.photo-notif-btn-success {
+    background: rgba(40, 167, 69, 0.18);
+    border-color: rgba(40, 167, 69, 0.4);
+    color: #48d672;
+}
+
+.photo-notif-btn-success:hover {
+    background: #28a745;
+    color: #ffffff;
+}
+
+.photo-notif-btn-icon {
+    flex: 0 0 32px;
+    width: 32px;
+    height: 30px;
+    padding: 0;
+    background: rgba(255, 255, 255, 0.06);
+    border-color: var(--border-color);
+    color: var(--text-main);
+}
+
+.photo-notif-btn-icon:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: #ffffff;
+}
+
+/* ==========================================================================
+   Collapsed Bubble ("Pallino") Styles
+   ========================================================================== */
+
+.photo-bubble-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 10025;
+}
+
+.photo-bubble {
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    background-color: var(--bg-panel);
+    border: 2px solid var(--accent);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.65), 0 0 14px rgba(106, 227, 249, 0.45);
+    cursor: pointer;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease;
+    animation: bubbleBounceIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.photo-bubble:hover {
+    transform: scale(1.12);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.8), 0 0 20px rgba(106, 227, 249, 0.7);
+}
+
+.photo-bubble-thumb {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.photo-bubble-icon {
+    width: 24px;
+    height: 24px;
+    filter: var(--filter-accent);
+}
+
+.photo-bubble-count {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    background: var(--accent);
+    color: #0d1117;
+    font-size: 0.7rem;
+    font-weight: 800;
+    border-radius: 10px;
+    min-width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px;
+    border: 2px solid var(--bg-panel);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+}
+
+.photo-bubble-close {
+    position: absolute;
+    top: -4px;
+    left: -4px;
+    background: rgba(30, 35, 45, 0.95);
+    border: 1px solid var(--border-color);
+    color: #ffffff;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.65rem;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+    transition: background 0.15s ease;
+}
+
+.photo-bubble:hover .photo-bubble-close {
+    display: flex;
+}
+
+.photo-bubble-close:hover {
+    background: var(--danger);
+    border-color: var(--danger);
+}
+
+@keyframes bubbleBounceIn {
+    0% {
+        transform: scale(0.2) translateY(20px);
+        opacity: 0;
+    }
+    75% {
+        transform: scale(1.15) translateY(-3px);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1) translateY(0);
+        opacity: 1;
+    }
+}

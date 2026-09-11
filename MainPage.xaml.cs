@@ -9,6 +9,12 @@ public partial class MainPage : ContentPage
 		InitializeComponent();
 	}
 
+    protected override void OnHandlerChanged()
+    {
+        base.OnHandlerChanged();
+        _ = Handler?.MauiContext?.Services.GetService<VRCLogWatcherService>();
+    }
+
     protected override async void OnAppearing()
     {
         base.OnAppearing();
