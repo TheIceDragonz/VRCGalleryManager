@@ -18,6 +18,7 @@ namespace VRCGalleryManager.Core.Components
         [Inject] protected ApiRequest apiRequest { get; set; }
         [Inject] protected MediaCacheService CacheService { get; set; }
         [Inject] protected NetworkStatusService NetworkStatus { get; set; }
+        [Inject] protected ImageViewerService ViewerService { get; set; } = default!;
 
         protected bool isLoading = true;
         protected bool isRefreshing = false;
@@ -245,7 +246,7 @@ namespace VRCGalleryManager.Core.Components
             }
         }
 
-        protected async Task HandleViewerDeleteAsync<T>(int index, List<T> itemList, Func<T, Task> deleteAction, VRCGalleryManager.Components.ImageViewer imageViewer)
+        protected async Task HandleViewerDeleteAsync<T>(int index, List<T> itemList, Func<T, Task> deleteAction, VRCGalleryManager.Components.ImageViewer imageViewer = null)
         {
             if (index >= 0 && index < itemList.Count)
             {
@@ -253,7 +254,14 @@ namespace VRCGalleryManager.Core.Components
                 await deleteAction(item);
                 if (!itemList.Contains(item))
                 {
-                    imageViewer?.Close();
+                    if (imageViewer != null)
+                    {
+                        imageViewer.Close();
+                    }
+                    else
+                    {
+                        ViewerService.Close();
+                    }
                 }
             }
         }

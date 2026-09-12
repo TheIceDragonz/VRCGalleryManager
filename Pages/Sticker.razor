@@ -111,11 +111,8 @@
     }
 </div>
 
-<VRCGalleryManager.Components.ImageViewer @ref="imageViewer" OnDeleteRequested="HandleViewerDelete" />
-
 @code {
     private List<StickerItem> stickers = new();
-    private VRCGalleryManager.Components.ImageViewer imageViewer;
     
     private static string STICKER_TAG = "sticker";
     private static string STICKER_MASK_TYPE = "square";
@@ -208,7 +205,14 @@
         var index = viewerItems.FindIndex(i => i.HighResSource == currentUrl);
         if (index == -1) index = 0;
         
-        imageViewer.Open(viewerItems, index);
+        ViewerService.Open(new ImageViewerOptions
+        {
+            Items = viewerItems,
+            StartIndex = index,
+            ShowDownloadButton = true,
+            ShowInfoButton = false,
+            OnDeleteRequested = async (idx) => await HandleViewerDelete(idx)
+        });
     }
 
     private async Task DeleteSticker(StickerItem item)
@@ -235,7 +239,7 @@
 
     private async Task HandleViewerDelete(int index)
     {
-        await HandleViewerDeleteAsync(index, stickers, DeleteSticker, imageViewer);
+        await HandleViewerDeleteAsync(index, stickers, DeleteSticker);
     }
 }
 

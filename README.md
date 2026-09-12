@@ -66,7 +66,8 @@
   - **Windows**: Native file save dialog to save photos anywhere on your system.
   - **Android**: Direct save to `Pictures/VRCGalleryManager` with automatic MediaStore scanner notification, making images immediately visible in your device's photo gallery without needing a file manager.
 - **Quick Actions**: Download images locally, copy image/link to the system clipboard, or upload directly to VRChat.
-- **Integrated Metadata Inspector**: View detailed camera metadata, image dimensions, and VRCX session info directly within the viewer.
+- **Integrated Metadata Inspector & QR Scanner**: Inspect rich VRChat/VRCX world information, present player rosters, resolution, aspect ratio, and automatically detect QR codes embedded in photos.
+- **Standalone Real-Time Metadata Injection (Windows)**: Pure C# PNG `iTXt` injector that monitors live game sessions and automatically embeds world, instance, and player lists into newly taken screenshots without needing external tools.
 
 ### ✂️ Integrated Image & Emoji Editors
 - **Quality Scale & Size Preview**: Real-time file size calculation and quality scaling slider before uploading to ensure images never exceed VRChat limits.
@@ -85,7 +86,7 @@
 ### 🌐 Picflow - Global Explorer & Local Database
 - **Worldwide Sticker Explorer**: Browse stickers placed across VRChat worlds with lazy-loading.
 - **Emoji & Print Discovery**: Discover emojis and prints alongside world stickers.
-- **Live Stream Mode**: Monitor and inspect new stickers in real time as players place them.
+- **Live Stream Mode (Windows)**: Monitor and inspect new stickers in real time from VRChat logs as players place them.
 - **Local Database (`PicflowDatabase`)**: Persistent local storage to cache and quickly search through discovered stickers and prints with one-click cleanup.
 - **Info Dialog**: Quick inspection modal with creator information and asset details.
 
@@ -102,18 +103,33 @@
 - **In-App Auto-Updater**:
   - **Windows**: Built-in update manager with animated download progress bars.
   - **Android**: In-app APK updater that checks releases, downloads the new APK, and triggers the native package installer.
-- **VRChat Logs Inspector**: View VRChat log file counts and total disk usage, with one-click options to open the logs folder or clean up old logs.
+- **VRChat Logs Inspector (Windows)**: View VRChat log file counts and total disk usage, with one-click options to open the logs folder or clean up old logs.
 - **VRChat Cache Cleaner**: Monitor VRChat cache size and safely purge temporary files directly from the settings panel.
 - **Legal Notice & Compliance**: Built-in Terms of Service compliance and legal notice panel.
 
 ---
 
-## <a id="gallery--vrcx-metadata-integration"></a>📷 Gallery & VRCX Metadata Integration
+## <a id="gallery--vrcx-metadata-integration"></a>📷 Screenshot Metadata Engine & VRCX Integration
 
-Integrates with the **[VRCX](https://github.com/vrcx-team/VRCX) Screenshot Helper** metadata. When viewing screenshots in the gallery or in the immersive image viewer, the application automatically extracts:
-- **World Information**: World name, world author, and a direct clickable link to the VRChat website.
-- **Instance Players**: Full list of players present in the instance at the exact moment the picture was taken.
-- **World Thumbnail & Capture Timestamp**: Exact date, time, and world details.
+VRCGalleryManager includes a powerful, zero-dependency **PNG Metadata Engine** that seamlessly bridges VRChat, **[VRCX](https://github.com/vrcx-team/VRCX)**, and your local screenshot library.
+
+### ⚡ Automatic Real-Time Metadata Injection (Windows)
+- **Live VRChat Log Monitoring (Windows)**: The built-in `VRCLogWatcherService` tracks your active world, instance ID, world author, and dynamic player joins/leaves in real time.
+- **Pure C# `iTXt` Injection**: When a new screenshot is saved to your VRChat Pictures directory, VRCGalleryManager can automatically inject an official/VRCX-compliant `iTXt` `Description` chunk directly into the PNG file.
+- **Atomic & Safe**: Recalculates PNG CRC32 checksums on the fly and writes atomically via temporary files, guaranteeing zero image corruption.
+- **Standalone Convenience**: No need to keep external helper applications running—your photos are automatically tagged with world and player information right as you take them (can be toggled on/off in Settings).
+
+### 🔍 Lightning-Fast Metadata Extraction
+- **Sub-Millisecond Parsing**: High-performance reader (`MetaDataImageReader`) parses PNG `iTXt` text chunks directly from the file stream in milliseconds without buffering or decoding full high-resolution images into RAM.
+- **Smart Fallback Scanner**: Employs span-based memory pools (`ArrayPool<byte>`) to detect metadata structures in legacy, modified, or alternative screenshot formats.
+- **Cross-Compatible**: Fully interoperable with the **VRCX Screenshot Helper** standard and official VRChat camera metadata.
+
+### 📋 Rich Inspector & In-App Viewer
+When viewing photos in the Gallery, through screenshot popups, or in the immersive full-screen Image Viewer:
+- **World & Instance Info**: World name, world author, instance type/ID, with quick-copy actions and a direct button to launch or open the world on the VRChat website.
+- **Players Roster**: Searchable list of all players present in the instance when the photo was captured, with one-click navigation to their official VRChat web profiles.
+- **Image Diagnostics**: File format, exact resolution, aspect ratio badge (16:9, 21:9, etc.), file size, capture date & time, and file name.
+- **Integrated QR Code Scanner**: Built-in `QrCodeService` detects QR codes (Discord invites, world links, web URLs) inside screenshots and presents them for instant copying or browser launching.
 
 <div align="center">
   <table>

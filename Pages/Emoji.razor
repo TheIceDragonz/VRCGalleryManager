@@ -124,11 +124,8 @@
     }
 </div>
 
-<VRCGalleryManager.Components.ImageViewer @ref="imageViewer" OnDeleteRequested="HandleViewerDelete" />
-
 @code {
     private List<EmojiItem> emojis = new();
-    private VRCGalleryManager.Components.ImageViewer imageViewer;
     
     private static string EMOJI_MASK_TAG = "square";
 
@@ -233,7 +230,14 @@
         var index = viewerItems.FindIndex(i => i.HighResSource == currentUrl);
         if (index == -1) index = 0;
         
-        imageViewer.Open(viewerItems, index);
+        ViewerService.Open(new ImageViewerOptions
+        {
+            Items = viewerItems,
+            StartIndex = index,
+            ShowDownloadButton = true,
+            ShowInfoButton = false,
+            OnDeleteRequested = async (idx) => await HandleViewerDelete(idx)
+        });
     }
 
     private async Task DeleteEmoji(EmojiItem item)
@@ -270,7 +274,7 @@
 
     private async Task HandleViewerDelete(int index)
     {
-        await HandleViewerDeleteAsync(index, emojis, DeleteEmoji, imageViewer);
+        await HandleViewerDeleteAsync(index, emojis, DeleteEmoji);
     }
 }
 

@@ -53,6 +53,7 @@ public static class MauiProgram
         builder.Services.AddSingleton<ProfileBackgroundService>();
         builder.Services.AddSingleton<VRCLogWatcherService>();
         builder.Services.AddSingleton<QrCodeService>();
+        builder.Services.AddSingleton<ImageViewerService>();
 
 #if DEBUG
 		builder.Services.AddBlazorWebViewDeveloperTools();

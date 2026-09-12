@@ -8,6 +8,7 @@
 @inject NavigationManager NavManager
 @inject DialogService dialogService
 @inject VRCLogWatcherService LogWatcher
+@inject ImageViewerService ViewerService
 
 <div class="h-100 d-flex flex-column p-3">
     <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-secondary">
@@ -129,8 +130,6 @@
     </div>
 }
 
-<VRCGalleryManager.Components.ImageViewer @ref="imageViewer" OnUploadRequested="HandleViewerUpload" />
-
 @if (ShowInfo)
 {
     <div class="position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center dialog-overlay" style="z-index: 10005;" @onclick="ToggleInfo">
@@ -227,7 +226,6 @@
     }
 
     private bool CropPrints = true;
-    private VRCGalleryManager.Components.ImageViewer imageViewer;
 
     protected override async Task OnInitializedAsync()
     {
@@ -367,6 +365,12 @@
 
     private async Task LoadFromLogs()
     {
+        if (OperatingSystem.IsAndroid())
+        {
+            LogStatus = "| Not available on Android";
+            return;
+        }
+
         LogWatcher.OnLogLine -= HandleLiveLogLine;
 
         using var cts = new CancellationTokenSource();
@@ -647,7 +651,14 @@
         var index = viewerItems.FindIndex(i => i.HighResSource == currentUrl);
         if (index == -1) index = 0;
         
-        imageViewer.Open(viewerItems, index);
+        ViewerService.Open(new ImageViewerOptions
+        {
+            Items = viewerItems,
+            StartIndex = index,
+            ShowDownloadButton = true,
+            ShowInfoButton = false,
+            OnUploadRequested = (idx) => { HandleViewerUpload(idx); return Task.CompletedTask; }
+        });
     }
 
     private void DeleteItem(ImageModel img)

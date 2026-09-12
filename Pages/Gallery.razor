@@ -8,6 +8,7 @@
 @inject NavigationManager Nav
 @inject DialogService dialogService
 @inject NotificationService NotificationService
+@inject ImageViewerService ViewerService
 
 <div class="h-100 d-flex flex-column p-3">
     @* TOP TOOLBAR *@
@@ -142,8 +143,6 @@
     </div>
 }
 
-<VRCGalleryManager.Components.ImageViewer @ref="imageViewer" OnUploadRequested="HandleViewerUpload" OnDeleteRequested="HandleViewerDelete" ShowDownloadButton="false" />
-
 @code {
     // ── State ─────────────────────────────────────────────────────────────
     private string RootFolder;
@@ -159,7 +158,6 @@
     private bool ShowUploadMenu;
 
     private CancellationTokenSource _cts;
-    private VRCGalleryManager.Components.ImageViewer imageViewer;
 
     private bool CanGoBack =>
         !string.IsNullOrEmpty(CurrentFolder) &&
@@ -496,7 +494,15 @@
                 };
                 index = 0;
             }
-            imageViewer.Open(viewerItems, index);
+            ViewerService.Open(new ImageViewerOptions
+            {
+                Items = viewerItems,
+                StartIndex = index,
+                ShowDownloadButton = false,
+                ShowInfoButton = true,
+                OnDeleteRequested = async (idx) => await HandleViewerDelete(idx),
+                OnUploadRequested = async (idx) => { HandleViewerUpload(idx); await Task.CompletedTask; }
+            });
         }
         catch { }
     }
@@ -589,12 +595,19 @@
                         LowResSource = x.ThumbnailBase64,
                         Title = x.Name
                     }).ToList();
-                    int nextIndex = Math.Min(index, viewerItems.Count - 1);
-                    imageViewer.Open(viewerItems, nextIndex);
+                    ViewerService.Open(new ImageViewerOptions
+                    {
+                        Items = viewerItems,
+                        StartIndex = Math.Min(index, viewerItems.Count - 1),
+                        ShowDownloadButton = false,
+                        ShowInfoButton = true,
+                        OnDeleteRequested = async (idx) => await HandleViewerDelete(idx),
+                        OnUploadRequested = async (idx) => { HandleViewerUpload(idx); await Task.CompletedTask; }
+                    });
                 }
                 else
                 {
-                    imageViewer.Close();
+                    ViewerService.Close();
                 }
 
                 StateHasChanged();

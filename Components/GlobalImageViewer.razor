@@ -1,0 +1,64 @@
+@using VRCGalleryManager.Core
+@inject ImageViewerService ViewerService
+@implements IDisposable
+
+<ImageViewer @ref="viewerRef"
+             ShowDownloadButton="@currentOptions.ShowDownloadButton"
+             ShowInfoButton="@currentOptions.ShowInfoButton"
+             OnDeleteRequested="HandleDelete"
+             OnUploadRequested="HandleUpload"
+             OnClosed="HandleClosed" />
+
+@code {
+    private ImageViewer viewerRef = default!;
+    private ImageViewerOptions currentOptions = new();
+
+    protected override void OnInitialized()
+    {
+        ViewerService.OnOpen += HandleOpen;
+        ViewerService.OnClose += HandleClose;
+    }
+
+    private void HandleOpen(ImageViewerOptions options)
+    {
+        currentOptions = options;
+        InvokeAsync(() =>
+        {
+            viewerRef?.Open(options.Items, options.StartIndex);
+            StateHasChanged();
+        });
+    }
+
+    private void HandleClose()
+    {
+        InvokeAsync(() => viewerRef?.Close());
+    }
+
+    private async Task HandleDelete(int index)
+    {
+        if (currentOptions.OnDeleteRequested != null)
+        {
+            await currentOptions.OnDeleteRequested(index);
+        }
+    }
+
+    private async Task HandleUpload(int index)
+    {
+        if (currentOptions.OnUploadRequested != null)
+        {
+            await currentOptions.OnUploadRequested(index);
+        }
+    }
+
+    private void HandleClosed()
+    {
+        ViewerService.NotifyClosed();
+        currentOptions.OnClosed?.Invoke();
+    }
+
+    public void Dispose()
+    {
+        ViewerService.OnOpen -= HandleOpen;
+        ViewerService.OnClose -= HandleClose;
+    }
+}

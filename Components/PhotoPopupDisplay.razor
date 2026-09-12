@@ -2,6 +2,8 @@
 @inject VRCLogWatcherService PhotoWatcher
 @inject NotificationService NotificationService
 @inject NavigationManager NavManager
+@inject DialogService dialogService
+@inject ImageViewerService ViewerService
 @implements IDisposable
 
 @{
@@ -45,7 +47,7 @@
 
                 <!-- Notification Body -->
                 <div class="photo-notification-body">
-                    <div class="photo-notification-thumb-box" @onclick="() => OpenViewer(popup)" title="Click to view full image">
+                    <div class="photo-notification-thumb-box">
                         @if (!string.IsNullOrEmpty(popup.ThumbnailBase64))
                         {
                             <img src="@popup.ThumbnailBase64" class="photo-notification-thumb" alt="VRChat Screenshot" />
@@ -56,9 +58,6 @@
                                 <img src="/svg/camera-svgrepo-com.svg" style="width: 22px; height: 22px; opacity: 0.4;" />
                             </div>
                         }
-                        <div class="photo-notification-thumb-overlay">
-                            <img src="/svg/eye-svgrepo-com.svg" class="icon-white" style="width: 16px; height: 16px;" />
-                        </div>
                     </div>
 
                     <div class="photo-notification-info">
@@ -76,6 +75,14 @@
                                 <span class="photo-notification-tag world-tag" title="@popup.WorldName">
                                     <img src="/svg/gallery-minimalistic-svgrepo-com.svg" style="width: 11px; height: 11px;" />
                                     @popup.WorldName
+                                </span>
+                            }
+                            @if (popup.PlayerCount > 0)
+                            {
+                                <span class="photo-notification-tag players-tag" 
+                                      title="@string.Join(", ", popup.Players.Select(p => p.DisplayName))">
+                                    <img src="/svg/profile-user-svgrepo-com.svg" style="width: 11px; height: 11px;" />
+                                    @popup.PlayerCount @(popup.PlayerCount == 1 ? "player" : "players")
                                 </span>
                             }
                             @if (popup.DetectedQrCodes != null && popup.DetectedQrCodes.Count > 0)
@@ -113,7 +120,7 @@
                     }
 
                     <button class="photo-notif-btn photo-notif-btn-success" @onclick="() => OpenUploadMenu(popup)" title="Upload to VRChat">
-                        <img src="/svg/add-circle-svgrepo-com.svg" class="btn-icon icon-white" style="width: 13px; height: 13px; margin: 0;" />
+                        <img src="/svg/add-circle-svgrepo-com.svg" class="btn-icon" style="width: 13px; height: 13px; margin: 0;" />
                         <span>Upload</span>
                     </button>
 
@@ -194,11 +201,7 @@
     </div>
 }
 
-<!-- Full-screen ImageViewer Component for Instant Viewing -->
-<VRCGalleryManager.Components.ImageViewer @ref="imageViewer" OnUploadRequested="HandleViewerUpload" />
-
 @code {
-    private VRCGalleryManager.Components.ImageViewer imageViewer = default!;
     private PhotoPopupModel? SelectedUploadPopup;
     private PhotoPopupModel? CurrentViewerPopup;
 
@@ -232,25 +235,69 @@
         await PhotoWatcher.DismissAllAsync();
     }
 
-    private void OpenViewer(PhotoPopupModel popup)
+    private async Task OpenViewer(PhotoPopupModel popup)
     {
         CurrentViewerPopup = popup;
-        var viewerItem = new VRCGalleryManager.Components.ImageViewer.ViewerItem
+        var viewerItem = new ImageViewer.ViewerItem
         {
             HighResSource = popup.FilePath,
             LowResSource = popup.ThumbnailBase64,
             Title = popup.FileName
         };
 
-        imageViewer.Open(new List<VRCGalleryManager.Components.ImageViewer.ViewerItem> { viewerItem }, 0);
+        ViewerService.Open(new ImageViewerOptions
+        {
+            Items = new List<ImageViewer.ViewerItem> { viewerItem },
+            StartIndex = 0,
+            ShowDownloadButton = false,
+            ShowInfoButton = true,
+            OnDeleteRequested = async (idx) => await HandleViewerDelete(idx),
+            OnUploadRequested = (idx) => { HandleViewerUpload(idx); return Task.CompletedTask; }
+        });
+
+        await PhotoWatcher.DismissAsync(popup);
     }
 
     private void HandleViewerUpload(int index)
     {
         if (CurrentViewerPopup != null)
         {
-            imageViewer.Close();
+            ViewerService.Close();
             OpenUploadMenu(CurrentViewerPopup);
+        }
+    }
+
+    private async Task HandleViewerDelete(int index)
+    {
+        if (CurrentViewerPopup == null) return;
+        var popup = CurrentViewerPopup;
+
+        bool confirm = await dialogService.ShowConfirmAsync(
+            "Delete Photo",
+            $"Are you sure you want to move \"{popup.FileName}\" to the Recycle Bin?",
+            "Delete",
+            "Cancel"
+        );
+
+        if (confirm)
+        {
+            try
+            {
+                bool deleted = FileHelper.DeleteToRecycleBin(popup.FilePath);
+                if (!deleted)
+                {
+                    NotificationService.Show("Failed to delete the photo.", "Delete Error", NotificationType.Error);
+                    return;
+                }
+
+                ViewerService.Close();
+                await PhotoWatcher.DismissAsync(popup);
+                NotificationService.Show("Photo moved to the Recycle Bin.", "Deleted", NotificationType.Success);
+            }
+            catch (Exception ex)
+            {
+                NotificationService.Show($"Delete failed: {ex.Message}", "Delete Error", NotificationType.Error);
+            }
         }
     }
 

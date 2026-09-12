@@ -4,7 +4,7 @@
 
 @if (IsVisible && CurrentRequest != null)
 {
-    <div class="position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center dialog-overlay">
+    <div class="position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center dialog-overlay" style="z-index: 20000;">
         <div class="dialog-panel d-flex flex-column">
             <div class="p-4 flex-grow-1">
                 <h5 class="fw-bold text-white mb-3">@CurrentRequest.Title</h5>

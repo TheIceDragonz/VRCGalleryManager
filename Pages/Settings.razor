@@ -424,7 +424,7 @@
                         </div>
 
                         <!-- Minimize to Tray -->
-                        <div class="settings-toggle-row p-3 border-bottom" style="border-color: var(--border-color) !important;">
+                        <div class="settings-toggle-row p-3" style="border-color: var(--border-color) !important;">
                             <div class="settings-toggle-info">
                                 <div class="settings-toggle-icon">
                                     <img src="/svg/minimize-square-minimalistic-svgrepo-com.svg" class="icon-accent" style="width: 20px; height: 20px;" alt="Minimize" />
@@ -438,9 +438,13 @@
                                 <input class="form-check-input cursor-pointer" type="checkbox" id="minimizeToTray" @bind="MinimizeToTray">
                             </div>
                         </div>
+                    </div>
+
+                    <h5 class="mt-0 mb-3 text-muted fw-bold text-uppercase" style="letter-spacing: 0.5px; font-size: 0.8rem;">Screenshots & Images</h5>
+                    <div class="d-flex flex-column mb-4 panel shadow-none border-0" style="background-color: var(--bg-hover); padding: 0;">
 
                         <!-- Screenshot Popup -->
-                        <div class="settings-toggle-row p-3">
+                        <div class="settings-toggle-row p-3 border-bottom" style="border-color: var(--border-color) !important;">
                             <div class="settings-toggle-info">
                                 <div class="settings-toggle-icon">
                                     <img src="/svg/camera-svgrepo-com.svg" class="icon-accent" style="width: 20px; height: 20px;" alt="Camera" />
@@ -452,6 +456,22 @@
                             </div>
                             <div class="form-check form-switch fs-4 m-0">
                                 <input class="form-check-input cursor-pointer" type="checkbox" id="enableScreenshotPopup" @bind="EnableScreenshotPopup">
+                            </div>
+                        </div>
+
+                        <!-- Screenshot Metadata Injection -->
+                        <div class="settings-toggle-row p-3">
+                            <div class="settings-toggle-info">
+                                <div class="settings-toggle-icon">
+                                    <img src="/svg/gallery-minimalistic-svgrepo-com.svg" class="icon-accent" style="width: 20px; height: 20px;" alt="Metadata" />
+                                </div>
+                                <div class="settings-toggle-text">
+                                    <h6>Inject Screenshot Metadata</h6>
+                                    <div class="settings-toggle-desc">Automatically embed World, Instance, and Player list into new PNG screenshots (VRCX compatible)</div>
+                                </div>
+                            </div>
+                            <div class="form-check form-switch fs-4 m-0">
+                                <input class="form-check-input cursor-pointer" type="checkbox" id="enableMetadataInjection" @bind="EnableMetadataInjection">
                             </div>
                         </div>
 
@@ -827,6 +847,12 @@
     {
         get => PhotoWatcher.IsEnabled;
         set => PhotoWatcher.IsEnabled = value;
+    }
+
+    private bool EnableMetadataInjection
+    {
+        get => PhotoWatcher.EnableMetadataInjection;
+        set => PhotoWatcher.EnableMetadataInjection = value;
     }
 
     private bool IsLoggedIn => (Auth.LoggedIn || Auth.CookieLoaded) && Auth.CurrentUser != null && !string.IsNullOrEmpty(Auth.CurrentUser.Id);

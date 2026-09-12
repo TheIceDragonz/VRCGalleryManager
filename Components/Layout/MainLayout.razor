@@ -53,9 +53,13 @@
 
     <!-- Unified Notifications Stack (Screenshot Popups & App Toasts) -->
     <div class="notifications-host">
-        <PhotoPopupDisplay />
+        @if (!OperatingSystem.IsAndroid())
+        {
+            <PhotoPopupDisplay />
+        }
         <NotificationDisplay />
     </div>
+    <GlobalImageViewer />
     <DialogDisplay />
 </div>
 

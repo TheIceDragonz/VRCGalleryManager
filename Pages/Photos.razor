@@ -111,11 +111,8 @@
     }
 </div>
 
-<VRCGalleryManager.Components.ImageViewer @ref="imageViewer" OnDeleteRequested="HandleViewerDelete" />
-
 @code {
     private List<PhotoItem> photos = new();
-    private VRCGalleryManager.Components.ImageViewer imageViewer;
     
     private static string PHOTOS_TAG = "gallery";
     private static string PHOTOS_MASK_TYPE = "square";
@@ -205,7 +202,14 @@
         var index = viewerItems.FindIndex(i => i.HighResSource == currentUrl);
         if (index == -1) index = 0;
         
-        imageViewer.Open(viewerItems, index);
+        ViewerService.Open(new ImageViewerOptions
+        {
+            Items = viewerItems,
+            StartIndex = index,
+            ShowDownloadButton = true,
+            ShowInfoButton = false,
+            OnDeleteRequested = async (idx) => await HandleViewerDelete(idx)
+        });
     }
 
     private async Task DeletePhoto(PhotoItem item)
@@ -259,6 +263,6 @@
 
     private async Task HandleViewerDelete(int index)
     {
-        await HandleViewerDeleteAsync(index, photos, DeletePhoto, imageViewer);
+        await HandleViewerDeleteAsync(index, photos, DeletePhoto);
     }
 }
