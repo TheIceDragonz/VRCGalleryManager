@@ -566,6 +566,7 @@
     private void UploadForCategory(string category, string route)
     {
         ShowUploadMenu = false;
+        ViewerService.Close();
 
         string filePath = SelectedImage?.Path ?? string.Empty;
         if (!string.IsNullOrEmpty(filePath))

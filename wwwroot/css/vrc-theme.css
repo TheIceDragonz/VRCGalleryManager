@@ -35,10 +35,10 @@
    Disabled / Deactivated Buttons (.btn:disabled, .btn.disabled)
    Recolors to the theme with the uniform 0.65 transparency matching default theme
    -------------------------------------------------------------------------- */
-.has-vrc-theme .btn:disabled:not(.picflow-cat-btn),
-.has-vrc-theme .btn.disabled:not(.picflow-cat-btn),
-.has-vrc-theme button:disabled:not(.picflow-cat-btn),
-.has-vrc-theme label.btn.disabled:not(.picflow-cat-btn) {
+.has-vrc-theme .btn:disabled:not(.picflow-cat-btn):not(.btn-nav),
+.has-vrc-theme .btn.disabled:not(.picflow-cat-btn):not(.btn-nav),
+.has-vrc-theme button:disabled:not(.picflow-cat-btn):not(.btn-nav),
+.has-vrc-theme label.btn.disabled:not(.picflow-cat-btn):not(.btn-nav) {
     opacity: 0.65 !important;
     color: var(--theme-btn-border) !important;
     background-color: var(--theme-btn-bg) !important;
@@ -464,7 +464,9 @@
     filter: url(#theme-icon-filter) !important;
 }
 
-.has-vrc-theme .btn-nav:disabled {
+.has-vrc-theme .btn-nav:disabled,
+.has-vrc-theme button.btn-nav:disabled,
+.has-vrc-theme .btn.btn-nav:disabled {
     opacity: 0.65 !important;
     pointer-events: none !important;
     cursor: not-allowed !important;
@@ -505,7 +507,8 @@
     filter: var(--filter-white) !important;
 }
 
-.has-vrc-theme .image-viewer-info-panel {
+.has-vrc-theme .image-viewer-info-panel,
+.has-vrc-theme .image-viewer-qr-panel {
     border: 1px solid var(--theme-btn-border) !important;
     box-shadow: 0 16px 48px rgba(0, 0, 0, 0.75), 0 0 24px rgba(var(--theme-rgb), 0.25) !important;
 }

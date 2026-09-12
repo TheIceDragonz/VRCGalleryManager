@@ -646,6 +646,7 @@
     private void UploadForCategory(ImageModel img, string route)
     {
         UploadMenuImage = null;
+        ViewerService.Close();
         if (img == null || string.IsNullOrEmpty(img.Url)) return;
         
         _ = ProcessUploadRoute(img, route);

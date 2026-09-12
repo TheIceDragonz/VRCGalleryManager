@@ -105,7 +105,7 @@
                         </div>
                         <span class="fw-bold text-white fs-6">QR Code Link@(detectedQrCodes.Count > 1 ? "s" : "") (@detectedQrCodes.Count)</span>
                     </div>
-                    <button class="btn-viewer-info-close" @onclick="() => ShowQrPanel = false" title="Close">
+                    <button class="btn-viewer-info-close" @onclick="CloseQrPanel" title="Close">
                         <img src="/svg/close-bold-svgrepo-com.svg" class="icon-white" style="width: 13px; height: 13px;" />
                     </button>
                 </div>
@@ -425,6 +425,7 @@
     {
         ApiReq = new VRCGalleryManager.Core.ApiRequest(Auth);
         ShowInfoPanel = Config.Get("ImageViewer_ShowInfoPanel", "true").Equals("true", StringComparison.OrdinalIgnoreCase);
+        ShowQrPanel = Config.Get("ImageViewer_ShowQrPanel", "true").Equals("true", StringComparison.OrdinalIgnoreCase);
         ReloadStartupConfig();
     }
     
@@ -473,12 +474,11 @@
     private bool isLoadingMetadata = true;
     private bool ShowInfoPanel = true;
     private List<VRCGalleryManager.Core.QrCodeItem> detectedQrCodes = new();
-    private bool ShowQrPanel = false;
+    private bool ShowQrPanel = true;
     
     private void ToggleInfoPanel() 
     {
         ShowInfoPanel = !ShowInfoPanel;
-        if (ShowInfoPanel) ShowQrPanel = false;
         Config.Set("ImageViewer_ShowInfoPanel", ShowInfoPanel ? "true" : "false");
         StateHasChanged();
     }
@@ -492,6 +492,7 @@
         CurrentMetadata = null;
         isLoadingMetadata = true;
         ShowInfoPanel = Config.Get("ImageViewer_ShowInfoPanel", "true").Equals("true", StringComparison.OrdinalIgnoreCase);
+        ShowQrPanel = Config.Get("ImageViewer_ShowQrPanel", "true").Equals("true", StringComparison.OrdinalIgnoreCase);
         ReloadStartupConfig();
         try { JS.InvokeVoidAsync("imageViewerZoom.reset", imageContainerRef); } catch { }
         _ = LoadCurrentImageAsync();
@@ -594,7 +595,7 @@
         CurrentMetadata = null;
         isLoadingMetadata = true;
         detectedQrCodes.Clear();
-        ShowQrPanel = false;
+        ShowQrPanel = Config.Get("ImageViewer_ShowQrPanel", "true").Equals("true", StringComparison.OrdinalIgnoreCase);
 
         currentFilePath = item.HighResSource;
         currentFileName = item.Title;
@@ -758,7 +759,14 @@
     private void ToggleQrPanel()
     {
         ShowQrPanel = !ShowQrPanel;
-        if (ShowQrPanel) ShowInfoPanel = false;
+        Config.Set("ImageViewer_ShowQrPanel", ShowQrPanel ? "true" : "false");
+        StateHasChanged();
+    }
+
+    private void CloseQrPanel()
+    {
+        ShowQrPanel = false;
+        Config.Set("ImageViewer_ShowQrPanel", "false");
         StateHasChanged();
     }
 

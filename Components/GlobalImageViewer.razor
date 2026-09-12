@@ -1,5 +1,7 @@
 @using VRCGalleryManager.Core
+@using Microsoft.AspNetCore.Components.Routing
 @inject ImageViewerService ViewerService
+@inject NavigationManager NavManager
 @implements IDisposable
 
 <ImageViewer @ref="viewerRef"
@@ -19,6 +21,15 @@
     {
         ViewerService.OnOpen += HandleOpen;
         ViewerService.OnClose += HandleClose;
+        NavManager.LocationChanged += HandleLocationChanged;
+    }
+
+    private void HandleLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        if (ViewerService.IsOpen)
+        {
+            HandleClose();
+        }
     }
 
     private void HandleOpen(ImageViewerOptions options)
@@ -69,5 +80,6 @@
     {
         ViewerService.OnOpen -= HandleOpen;
         ViewerService.OnClose -= HandleClose;
+        NavManager.LocationChanged -= HandleLocationChanged;
     }
 }
