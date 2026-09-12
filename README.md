@@ -13,7 +13,7 @@
 
   <p align="center">
     <a href="#key-features">Key Features</a> •
-    <a href="#gallery--vrcx-metadata-integration">Metadata Integration</a> •
+    <a href="#screenshot-metadata-engine">Metadata Engine</a> •
     <a href="#requirements">Requirements</a> •
     <a href="#installation">Installation</a> •
     <a href="#building-from-source">Build System</a> •
@@ -46,7 +46,7 @@
 - **Touch & Desktop Optimized**: Native mouse & keyboard controls on Windows with full touch UX and mobile-friendly gestures on Android.
 
 ### 🎨 VRChat Profile Customization & Dynamic Themes
-- **VRChat Profile Theme Sync**: Automatically extracts your active VRChat profile theme colors (accent, buttons, icons, subtexts) and applies them dynamically across the app, including custom TitleBar buttons and scrollbars.
+- **VRChat Profile Theme Sync**: Automatically extracts your active VRChat profile theme colors (accent, buttons, icons, subtexts) and applies them dynamically across the app, including custom TitleBar buttons, SVG icon filters, glow accents, and scrollbars.
 - **Custom Windows TitleBar**: Sleek, borderless window header with custom minimize, maximize, and close buttons integrated with your active profile theme.
 - **Profile Backgrounds Catalog**: Access and preview official VRChat profile background banners (Grid, Cascade, Bit Mountain, Approach, Planet Fall, Jungle, Light Streams, etc.).
 - **Animated Profile Effects ❤️**: Support for VRChat profile cosmetics and animated canvas effects (Aura, Fire, Orbit, Bounce, Rain, Laser, Confetti, and more).
@@ -55,18 +55,29 @@
 ### 🖼️ Comprehensive VRChat Plus Media Management
 - **Stickers & Emojis**: Create, upload, organize, and delete VRChat custom stickers and emojis.
 - **Photos & Gallery**: Browse, manage, and upload high-resolution screenshots to your VRChat Plus online gallery.
+- **Smart Folder Browser**: Folder picker with automatic VRChat Pictures directory detection, subfolder navigation, and real-time photo count badges and tooltips.
+- **Cross-Category Upload Pipeline**: Seamlessly upload local screenshots and Picflow assets into any VRChat Plus album (Gallery, Prints, Stickers, Emojis, Profile Icons).
 - **Prints**: View, manage, and upload VRChat Prints with custom notes and print details.
 - **User Profile Icons**: Crop, adjust, and upload user profile icons.
 - **Drag & Drop & Clipboard Paste**: Drag and drop images directly into the application window or paste directly from clipboard (`Ctrl + V`).
 - **High-Performance Caching (`MediaCacheService`)**: Smart local memory and disk caching prevents redundant network queries and ensures instant thumbnail loading.
 
-### 🔍 Immersive Image Viewer & Native Saving
-- **Full-Screen Viewer**: Immersive photo modal with smooth zooming, panning, and keyboard/touch navigation.
+### 📸 Real-Time Screenshot Popups (Windows)
+- **Instant Screenshot Notifications**: Unobtrusive desktop overlay bubbles appear in real time the moment a new screenshot is captured in VRChat.
+- **Quick Action Controls**: Expand directly into the full-screen Global Image Viewer, copy image to clipboard, upload straight to VRChat Plus, or dismiss.
+- **Smart Stacking & Progress Timer**: Clean vertical stacking with smooth animations, configurable auto-dismiss countdown bar, and non-blocking interaction.
+
+### 🔍 Immersive Global Image Viewer & Native Saving
+- **Centralized Global Modal**: Accessible everywhere across the app (Gallery, Picflow, Stickers, Emojis, Prints, Icons, Popups) with smooth playlist navigation and auto-close on page changes.
+- **Full-Screen Zoom & Pan**: High-performance photo modal with smooth zooming, panning, and keyboard/touch navigation.
+- **Dual Interactive Panels**:
+  - **Session Info Panel (Right)**: Detailed VRChat world information, world author, instance type/ID, present player rosters, resolution, and aspect ratio.
+  - **QR Code Links Panel (Left)**: Built-in `QrCodeService` automatically detects QR codes (Discord invites, world links, web URLs) with one-click copy and browser navigation.
+  - Both panels feature independent toggle controls and persist display preferences across sessions.
 - **Direct Download & Gallery Sync**:
   - **Windows**: Native file save dialog to save photos anywhere on your system.
   - **Android**: Direct save to `Pictures/VRCGalleryManager` with automatic MediaStore scanner notification, making images immediately visible in your device's photo gallery without needing a file manager.
 - **Quick Actions**: Download images locally, copy image/link to the system clipboard, or upload directly to VRChat.
-- **Integrated Metadata Inspector & QR Scanner**: Inspect rich VRChat/VRCX world information, present player rosters, resolution, aspect ratio, and automatically detect QR codes embedded in photos.
 - **Standalone Real-Time Metadata Injection (Windows)**: Pure C# PNG `iTXt` injector that monitors live game sessions and automatically embeds world, instance, and player lists into newly taken screenshots without needing external tools.
 
 ### ✂️ Integrated Image & Emoji Editors
@@ -85,10 +96,10 @@
 
 ### 🌐 Picflow - Global Explorer & Local Database
 - **Worldwide Sticker Explorer**: Browse stickers placed across VRChat worlds with lazy-loading.
-- **Emoji & Print Discovery**: Discover emojis and prints alongside world stickers.
+- **Themed Category Filters**: Filter smoothly between Stickers, Emojis, and Prints with dynamic active theme styling.
 - **Live Stream Mode (Windows)**: Monitor and inspect new stickers in real time from VRChat logs as players place them.
 - **Local Database (`PicflowDatabase`)**: Persistent local storage to cache and quickly search through discovered stickers and prints with one-click cleanup.
-- **Info Dialog**: Quick inspection modal with creator information and asset details.
+- **Info Dialog & Direct Upload**: Quick inspection modal with creator details, asset info, and one-click upload to your personal collection.
 
 ### 🔒 Security & Connectivity
 - **Internal High-Performance API Client**: Custom-built, lightweight VRChat API client replacing external SDKs with clean JSON parsing and direct multi-part uploads.
@@ -109,20 +120,20 @@
 
 ---
 
-## <a id="gallery--vrcx-metadata-integration"></a>📷 Screenshot Metadata Engine & VRCX Integration
+## <a id="screenshot-metadata-engine"></a>📷 Standalone Screenshot Metadata Engine
 
-VRCGalleryManager includes a powerful, zero-dependency **PNG Metadata Engine** that seamlessly bridges VRChat, **[VRCX](https://github.com/vrcx-team/VRCX)**, and your local screenshot library.
+VRCGalleryManager includes a powerful, zero-dependency **PNG Metadata Engine** that automatically captures and embeds rich session details directly into your local screenshots.
 
 ### ⚡ Automatic Real-Time Metadata Injection (Windows)
 - **Live VRChat Log Monitoring (Windows)**: The built-in `VRCLogWatcherService` tracks your active world, instance ID, world author, and dynamic player joins/leaves in real time.
-- **Pure C# `iTXt` Injection**: When a new screenshot is saved to your VRChat Pictures directory, VRCGalleryManager can automatically inject an official/VRCX-compliant `iTXt` `Description` chunk directly into the PNG file.
+- **Pure C# `iTXt` Injection**: When a new screenshot is saved to your VRChat Pictures directory, VRCGalleryManager can automatically inject a standardized `iTXt` `Description` chunk directly into the PNG file.
 - **Atomic & Safe**: Recalculates PNG CRC32 checksums on the fly and writes atomically via temporary files, guaranteeing zero image corruption.
 - **Standalone Convenience**: No need to keep external helper applications running—your photos are automatically tagged with world and player information right as you take them (can be toggled on/off in Settings).
 
 ### 🔍 Lightning-Fast Metadata Extraction
 - **Sub-Millisecond Parsing**: High-performance reader (`MetaDataImageReader`) parses PNG `iTXt` text chunks directly from the file stream in milliseconds without buffering or decoding full high-resolution images into RAM.
 - **Smart Fallback Scanner**: Employs span-based memory pools (`ArrayPool<byte>`) to detect metadata structures in legacy, modified, or alternative screenshot formats.
-- **Cross-Compatible**: Fully interoperable with the **VRCX Screenshot Helper** standard and official VRChat camera metadata.
+- **Cross-Compatible**: Fully interoperable with standard VRChat community metadata formats and official camera metadata.
 
 ### 📋 Rich Inspector & In-App Viewer
 When viewing photos in the Gallery, through screenshot popups, or in the immersive full-screen Image Viewer:
