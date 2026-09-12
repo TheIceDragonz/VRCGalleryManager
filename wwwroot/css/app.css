@@ -136,9 +136,9 @@ h6 {
     border: 2px solid #053742 !important;
 }
 
-.btn:hover,
-.btn:active,
-.btn:focus {
+.btn:hover:not(:disabled):not(.disabled),
+.btn:active:not(:disabled):not(.disabled),
+.btn:focus:not(:disabled):not(.disabled) {
     background-color: #0A3540 !important;
     border-color: #505050 !important;
     color: white !important;
@@ -1041,6 +1041,38 @@ h6 {
 .settings-toggle-row .form-switch {
     flex-shrink: 0 !important;
     margin: 0 !important;
+}
+
+.settings-toggle-row:has(input:disabled),
+.settings-toggle-row.disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.settings-toggle-row:has(input:disabled) .settings-toggle-icon,
+.settings-toggle-row.disabled .settings-toggle-icon {
+    opacity: 0.45 !important;
+    background-color: rgba(20, 24, 28, 0.4) !important;
+}
+
+.settings-toggle-row:has(input:disabled) .settings-toggle-icon img,
+.settings-toggle-row:has(input:disabled) .settings-toggle-icon .icon-accent,
+.settings-toggle-row.disabled .settings-toggle-icon img,
+.settings-toggle-row.disabled .settings-toggle-icon .icon-accent {
+    filter: grayscale(1) brightness(0.45) !important;
+    opacity: 0.5 !important;
+}
+
+.settings-toggle-row:has(input:disabled) .settings-toggle-text h6,
+.settings-toggle-row.disabled .settings-toggle-text h6 {
+    color: var(--text-muted) !important;
+    opacity: 0.7 !important;
+}
+
+.settings-toggle-row:has(input:disabled) .settings-toggle-text .settings-toggle-desc,
+.settings-toggle-row.disabled .settings-toggle-text .settings-toggle-desc {
+    color: var(--text-muted) !important;
+    opacity: 0.5 !important;
 }
 
 .settings-pill,
@@ -2540,7 +2572,6 @@ canvas.picking-color {
 /* Viewer Hint Card (No metadata advice) */
 .viewer-hint-card {
     background: rgba(10, 14, 18, 0.75);
-    border: 1px solid rgba(106, 227, 249, 0.25);
     border-radius: var(--radius-md);
     padding: 12px;
     display: flex;
@@ -2778,15 +2809,86 @@ canvas.picking-color {
     border-color: var(--accent) !important;
 }
 
-/* Picflow Styles */
-.btn-hover-light {
-    opacity: 0.25;
-    transition: all 0.2s;
+/* Picflow Filter Pills */
+@keyframes picflowBtnActivateBase {
+    0% {
+        filter: brightness(1.35);
+    }
+    100% {
+        filter: brightness(1);
+    }
 }
 
+.picflow-cat-btn,
+.picflow-cat-btn.border-0 {
+    border: 2px solid #053742 !important;
+    background-color: #07242B !important;
+    color: #ffffff !important;
+    font-weight: bold !important;
+    box-shadow: none !important;
+    transform: none !important;
+    opacity: 1 !important;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, opacity 0.2s ease !important;
+}
+
+.picflow-cat-btn:focus,
+.picflow-cat-btn:active,
+.picflow-cat-btn:focus-visible {
+    outline: none !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+/* Active / Selected category button */
+.picflow-cat-btn.btn-primary:not(:disabled):not(.disabled) {
+    background-color: #0D4452 !important;
+    border: 2px solid var(--accent) !important;
+    color: #ffffff !important;
+    font-weight: bold !important;
+    transform: none !important;
+    opacity: 1 !important;
+    animation: picflowBtnActivateBase 0.3s ease-out !important;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, opacity 0.2s ease !important;
+}
+
+.picflow-cat-btn:not(:disabled):not(.btn-primary):hover {
+    background-color: #0A3540 !important;
+    border-color: #505050 !important;
+    color: #ffffff !important;
+    transform: none !important;
+}
+
+/* Deactivated category buttons when a specific category is active */
+.picflow-cat-btn.btn-hover-light,
+.btn-hover-light {
+    opacity: 0.25 !important;
+    background-color: #07242B !important;
+    border: 2px solid #053742 !important;
+    color: #ffffff !important;
+    box-shadow: none !important;
+    transform: none !important;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, opacity 0.2s ease !important;
+}
+
+.picflow-cat-btn.btn-hover-light:hover,
 .btn-hover-light:hover {
     opacity: 1 !important;
-    background: rgba(255, 255, 255, 0.1);
+    background-color: #0A3540 !important;
+    border-color: #505050 !important;
+    color: #ffffff !important;
+    transform: none !important;
+}
+
+.picflow-cat-btn:disabled {
+    opacity: 0.5 !important;
+    background-color: #07242B !important;
+    border: 2px solid #053742 !important;
+    color: var(--text-muted) !important;
+    pointer-events: none !important;
+    box-shadow: none !important;
+    transform: none !important;
+    animation: none !important;
+    transition: none !important;
 }
 
 .print-card-ratio {
@@ -3904,7 +4006,7 @@ canvas.picking-color {
     border-radius: 50%;
     background-color: var(--bg-panel);
     border: 2px solid var(--accent);
-    box-shadow: var(--accent);
+    box-shadow: 0 4px 14px color-mix(in srgb, var(--accent) 45%, transparent), 0 0 8px color-mix(in srgb, var(--accent) 30%, transparent);
     cursor: pointer;
     position: relative;
     display: flex;
@@ -3916,6 +4018,7 @@ canvas.picking-color {
 
 .photo-bubble:hover {
     transform: scale(1.5);
+    box-shadow: 0 6px 20px color-mix(in srgb, var(--accent) 65%, transparent), 0 0 12px color-mix(in srgb, var(--accent) 45%, transparent);
 }
 
 .photo-bubble-thumb {

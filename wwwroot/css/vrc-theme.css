@@ -6,30 +6,63 @@
 /* --------------------------------------------------------------------------
    Generic Buttons (.btn) Theming
    -------------------------------------------------------------------------- */
-.has-vrc-theme .btn:not(.btn-danger):not(.btn-outline-danger):not(.btn-warning):not(.btn-outline-warning):not(.btn-viewer-action):not(.btn-icon-only):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.media-btn-open):not(.btn-dark):not(.btn-outline-dark) {
+.has-vrc-theme .btn:not(.btn-danger):not(.btn-outline-danger):not(.btn-warning):not(.btn-outline-warning):not(.btn-viewer-action):not(.btn-icon-only):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.media-btn-open):not(.btn-dark):not(.btn-outline-dark):not(.picflow-cat-btn):not(.btn-hover-light):not(:disabled):not(.disabled) {
     color: var(--accent) !important;
     background-color: var(--theme-btn-bg) !important;
     border-color: var(--theme-btn-border) !important;
-    opacity: 1 !important;
 }
 
-.has-vrc-theme .btn:not(.btn-danger):not(.btn-outline-danger):not(.btn-warning):not(.btn-outline-warning):not(.btn-viewer-action):not(.btn-icon-only):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.media-btn-open):not(.btn-dark):not(.btn-outline-dark):hover {
+.has-vrc-theme .btn:not(.btn-danger):not(.btn-outline-danger):not(.btn-warning):not(.btn-outline-warning):not(.btn-viewer-action):not(.btn-icon-only):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.media-btn-open):not(.btn-dark):not(.btn-outline-dark):not(.picflow-cat-btn):not(.btn-hover-light):not(:disabled):not(.disabled):hover {
     background-color: var(--theme-btn-hover-bg) !important;
     border-color: var(--theme-btn-hover-border) !important;
     color: #ffffff !important;
 }
 
-.has-vrc-theme .btn:not(.btn-danger):not(.btn-outline-danger):not(.btn-warning):not(.btn-outline-warning):not(.btn-viewer-action):not(.btn-icon-only):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.media-btn-open):not(.btn-dark):not(.btn-outline-dark):active,
-.has-vrc-theme .btn:not(.btn-danger):not(.btn-outline-danger):not(.btn-warning):not(.btn-outline-warning):not(.btn-viewer-action):not(.btn-icon-only):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.media-btn-open):not(.btn-dark):not(.btn-outline-dark):focus {
+.has-vrc-theme .btn:not(.btn-danger):not(.btn-outline-danger):not(.btn-warning):not(.btn-outline-warning):not(.btn-viewer-action):not(.btn-icon-only):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.media-btn-open):not(.btn-dark):not(.btn-outline-dark):not(.picflow-cat-btn):not(.btn-hover-light):not(:disabled):not(.disabled):active,
+.has-vrc-theme .btn:not(.btn-danger):not(.btn-outline-danger):not(.btn-warning):not(.btn-outline-warning):not(.btn-viewer-action):not(.btn-icon-only):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.media-btn-open):not(.btn-dark):not(.btn-outline-dark):not(.picflow-cat-btn):not(.btn-hover-light):not(:disabled):not(.disabled):focus {
     background-color: var(--theme-btn-active-bg) !important;
     border-color: var(--accent) !important;
     color: #ffffff !important;
 }
 
-.has-vrc-theme .btn:not(.btn-danger):not(.btn-outline-danger):not(.btn-warning):not(.btn-outline-warning):not(.btn-viewer-action):not(.btn-icon-only):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.media-btn-open):not(.btn-dark):not(.btn-outline-dark):hover .btn-icon:not(.icon-danger):not(.icon-white):not(.icon-dark):not(.icon-success),
-.has-vrc-theme .btn:not(.btn-danger):not(.btn-outline-danger):not(.btn-warning):not(.btn-outline-warning):not(.btn-viewer-action):not(.btn-icon-only):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.media-btn-open):not(.btn-dark):not(.btn-outline-dark):active .btn-icon:not(.icon-danger):not(.icon-white):not(.icon-dark):not(.icon-success),
-.has-vrc-theme .btn:not(.btn-danger):not(.btn-outline-danger):not(.btn-warning):not(.btn-outline-warning):not(.btn-viewer-action):not(.btn-icon-only):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.media-btn-open):not(.btn-dark):not(.btn-outline-dark):focus .btn-icon:not(.icon-danger):not(.icon-white):not(.icon-dark):not(.icon-success) {
+.has-vrc-theme .btn:not(.btn-danger):not(.btn-outline-danger):not(.btn-warning):not(.btn-outline-warning):not(.btn-viewer-action):not(.btn-icon-only):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.media-btn-open):not(.btn-dark):not(.btn-outline-dark):not(.picflow-cat-btn):not(.btn-hover-light):not(:disabled):not(.disabled):hover .btn-icon:not(.icon-danger):not(.icon-white):not(.icon-dark):not(.icon-success),
+.has-vrc-theme .btn:not(.btn-danger):not(.btn-outline-danger):not(.btn-warning):not(.btn-outline-warning):not(.btn-viewer-action):not(.btn-icon-only):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.media-btn-open):not(.btn-dark):not(.btn-outline-dark):not(.picflow-cat-btn):not(.btn-hover-light):not(:disabled):not(.disabled):active .btn-icon:not(.icon-danger):not(.icon-white):not(.icon-dark):not(.icon-success),
+.has-vrc-theme .btn:not(.btn-danger):not(.btn-outline-danger):not(.btn-warning):not(.btn-outline-warning):not(.btn-viewer-action):not(.btn-icon-only):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.media-btn-open):not(.btn-dark):not(.btn-outline-dark):not(.picflow-cat-btn):not(.btn-hover-light):not(:disabled):not(.disabled):focus .btn-icon:not(.icon-danger):not(.icon-white):not(.icon-dark):not(.icon-success) {
     filter: var(--filter-white) !important;
+}
+
+/* --------------------------------------------------------------------------
+   Disabled / Deactivated Buttons (.btn:disabled, .btn.disabled)
+   Recolors to the theme with the uniform 0.65 transparency matching default theme
+   -------------------------------------------------------------------------- */
+.has-vrc-theme .btn:disabled:not(.picflow-cat-btn),
+.has-vrc-theme .btn.disabled:not(.picflow-cat-btn),
+.has-vrc-theme button:disabled:not(.picflow-cat-btn),
+.has-vrc-theme label.btn.disabled:not(.picflow-cat-btn) {
+    opacity: 0.65 !important;
+    color: var(--theme-btn-border) !important;
+    background-color: var(--theme-btn-bg) !important;
+    border-color: var(--theme-btn-border) !important;
+    cursor: not-allowed !important;
+    pointer-events: none !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+.has-vrc-theme .btn:disabled:not(.picflow-cat-btn) .btn-icon,
+.has-vrc-theme .btn.disabled:not(.picflow-cat-btn) .btn-icon,
+.has-vrc-theme button:disabled:not(.picflow-cat-btn) .btn-icon,
+.has-vrc-theme label.btn.disabled:not(.picflow-cat-btn) .btn-icon,
+.has-vrc-theme .btn:disabled:not(.picflow-cat-btn) img,
+.has-vrc-theme .btn.disabled:not(.picflow-cat-btn) img,
+.has-vrc-theme button:disabled:not(.picflow-cat-btn) img,
+.has-vrc-theme label.btn.disabled:not(.picflow-cat-btn) img,
+.has-vrc-theme .btn:disabled:not(.picflow-cat-btn) svg,
+.has-vrc-theme .btn.disabled:not(.picflow-cat-btn) svg {
+    filter: url(#theme-border-filter) !important;
+    opacity: 1 !important;
+    color: var(--theme-btn-border) !important;
+    fill: var(--theme-btn-border) !important;
 }
 
 /* --------------------------------------------------------------------------
@@ -69,7 +102,12 @@
 /* --------------------------------------------------------------------------
    Typography, Links & Form Controls
    -------------------------------------------------------------------------- */
-.has-vrc-theme .text-muted {
+.has-vrc-theme .text-muted,
+.has-vrc-theme .settings-toggle-desc,
+.has-vrc-theme .settings-toggle-row .settings-toggle-text .settings-toggle-desc,
+.has-vrc-theme .cache-info-box .text-muted,
+.has-vrc-theme .about-legal-card .text-muted,
+.has-vrc-theme .nav-group-label {
     color: var(--text-muted) !important;
 }
 
@@ -101,7 +139,7 @@
     background-image: var(--theme-switch-knob-off) !important;
 }
 
-.has-vrc-theme .form-switch .form-check-input:hover:not(:checked) {
+.has-vrc-theme .form-switch .form-check-input:hover:not(:checked):not(:disabled) {
     border-color: var(--theme-btn-hover-border) !important;
     background-image: var(--theme-switch-knob-off-hover) !important;
 }
@@ -113,6 +151,56 @@
     border-radius: 2em !important;
     background-image: var(--theme-switch-knob-on) !important;
     box-shadow: 0 0 8px rgba(var(--theme-rgb), 0.4) !important;
+}
+
+/* Disabled Switch & Form Inputs */
+.has-vrc-theme .form-check-input:disabled,
+.has-vrc-theme .form-switch .form-check-input:disabled {
+    opacity: 0.75 !important;
+    cursor: not-allowed !important;
+    pointer-events: none !important;
+    background-color: #0d1217 !important;
+    border: 2px solid #202730 !important;
+    box-shadow: none !important;
+    filter: grayscale(1) brightness(0.5) !important;
+}
+
+.has-vrc-theme .form-switch .form-check-input:disabled:hover {
+    border-color: #202730 !important;
+    background-image: var(--theme-switch-knob-off) !important;
+}
+
+/* Disabled Settings Toggle Row */
+.has-vrc-theme .settings-toggle-row:has(input:disabled),
+.has-vrc-theme .settings-toggle-row.disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+}
+
+.has-vrc-theme .settings-toggle-row:has(input:disabled) .settings-toggle-icon,
+.has-vrc-theme .settings-toggle-row.disabled .settings-toggle-icon {
+    opacity: 0.75 !important;
+    background-color: #14191f !important;
+}
+
+.has-vrc-theme .settings-toggle-row:has(input:disabled) .settings-toggle-icon img,
+.has-vrc-theme .settings-toggle-row:has(input:disabled) .settings-toggle-icon .icon-accent,
+.has-vrc-theme .settings-toggle-row.disabled .settings-toggle-icon img,
+.has-vrc-theme .settings-toggle-row.disabled .settings-toggle-icon .icon-accent {
+    filter: grayscale(1) brightness(0.4) !important;
+    opacity: 0.6 !important;
+}
+
+.has-vrc-theme .settings-toggle-row:has(input:disabled) .settings-toggle-text h6,
+.has-vrc-theme .settings-toggle-row.disabled .settings-toggle-text h6 {
+    color: var(--text-muted) !important;
+    opacity: 0.8 !important;
+}
+
+.has-vrc-theme .settings-toggle-row:has(input:disabled) .settings-toggle-text .settings-toggle-desc,
+.has-vrc-theme .settings-toggle-row.disabled .settings-toggle-text .settings-toggle-desc {
+    color: var(--text-muted) !important;
+    opacity: 0.65 !important;
 }
 
 /* Sliders (form-range) track and thumb */
@@ -169,13 +257,40 @@
    SVG Icon Theming Filters
    -------------------------------------------------------------------------- */
 .has-vrc-theme .nav-icon:not(.custom-nav-link:hover .nav-icon):not(.custom-nav-link.active .nav-icon),
-.has-vrc-theme .icon-accent:not(.icon-danger):not(.icon-success):not(.icon-white):not(.icon-dark),
+.has-vrc-theme .icon-accent:not(.icon-danger):not(.icon-success):not(.icon-white):not(.icon-dark):not(.settings-toggle-row:has(input:disabled) .icon-accent):not(.settings-toggle-row.disabled .icon-accent):not(:disabled *):not(.disabled *),
 .has-vrc-theme .folder-svg-icon {
     filter: url(#theme-icon-filter) !important;
 }
 
-.has-vrc-theme .btn:not(.btn-danger):not(.btn-outline-danger):not(.btn-warning):not(.btn-outline-warning):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.media-btn-open):not(.btn-dark):not(.btn-outline-dark):not(:hover):not(:active) .btn-icon:not(.icon-danger):not(.icon-white):not(.icon-dark):not(.icon-success) {
+.has-vrc-theme .btn:not(.btn-danger):not(.btn-outline-danger):not(.btn-warning):not(.btn-outline-warning):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.media-btn-open):not(.btn-dark):not(.btn-outline-dark):not(:disabled):not(.disabled):not(:hover):not(:active) .btn-icon:not(.icon-danger):not(.icon-white):not(.icon-dark):not(.icon-success) {
     filter: url(#theme-icon-filter) !important;
+}
+
+/* Disabled SVG Icons (Colore identico al bordo var(--theme-btn-border)) */
+.has-vrc-theme .btn:disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.btn-viewer-upload) .btn-icon,
+.has-vrc-theme .btn.disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.btn-viewer-upload) .btn-icon,
+.has-vrc-theme button:disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.btn-viewer-upload) .btn-icon,
+.has-vrc-theme label.btn.disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.btn-viewer-upload) .btn-icon,
+.has-vrc-theme .btn:disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.btn-viewer-upload) .icon-accent,
+.has-vrc-theme .btn.disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.btn-viewer-upload) .icon-accent,
+.has-vrc-theme button:disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.btn-viewer-upload) .icon-accent,
+.has-vrc-theme label.btn.disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.btn-viewer-upload) .icon-accent,
+.has-vrc-theme .btn:disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.btn-viewer-upload) img,
+.has-vrc-theme .btn.disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.btn-viewer-upload) img,
+.has-vrc-theme button:disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.btn-viewer-upload) img,
+.has-vrc-theme label.btn.disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.btn-viewer-upload) img,
+.has-vrc-theme .btn:disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.btn-viewer-upload) svg,
+.has-vrc-theme .btn.disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.btn-viewer-upload) svg,
+.has-vrc-theme .settings-toggle-row:has(input:disabled) .settings-toggle-icon img,
+.has-vrc-theme .settings-toggle-row:has(input:disabled) .settings-toggle-icon .icon-accent,
+.has-vrc-theme .settings-toggle-row.disabled .settings-toggle-icon img,
+.has-vrc-theme .settings-toggle-row.disabled .settings-toggle-icon .icon-accent,
+.has-vrc-theme .settings-toggle-row:has(input:disabled) img,
+.has-vrc-theme .settings-toggle-row.disabled img {
+    filter: url(#theme-border-filter) !important;
+    opacity: 1 !important;
+    color: var(--theme-btn-border) !important;
+    fill: var(--theme-btn-border) !important;
 }
 
 /* --------------------------------------------------------------------------
@@ -245,6 +360,51 @@
     filter: var(--filter-white) !important;
 }
 
+/* Disabled System Buttons */
+.has-vrc-theme .btn-danger:disabled,
+.has-vrc-theme .btn-outline-danger:disabled,
+.has-vrc-theme .btn-danger.disabled,
+.has-vrc-theme .btn-outline-danger.disabled,
+.has-vrc-theme .media-btn-delete:disabled,
+.has-vrc-theme .media-btn-delete.disabled,
+.has-vrc-theme .btn-viewer-delete:disabled {
+    color: #7a4040 !important;
+    background-color: #1a0808 !important;
+    border-color: #331010 !important;
+    opacity: 0.65 !important;
+    cursor: not-allowed !important;
+    pointer-events: none !important;
+}
+
+.has-vrc-theme .btn-danger:disabled .btn-icon,
+.has-vrc-theme .btn-outline-danger:disabled .btn-icon,
+.has-vrc-theme .media-btn-delete:disabled .btn-icon,
+.has-vrc-theme .btn-viewer-delete:disabled img {
+    filter: grayscale(1) brightness(0.35) !important;
+    opacity: 0.6 !important;
+}
+
+.has-vrc-theme .media-btn-upload:disabled,
+.has-vrc-theme .btn-success:disabled,
+.has-vrc-theme .btn-outline-success:disabled,
+.has-vrc-theme .btn-viewer-upload:disabled {
+    color: #3d7a4d !important;
+    background-color: #081a0e !important;
+    border-color: #10331a !important;
+    opacity: 0.65 !important;
+    cursor: not-allowed !important;
+    pointer-events: none !important;
+}
+
+.has-vrc-theme .media-btn-upload:disabled .btn-icon,
+.has-vrc-theme .btn-success:disabled .btn-icon,
+.has-vrc-theme .btn-outline-success:disabled .btn-icon,
+.has-vrc-theme .media-btn-upload:disabled img,
+.has-vrc-theme .btn-viewer-upload:disabled img {
+    filter: grayscale(1) brightness(0.4) !important;
+    opacity: 0.45 !important;
+}
+
 /* Dark (Open / Viewer) Buttons */
 .has-vrc-theme .media-btn-open,
 .has-vrc-theme .btn-dark,
@@ -291,30 +451,47 @@
 }
 
 .has-vrc-theme .btn-viewer-close,
-.has-vrc-theme .btn-nav,
-.has-vrc-theme .btn-viewer-action:not(.btn-danger):not(.btn-success):not(.btn-viewer-delete):not(.btn-viewer-upload) {
+.has-vrc-theme .btn-nav:not(:disabled),
+.has-vrc-theme .btn-viewer-action:not(.btn-danger):not(.btn-success):not(.btn-viewer-delete):not(.btn-viewer-upload):not(:disabled) {
     background-color: var(--theme-btn-bg) !important;
     border: 2px solid var(--theme-btn-border) !important;
     opacity: 1 !important;
 }
 
 .has-vrc-theme .btn-viewer-close img,
-.has-vrc-theme .btn-nav img,
-.has-vrc-theme .btn-viewer-action:not(.btn-viewer-delete):not(.btn-viewer-upload) img:not(.icon-danger):not(.icon-success) {
+.has-vrc-theme .btn-nav:not(:disabled) img,
+.has-vrc-theme .btn-viewer-action:not(.btn-viewer-delete):not(.btn-viewer-upload):not(:disabled) img:not(.icon-danger):not(.icon-success) {
     filter: url(#theme-icon-filter) !important;
 }
 
+.has-vrc-theme .btn-nav:disabled {
+    opacity: 0.65 !important;
+    pointer-events: none !important;
+    cursor: not-allowed !important;
+    background-color: var(--theme-btn-bg) !important;
+    border-color: var(--theme-btn-border) !important;
+    box-shadow: none !important;
+    transform: translateY(-50%) !important;
+}
+
+.has-vrc-theme .btn-nav:disabled img {
+    filter: url(#theme-border-filter) !important;
+    opacity: 1 !important;
+    color: var(--theme-btn-border) !important;
+    fill: var(--theme-btn-border) !important;
+}
+
 .has-vrc-theme .btn-viewer-close:hover,
-.has-vrc-theme .btn-nav:hover,
-.has-vrc-theme .btn-viewer-action:not(.btn-danger):not(.btn-success):not(.btn-viewer-delete):not(.btn-viewer-upload):hover {
+.has-vrc-theme .btn-nav:not(:disabled):hover,
+.has-vrc-theme .btn-viewer-action:not(.btn-danger):not(.btn-success):not(.btn-viewer-delete):not(.btn-viewer-upload):not(:disabled):hover {
     background-color: var(--theme-btn-hover-bg) !important;
     border-color: var(--accent) !important;
     box-shadow: 0 0 12px rgba(var(--theme-rgb), 0.5) !important;
 }
 
 .has-vrc-theme .btn-viewer-close:hover img,
-.has-vrc-theme .btn-nav:hover img,
-.has-vrc-theme .btn-viewer-action:not(.btn-viewer-delete):not(.btn-viewer-upload):hover img:not(.icon-danger):not(.icon-success) {
+.has-vrc-theme .btn-nav:not(:disabled):hover img,
+.has-vrc-theme .btn-viewer-action:not(.btn-viewer-delete):not(.btn-viewer-upload):not(:disabled):hover img:not(.icon-danger):not(.icon-success) {
     filter: var(--filter-white) !important;
 }
 
@@ -402,4 +579,124 @@
 
 .has-vrc-theme .image-container .spinner-border {
     color: var(--accent) !important;
+}
+
+.has-vrc-theme .photo-bubble {
+    border-color: var(--accent) !important;
+    box-shadow: 0 4px 14px color-mix(in srgb, var(--accent) 45%, transparent), 0 0 8px color-mix(in srgb, var(--accent) 30%, transparent) !important;
+}
+
+.has-vrc-theme .photo-bubble:hover {
+    box-shadow: 0 6px 20px color-mix(in srgb, var(--accent) 65%, transparent), 0 0 12px color-mix(in srgb, var(--accent) 45%, transparent) !important;
+}
+
+/* --------------------------------------------------------------------------
+   Picflow Filter Pills (.picflow-cat-btn) Theming
+   Faithful to the base theme style, recolored with custom theme variables:
+   - Zero dimension changes (transform: none !important) - strictly identical size always.
+   - Smooth hover transition on colors & opacity (0.2s ease).
+   - Activation flash animation on brightness (0.3s ease-out).
+   - Invariant 2px border width across all states to guarantee zero pixel layout shifts.
+   - When "All" is active (SelectedCategory == null): all valid buttons are active (solid background, opacity 1).
+   - When a specific category is active: that button is highlighted, others dim via .btn-hover-light (opacity 0.25).
+   - Empty categories (:disabled) have opacity 0.5 and muted text.
+   -------------------------------------------------------------------------- */
+@keyframes picflowBtnActivateTheme {
+    0% {
+        filter: brightness(1.35);
+    }
+    100% {
+        filter: brightness(1);
+    }
+}
+
+.has-vrc-theme .picflow-cat-btn,
+.has-vrc-theme .picflow-cat-btn.border-0 {
+    background-color: var(--theme-btn-bg) !important;
+    border: 2px solid var(--theme-btn-border) !important;
+    color: #ffffff !important;
+    font-weight: bold !important;
+    box-shadow: none !important;
+    transform: none !important;
+    opacity: 1 !important;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, opacity 0.2s ease !important;
+}
+
+.has-vrc-theme .picflow-cat-btn:focus,
+.has-vrc-theme .picflow-cat-btn:active,
+.has-vrc-theme .picflow-cat-btn:focus-visible {
+    outline: none !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+/* Active / Selected category button */
+.has-vrc-theme .picflow-cat-btn.btn-primary:not(:disabled):not(.disabled) {
+    background-color: var(--theme-btn-active-bg) !important;
+    border: 2px solid var(--accent) !important;
+    color: #ffffff !important;
+    font-weight: bold !important;
+    transform: none !important;
+    opacity: 1 !important;
+    animation: picflowBtnActivateTheme 0.3s ease-out !important;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, opacity 0.2s ease !important;
+}
+
+.has-vrc-theme .picflow-cat-btn.btn-primary:not(:disabled):not(.disabled):hover {
+    background-color: var(--theme-btn-active-bg) !important;
+    border-color: var(--accent) !important;
+    color: #ffffff !important;
+    transform: none !important;
+}
+
+/* Category buttons when All is active (not dimmed) */
+.has-vrc-theme .picflow-cat-btn:not(.btn-primary):not(.btn-hover-light):not(:disabled) {
+    background-color: var(--theme-btn-bg) !important;
+    border: 2px solid var(--theme-btn-border) !important;
+    color: #ffffff !important;
+    box-shadow: none !important;
+    transform: none !important;
+    opacity: 1 !important;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, opacity 0.2s ease !important;
+}
+
+.has-vrc-theme .picflow-cat-btn:not(.btn-primary):not(.btn-hover-light):not(:disabled):hover {
+    background-color: var(--theme-btn-hover-bg) !important;
+    border-color: var(--theme-btn-hover-border) !important;
+    color: #ffffff !important;
+    transform: none !important;
+}
+
+/* Deactivated category buttons when a specific category is active (.btn-hover-light) */
+.has-vrc-theme .picflow-cat-btn.btn-hover-light,
+.has-vrc-theme .btn-hover-light {
+    opacity: 0.25 !important;
+    background-color: var(--theme-btn-bg) !important;
+    border: 2px solid var(--theme-btn-border) !important;
+    color: #ffffff !important;
+    box-shadow: none !important;
+    transform: none !important;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, opacity 0.2s ease !important;
+}
+
+.has-vrc-theme .picflow-cat-btn.btn-hover-light:hover,
+.has-vrc-theme .btn-hover-light:hover {
+    opacity: 1 !important;
+    background-color: var(--theme-btn-hover-bg) !important;
+    border-color: var(--theme-btn-hover-border) !important;
+    color: #ffffff !important;
+    transform: none !important;
+}
+
+/* Empty category buttons (:disabled) */
+.has-vrc-theme .picflow-cat-btn:disabled {
+    opacity: 0.5 !important;
+    background-color: var(--theme-btn-bg) !important;
+    border: 2px solid var(--theme-btn-border) !important;
+    color: var(--text-muted) !important;
+    pointer-events: none !important;
+    box-shadow: none !important;
+    transform: none !important;
+    animation: none !important;
+    transition: none !important;
 }
