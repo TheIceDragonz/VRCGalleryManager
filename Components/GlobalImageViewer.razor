@@ -5,8 +5,10 @@
 <ImageViewer @ref="viewerRef"
              ShowDownloadButton="@currentOptions.ShowDownloadButton"
              ShowInfoButton="@currentOptions.ShowInfoButton"
-             OnDeleteRequested="HandleDelete"
-             OnUploadRequested="HandleUpload"
+             ShowUploadButton="@(currentOptions.ShowUploadButton ?? (currentOptions.OnUploadRequested != null))"
+             ShowDeleteButton="@(currentOptions.ShowDeleteButton ?? (currentOptions.OnDeleteRequested != null))"
+             OnDeleteRequested="@(currentOptions.OnDeleteRequested != null ? EventCallback.Factory.Create<int>(this, HandleDelete) : default)"
+             OnUploadRequested="@(currentOptions.OnUploadRequested != null ? EventCallback.Factory.Create<int>(this, HandleUpload) : default)"
              OnClosed="HandleClosed" />
 
 @code {
@@ -24,14 +26,19 @@
         currentOptions = options;
         InvokeAsync(() =>
         {
-            viewerRef?.Open(options.Items, options.StartIndex);
             StateHasChanged();
+            viewerRef?.Open(options.Items, options.StartIndex);
         });
     }
 
     private void HandleClose()
     {
-        InvokeAsync(() => viewerRef?.Close());
+        InvokeAsync(() =>
+        {
+            viewerRef?.Close();
+            currentOptions = new();
+            StateHasChanged();
+        });
     }
 
     private async Task HandleDelete(int index)
@@ -54,6 +61,8 @@
     {
         ViewerService.NotifyClosed();
         currentOptions.OnClosed?.Invoke();
+        currentOptions = new();
+        StateHasChanged();
     }
 
     public void Dispose()

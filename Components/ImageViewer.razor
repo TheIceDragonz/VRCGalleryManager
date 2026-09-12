@@ -65,13 +65,13 @@
                 </button>
             }
 
-            @if (OnDeleteRequested.HasDelegate)
+            @if (ShowDeleteButton && OnDeleteRequested.HasDelegate)
             {
                 <button class="btn btn-icon-only btn-viewer-action btn-viewer-delete" title="Delete" @onclick="DeleteCurrent">
                     <img src="/svg/trash-bin-trash-svgrepo-com.svg" class="icon-danger" />
                 </button>
             }
-            @if (OnUploadRequested.HasDelegate)
+            @if (ShowUploadButton && OnUploadRequested.HasDelegate)
             {
                 <button class="btn btn-icon-only btn-viewer-action btn-viewer-upload" title="Upload" @onclick="UploadCurrent">
                     <img src="/svg/add-circle-svgrepo-com.svg" class="icon-success" />
@@ -252,8 +252,8 @@
                     {
                         <div class="viewer-hint-card">
                             <div class="viewer-hint-header">
-                                <div class="viewer-hint-icon">
-                                    <img src="/svg/info-circle-svgrepo-com.svg" class="icon-accent" style="width: 15px; height: 15px;" />
+                                <div class="viewer-hint-icon warning">
+                                    <img src="/svg/error-svgrepo-com.svg" class="icon-warning" style="width: 15px; height: 15px;" />
                                 </div>
                                 <div class="d-flex flex-column" style="min-width: 0;">
                                     <span class="viewer-hint-title">VRChat Metadata</span>
@@ -433,6 +433,8 @@
     [Parameter] public EventCallback<int> OnUploadRequested { get; set; }
     [Parameter] public bool ShowDownloadButton { get; set; } = true;
     [Parameter] public bool ShowInfoButton { get; set; } = false;
+    [Parameter] public bool ShowUploadButton { get; set; } = false;
+    [Parameter] public bool ShowDeleteButton { get; set; } = false;
 
     public bool IsVisible { get; private set; }
     public IReadOnlyList<ViewerItem> Items { get; private set; }

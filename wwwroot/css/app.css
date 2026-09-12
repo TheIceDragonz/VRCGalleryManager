@@ -2579,19 +2579,6 @@ canvas.picking-color {
     gap: 8px;
     transition: all 0.25s ease;
     flex-shrink: 0;
-    animation: viewerHintFadeIn 0.2s ease-out;
-}
-
-@keyframes viewerHintFadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(3px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
 }
 
 .viewer-hint-card:hover {
@@ -2615,6 +2602,11 @@ canvas.picking-color {
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+}
+
+.viewer-hint-icon.warning {
+    background: rgba(255, 193, 7, 0.12);
+    border: 1px solid rgba(255, 193, 7, 0.28);
 }
 
 .viewer-hint-title {
@@ -2814,6 +2806,7 @@ canvas.picking-color {
     0% {
         filter: brightness(1.35);
     }
+
     100% {
         filter: brightness(1);
     }

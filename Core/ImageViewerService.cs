@@ -11,6 +11,8 @@ namespace VRCGalleryManager.Core
         public int StartIndex { get; set; } = 0;
         public bool ShowDownloadButton { get; set; } = true;
         public bool ShowInfoButton { get; set; } = false;
+        public bool? ShowUploadButton { get; set; }
+        public bool? ShowDeleteButton { get; set; }
         public Func<int, Task>? OnDeleteRequested { get; set; }
         public Func<int, Task>? OnUploadRequested { get; set; }
         public Action? OnClosed { get; set; }

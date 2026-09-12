@@ -67,7 +67,7 @@
                         <div class="position-relative gallery-icon-card media-card-container"
                              style="@(item.IsFolder ? "cursor: pointer;" : "")"
                              @onclick="() => { if(item.IsFolder) OnItemClick(item); }"
-                             title="@item.Name">
+                             title="@GetItemTooltip(item)">
 
                             @if (item.IsFolder)
                             {
@@ -178,6 +178,7 @@
         public string ThumbnailBase64 { get; set; }
         public string FullBase64 { get; set; }
         public bool IsThumbLoading { get; set; }
+        public int? PhotoCount { get; set; }
     }
 
     // ── Lifecycle ─────────────────────────────────────────────────────────
@@ -276,11 +277,19 @@
         foreach (var dir in dirs)
         {
             if (token.IsCancellationRequested) break;
+            int? count = null;
+            try
+            {
+                count = Directory.EnumerateFiles(dir).Count(IsImageFile);
+            }
+            catch { }
+
             Items.Add(new GalleryItem
             {
                 IsFolder = true,
                 Path = dir,
                 Name = Path.GetFileName(dir),
+                PhotoCount = count,
                 IsThumbLoading = true
             });
         }
@@ -344,9 +353,17 @@
                 {
                     if (item.IsFolder)
                     {
-                        var firstImg = Directory.EnumerateFiles(item.Path)
-                                                .Where(IsImageFile)
-                                                .LastOrDefault();
+                        var enumOptions = new EnumerationOptions
+                        {
+                            IgnoreInaccessible = true,
+                            RecurseSubdirectories = true,
+                            MaxRecursionDepth = 2
+                        };
+                        var imageFiles = Directory.EnumerateFiles(item.Path, "*", enumOptions)
+                                                  .Where(IsImageFile)
+                                                  .ToList();
+                        item.PhotoCount = imageFiles.Count;
+                        var firstImg = imageFiles.LastOrDefault();
                         if (!string.IsNullOrEmpty(firstImg))
                         {
                             item.ThumbnailBase64 = await MakeThumbnailBase64Async(firstImg, 256, ct);
@@ -627,6 +644,19 @@
         return ext.Equals(".png", StringComparison.OrdinalIgnoreCase) ||
                ext.Equals(".jpg", StringComparison.OrdinalIgnoreCase) ||
                ext.Equals(".jpeg", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private string GetItemTooltip(GalleryItem item)
+    {
+        if (item.IsFolder)
+        {
+            if (item.PhotoCount.HasValue)
+            {
+                return item.PhotoCount.Value == 1 ? "1 photo" : $"{item.PhotoCount.Value} photos";
+            }
+            return item.Name;
+        }
+        return item.Name;
     }
 }
 
