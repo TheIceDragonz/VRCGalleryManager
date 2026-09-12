@@ -2,18 +2,26 @@
 @inject NotificationService NotifService
 @implements IDisposable
 
-<div class="notification-container">
-    @foreach (var notification in NotifService.Notifications)
-    {
-        var borderClass = GetBorderClass(notification.Type);
-        var exitClass = notification.IsLeaving ? "slide-out" : "slide-in";
-        
-        <div class="notification-panel @borderClass @exitClass" @key="notification.Id" @onclick="() => NotifService.BeginDismiss(notification)">
-            <h4 class="notification-title">@notification.Title</h4>
-            <p class="notification-message">@notification.Message</p>
-        </div>
-    }
-</div>
+@if (NotifService.Notifications.Count > 0)
+{
+    <div class="notification-container">
+        @foreach (var notification in NotifService.Notifications)
+        {
+            var borderClass = GetBorderClass(notification.Type);
+            var exitClass = notification.IsLeaving ? "slide-out" : "slide-in";
+            
+            <div class="notification-panel @borderClass @exitClass" @key="notification.Id" @onclick="() => NotifService.BeginDismiss(notification)">
+                <div class="d-flex align-items-center justify-content-between gap-2">
+                    <h4 class="notification-title mb-0">@notification.Title</h4>
+                    <button class="photo-notification-ctrl-btn p-0" style="font-size: 0.75rem; width: 18px; height: 18px;" @onclick:stopPropagation="true" @onclick="() => NotifService.BeginDismiss(notification)" title="Dismiss">
+                        &#x2715;
+                    </button>
+                </div>
+                <p class="notification-message mt-1">@notification.Message</p>
+            </div>
+        }
+    </div>
+}
 
 @code {
     protected override void OnInitialized()

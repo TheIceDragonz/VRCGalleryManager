@@ -7,6 +7,8 @@
 @implements IDisposable
 @inject NavigationManager NavManager
 @inject DialogService dialogService
+@inject VRCLogWatcherService LogWatcher
+@inject ImageViewerService ViewerService
 
 <div class="h-100 d-flex flex-column p-3">
     <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-secondary">
@@ -33,10 +35,10 @@
 
     <div class="mb-3 d-flex gap-1 p-1 rounded-pill shadow-sm mx-auto align-items-center" style="width: fit-content; background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255,255,255,0.1); padding-right: 1.25rem !important;">
         <div class="d-flex gap-1">
-            <button class="btn btn-sm rounded-pill px-3 @GetCategoryBtnClass(null)" @onclick="() => SetCategory(null)">All</button>
-            <button class="btn btn-sm rounded-pill px-3 @GetCategoryBtnClass(ItemCategory.Sticker)" @onclick="() => SetCategory(ItemCategory.Sticker)">Stickers</button>
-            <button class="btn btn-sm rounded-pill px-3 @GetCategoryBtnClass(ItemCategory.Emoji)" @onclick="() => SetCategory(ItemCategory.Emoji)">Emojis</button>
-            <button class="btn btn-sm rounded-pill px-3 @GetCategoryBtnClass(ItemCategory.Print)" @onclick="() => SetCategory(ItemCategory.Print)">Prints</button>
+            <button class="btn btn-sm rounded-pill px-3 picflow-cat-btn @GetCategoryBtnClass(null)" @onclick="() => SetCategory(null)" disabled="@(Images.Count == 0)">All</button>
+            <button class="btn btn-sm rounded-pill px-3 picflow-cat-btn @GetCategoryBtnClass(ItemCategory.Sticker)" @onclick="() => SetCategory(ItemCategory.Sticker)" disabled="@(StickerCount == 0)" title="@(StickerCount == 0 ? "No stickers found" : "")">Stickers</button>
+            <button class="btn btn-sm rounded-pill px-3 picflow-cat-btn @GetCategoryBtnClass(ItemCategory.Emoji)" @onclick="() => SetCategory(ItemCategory.Emoji)" disabled="@(EmojiCount == 0)" title="@(EmojiCount == 0 ? "No emojis found in logs (requires SDK logs)" : "")">Emojis</button>
+            <button class="btn btn-sm rounded-pill px-3 picflow-cat-btn @GetCategoryBtnClass(ItemCategory.Print)" @onclick="() => SetCategory(ItemCategory.Print)" disabled="@(PrintCount == 0)" title="@(PrintCount == 0 ? "No prints found in logs (requires SDK logs)" : "")">Prints</button>
         </div>
         
         <div class="bg-secondary opacity-50 mx-2" style="width: 1px; height: 24px;"></div>
@@ -128,8 +130,6 @@
     </div>
 }
 
-<VRCGalleryManager.Components.ImageViewer @ref="imageViewer" OnUploadRequested="HandleViewerUpload" />
-
 @if (ShowInfo)
 {
     <div class="position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center dialog-overlay" style="z-index: 10005;" @onclick="ToggleInfo">
@@ -148,7 +148,7 @@
 
             <div class="p-4 flex-grow-1 d-flex flex-column gap-3">
                 <p class="text-light mb-0" style="font-size: 0.88rem; line-height: 1.5;">
-                    To allow <strong>Picflow</strong> to read stickers, emojis and prints in real-time, VRChat must be started with extended SDK logging enabled.
+                    To allow <strong>Picflow</strong> to read <strong>emojis</strong> and <strong>prints</strong> in real-time, VRChat must be started with extended SDK logging enabled. (Stickers are read automatically without extra launch options).
                 </p>
 
                 <div class="picflow-code-box d-flex align-items-center justify-content-between p-2 px-3 rounded" @onclick="CopyInfoText" title="Click to copy">
@@ -189,14 +189,26 @@
     private HashSet<string> _allItems = new();
     private ItemCategory? SelectedCategory = null;
 
-    private IEnumerable<ImageModel> FilteredImages => SelectedCategory.HasValue 
-        ? Images.Where(i => i.Category == SelectedCategory.Value) 
-        : Images;
+    private int StickerCount => Images.Count(i => i.Category == ItemCategory.Sticker);
+    private int EmojiCount => Images.Count(i => i.Category == ItemCategory.Emoji);
+    private int PrintCount => Images.Count(i => i.Category == ItemCategory.Print);
+
+    private IEnumerable<ImageModel> FilteredImages
+    {
+        get
+        {
+            if (SelectedCategory.HasValue && Images.Any(i => i.Category == SelectedCategory.Value))
+            {
+                return Images.Where(i => i.Category == SelectedCategory.Value);
+            }
+            return Images;
+        }
+    }
 
     private bool IsStreamingProp 
     {
-        get => CacheService.Get<bool>("PicflowStreaming");
-        set => CacheService.Set("PicflowStreaming", value);
+        get => Config.Get("PicflowStreaming", "false") == "true";
+        set => Config.Set("PicflowStreaming", value ? "true" : "false");
     }
 
     private static readonly Regex StickerRegex = new Regex(
@@ -226,7 +238,6 @@
     }
 
     private bool CropPrints = true;
-    private VRCGalleryManager.Components.ImageViewer imageViewer;
 
     protected override async Task OnInitializedAsync()
     {
@@ -239,6 +250,12 @@
             Images = cachedImg;
             _allItems = CacheService.Get<HashSet<string>>("PicflowAllItems") ?? new HashSet<string>();
             LogStatus = CacheService.Get<string>("PicflowLogStatus") ?? "";
+
+            if (IsStreamingProp)
+            {
+                LogWatcher.OnLogLine -= HandleLiveLogLine;
+                LogWatcher.OnLogLine += HandleLiveLogLine;
+            }
         }
         else
         {
@@ -279,6 +296,19 @@
 
     private string GetCategoryBtnClass(ItemCategory? cat)
     {
+        int count = cat switch
+        {
+            ItemCategory.Sticker => StickerCount,
+            ItemCategory.Emoji => EmojiCount,
+            ItemCategory.Print => PrintCount,
+            _ => Images.Count
+        };
+
+        if (count == 0)
+        {
+            return "text-muted opacity-50 border-0";
+        }
+
         if (SelectedCategory == cat)
             return "btn-primary fw-bold";
         
@@ -290,6 +320,18 @@
 
     private void SetCategory(ItemCategory? category)
     {
+        if (category.HasValue)
+        {
+            int count = category.Value switch
+            {
+                ItemCategory.Sticker => StickerCount,
+                ItemCategory.Emoji => EmojiCount,
+                ItemCategory.Print => PrintCount,
+                _ => 0
+            };
+            if (count == 0) return;
+        }
+
         if (SelectedCategory == category && category != null)
         {
             SelectedCategory = null;
@@ -342,28 +384,33 @@
 
     private void OnStreamingChanged()
     {
-        var cts = CacheService.Get<CancellationTokenSource>("PicflowCts");
+        LogWatcher.OnLogLine -= HandleLiveLogLine;
         if (IsStreamingProp)
         {
-            cts?.Cancel();
-            cts = new CancellationTokenSource();
-            _ = StreamLogsAsync(cts.Token);
-            CacheService.Set("PicflowCts", cts);
+            LogWatcher.OnLogLine += HandleLiveLogLine;
         }
-        else
+    }
+
+    private void HandleLiveLogLine(string line)
+    {
+        try
         {
-            cts?.Cancel();
-            CacheService.Set<CancellationTokenSource>("PicflowCts", null);
+            ProcessLogLine(line);
         }
+        catch { }
     }
 
     private async Task LoadFromLogs()
     {
-        var oldCts = CacheService.Get<CancellationTokenSource>("PicflowCts");
-        oldCts?.Cancel();
-        IsStreamingProp = false;
-        var cts = new CancellationTokenSource();
-        CacheService.Set("PicflowCts", cts);
+        if (OperatingSystem.IsAndroid())
+        {
+            LogStatus = "| Not available on Android";
+            return;
+        }
+
+        LogWatcher.OnLogLine -= HandleLiveLogLine;
+
+        using var cts = new CancellationTokenSource();
         var token = cts.Token;
 
         string userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
@@ -411,43 +458,12 @@
         CacheService.Set("PicflowLogStatus", LogStatus);
         CacheService.Set("PicflowImages", Images);
         CacheService.Set("PicflowAllItems", _allItems);
-        StateHasChanged();
-    }
-
-    private async Task StreamLogsAsync(CancellationToken token)
-    {
-        string userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-        string vrchatLogPath = Path.Combine(userProfile, "AppData", "LocalLow", "VRChat", "VRChat");
-
-        string[] logFiles = Directory.GetFiles(vrchatLogPath, "output_log_*.txt");
-
-        if (logFiles.Length == 0) return;
-
-        string lastLogFile = logFiles.OrderByDescending(f => File.GetLastWriteTime(f)).First();
-
-        try
+        if (IsStreamingProp)
         {
-            using FileStream fileStream = new(lastLogFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-            using StreamReader reader = new(fileStream);
-
-            fileStream.Seek(0, SeekOrigin.End);
-
-            while (!token.IsCancellationRequested)
-            {
-                string? line = await reader.ReadLineAsync();
-
-                if (line != null)
-                {
-                    ProcessLogLine(line);
-                    InvokeAsync(StateHasChanged);
-                }
-                else
-                {
-                    await Task.Delay(500, token);
-                }
-            }
+            LogWatcher.OnLogLine -= HandleLiveLogLine;
+            LogWatcher.OnLogLine += HandleLiveLogLine;
         }
-        catch (IOException) { }
+        StateHasChanged();
     }
 
     private void ProcessLogLine(string line)
@@ -630,6 +646,7 @@
     private void UploadForCategory(ImageModel img, string route)
     {
         UploadMenuImage = null;
+        ViewerService.Close();
         if (img == null || string.IsNullOrEmpty(img.Url)) return;
         
         _ = ProcessUploadRoute(img, route);
@@ -672,7 +689,14 @@
         var index = viewerItems.FindIndex(i => i.HighResSource == currentUrl);
         if (index == -1) index = 0;
         
-        imageViewer.Open(viewerItems, index);
+        ViewerService.Open(new ImageViewerOptions
+        {
+            Items = viewerItems,
+            StartIndex = index,
+            ShowDownloadButton = true,
+            ShowInfoButton = false,
+            OnUploadRequested = (idx) => { HandleViewerUpload(idx); return Task.CompletedTask; }
+        });
     }
 
     private void DeleteItem(ImageModel img)
@@ -685,6 +709,7 @@
 
     public void Dispose()
     {
+        LogWatcher.OnLogLine -= HandleLiveLogLine;
         NetworkStatus.OnNetworkStatusChanged -= HandlePicflowNetworkChange;
         CacheService.Set("PicflowImages", Images);
         CacheService.Set("PicflowAllItems", _allItems);

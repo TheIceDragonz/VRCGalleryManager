@@ -6,7 +6,7 @@ This folder contains scripts to automatically compile the **Windows (EXE / Setup
 
 ## Folder Structure
 
-- **`Build_Windows_EXE.bat`**: Compiles and publishes the app for Windows (`net9.0-windows10.0.19041.0`, x64, framework-dependent), automatically creates the **Portable ZIP** package (`VRCGalleryManager_Portable.zip`), and creates the `VRCGalleryManager_Setup.exe` installer if NSIS is installed.
+- **`Build_Windows_EXE.bat`**: Compiles and publishes the app for Windows (`net9.0-windows10.0.19041.0`, x64, self-contained, no .NET installation required), automatically creates the **Portable ZIP** package (`VRCGalleryManager_Portable.zip`), and creates the `VRCGalleryManager_Setup.exe` installer if NSIS is installed.
 - **`Pack_Portable_ZIP.bat`**: Quickly generates or updates the **Portable ZIP** from the existing `Output/Windows` build without recompiling.
 - **`Build_Android_APK.bat`**: Compiles and publishes the Android package (`net9.0-android`, Release) and extracts `VRCGalleryManager.apk`.
 - **`Build_All.bat`**: Runs both the Windows and Android builds in sequence.

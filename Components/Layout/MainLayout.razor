@@ -10,7 +10,10 @@
                 <feColorMatrix type="matrix" values="0 0 0 @IconFilterR 0  0 0 0 @IconFilterG 0  0 0 0 @IconFilterB 0  0 0 0 1 0" />
             </filter>
             <filter id="theme-btn-filter" color-interpolation-filters="sRGB">
-                <feColorMatrix type="matrix" values="0 0 0 @BtnFilterR 0  0 0 0 @BtnFilterG 0  0 0 0 @BtnFilterB 0  0 0 0 1 0" />
+                <feColorMatrix type="matrix" values="0 0 0 @BorderFilterR 0  0 0 0 @BorderFilterG 0  0 0 0 @BorderFilterB 0  0 0 0 1 0" />
+            </filter>
+            <filter id="theme-border-filter" color-interpolation-filters="sRGB">
+                <feColorMatrix type="matrix" values="0 0 0 @BorderFilterR 0  0 0 0 @BorderFilterG 0  0 0 0 @BorderFilterB 0  0 0 0 1 0" />
             </filter>
         </defs>
     </svg>
@@ -51,7 +54,15 @@
         </article>
     </main>
 
-    <NotificationDisplay />
+    <!-- Unified Notifications Stack (Screenshot Popups & App Toasts) -->
+    <div class="notifications-host">
+        @if (!OperatingSystem.IsAndroid())
+        {
+            <PhotoPopupDisplay />
+        }
+        <NotificationDisplay />
+    </div>
+    <GlobalImageViewer />
     <DialogDisplay />
 </div>
 
@@ -71,6 +82,9 @@
     private string BtnFilterR = "0";
     private string BtnFilterG = "0";
     private string BtnFilterB = "0";
+    private string BorderFilterR = "0";
+    private string BorderFilterG = "0";
+    private string BorderFilterB = "0";
     private bool IsOnline => NetworkStatus.IsOnline;
     private bool isCheckingConnection = false;
 
@@ -121,9 +135,13 @@
         IconFilterG = BackgroundService.IconColorMatrix.g.ToString("0.####", System.Globalization.CultureInfo.InvariantCulture);
         IconFilterB = BackgroundService.IconColorMatrix.b.ToString("0.####", System.Globalization.CultureInfo.InvariantCulture);
 
-        BtnFilterR = BackgroundService.ButtonColorMatrix.r.ToString("0.####", System.Globalization.CultureInfo.InvariantCulture);
-        BtnFilterG = BackgroundService.ButtonColorMatrix.g.ToString("0.####", System.Globalization.CultureInfo.InvariantCulture);
-        BtnFilterB = BackgroundService.ButtonColorMatrix.b.ToString("0.####", System.Globalization.CultureInfo.InvariantCulture);
+        BorderFilterR = BackgroundService.BorderColorMatrix.r.ToString("0.####", System.Globalization.CultureInfo.InvariantCulture);
+        BorderFilterG = BackgroundService.BorderColorMatrix.g.ToString("0.####", System.Globalization.CultureInfo.InvariantCulture);
+        BorderFilterB = BackgroundService.BorderColorMatrix.b.ToString("0.####", System.Globalization.CultureInfo.InvariantCulture);
+
+        BtnFilterR = BorderFilterR;
+        BtnFilterG = BorderFilterG;
+        BtnFilterB = BorderFilterB;
     }
 
     private void HandleNetworkStatusChanged(bool isOnline)

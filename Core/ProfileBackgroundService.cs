@@ -239,7 +239,7 @@ namespace VRCGalleryManager.Core
 
             if (!string.IsNullOrEmpty(profile.ThemeSubtextColor))
             {
-                theme.SubtextColor = GetReadableProfileThemeColor(profile.ThemeSubtextColor, "#8b949e", isDarkMode);
+                theme.SubtextColor = GetMutedProfileSubtextColor(profile.ThemeSubtextColor, "#8b949e", isDarkMode);
                 hasCustom = true;
             }
 
@@ -262,6 +262,7 @@ namespace VRCGalleryManager.Core
 
         public (double r, double g, double b) IconColorMatrix { get; private set; }
         public (double r, double g, double b) ButtonColorMatrix { get; private set; }
+        public (double r, double g, double b) BorderColorMatrix { get; private set; }
 
         public void RefreshTheme()
         {
@@ -279,8 +280,11 @@ namespace VRCGalleryManager.Core
 
             var btnRgb = HexToRgb(btnColor) ?? (106, 227, 249);
             var iconRgb = HexToRgb(iconColor) ?? btnRgb;
+            (byte r, byte g, byte b) darkBase = (7, 10, 14);
+            var borderRgb = MixRgb(darkBase, btnRgb, 0.28);
 
-            ButtonColorMatrix = (iconRgb.r / 255.0, iconRgb.g / 255.0, iconRgb.b / 255.0);
+            BorderColorMatrix = (borderRgb.r / 255.0, borderRgb.g / 255.0, borderRgb.b / 255.0);
+            ButtonColorMatrix = BorderColorMatrix;
             IconColorMatrix = (iconRgb.r / 255.0, iconRgb.g / 255.0, iconRgb.b / 255.0);
 
             CurrentThemeCss = GenerateGlobalThemeCss(CurrentTheme);
@@ -331,6 +335,7 @@ namespace VRCGalleryManager.Core
                     --accent-hover: {iconColor} !important;
                     --text-muted: {subtextColor} !important;
                     --filter-accent: url(#theme-icon-filter) !important;
+                    --filter-theme-border: url(#theme-border-filter) !important;
                     --theme-rgb: {rgb.r}, {rgb.g}, {rgb.b};
                     --theme-btn-bg: {btnBg};
                     --theme-btn-border: {btnBorder};
@@ -502,6 +507,51 @@ namespace VRCGalleryManager.Core
                 if ((isDarkMode && luminance >= luminanceThreshold) || (!isDarkMode && luminance <= luminanceThreshold))
                 {
                     break;
+                }
+            }
+
+            return RgbToHex(currentRgb);
+        }
+
+        public static string GetMutedProfileSubtextColor(string colorValue, string fallback = "#8b949e", bool isDarkMode = true)
+        {
+            string? normalized = NormalizeProfileHex(colorValue);
+            if (normalized == null) return fallback;
+
+            var rgb = HexToRgb(normalized);
+            if (rgb == null) return fallback;
+
+            // In dark mode, subtext and descriptions must remain dark and secondary:
+            // Relative luminance of default #8b949e is ~0.30.
+            // Keep in range ~0.15 to ~0.32 so it never competes with primary text or loses its dark/muted look.
+            const double MaxMutedLuminance = 0.32;
+            const double MinMutedLuminance = 0.12;
+
+            double luminance = GetRelativeLuminance(rgb.Value);
+            var currentRgb = rgb.Value;
+
+            if (isDarkMode)
+            {
+                (byte r, byte g, byte b) darkBase = (12, 16, 20);
+                (byte r, byte g, byte b) lightBase = (200, 208, 216);
+
+                if (luminance > MaxMutedLuminance)
+                {
+                    for (int i = 0; i < 16; i++)
+                    {
+                        currentRgb = MixRgb(currentRgb, darkBase, 0.18);
+                        luminance = GetRelativeLuminance(currentRgb);
+                        if (luminance <= MaxMutedLuminance) break;
+                    }
+                }
+                else if (luminance < MinMutedLuminance)
+                {
+                    for (int i = 0; i < 16; i++)
+                    {
+                        currentRgb = MixRgb(currentRgb, lightBase, 0.18);
+                        luminance = GetRelativeLuminance(currentRgb);
+                        if (luminance >= MinMutedLuminance) break;
+                    }
                 }
             }
 

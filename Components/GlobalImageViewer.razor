@@ -1,0 +1,85 @@
+@using VRCGalleryManager.Core
+@using Microsoft.AspNetCore.Components.Routing
+@inject ImageViewerService ViewerService
+@inject NavigationManager NavManager
+@implements IDisposable
+
+<ImageViewer @ref="viewerRef"
+             ShowDownloadButton="@currentOptions.ShowDownloadButton"
+             ShowInfoButton="@currentOptions.ShowInfoButton"
+             ShowUploadButton="@(currentOptions.ShowUploadButton ?? (currentOptions.OnUploadRequested != null))"
+             ShowDeleteButton="@(currentOptions.ShowDeleteButton ?? (currentOptions.OnDeleteRequested != null))"
+             OnDeleteRequested="@(currentOptions.OnDeleteRequested != null ? EventCallback.Factory.Create<int>(this, HandleDelete) : default)"
+             OnUploadRequested="@(currentOptions.OnUploadRequested != null ? EventCallback.Factory.Create<int>(this, HandleUpload) : default)"
+             OnClosed="HandleClosed" />
+
+@code {
+    private ImageViewer viewerRef = default!;
+    private ImageViewerOptions currentOptions = new();
+
+    protected override void OnInitialized()
+    {
+        ViewerService.OnOpen += HandleOpen;
+        ViewerService.OnClose += HandleClose;
+        NavManager.LocationChanged += HandleLocationChanged;
+    }
+
+    private void HandleLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        if (ViewerService.IsOpen)
+        {
+            HandleClose();
+        }
+    }
+
+    private void HandleOpen(ImageViewerOptions options)
+    {
+        currentOptions = options;
+        InvokeAsync(() =>
+        {
+            StateHasChanged();
+            viewerRef?.Open(options.Items, options.StartIndex);
+        });
+    }
+
+    private void HandleClose()
+    {
+        InvokeAsync(() =>
+        {
+            viewerRef?.Close();
+            currentOptions = new();
+            StateHasChanged();
+        });
+    }
+
+    private async Task HandleDelete(int index)
+    {
+        if (currentOptions.OnDeleteRequested != null)
+        {
+            await currentOptions.OnDeleteRequested(index);
+        }
+    }
+
+    private async Task HandleUpload(int index)
+    {
+        if (currentOptions.OnUploadRequested != null)
+        {
+            await currentOptions.OnUploadRequested(index);
+        }
+    }
+
+    private void HandleClosed()
+    {
+        ViewerService.NotifyClosed();
+        currentOptions.OnClosed?.Invoke();
+        currentOptions = new();
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        ViewerService.OnOpen -= HandleOpen;
+        ViewerService.OnClose -= HandleClose;
+        NavManager.LocationChanged -= HandleLocationChanged;
+    }
+}

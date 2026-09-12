@@ -4,19 +4,28 @@ using System.Text.Json.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Buffers;
+using VRCGalleryManager.Core.Helpers;
 
 namespace VRCGalleryManager.Core
 {
     static public class MetaDataImageReader
     {
-        public class VrcxData
+        public class PhotoMetadata
         {
+            [JsonPropertyName("application")]
+            public string Application { get; set; } = "VRCGalleryManager";
+
+            [JsonPropertyName("version")]
+            public int Version { get; set; } = 1;
+
             [JsonPropertyName("author")]
-            public AuthorInfo Author { get; set; }
+            public AuthorInfo Author { get; set; } = new();
+
             [JsonPropertyName("world")]
-            public WorldInfo World { get; set; }
+            public WorldInfo World { get; set; } = new();
+
             [JsonPropertyName("players")]
-            public List<PlayerInfo> Players { get; set; }
+            public List<PlayerInfo> Players { get; set; } = new();
         }
 
         public class AuthorInfo
@@ -47,10 +56,23 @@ namespace VRCGalleryManager.Core
             public string DisplayName { get; set; }
         }
 
-        public static VrcxData? ExtractVrcxData(string filePath)
+        public static PhotoMetadata? ExtractPhotoMetadata(string filePath)
         {
             if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath)) return null;
 
+            // Fast path: clean iTXt chunk parser
+            try
+            {
+                string? itxtJson = PngMetadataWriter.ReadTextChunk(filePath, "Description");
+                if (!string.IsNullOrEmpty(itxtJson))
+                {
+                    var parsed = JsonSerializer.Deserialize<PhotoMetadata>(itxtJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                    if (parsed != null) return parsed;
+                }
+            }
+            catch { }
+
+            // Fallback path: span-based byte scanner for modded / legacy files
             try
             {
                 using var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
@@ -61,7 +83,7 @@ namespace VRCGalleryManager.Core
                 try
                 {
                     int bytesRead = stream.Read(buffer, 0, maxRead);
-                    var data = TryParseVrcxJson(buffer.AsSpan(0, bytesRead));
+                    var data = TryParsePhotoMetadataJson(buffer.AsSpan(0, bytesRead));
                     if (data != null) return data;
 
                     // If not found in header and file is larger, check tail
@@ -70,7 +92,7 @@ namespace VRCGalleryManager.Core
                         int tailSize = (int)Math.Min(stream.Length - maxRead, 64 * 1024);
                         stream.Seek(-tailSize, SeekOrigin.End);
                         int tailRead = stream.Read(buffer, 0, tailSize);
-                        data = TryParseVrcxJson(buffer.AsSpan(0, tailRead));
+                        data = TryParsePhotoMetadataJson(buffer.AsSpan(0, tailRead));
                         if (data != null) return data;
                     }
                 }
@@ -87,10 +109,17 @@ namespace VRCGalleryManager.Core
             }
         }
 
-        private static VrcxData? TryParseVrcxJson(ReadOnlySpan<byte> span)
+        public static bool InjectMetadata(string filePath, PhotoMetadata data)
+        {
+            return PngMetadataWriter.InjectPhotoMetadata(filePath, data);
+        }
+
+        private static PhotoMetadata? TryParsePhotoMetadataJson(ReadOnlySpan<byte> span)
         {
             int searchStart = 0;
             ReadOnlySpan<byte> vrcxMarker = "VRCX"u8;
+            ReadOnlySpan<byte> gmMarker = "VRCGalleryManager"u8;
+            ReadOnlySpan<byte> appMarker = "application"u8;
 
             while (searchStart < span.Length)
             {
@@ -99,7 +128,9 @@ namespace VRCGalleryManager.Core
 
                 int jsonStart = searchStart + braceIdx;
                 
-                if (span.Slice(jsonStart).IndexOf(vrcxMarker) < 0)
+                if (span.Slice(jsonStart).IndexOf(vrcxMarker) < 0 && 
+                    span.Slice(jsonStart).IndexOf(gmMarker) < 0 &&
+                    span.Slice(jsonStart).IndexOf(appMarker) < 0)
                 {
                     break;
                 }
@@ -109,9 +140,9 @@ namespace VRCGalleryManager.Core
                     var reader = new Utf8JsonReader(span.Slice(jsonStart), isFinalBlock: false, state: default);
                     using var doc = JsonDocument.ParseValue(ref reader);
                     string raw = doc.RootElement.GetRawText();
-                    if (raw.Contains("\"application\":\"VRCX\"") || raw.Contains("\"application\": \"VRCX\""))
+                    if (raw.Contains("\"application\"", StringComparison.OrdinalIgnoreCase))
                     {
-                        return JsonSerializer.Deserialize<VrcxData>(raw, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                        return JsonSerializer.Deserialize<PhotoMetadata>(raw, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
                     }
                 }
                 catch

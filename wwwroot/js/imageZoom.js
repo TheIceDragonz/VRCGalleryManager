@@ -224,5 +224,13 @@ window.imageViewerZoom = {
         if (containerElement && containerElement._resetZoom) {
             containerElement._resetZoom();
         }
+    },
+    getDimensions: function(containerElement) {
+        if (!containerElement) return [0, 0];
+        const img = containerElement.querySelector('.viewer-img.opacity-100') || containerElement.querySelector('.viewer-img');
+        if (img && img.naturalWidth && img.naturalHeight) {
+            return [img.naturalWidth, img.naturalHeight];
+        }
+        return [0, 0];
     }
 };

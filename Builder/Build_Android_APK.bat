@@ -50,6 +50,7 @@ echo     Output: %OUTPUT_DIR%
 echo.
 
 dotnet publish "%CSPROJ%" ^
+    -p:TargetFrameworks=net9.0-android ^
     -f net9.0-android ^
     -c Release ^
     -p:AndroidPackageFormats=apk ^

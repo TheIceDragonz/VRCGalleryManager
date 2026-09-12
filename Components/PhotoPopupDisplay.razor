@@ -1,0 +1,410 @@
+@using VRCGalleryManager.Core
+@inject VRCLogWatcherService PhotoWatcher
+@inject NotificationService NotificationService
+@inject NavigationManager NavManager
+@inject DialogService dialogService
+@inject ImageViewerService ViewerService
+@implements IDisposable
+
+@{
+    var activeList = PhotoWatcher.ActivePopups;
+    var expandedPopups = activeList.Where(p => !p.IsCollapsed).ToList();
+    var collapsedPopups = activeList.Where(p => p.IsCollapsed).ToList();
+}
+
+@* EXPANDED NOTIFICATIONS *@
+@if (expandedPopups.Count > 0)
+{
+    <div class="photo-notification-container">
+        @foreach (var popup in expandedPopups)
+        {
+            var exitClass = popup.IsLeaving ? "slide-out" : "slide-in";
+
+            <div class="photo-notification-panel @exitClass"
+                 @key="popup.Id"
+                 @onmouseenter="() => PhotoWatcher.PauseAutoDismiss(popup)"
+                 @onmouseleave="() => PhotoWatcher.ResumeAutoDismiss(popup, 3000)">
+
+                <!-- Notification Header -->
+                <div class="photo-notification-header">
+                    <h4 class="photo-notification-title">
+                        <img src="/svg/camera-svgrepo-com.svg" class="icon-accent" style="width: 16px; height: 16px;" />
+                        <span>VRChat Photo</span>
+                    </h4>
+
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="photo-notification-time">@popup.Timestamp.ToString("HH:mm:ss")</span>
+                        <div class="photo-notification-controls">
+                            <button class="photo-notification-ctrl-btn" @onclick="() => CollapsePopup(popup)" title="Compact to bubble">
+                                &#x2014;
+                            </button>
+                            <button class="photo-notification-ctrl-btn" @onclick="() => DismissPopup(popup)" title="Dismiss">
+                                &#x2715;
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Notification Body -->
+                <div class="photo-notification-body">
+                    <div class="photo-notification-thumb-box">
+                        @if (!string.IsNullOrEmpty(popup.ThumbnailBase64))
+                        {
+                            <img src="@popup.ThumbnailBase64" class="photo-notification-thumb" alt="VRChat Screenshot" />
+                        }
+                        else
+                        {
+                            <div class="w-100 h-100 d-flex align-items-center justify-content-center">
+                                <img src="/svg/camera-svgrepo-com.svg" style="width: 22px; height: 22px; opacity: 0.4;" />
+                            </div>
+                        }
+                    </div>
+
+                    <div class="photo-notification-info">
+                        <div class="photo-notification-filename" title="@popup.FileName">
+                            @popup.FileName
+                        </div>
+
+                        <div class="photo-notification-badges">
+                            @if (!string.IsNullOrEmpty(popup.Resolution))
+                            {
+                                <span class="photo-notification-tag res-tag">@popup.Resolution</span>
+                            }
+                            @if (!string.IsNullOrEmpty(popup.WorldName))
+                            {
+                                <span class="photo-notification-tag world-tag" title="@popup.WorldName">
+                                    <img src="/svg/gallery-minimalistic-svgrepo-com.svg" style="width: 11px; height: 11px;" />
+                                    @popup.WorldName
+                                </span>
+                            }
+                            @if (popup.PlayerCount > 0)
+                            {
+                                <span class="photo-notification-tag players-tag" 
+                                      title="@string.Join(", ", popup.Players.Select(p => p.DisplayName))">
+                                    <img src="/svg/profile-user-svgrepo-com.svg" style="width: 11px; height: 11px;" />
+                                    @popup.PlayerCount @(popup.PlayerCount == 1 ? "player" : "players")
+                                </span>
+                            }
+                            @if (popup.DetectedQrCodes != null && popup.DetectedQrCodes.Count > 0)
+                            {
+                                var firstQr = popup.DetectedQrCodes[0];
+                                <span class="photo-notification-tag qr-tag cursor-pointer" 
+                                      @onclick="() => HandleQrAction(firstQr)" 
+                                      title="@(firstQr.IsUrl ? $"Click to open: {firstQr.Url}" : $"Click to copy: {firstQr.Text}")">
+                                    <img src="/svg/qr-detailed-svgrepo-com.svg" style="width: 11px; height: 11px;" class="icon-accent" />
+                                    @(firstQr.IsUrl ? firstQr.DisplayTitle : "QR Code")
+                                    @if (popup.DetectedQrCodes.Count > 1)
+                                    {
+                                        <span class="badge bg-secondary ms-1 p-0 px-1">+@(popup.DetectedQrCodes.Count - 1)</span>
+                                    }
+                                </span>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="photo-notification-actions">
+                    <button class="photo-notif-btn photo-notif-btn-primary" @onclick="() => OpenViewer(popup)" title="View image">
+                        <img src="/svg/eye-svgrepo-com.svg" class="btn-icon" style="width: 13px; height: 13px; margin: 0;" />
+                        <span>View</span>
+                    </button>
+
+                    @if (popup.DetectedQrCodes != null && popup.DetectedQrCodes.Count > 0)
+                    {
+                        var primaryQr = popup.DetectedQrCodes[0];
+                        <button class="photo-notif-btn photo-notif-btn-qr" @onclick="() => HandleQrAction(primaryQr)" title="@(primaryQr.IsUrl ? $"Open link: {primaryQr.Url}" : $"Copy text: {primaryQr.Text}")">
+                            <img src="/svg/qr-detailed-svgrepo-com.svg" class="btn-icon icon-accent" style="width: 13px; height: 13px; margin: 0;" />
+                            <span>@(primaryQr.IsUrl ? "Open Link" : "Copy QR")</span>
+                        </button>
+                    }
+
+                    <button class="photo-notif-btn photo-notif-btn-success" @onclick="() => OpenUploadMenu(popup)" title="Upload to VRChat">
+                        <img src="/svg/add-circle-svgrepo-com.svg" class="btn-icon" style="width: 13px; height: 13px; margin: 0;" />
+                        <span>Upload</span>
+                    </button>
+
+                    <button class="photo-notif-btn photo-notif-btn-icon" @onclick="() => CopyImage(popup)" title="Copy image to clipboard">
+                        <img src="/svg/copy-svgrepo-com.svg" class="icon-white" style="width: 13px; height: 13px;" />
+                    </button>
+
+                    <button class="photo-notif-btn photo-notif-btn-icon" @onclick="() => OpenLocation(popup)" title="Open in Explorer">
+                        <img src="/svg/folder-open-svgrepo-com.svg" class="icon-white" style="width: 13px; height: 13px;" />
+                    </button>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@* COLLAPSED BUBBLE ("PALLINO") *@
+@if (collapsedPopups.Count > 0 && expandedPopups.Count == 0)
+{
+    var latest = collapsedPopups.Last();
+
+    <div class="photo-bubble-container">
+        <div class="photo-bubble" @onclick="ExpandAll" title="VRChat Photo - Click to expand">
+            @if (!string.IsNullOrEmpty(latest.ThumbnailBase64))
+            {
+                <img src="@latest.ThumbnailBase64" class="photo-bubble-thumb" alt="VRChat Photo" />
+            }
+            else
+            {
+                <img src="/svg/camera-svgrepo-com.svg" class="photo-bubble-icon" alt="Photo" />
+            }
+
+            @if (collapsedPopups.Count > 1)
+            {
+                <div class="photo-bubble-count">@collapsedPopups.Count</div>
+            }
+
+            <button class="photo-bubble-close" @onclick:stopPropagation="true" @onclick="DismissAll" title="Dismiss">
+                &#x2715;
+            </button>
+        </div>
+    </div>
+}
+
+@* Upload Category Dialog *@
+@if (SelectedUploadPopup != null)
+{
+    <div class="position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center dialog-overlay" style="z-index: 10050;" @onclick="CloseUploadMenu">
+        <div class="dialog-panel d-flex flex-column" @onclick:stopPropagation="true" style="min-width: 320px;">
+            <div class="p-4 flex-grow-1 border-bottom border-secondary text-center">
+                <h5 class="fw-bold text-white mb-2">Upload to...</h5>
+                <p class="text-light mb-3 small">Select the category where you want to upload this photo.</p>
+                @if (!string.IsNullOrEmpty(SelectedUploadPopup.ThumbnailBase64))
+                {
+                    <img src="@SelectedUploadPopup.ThumbnailBase64" class="rounded shadow-sm" style="max-height: 180px; max-width: 100%; object-fit: contain;" alt="@SelectedUploadPopup.FileName" />
+                }
+            </div>
+            <div class="p-3 d-flex flex-column gap-2 dialog-footer">
+                <button class="btn btn-outline-secondary d-flex align-items-center gap-2" @onclick='() => UploadForCategory("icons")'>
+                    <img src="/svg/profile-user-svgrepo-com.svg" class="icon-accent" style="width:20px;height:20px;" /> Icons
+                </button>
+                <button class="btn btn-outline-secondary d-flex align-items-center gap-2" @onclick='() => UploadForCategory("photos")'>
+                    <img src="/svg/gallery-minimalistic-svgrepo-com.svg" class="icon-accent" style="width:20px;height:20px;" /> Photos
+                </button>
+                <button class="btn btn-outline-secondary d-flex align-items-center gap-2" @onclick='() => UploadForCategory("emoji")'>
+                    <img src="/svg/emoji-funny-circle-svgrepo-com.svg" class="icon-accent" style="width:20px;height:20px;" /> Emoji
+                </button>
+                <button class="btn btn-outline-secondary d-flex align-items-center gap-2" @onclick='() => UploadForCategory("sticker")'>
+                    <img src="/svg/sticker-smile-square-svgrepo-com.svg" class="icon-accent" style="width:20px;height:20px;" /> Sticker
+                </button>
+                <button class="btn btn-outline-secondary d-flex align-items-center gap-2" @onclick='() => UploadForCategory("prints")'>
+                    <img src="/svg/camera-svgrepo-com.svg" class="icon-accent" style="width:20px;height:20px;" /> Prints
+                </button>
+
+                <button class="btn btn-danger mt-2 fw-bold" @onclick="CloseUploadMenu">Cancel</button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private PhotoPopupModel? SelectedUploadPopup;
+    private PhotoPopupModel? CurrentViewerPopup;
+
+    protected override void OnInitialized()
+    {
+        PhotoWatcher.OnPopupsChanged += HandlePopupsChanged;
+    }
+
+    private void HandlePopupsChanged()
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void CollapsePopup(PhotoPopupModel popup)
+    {
+        PhotoWatcher.Collapse(popup);
+    }
+
+    private void ExpandAll()
+    {
+        PhotoWatcher.ExpandAll();
+    }
+
+    private async Task DismissPopup(PhotoPopupModel popup)
+    {
+        await PhotoWatcher.DismissAsync(popup);
+    }
+
+    private async Task DismissAll()
+    {
+        await PhotoWatcher.DismissAllAsync();
+    }
+
+    private async Task OpenViewer(PhotoPopupModel popup)
+    {
+        CurrentViewerPopup = popup;
+        var viewerItem = new ImageViewer.ViewerItem
+        {
+            HighResSource = popup.FilePath,
+            LowResSource = popup.ThumbnailBase64,
+            Title = popup.FileName
+        };
+
+        ViewerService.Open(new ImageViewerOptions
+        {
+            Items = new List<ImageViewer.ViewerItem> { viewerItem },
+            StartIndex = 0,
+            ShowDownloadButton = false,
+            ShowInfoButton = true,
+            OnDeleteRequested = async (idx) => await HandleViewerDelete(idx),
+            OnUploadRequested = (idx) => { HandleViewerUpload(idx); return Task.CompletedTask; }
+        });
+
+        await PhotoWatcher.DismissAsync(popup);
+    }
+
+    private void HandleViewerUpload(int index)
+    {
+        if (CurrentViewerPopup != null)
+        {
+            ViewerService.Close();
+            OpenUploadMenu(CurrentViewerPopup);
+        }
+    }
+
+    private async Task HandleViewerDelete(int index)
+    {
+        if (CurrentViewerPopup == null) return;
+        var popup = CurrentViewerPopup;
+
+        bool confirm = await dialogService.ShowConfirmAsync(
+            "Delete Photo",
+            $"Are you sure you want to move \"{popup.FileName}\" to the Recycle Bin?",
+            "Delete",
+            "Cancel"
+        );
+
+        if (confirm)
+        {
+            try
+            {
+                bool deleted = FileHelper.DeleteToRecycleBin(popup.FilePath);
+                if (!deleted)
+                {
+                    NotificationService.Show("Failed to delete the photo.", "Delete Error", NotificationType.Error);
+                    return;
+                }
+
+                ViewerService.Close();
+                await PhotoWatcher.DismissAsync(popup);
+                NotificationService.Show("Photo moved to the Recycle Bin.", "Deleted", NotificationType.Success);
+            }
+            catch (Exception ex)
+            {
+                NotificationService.Show($"Delete failed: {ex.Message}", "Delete Error", NotificationType.Error);
+            }
+        }
+    }
+
+    private void OpenUploadMenu(PhotoPopupModel popup)
+    {
+        SelectedUploadPopup = popup;
+        StateHasChanged();
+    }
+
+    private void CloseUploadMenu()
+    {
+        SelectedUploadPopup = null;
+        StateHasChanged();
+    }
+
+    private void UploadForCategory(string route)
+    {
+        if (SelectedUploadPopup == null) return;
+
+        string path = SelectedUploadPopup.FilePath;
+        SelectedUploadPopup = null;
+
+        var encoded = Uri.EscapeDataString(path);
+        NavManager.NavigateTo($"/{route}?uploadPath={encoded}");
+    }
+
+    private async Task CopyImage(PhotoPopupModel popup)
+    {
+        try
+        {
+#if WINDOWS
+            var dataPackage = new Windows.ApplicationModel.DataTransfer.DataPackage();
+            var storageFile = await Windows.Storage.StorageFile.GetFileFromPathAsync(popup.FilePath);
+            dataPackage.SetStorageItems(new[] { storageFile });
+            dataPackage.RequestedOperation = Windows.ApplicationModel.DataTransfer.DataPackageOperation.Copy;
+            Windows.ApplicationModel.DataTransfer.Clipboard.SetContent(dataPackage);
+            NotificationService.Show("Photo copied to clipboard!", "Copied", NotificationType.Success, 2500);
+#else
+            await Microsoft.Maui.ApplicationModel.DataTransfer.Clipboard.Default.SetTextAsync(popup.FilePath);
+            NotificationService.Show("Path copied to clipboard!", "Copied", NotificationType.Success, 2500);
+#endif
+        }
+        catch (Exception ex)
+        {
+            NotificationService.Show($"Copy failed: {ex.Message}", "Error", NotificationType.Error, 3000);
+        }
+    }
+
+    private void OpenLocation(PhotoPopupModel popup)
+    {
+        try
+        {
+            if (File.Exists(popup.FilePath))
+            {
+#if WINDOWS
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = "explorer.exe",
+                    Arguments = $"/select,\"{popup.FilePath}\"",
+                    UseShellExecute = true
+                });
+#else
+                var dir = Path.GetDirectoryName(popup.FilePath);
+                if (!string.IsNullOrEmpty(dir))
+                    System.Diagnostics.Process.Start(dir);
+#endif
+            }
+        }
+        catch (Exception ex)
+        {
+            NotificationService.Show($"Could not open folder: {ex.Message}", "Error", NotificationType.Error, 3000);
+        }
+    }
+
+    private async Task HandleQrAction(QrCodeItem qr)
+    {
+        if (qr.IsUrl && !string.IsNullOrEmpty(qr.Url))
+        {
+            try
+            {
+                await Launcher.Default.OpenAsync(new Uri(qr.Url));
+                NotificationService.Show($"Opening {qr.DisplayTitle}...", "QR Code", NotificationType.Success, 2000);
+            }
+            catch (Exception ex)
+            {
+                NotificationService.Show($"Could not open URL: {ex.Message}", "QR Error", NotificationType.Error, 3000);
+            }
+        }
+        else if (!string.IsNullOrEmpty(qr.Text))
+        {
+            try
+            {
+#if WINDOWS
+                var dataPackage = new Windows.ApplicationModel.DataTransfer.DataPackage();
+                dataPackage.SetText(qr.Text);
+                Windows.ApplicationModel.DataTransfer.Clipboard.SetContent(dataPackage);
+#else
+                await Microsoft.Maui.ApplicationModel.DataTransfer.Clipboard.Default.SetTextAsync(qr.Text);
+#endif
+                NotificationService.Show("QR text copied to clipboard!", "Copied", NotificationType.Success, 2000);
+            }
+            catch { }
+        }
+    }
+
+    public void Dispose()
+    {
+        PhotoWatcher.OnPopupsChanged -= HandlePopupsChanged;
+    }
+}

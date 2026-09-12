@@ -136,9 +136,9 @@ h6 {
     border: 2px solid #053742 !important;
 }
 
-.btn:hover,
-.btn:active,
-.btn:focus {
+.btn:hover:not(:disabled):not(.disabled),
+.btn:active:not(:disabled):not(.disabled),
+.btn:focus:not(:disabled):not(.disabled) {
     background-color: #0A3540 !important;
     border-color: #505050 !important;
     color: white !important;
@@ -912,9 +912,10 @@ h6 {
 .settings-account-mobile-bottom .settings-account-tags:has(> :nth-child(4)) {
     gap: 5px !important;
 }
+
 .settings-account-mobile-bottom .settings-account-tags:has(> :nth-child(4)) .settings-pill,
 .settings-account-mobile-bottom .settings-account-tags .settings-pill:nth-last-child(n+4),
-.settings-account-mobile-bottom .settings-account-tags .settings-pill:nth-last-child(n+4) ~ .settings-pill {
+.settings-account-mobile-bottom .settings-account-tags .settings-pill:nth-last-child(n+4)~.settings-pill {
     font-size: 0.62rem !important;
     padding: 2px 7px !important;
 }
@@ -923,9 +924,10 @@ h6 {
 .settings-account-mobile-bottom .settings-account-tags:has(> :nth-child(5)) {
     gap: 4px !important;
 }
+
 .settings-account-mobile-bottom .settings-account-tags:has(> :nth-child(5)) .settings-pill,
 .settings-account-mobile-bottom .settings-account-tags .settings-pill:nth-last-child(n+5),
-.settings-account-mobile-bottom .settings-account-tags .settings-pill:nth-last-child(n+5) ~ .settings-pill {
+.settings-account-mobile-bottom .settings-account-tags .settings-pill:nth-last-child(n+5)~.settings-pill {
     font-size: 0.56rem !important;
     padding: 1.5px 5.5px !important;
 }
@@ -934,9 +936,10 @@ h6 {
 .settings-account-mobile-bottom .settings-account-tags:has(> :nth-child(6)) {
     gap: 3px !important;
 }
+
 .settings-account-mobile-bottom .settings-account-tags:has(> :nth-child(6)) .settings-pill,
 .settings-account-mobile-bottom .settings-account-tags .settings-pill:nth-last-child(n+6),
-.settings-account-mobile-bottom .settings-account-tags .settings-pill:nth-last-child(n+6) ~ .settings-pill {
+.settings-account-mobile-bottom .settings-account-tags .settings-pill:nth-last-child(n+6)~.settings-pill {
     font-size: 0.51rem !important;
     padding: 1px 4.5px !important;
     letter-spacing: -0.15px !important;
@@ -1038,6 +1041,38 @@ h6 {
 .settings-toggle-row .form-switch {
     flex-shrink: 0 !important;
     margin: 0 !important;
+}
+
+.settings-toggle-row:has(input:disabled),
+.settings-toggle-row.disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.settings-toggle-row:has(input:disabled) .settings-toggle-icon,
+.settings-toggle-row.disabled .settings-toggle-icon {
+    opacity: 0.45 !important;
+    background-color: rgba(20, 24, 28, 0.4) !important;
+}
+
+.settings-toggle-row:has(input:disabled) .settings-toggle-icon img,
+.settings-toggle-row:has(input:disabled) .settings-toggle-icon .icon-accent,
+.settings-toggle-row.disabled .settings-toggle-icon img,
+.settings-toggle-row.disabled .settings-toggle-icon .icon-accent {
+    filter: grayscale(1) brightness(0.45) !important;
+    opacity: 0.5 !important;
+}
+
+.settings-toggle-row:has(input:disabled) .settings-toggle-text h6,
+.settings-toggle-row.disabled .settings-toggle-text h6 {
+    color: var(--text-muted) !important;
+    opacity: 0.7 !important;
+}
+
+.settings-toggle-row:has(input:disabled) .settings-toggle-text .settings-toggle-desc,
+.settings-toggle-row.disabled .settings-toggle-text .settings-toggle-desc {
+    color: var(--text-muted) !important;
+    opacity: 0.5 !important;
 }
 
 .settings-pill,
@@ -1318,31 +1353,52 @@ h6 {
     filter: var(--filter-white) !important;
 }
 
-/* Notification Styles */
-.notification-container {
+/* ==========================================================================
+   Unified Notifications & Screenshot Popup Host (Adaptive Bottom-to-Top Stack)
+   ========================================================================== */
+.notifications-host {
     position: fixed;
     bottom: 20px;
     right: 20px;
-    z-index: 10000;
+    z-index: 10020;
     display: flex;
-    flex-direction: column;
+    flex-direction: column-reverse;
     gap: 10px;
+    align-items: flex-end;
+    pointer-events: none;
+    max-height: calc(100vh - 40px);
+    overflow: visible;
+}
+
+.notifications-host:empty {
+    display: none;
+}
+
+.notification-container {
+    display: contents;
+}
+
+.notification-container:empty {
+    display: none;
 }
 
 .notification-panel {
-    min-width: 250px;
-    max-width: 350px;
+    pointer-events: auto;
+    flex-shrink: 0;
+    min-width: 260px;
+    max-width: 360px;
     background-color: var(--bg-panel);
     border-radius: var(--radius-sm);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-    padding: 15px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.6);
+    padding: 12px 14px;
     border-left: 4px solid transparent;
     cursor: pointer;
-    transition: transform 0.2s;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .notification-panel:hover {
-    transform: scale(1.02);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.72);
 }
 
 .notification-success {
@@ -1358,29 +1414,30 @@ h6 {
 }
 
 .notification-title {
-    margin: 0 0 5px 0;
-    font-size: 1rem;
+    margin: 0;
+    font-size: 0.95rem;
     font-weight: bold;
-    color: white;
+    color: #ffffff;
 }
 
 .notification-message {
     margin: 0;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     color: var(--text-main);
+    line-height: 1.35;
 }
 
 .slide-in {
-    animation: slideIn 0.3s forwards;
+    animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .slide-out {
-    animation: slideOut 0.3s forwards;
+    animation: slideOut 0.35s ease forwards;
 }
 
 @keyframes slideIn {
     from {
-        transform: translateX(100%);
+        transform: translateX(110%);
         opacity: 0;
     }
 
@@ -1391,14 +1448,30 @@ h6 {
 }
 
 @keyframes slideOut {
-    from {
+    0% {
         transform: translateX(0);
         opacity: 1;
+        max-height: 220px;
+        margin-bottom: 0;
     }
 
-    to {
-        transform: translateX(100%);
+    60% {
+        transform: translateX(110%);
         opacity: 0;
+        max-height: 220px;
+        margin-bottom: 0;
+    }
+
+    100% {
+        transform: translateX(110%);
+        opacity: 0;
+        max-height: 0;
+        margin-bottom: -10px;
+        padding-top: 0;
+        padding-bottom: 0;
+        border-top-width: 0;
+        border-bottom-width: 0;
+        overflow: hidden;
     }
 }
 
@@ -1662,9 +1735,9 @@ canvas.picking-color {
 
 /* Dialog Component Styles */
 .dialog-overlay {
-    z-index: 10005;
+    z-index: 20000;
     background-color: rgba(0, 0, 0, 0.75);
-
+    pointer-events: auto;
 }
 
 .dialog-panel {
@@ -2039,7 +2112,7 @@ canvas.picking-color {
     right: 0;
     bottom: 0;
     background-color: rgba(0, 0, 0, 0.9);
-
+    pointer-events: auto;
     z-index: 9999;
     display: flex;
     flex-direction: column;
@@ -2120,6 +2193,7 @@ canvas.picking-color {
 .btn-nav:disabled {
     opacity: 0.3;
     pointer-events: none;
+    transform: translateY(-50%) !important;
 }
 
 .image-container {
@@ -2474,7 +2548,6 @@ canvas.picking-color {
 }
 
 .viewer-world-btn {
-    margin-top: 4px;
     padding: 6px 12px;
     border-radius: var(--radius-sm);
     font-size: 0.8rem;
@@ -2495,6 +2568,101 @@ canvas.picking-color {
     border-color: var(--accent) !important;
     color: #ffffff !important;
     box-shadow: 0 0 12px rgba(106, 227, 249, 0.3) !important;
+}
+
+/* Viewer Hint Card (No metadata advice) */
+.viewer-hint-card {
+    background: rgba(10, 14, 18, 0.75);
+    border-radius: var(--radius-md);
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    transition: all 0.25s ease;
+    flex-shrink: 0;
+}
+
+.viewer-hint-card:hover {
+    border-color: rgba(106, 227, 249, 0.45);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+.viewer-hint-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.viewer-hint-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: var(--radius-sm);
+    background: rgba(106, 227, 249, 0.12);
+    border: 1px solid rgba(106, 227, 249, 0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.viewer-hint-icon.warning {
+    background: rgba(255, 193, 7, 0.12);
+    border: 1px solid rgba(255, 193, 7, 0.28);
+}
+
+.viewer-hint-title {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #ffffff;
+    line-height: 1.2;
+}
+
+.viewer-hint-subtitle {
+    font-size: 0.68rem;
+    color: var(--text-muted);
+}
+
+.viewer-hint-desc {
+    font-size: 0.74rem;
+    color: var(--text-muted);
+    line-height: 1.42;
+    margin: 2px 0 0 0;
+}
+
+.viewer-hint-desc strong {
+    color: var(--accent);
+    font-weight: 600;
+}
+
+.viewer-hint-toggles {
+    margin-top: 4px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.viewer-hint-toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    transition: opacity 0.2s ease;
+}
+
+.viewer-hint-toggle-label {
+    font-size: 0.75rem;
+    color: var(--text-main);
+    font-weight: 500;
+    user-select: none;
+}
+
+.viewer-hint-toggle-row .form-switch .form-check-input {
+    cursor: pointer;
+    margin: 0;
+    width: 2.2em;
+    height: 1.2em;
 }
 
 /* Section Header */
@@ -2545,11 +2713,11 @@ canvas.picking-color {
     gap: 8px;
     padding: 7px 10px;
     background: var(--bg-panel);
-    border: 1px solid var(--border-color);
     border-radius: var(--radius-sm);
     transition: all 0.18s ease;
     cursor: pointer;
     user-select: none;
+    background: rgba(0, 0, 0, 0.25);
 }
 
 .viewer-player-item:hover {
@@ -2634,15 +2802,87 @@ canvas.picking-color {
     border-color: var(--accent) !important;
 }
 
-/* Picflow Styles */
-.btn-hover-light {
-    opacity: 0.25;
-    transition: all 0.2s;
+/* Picflow Filter Pills */
+@keyframes picflowBtnActivateBase {
+    0% {
+        filter: brightness(1.35);
+    }
+
+    100% {
+        filter: brightness(1);
+    }
 }
 
+.picflow-cat-btn,
+.picflow-cat-btn.border-0 {
+    border: 2px solid #053742 !important;
+    background-color: #07242B !important;
+    color: #ffffff !important;
+    font-weight: bold !important;
+    box-shadow: none !important;
+    transform: none !important;
+    opacity: 1 !important;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, opacity 0.2s ease !important;
+}
+
+.picflow-cat-btn:focus,
+.picflow-cat-btn:active,
+.picflow-cat-btn:focus-visible {
+    outline: none !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+/* Active / Selected category button */
+.picflow-cat-btn.btn-primary:not(:disabled):not(.disabled) {
+    background-color: #0D4452 !important;
+    border: 2px solid var(--accent) !important;
+    color: #ffffff !important;
+    font-weight: bold !important;
+    transform: none !important;
+    opacity: 1 !important;
+    animation: picflowBtnActivateBase 0.3s ease-out !important;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, opacity 0.2s ease !important;
+}
+
+.picflow-cat-btn:not(:disabled):not(.btn-primary):hover {
+    background-color: #0A3540 !important;
+    border-color: #505050 !important;
+    color: #ffffff !important;
+    transform: none !important;
+}
+
+/* Deactivated category buttons when a specific category is active */
+.picflow-cat-btn.btn-hover-light,
+.btn-hover-light {
+    opacity: 0.25 !important;
+    background-color: #07242B !important;
+    border: 2px solid #053742 !important;
+    color: #ffffff !important;
+    box-shadow: none !important;
+    transform: none !important;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, opacity 0.2s ease !important;
+}
+
+.picflow-cat-btn.btn-hover-light:hover,
 .btn-hover-light:hover {
     opacity: 1 !important;
-    background: rgba(255, 255, 255, 0.1);
+    background-color: #0A3540 !important;
+    border-color: #505050 !important;
+    color: #ffffff !important;
+    transform: none !important;
+}
+
+.picflow-cat-btn:disabled {
+    opacity: 0.5 !important;
+    background-color: #07242B !important;
+    border: 2px solid #053742 !important;
+    color: var(--text-muted) !important;
+    pointer-events: none !important;
+    box-shadow: none !important;
+    transform: none !important;
+    animation: none !important;
+    transition: none !important;
 }
 
 .print-card-ratio {
@@ -2965,7 +3205,7 @@ canvas.picking-color {
     gap: 12px !important;
 }
 
-.android-layout .alert-vrcplus > div {
+.android-layout .alert-vrcplus>div {
     justify-content: center !important;
     text-align: center !important;
 }
@@ -3100,7 +3340,7 @@ canvas.picking-color {
         gap: 12px !important;
     }
 
-    .alert-vrcplus > div {
+    .alert-vrcplus>div {
         justify-content: center !important;
         text-align: center !important;
     }
@@ -3239,8 +3479,15 @@ canvas.picking-color {
 }
 
 @keyframes vrcPickerFadeIn {
-    from { opacity: 0; transform: scale(0.96) translateY(-4px); }
-    to { opacity: 1; transform: scale(1) translateY(0); }
+    from {
+        opacity: 0;
+        transform: scale(0.96) translateY(-4px);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
 }
 
 .vrc-picker-sv-box {
@@ -3483,4 +3730,488 @@ canvas.picking-color {
     border-radius: 4px;
     border: 1px solid rgba(255, 255, 255, 0.2);
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+}
+
+/* ==========================================================================
+   VRChat Screenshot Notification & Bubble Styles (Matching App Notifications)
+   ========================================================================== */
+
+.photo-notification-container {
+    display: contents;
+}
+
+.photo-notification-container:empty {
+    display: none;
+}
+
+.photo-notification-panel {
+    pointer-events: auto;
+    flex-shrink: 0;
+    min-width: 320px;
+    max-width: 380px;
+    background-color: var(--bg-panel);
+    border-radius: var(--radius-sm);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.65);
+    padding: 14px;
+    border-left: 4px solid var(--accent);
+    cursor: default;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.photo-notification-panel:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.75);
+}
+
+.photo-notification-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    padding-bottom: 6px;
+}
+
+.photo-notification-title {
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.photo-notification-time {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-family: monospace;
+}
+
+.photo-notification-controls {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.photo-notification-ctrl-btn {
+    background: transparent;
+    border: none;
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: var(--text-muted);
+    cursor: pointer;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    transition: all 0.15s ease;
+}
+
+.photo-notification-ctrl-btn:hover {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.photo-notification-body {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.photo-notification-thumb-box {
+    position: relative;
+    width: 96px;
+    height: 58px;
+    flex-shrink: 0;
+    border-radius: 6px;
+    overflow: hidden;
+    background: #000;
+    border: 1px solid var(--border-color);
+}
+
+.photo-notification-thumb {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.photo-notification-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.photo-notification-filename {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-main);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.photo-notification-badges {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    flex-wrap: wrap;
+}
+
+.photo-notification-tag {
+    font-size: 0.7rem;
+    padding: 1px 6px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text-main);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+
+.photo-notification-tag.res-tag {
+    color: var(--accent);
+    border-color: rgba(106, 227, 249, 0.3);
+    font-family: monospace;
+    font-weight: 600;
+}
+
+.photo-notification-tag.world-tag {
+    color: #ffd166;
+    border-color: rgba(255, 209, 102, 0.3);
+}
+
+.photo-notification-tag.world-tag img {
+    filter: invert(83%) sepia(32%) saturate(983%) hue-rotate(334deg) brightness(103%) contrast(101%);
+}
+
+.photo-notification-tag.players-tag {
+    color: #06d6a0;
+    border-color: rgba(6, 214, 160, 0.3);
+}
+
+.photo-notification-tag.players-tag img {
+    filter: invert(59%) sepia(91%) saturate(399%) hue-rotate(115deg) brightness(97%) contrast(97%);
+}
+
+.photo-notification-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding-top: 4px;
+}
+
+.photo-notif-btn {
+    flex: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    padding: 5px 8px;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.18s ease;
+    white-space: nowrap;
+}
+
+.photo-notif-btn-primary {
+    background: rgba(106, 227, 249, 0.15);
+    border-color: rgba(106, 227, 249, 0.35);
+    color: var(--accent);
+}
+
+.photo-notif-btn-primary .btn-icon {
+    filter: var(--filter-accent);
+}
+
+.photo-notif-btn-primary:hover {
+    background: var(--accent);
+    color: #111418;
+}
+
+.photo-notif-btn-primary:hover .btn-icon {
+    filter: var(--filter-dark);
+}
+
+.photo-notif-btn-success {
+    background: rgba(40, 167, 69, 0.18);
+    border-color: rgba(40, 167, 69, 0.4);
+    color: #48d672;
+}
+
+.photo-notif-btn-success .btn-icon {
+    filter: var(--filter-success);
+}
+
+.photo-notif-btn-success:hover {
+    background: #28a745;
+    color: #ffffff;
+}
+
+.photo-notif-btn-success:hover .btn-icon {
+    filter: var(--filter-white);
+}
+
+.photo-notif-btn-icon {
+    flex: 0 0 32px;
+    width: 32px;
+    height: 30px;
+    padding: 0;
+    background: rgba(255, 255, 255, 0.06);
+    border-color: var(--border-color);
+    color: var(--text-main);
+}
+
+.photo-notif-btn-icon:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: #ffffff;
+}
+
+/* ==========================================================================
+   Collapsed Bubble ("Pallino") Styles
+   ========================================================================== */
+
+.photo-bubble-container {
+    display: contents;
+}
+
+.photo-bubble-container:empty {
+    display: none;
+}
+
+.photo-bubble {
+    pointer-events: auto;
+    flex-shrink: 0;
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    background-color: var(--bg-panel);
+    border: 2px solid var(--accent);
+    box-shadow: 0 4px 14px color-mix(in srgb, var(--accent) 45%, transparent), 0 0 8px color-mix(in srgb, var(--accent) 30%, transparent);
+    cursor: pointer;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease;
+    animation: bubbleBounceIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.photo-bubble:hover {
+    transform: scale(1.5);
+    box-shadow: 0 6px 20px color-mix(in srgb, var(--accent) 65%, transparent), 0 0 12px color-mix(in srgb, var(--accent) 45%, transparent);
+}
+
+.photo-bubble-thumb {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.photo-bubble-icon {
+    width: 24px;
+    height: 24px;
+    filter: var(--filter-accent);
+}
+
+.photo-bubble-count {
+    position: absolute;
+    top: -4px;
+    left: -4px;
+    z-index: 2;
+    background: var(--accent);
+    color: #0d1117;
+    font-size: 0.7rem;
+    font-weight: 800;
+    border-radius: 10px;
+    min-width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px;
+    border: 2px solid var(--bg-panel);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+}
+
+.photo-bubble-close {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    z-index: 3;
+    background: rgba(30, 35, 45, 0.95);
+    border: 1px solid var(--border-color);
+    color: #ffffff;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.65rem;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+    transition: background 0.15s ease;
+}
+
+.photo-bubble:hover .photo-bubble-close {
+    display: flex;
+}
+
+.photo-bubble-close:hover {
+    background: var(--danger);
+    border-color: var(--danger);
+}
+
+@keyframes bubbleBounceIn {
+    0% {
+        transform: scale(0.2) translateY(20px);
+        opacity: 0;
+    }
+
+    75% {
+        transform: scale(1.15) translateY(-3px);
+        opacity: 1;
+    }
+
+    100% {
+        transform: scale(1) translateY(0);
+        opacity: 1;
+    }
+}
+
+/* ==========================================================================
+   QR Code Scanner & Panel Styles
+   ========================================================================== */
+
+.image-viewer-qr-panel {
+    position: absolute;
+    bottom: 85px;
+    left: 95px;
+    right: auto;
+    width: 360px;
+    max-width: calc(100vw - 120px);
+    background: rgba(17, 20, 24, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: var(--radius-lg, 12px);
+    display: flex;
+    flex-direction: column;
+    z-index: 10003;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.08);
+    animation: qrPanelSlideInLeft 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    overflow: hidden;
+}
+
+@keyframes qrPanelSlideInLeft {
+    from {
+        transform: translateX(-30px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@media (max-width: 600px) {
+    .image-viewer-qr-panel {
+        right: 12px;
+        left: 12px;
+        bottom: 80px;
+        width: auto;
+        max-width: none;
+    }
+}
+
+.viewer-qr-badge {
+    position: absolute;
+    top: -3px;
+    right: -3px;
+    background: var(--accent-color, #20b2aa);
+    color: #ffffff;
+    font-size: 0.62rem;
+    font-weight: 700;
+    border-radius: 999px;
+    padding: 2px 5px;
+    line-height: 1;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+    animation: qrBadgePop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes qrBadgePop {
+    0% {
+        transform: scale(0);
+    }
+
+    80% {
+        transform: scale(1.2);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+.btn-viewer-action.has-qr {
+    border-color: rgba(var(--accent-rgb, 32, 178, 170), 0.4) !important;
+}
+
+.photo-notification-tag.qr-tag {
+    background: rgba(var(--accent-rgb, 32, 178, 170), 0.15);
+    color: var(--accent-color, #20b2aa);
+    border: 1px solid rgba(var(--accent-rgb, 32, 178, 170), 0.3);
+    transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.photo-notification-tag.qr-tag:hover {
+    background: rgba(var(--accent-rgb, 32, 178, 170), 0.28);
+    transform: translateY(-1px);
+}
+
+.photo-notif-btn-qr {
+    background: rgba(var(--accent-rgb, 32, 178, 170), 0.15);
+    color: var(--accent-color, #20b2aa);
+    border: 1px solid rgba(var(--accent-rgb, 32, 178, 170), 0.35);
+}
+
+.photo-notif-btn-qr:hover {
+    background: var(--accent-color, #20b2aa);
+    color: #ffffff;
+}
+
+.photo-notif-btn-qr:hover .btn-icon {
+    filter: brightness(0) invert(1);
+}
+
+/* Responsive Notification Stack */
+@media (max-width: 480px) {
+    .notifications-host {
+        right: 12px;
+        bottom: 12px;
+        left: 12px;
+        align-items: stretch;
+    }
+
+    .photo-notification-panel,
+    .notification-panel {
+        min-width: 0;
+        max-width: 100%;
+        width: 100%;
+    }
 }
