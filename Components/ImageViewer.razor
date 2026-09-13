@@ -26,7 +26,7 @@
             </button>
         }
 
-        <div class="image-container" @ref="imageContainerRef">
+        <div class="image-container" @ref="imageContainerRef" @oncontextmenu:preventDefault="true">
             @if (!isHighResLoaded)
             {
                 <div class="spinner-border text-accent position-absolute" style="width: 3rem; height: 3rem; border-width: 0.25em; z-index: 10;"></div>

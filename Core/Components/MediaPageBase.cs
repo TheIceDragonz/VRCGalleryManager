@@ -355,5 +355,149 @@ namespace VRCGalleryManager.Core.Components
                 StateHasChanged();
             });
         }
+
+        protected string? activeExpandedCardId = null;
+
+        protected void HandleCardContextMenu(string? id)
+        {
+            if (!string.IsNullOrEmpty(id))
+            {
+                activeExpandedCardId = id;
+                StateHasChanged();
+            }
+        }
+
+        protected void HandleCardMouseLeave(string? id)
+        {
+            if (activeExpandedCardId != null && activeExpandedCardId == id)
+            {
+                activeExpandedCardId = null;
+                StateHasChanged();
+            }
+        }
+
+        protected async Task CopyImageToClipboardAsync(string source)
+        {
+            if (string.IsNullOrEmpty(source)) return;
+            try
+            {
+                bool success = false;
+                if (source.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+                {
+                    string tempPath = await ClipboardHandler.SaveImageFromUrlAsync(source, false);
+                    if (!string.IsNullOrEmpty(tempPath))
+                    {
+                        success = await ClipboardHandler.CopyImageToClipboardAsync(tempPath);
+                    }
+                }
+                else
+                {
+                    success = await ClipboardHandler.CopyImageToClipboardAsync(source);
+                }
+
+                if (success)
+                {
+                    NotificationService.Show("Image copied to clipboard.", "Copied", NotificationType.Success);
+                }
+                else
+                {
+                    NotificationService.Show("Failed to copy image.", "Error", NotificationType.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                NotificationService.Show($"Failed to copy image: {ex.Message}", "Error", NotificationType.Error);
+            }
+        }
+
+        protected async Task DownloadImageFileAsync(string source, string fileName)
+        {
+            if (string.IsNullOrEmpty(source)) return;
+            try
+            {
+                if (string.IsNullOrWhiteSpace(fileName)) fileName = "download";
+
+                byte[] fileBytes;
+                string ext;
+
+                if (source.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+                {
+                    var (downloadedBytes, downloadedExt) = await FileHelper.DownloadBytesFromUrlAsync(source);
+                    if (downloadedBytes == null || downloadedBytes.Length == 0)
+                    {
+                        NotificationService.Show("Failed to download image file.", "Error", NotificationType.Error);
+                        return;
+                    }
+                    fileBytes = downloadedBytes;
+                    ext = downloadedExt;
+                }
+                else
+                {
+                    if (!File.Exists(source))
+                    {
+                        NotificationService.Show("Source file not found.", "Error", NotificationType.Error);
+                        return;
+                    }
+                    ext = Path.GetExtension(source);
+                    if (string.IsNullOrEmpty(ext)) ext = ".png";
+                    fileBytes = await File.ReadAllBytesAsync(source);
+                }
+
+                var (saved, destination) = await FileHelper.SaveImageToDownloadsAsync(fileName, fileBytes, ext);
+                if (saved)
+                {
+                    string successMsg = OperatingSystem.IsAndroid()
+                        ? "Image saved directly to Downloads."
+                        : "Image saved successfully.";
+                    NotificationService.Show(successMsg, "Saved", NotificationType.Success);
+
+                    if (!string.IsNullOrEmpty(destination))
+                    {
+                        string mime = ext.ToLowerInvariant() switch
+                        {
+                            ".jpg" or ".jpeg" => "image/jpeg",
+                            ".png" => "image/png",
+                            ".gif" => "image/gif",
+                            ".webp" => "image/webp",
+                            _ => "image/*"
+                        };
+                        await FileHelper.OpenFileAsync(destination, mime);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                NotificationService.Show($"Download failed: {ex.Message}", "Error", NotificationType.Error);
+            }
+        }
+
+        protected async Task CopyLinkToClipboardAsync(string url)
+        {
+            if (string.IsNullOrEmpty(url)) return;
+            try
+            {
+                bool success = false;
+                try
+                {
+                    success = await JSRuntime.InvokeAsync<bool>("clipboardInterop.writeText", url);
+                }
+                catch { }
+
+                if (!success)
+                {
+                    await Microsoft.Maui.ApplicationModel.DataTransfer.Clipboard.Default.SetTextAsync(url);
+                    success = true;
+                }
+
+                if (success)
+                {
+                    NotificationService.Show("Link copied to clipboard.", "Copied", NotificationType.Success);
+                }
+            }
+            catch (Exception ex)
+            {
+                NotificationService.Show($"Failed to copy link: {ex.Message}", "Error", NotificationType.Error);
+            }
+        }
     }
 }

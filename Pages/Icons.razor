@@ -93,16 +93,35 @@
                 <div class="media-grid gap-3">
                     @foreach (var icon in icons)
                     {
-                        <div class="position-relative icon-droplet-card media-card-container @(IsSelected(icon) ? "border-selected" : "")">
+                        <div class="position-relative icon-droplet-card media-card-container @(IsSelected(icon) ? "border-selected" : "")"
+                             @oncontextmenu="() => HandleCardContextMenu(icon.Id)"
+                             @oncontextmenu:preventDefault="true"
+                             @onmouseleave="() => HandleCardMouseLeave(icon.Id)">
                             <img src="@icon.ImageUrl" class="w-100 h-100 object-fit-cover" style="cursor: pointer;" @onclick="() => OpenImage(icon)" title="View Image" />
                             
-                            <button class="btn btn-sm rounded-circle position-absolute btn-action media-btn-select @(IsSelected(icon) ? "selected" : "")" disabled="@IsSelected(icon)" @onclick:stopPropagation="true" @onclick="() => SetAsProfileIcon(icon)" title="@(IsSelected(icon) ? "Currently Active Profile Icon" : "Set as Profile Icon")">
-                                <img src="/svg/archive-minimalistic-svgrepo-com.svg" class="btn-icon icon-accent" style="margin: 0;" />
-                            </button>
-                            
-                            <button class="btn btn-danger btn-sm rounded-circle position-absolute btn-action media-btn-delete" @onclick:stopPropagation="true" @onclick="() => DeleteIcon(icon)" title="Delete">
-                                <img src="/svg/trash-bin-trash-svgrepo-com.svg" class="btn-icon" style="margin: 0;" />
-                            </button>
+                            <div class="media-card-actions">
+                                <button class="btn btn-danger btn-sm rounded-circle btn-action media-btn-delete" @onclick:stopPropagation="true" @onclick="() => DeleteIcon(icon)" title="Delete">
+                                    <img src="/svg/trash-bin-trash-svgrepo-com.svg" class="btn-icon" style="margin: 0;" />
+                                </button>
+
+                                <button class="btn btn-sm rounded-circle btn-action media-btn-select @(IsSelected(icon) ? "selected" : "")" disabled="@IsSelected(icon)" @onclick:stopPropagation="true" @onclick="() => SetAsProfileIcon(icon)" title="@(IsSelected(icon) ? "Currently Active Profile Icon" : "Set as Profile Icon")">
+                                    <img src="/svg/archive-minimalistic-svgrepo-com.svg" class="btn-icon icon-accent" style="margin: 0;" />
+                                </button>
+
+                                @if (activeExpandedCardId == icon.Id)
+                                {
+                                    var highResUrl = icon.ImageUrl.Replace("/image/", "/file/").Replace("/256", "/file");
+                                    <button class="btn btn-sm rounded-circle btn-action media-btn-copy media-btn-extra" @onclick:stopPropagation="true" @onclick="() => CopyImageToClipboardAsync(highResUrl)" title="Copy Image">
+                                        <img src="/svg/copy-svgrepo-com.svg" class="btn-icon icon-white" style="margin: 0;" />
+                                    </button>
+                                    <button class="btn btn-sm rounded-circle btn-action media-btn-download media-btn-extra" @onclick:stopPropagation="true" @onclick='() => DownloadImageFileAsync(highResUrl, "icon_" + icon.Id)' title="Download">
+                                        <img src="/svg/download-svgrepo-com.svg" class="btn-icon icon-white" style="margin: 0;" />
+                                    </button>
+                                    <button class="btn btn-sm rounded-circle btn-action media-btn-link media-btn-extra" @onclick:stopPropagation="true" @onclick="() => CopyLinkToClipboardAsync(highResUrl)" title="Copy Link">
+                                        <img src="/svg/link-svgrepo-com.svg" class="btn-icon icon-white" style="margin: 0;" />
+                                    </button>
+                                }
+                            </div>
                         </div>
                     }
                 </div>

@@ -67,6 +67,9 @@
                         <div class="position-relative gallery-icon-card media-card-container"
                              style="cursor: pointer;"
                              @onclick="() => { if(item.IsFolder) OnItemClick(item); else OpenFile(item.Path); }"
+                             @oncontextmenu="() => { if(!item.IsFolder) HandleCardContextMenu(item.Path); }"
+                             @oncontextmenu:preventDefault="!item.IsFolder"
+                             @onmouseleave="() => { if(!item.IsFolder) HandleCardMouseLeave(item.Path); }"
                              title="@GetItemTooltip(item)">
 
                             @if (item.IsFolder)
@@ -96,12 +99,26 @@
                                 @if (!string.IsNullOrEmpty(item.ThumbnailBase64))
                                 {
                                     <img src="@item.ThumbnailBase64" class="w-100 h-100 object-fit-cover" />
-                                    <button class="btn btn-success btn-sm rounded-circle position-absolute btn-action media-btn-upload" @onclick:stopPropagation="true" @onclick="() => { SelectedImage = item; ToggleUploadMenu(); }" title="Upload">
-                                        <img src="/svg/add-circle-svgrepo-com.svg" class="btn-icon icon-white" style="margin: 0;" />
-                                    </button>
-                                    <button class="btn btn-danger btn-sm rounded-circle position-absolute btn-action media-btn-delete" @onclick:stopPropagation="true" @onclick="() => DeleteItem(item)" title="Delete">
-                                        <img src="/svg/trash-bin-trash-svgrepo-com.svg" class="btn-icon" style="margin: 0;" />
-                                    </button>
+                                    
+                                    <div class="media-card-actions">
+                                        <button class="btn btn-danger btn-sm rounded-circle btn-action media-btn-delete" @onclick:stopPropagation="true" @onclick="() => DeleteItem(item)" title="Delete">
+                                            <img src="/svg/trash-bin-trash-svgrepo-com.svg" class="btn-icon" style="margin: 0;" />
+                                        </button>
+
+                                        <button class="btn btn-success btn-sm rounded-circle btn-action media-btn-upload" @onclick:stopPropagation="true" @onclick="() => { SelectedImage = item; ToggleUploadMenu(); }" title="Upload">
+                                            <img src="/svg/add-circle-svgrepo-com.svg" class="btn-icon icon-white" style="margin: 0;" />
+                                        </button>
+
+                                        @if (activeExpandedPath == item.Path)
+                                        {
+                                            <button class="btn btn-sm rounded-circle btn-action media-btn-copy media-btn-extra" @onclick:stopPropagation="true" @onclick="() => CopyImageToClipboardAsync(item.Path)" title="Copy Image">
+                                                <img src="/svg/copy-svgrepo-com.svg" class="btn-icon icon-white" style="margin: 0;" />
+                                            </button>
+                                            <button class="btn btn-sm rounded-circle btn-action media-btn-folder media-btn-extra" @onclick:stopPropagation="true" @onclick="() => OpenInExplorer(item.Path)" title="Open Location">
+                                                <img src="/svg/folder-open-svgrepo-com.svg" class="btn-icon icon-white" style="margin: 0;" />
+                                            </button>
+                                        }
+                                    </div>
                                 }
                                 else if (item.IsThumbLoading)
                                 {
@@ -535,6 +552,44 @@
             }
         }
         catch { }
+    }
+
+    private string? activeExpandedPath = null;
+
+    private void HandleCardContextMenu(string path)
+    {
+        activeExpandedPath = path;
+        StateHasChanged();
+    }
+
+    private void HandleCardMouseLeave(string path)
+    {
+        if (activeExpandedPath == path)
+        {
+            activeExpandedPath = null;
+            StateHasChanged();
+        }
+    }
+
+    private async Task CopyImageToClipboardAsync(string filePath)
+    {
+        if (string.IsNullOrEmpty(filePath)) return;
+        try
+        {
+            bool success = await ClipboardHandler.CopyImageToClipboardAsync(filePath);
+            if (success)
+            {
+                NotificationService.Show("Image copied to clipboard.", "Copied", NotificationType.Success);
+            }
+            else
+            {
+                NotificationService.Show("Failed to copy image.", "Error", NotificationType.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            NotificationService.Show($"Failed to copy image: {ex.Message}", "Error", NotificationType.Error);
+        }
     }
 
     private async Task LoadFullPreviewAsync(GalleryItem item)

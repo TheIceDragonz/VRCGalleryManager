@@ -6,28 +6,28 @@
 /* --------------------------------------------------------------------------
    Generic Buttons (.btn) Theming
    -------------------------------------------------------------------------- */
-.has-vrc-theme .btn:not(.btn-danger):not(.btn-outline-danger):not(.btn-warning):not(.btn-outline-warning):not(.btn-viewer-action):not(.btn-icon-only):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.media-btn-open):not(.media-btn-select):not(.btn-dark):not(.btn-outline-dark):not(.picflow-cat-btn):not(.btn-hover-light):not(:disabled):not(.disabled) {
+.has-vrc-theme .btn:not(.btn-danger):not(.btn-outline-danger):not(.btn-warning):not(.btn-outline-warning):not(.btn-viewer-action):not(.btn-icon-only):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.media-btn-open):not(.media-btn-select):not(.media-btn-copy):not(.media-btn-download):not(.media-btn-link):not(.media-btn-folder):not(.btn-dark):not(.btn-outline-dark):not(.picflow-cat-btn):not(.btn-hover-light):not(:disabled):not(.disabled) {
     color: var(--accent) !important;
     background-color: var(--theme-btn-bg) !important;
     border-color: var(--theme-btn-border) !important;
 }
 
-.has-vrc-theme .btn:not(.btn-danger):not(.btn-outline-danger):not(.btn-warning):not(.btn-outline-warning):not(.btn-viewer-action):not(.btn-icon-only):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.media-btn-open):not(.media-btn-select):not(.btn-dark):not(.btn-outline-dark):not(.picflow-cat-btn):not(.btn-hover-light):not(:disabled):not(.disabled):hover {
+.has-vrc-theme .btn:not(.btn-danger):not(.btn-outline-danger):not(.btn-warning):not(.btn-outline-warning):not(.btn-viewer-action):not(.btn-icon-only):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.media-btn-open):not(.media-btn-select):not(.media-btn-copy):not(.media-btn-download):not(.media-btn-link):not(.media-btn-folder):not(.btn-dark):not(.btn-outline-dark):not(.picflow-cat-btn):not(.btn-hover-light):not(:disabled):not(.disabled):hover {
     background-color: var(--theme-btn-hover-bg) !important;
     border-color: var(--theme-btn-hover-border) !important;
     color: #ffffff !important;
 }
 
-.has-vrc-theme .btn:not(.btn-danger):not(.btn-outline-danger):not(.btn-warning):not(.btn-outline-warning):not(.btn-viewer-action):not(.btn-icon-only):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.media-btn-open):not(.media-btn-select):not(.btn-dark):not(.btn-outline-dark):not(.picflow-cat-btn):not(.btn-hover-light):not(:disabled):not(.disabled):active,
-.has-vrc-theme .btn:not(.btn-danger):not(.btn-outline-danger):not(.btn-warning):not(.btn-outline-warning):not(.btn-viewer-action):not(.btn-icon-only):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.media-btn-open):not(.media-btn-select):not(.btn-dark):not(.btn-outline-dark):not(.picflow-cat-btn):not(.btn-hover-light):not(:disabled):not(.disabled):focus {
+.has-vrc-theme .btn:not(.btn-danger):not(.btn-outline-danger):not(.btn-warning):not(.btn-outline-warning):not(.btn-viewer-action):not(.btn-icon-only):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.media-btn-open):not(.media-btn-select):not(.media-btn-copy):not(.media-btn-download):not(.media-btn-link):not(.media-btn-folder):not(.btn-dark):not(.btn-outline-dark):not(.picflow-cat-btn):not(.btn-hover-light):not(:disabled):not(.disabled):active,
+.has-vrc-theme .btn:not(.btn-danger):not(.btn-outline-danger):not(.btn-warning):not(.btn-outline-warning):not(.btn-viewer-action):not(.btn-icon-only):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.media-btn-open):not(.media-btn-select):not(.media-btn-copy):not(.media-btn-download):not(.media-btn-link):not(.media-btn-folder):not(.btn-dark):not(.btn-outline-dark):not(.picflow-cat-btn):not(.btn-hover-light):not(:disabled):not(.disabled):focus {
     background-color: var(--theme-btn-active-bg) !important;
     border-color: var(--accent) !important;
     color: #ffffff !important;
 }
 
-.has-vrc-theme .btn:not(.btn-danger):not(.btn-outline-danger):not(.btn-warning):not(.btn-outline-warning):not(.btn-viewer-action):not(.btn-icon-only):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.media-btn-open):not(.media-btn-select):not(.btn-dark):not(.btn-outline-dark):not(.picflow-cat-btn):not(.btn-hover-light):not(:disabled):not(.disabled):hover .btn-icon:not(.icon-danger):not(.icon-white):not(.icon-dark):not(.icon-success),
-.has-vrc-theme .btn:not(.btn-danger):not(.btn-outline-danger):not(.btn-warning):not(.btn-outline-warning):not(.btn-viewer-action):not(.btn-icon-only):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.media-btn-open):not(.media-btn-select):not(.btn-dark):not(.btn-outline-dark):not(.picflow-cat-btn):not(.btn-hover-light):not(:disabled):not(.disabled):active .btn-icon:not(.icon-danger):not(.icon-white):not(.icon-dark):not(.icon-success),
-.has-vrc-theme .btn:not(.btn-danger):not(.btn-outline-danger):not(.btn-warning):not(.btn-outline-warning):not(.btn-viewer-action):not(.btn-icon-only):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.media-btn-open):not(.media-btn-select):not(.btn-dark):not(.btn-outline-dark):not(.picflow-cat-btn):not(.btn-hover-light):not(:disabled):not(.disabled):focus .btn-icon:not(.icon-danger):not(.icon-white):not(.icon-dark):not(.icon-success) {
+.has-vrc-theme .btn:not(.btn-danger):not(.btn-outline-danger):not(.btn-warning):not(.btn-outline-warning):not(.btn-viewer-action):not(.btn-icon-only):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.media-btn-open):not(.media-btn-select):not(.media-btn-copy):not(.media-btn-download):not(.media-btn-link):not(.media-btn-folder):not(.btn-dark):not(.btn-outline-dark):not(.picflow-cat-btn):not(.btn-hover-light):not(:disabled):not(.disabled):hover .btn-icon:not(.icon-danger):not(.icon-white):not(.icon-dark):not(.icon-success),
+.has-vrc-theme .btn:not(.btn-danger):not(.btn-outline-danger):not(.btn-warning):not(.btn-outline-warning):not(.btn-viewer-action):not(.btn-icon-only):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.media-btn-open):not(.media-btn-select):not(.media-btn-copy):not(.media-btn-download):not(.media-btn-link):not(.media-btn-folder):not(.btn-dark):not(.btn-outline-dark):not(.picflow-cat-btn):not(.btn-hover-light):not(:disabled):not(.disabled):active .btn-icon:not(.icon-danger):not(.icon-white):not(.icon-dark):not(.icon-success),
+.has-vrc-theme .btn:not(.btn-danger):not(.btn-outline-danger):not(.btn-warning):not(.btn-outline-warning):not(.btn-viewer-action):not(.btn-icon-only):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.media-btn-open):not(.media-btn-select):not(.media-btn-copy):not(.media-btn-download):not(.media-btn-link):not(.media-btn-folder):not(.btn-dark):not(.btn-outline-dark):not(.picflow-cat-btn):not(.btn-hover-light):not(:disabled):not(.disabled):focus .btn-icon:not(.icon-danger):not(.icon-white):not(.icon-dark):not(.icon-success) {
     filter: var(--filter-white) !important;
 }
 
