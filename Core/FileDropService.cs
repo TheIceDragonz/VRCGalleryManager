@@ -8,15 +8,19 @@ public class FileDropService
     public event Action? OnDragEnter;
     public event Action? OnDragLeave;
 
-    public bool IsDragDropEnabled => OnFileDropped != null;
+    public bool IsDropAllowed { get; set; } = true;
+
+    public bool IsDragDropEnabled => OnFileDropped != null && IsDropAllowed;
 
     public void NotifyFileDropped(string[] filePaths)
     {
+        if (!IsDragDropEnabled) return;
         OnFileDropped?.Invoke(filePaths);
     }
 
     public void NotifyDragEnter()
     {
+        if (!IsDragDropEnabled) return;
         OnDragEnter?.Invoke();
     }
 

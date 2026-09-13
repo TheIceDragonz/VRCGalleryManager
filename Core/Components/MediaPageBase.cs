@@ -24,7 +24,16 @@ namespace VRCGalleryManager.Core.Components
         protected bool isRefreshing = false;
         protected bool hasNetworkError = false;
         protected string errorMessage = "";
-        protected int imageCount = 0;
+        private int _imageCount = 0;
+        protected int imageCount
+        {
+            get => _imageCount;
+            set
+            {
+                _imageCount = value;
+                UpdateDropAllowedState();
+            }
+        }
         
         protected string editingBase64Image = null;
         protected bool isDragging = false;
@@ -41,10 +50,22 @@ namespace VRCGalleryManager.Core.Components
             NetworkStatus.OnNetworkStatusChanged += HandleBaseNetworkStatusChanged;
             
             await LoadInitialDataAsync();
+            UpdateDropAllowedState();
 
             if (!string.IsNullOrEmpty(uploadPath) && File.Exists(uploadPath))
             {
-                await LoadLocalFileForEditing(uploadPath);
+                if (imageCount >= MaxImageCount)
+                {
+                    NotificationService.Show(
+                        $"This category is full ({imageCount}/{MaxImageCount}). Please delete an existing item before uploading a new one.",
+                        "Limit Reached",
+                        NotificationType.Error,
+                        6000);
+                }
+                else
+                {
+                    await LoadLocalFileForEditing(uploadPath);
+                }
             }
         }
 
@@ -78,6 +99,7 @@ namespace VRCGalleryManager.Core.Components
         protected async Task OnDropFile(InputFileChangeEventArgs e)
         {
             isDragging = false;
+            if (imageCount >= MaxImageCount) return;
             await OnInputFileChange(e);
         }
 
@@ -266,16 +288,30 @@ namespace VRCGalleryManager.Core.Components
             }
         }
 
+        protected void UpdateDropAllowedState()
+        {
+            if (FileDropService != null)
+            {
+                FileDropService.IsDropAllowed = imageCount < MaxImageCount;
+            }
+        }
+
         public virtual void Dispose()
         {
-            FileDropService.OnDragEnter -= HandleDragEnter;
-            FileDropService.OnDragLeave -= HandleDragLeave;
-            FileDropService.OnFileDropped -= HandleFileDropped;
+            if (FileDropService != null)
+            {
+                FileDropService.IsDropAllowed = true;
+                FileDropService.OnDragEnter -= HandleDragEnter;
+                FileDropService.OnDragLeave -= HandleDragLeave;
+                FileDropService.OnFileDropped -= HandleFileDropped;
+            }
             NetworkStatus.OnNetworkStatusChanged -= HandleBaseNetworkStatusChanged;
         }
 
         protected void HandleDragEnter()
         {
+            if (imageCount >= MaxImageCount) return;
+
             InvokeAsync(() =>
             {
                 isDragging = true;
@@ -297,6 +333,16 @@ namespace VRCGalleryManager.Core.Components
             InvokeAsync(async () =>
             {
                 isDragging = false;
+                if (imageCount >= MaxImageCount)
+                {
+                    NotificationService.Show(
+                        $"This category is full ({imageCount}/{MaxImageCount}). Please delete an existing item before uploading.",
+                        "Limit Reached",
+                        NotificationType.Error,
+                        5000);
+                    return;
+                }
+
                 if (files != null && files.Length > 0)
                 {
                     var filePath = files[0];
