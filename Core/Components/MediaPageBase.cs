@@ -357,12 +357,19 @@ namespace VRCGalleryManager.Core.Components
         }
 
         protected string? activeExpandedCardId = null;
+        private DateTime _lastContextMenuTime = DateTime.MinValue;
 
         protected void HandleCardContextMenu(string? id)
         {
             if (!string.IsNullOrEmpty(id))
             {
-                activeExpandedCardId = id;
+                if ((DateTime.UtcNow - _lastContextMenuTime).TotalMilliseconds < 450)
+                {
+                    return;
+                }
+                _lastContextMenuTime = DateTime.UtcNow;
+
+                activeExpandedCardId = (activeExpandedCardId == id) ? null : id;
                 StateHasChanged();
             }
         }
@@ -370,6 +377,15 @@ namespace VRCGalleryManager.Core.Components
         protected void HandleCardMouseLeave(string? id)
         {
             if (activeExpandedCardId != null && activeExpandedCardId == id)
+            {
+                activeExpandedCardId = null;
+                StateHasChanged();
+            }
+        }
+
+        protected void CloseExpandedCard()
+        {
+            if (activeExpandedCardId != null)
             {
                 activeExpandedCardId = null;
                 StateHasChanged();
@@ -407,6 +423,11 @@ namespace VRCGalleryManager.Core.Components
             catch (Exception ex)
             {
                 NotificationService.Show($"Failed to copy image: {ex.Message}", "Error", NotificationType.Error);
+            }
+            finally
+            {
+                activeExpandedCardId = null;
+                StateHasChanged();
             }
         }
 
@@ -469,6 +490,11 @@ namespace VRCGalleryManager.Core.Components
             {
                 NotificationService.Show($"Download failed: {ex.Message}", "Error", NotificationType.Error);
             }
+            finally
+            {
+                activeExpandedCardId = null;
+                StateHasChanged();
+            }
         }
 
         protected async Task CopyLinkToClipboardAsync(string url)
@@ -497,6 +523,11 @@ namespace VRCGalleryManager.Core.Components
             catch (Exception ex)
             {
                 NotificationService.Show($"Failed to copy link: {ex.Message}", "Error", NotificationType.Error);
+            }
+            finally
+            {
+                activeExpandedCardId = null;
+                StateHasChanged();
             }
         }
     }

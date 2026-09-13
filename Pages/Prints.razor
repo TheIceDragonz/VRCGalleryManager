@@ -106,11 +106,16 @@
         }
         else
         {
+            @if (!string.IsNullOrEmpty(activeExpandedCardId))
+            {
+                <div class="card-action-backdrop" @onclick="CloseExpandedCard" @oncontextmenu="CloseExpandedCard" @oncontextmenu:preventDefault="true"></div>
+            }
+
             <div class="flex-grow-1 overflow-auto">
-                <div class="media-grid grid-medium gap-3">
+                <div class="media-grid grid-medium gap-3 @(!string.IsNullOrEmpty(activeExpandedCardId) ? "has-card-expanded" : "")">
                     @foreach (var print in prints)
                     {
-                        <div class="position-relative print-card media-card-container"
+                        <div class="position-relative print-card media-card-container @(activeExpandedCardId == print.Id ? "card-expanded-active" : "")"
                              @oncontextmenu="() => HandleCardContextMenu(print.Id)"
                              @oncontextmenu:preventDefault="true"
                              @onmouseleave="() => HandleCardMouseLeave(print.Id)">

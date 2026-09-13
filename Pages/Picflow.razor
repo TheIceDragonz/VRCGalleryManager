@@ -58,10 +58,14 @@
 
 
     <div class="flex-grow-1 overflow-auto">
-        <div class="media-grid gap-3 align-items-center">
+        @if (activeExpandedItem != null)
+        {
+            <div class="card-action-backdrop" @onclick="CloseExpandedCard" @oncontextmenu="CloseExpandedCard" @oncontextmenu:preventDefault="true"></div>
+        }
+        <div class="media-grid gap-3 align-items-center @(activeExpandedItem != null ? "has-card-expanded" : "")">
             @foreach (var img in FilteredImages)
             {
-                <div class="position-relative media-card-container overflow-hidden @(img.Category == ItemCategory.Print ? (CropPrints ? "photo-card-ratio" : "print-card-ratio") : "picflow-card")"
+                <div class="position-relative media-card-container overflow-hidden @(img.Category == ItemCategory.Print ? (CropPrints ? "photo-card-ratio" : "print-card-ratio") : "picflow-card") @(activeExpandedItem == img ? "card-expanded-active" : "")"
                      @oncontextmenu="() => HandleCardContextMenu(img)"
                      @oncontextmenu:preventDefault="true"
                      @onmouseleave="() => HandleCardMouseLeave(img)">
@@ -760,16 +764,29 @@
     }
 
     private ImageModel? activeExpandedItem = null;
+    private DateTime _lastContextMenuTime = DateTime.MinValue;
 
     private void HandleCardContextMenu(ImageModel img)
     {
-        activeExpandedItem = img;
+        if ((DateTime.UtcNow - _lastContextMenuTime).TotalMilliseconds < 450) return;
+        _lastContextMenuTime = DateTime.UtcNow;
+
+        activeExpandedItem = (activeExpandedItem == img) ? null : img;
         StateHasChanged();
     }
 
     private void HandleCardMouseLeave(ImageModel img)
     {
         if (activeExpandedItem == img)
+        {
+            activeExpandedItem = null;
+            StateHasChanged();
+        }
+    }
+
+    private void CloseExpandedCard()
+    {
+        if (activeExpandedItem != null)
         {
             activeExpandedItem = null;
             StateHasChanged();
@@ -807,6 +824,11 @@
         catch (Exception ex)
         {
             NotificationService.Show($"Failed to copy image: {ex.Message}", "Error", NotificationType.Error);
+        }
+        finally
+        {
+            activeExpandedItem = null;
+            StateHasChanged();
         }
     }
 
@@ -869,6 +891,11 @@
         {
             NotificationService.Show($"Download failed: {ex.Message}", "Error", NotificationType.Error);
         }
+        finally
+        {
+            activeExpandedItem = null;
+            StateHasChanged();
+        }
     }
 
     private async Task CopyLinkToClipboardAsync(string url)
@@ -897,6 +924,11 @@
         catch (Exception ex)
         {
             NotificationService.Show($"Failed to copy link: {ex.Message}", "Error", NotificationType.Error);
+        }
+        finally
+        {
+            activeExpandedItem = null;
+            StateHasChanged();
         }
     }
 }

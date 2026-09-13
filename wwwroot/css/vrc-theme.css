@@ -455,7 +455,7 @@
 .has-vrc-theme .media-btn-select.active {
     background-color: var(--accent) !important;
     border-color: var(--accent) !important;
-    box-shadow: 0 0 10px var(--accent) !important;
+    box-shadow: none !important;
     opacity: 1 !important;
 }
 
@@ -566,7 +566,7 @@
 .has-vrc-theme .btn-viewer-select:disabled {
     background-color: var(--accent) !important;
     border-color: var(--accent) !important;
-    box-shadow: 0 0 10px var(--accent) !important;
+    box-shadow: none !important;
     cursor: default !important;
     transform: none !important;
     opacity: 1 !important;

@@ -61,10 +61,15 @@
             }
             else
             {
-                <div class="media-grid gap-3 pb-3">
+                @if (!string.IsNullOrEmpty(activeExpandedPath))
+                {
+                    <div class="card-action-backdrop" @onclick="CloseExpandedCard" @oncontextmenu="CloseExpandedCard" @oncontextmenu:preventDefault="true"></div>
+                }
+
+                <div class="media-grid gap-3 pb-3 @(!string.IsNullOrEmpty(activeExpandedPath) ? "has-card-expanded" : "")">
                     @foreach (var item in Items)
                     {
-                        <div class="position-relative gallery-icon-card media-card-container"
+                        <div class="position-relative gallery-icon-card media-card-container @(!item.IsFolder && activeExpandedPath == item.Path ? "card-expanded-active" : "")"
                              style="cursor: pointer;"
                              @onclick="() => { if(item.IsFolder) OnItemClick(item); else OpenFile(item.Path); }"
                              @oncontextmenu="() => { if(!item.IsFolder) HandleCardContextMenu(item.Path); }"
@@ -552,19 +557,37 @@
             }
         }
         catch { }
+        finally
+        {
+            activeExpandedPath = null;
+            StateHasChanged();
+        }
     }
 
     private string? activeExpandedPath = null;
+    private DateTime _lastContextMenuTime = DateTime.MinValue;
 
     private void HandleCardContextMenu(string path)
     {
-        activeExpandedPath = path;
+        if ((DateTime.UtcNow - _lastContextMenuTime).TotalMilliseconds < 450) return;
+        _lastContextMenuTime = DateTime.UtcNow;
+
+        activeExpandedPath = (activeExpandedPath == path) ? null : path;
         StateHasChanged();
     }
 
     private void HandleCardMouseLeave(string path)
     {
         if (activeExpandedPath == path)
+        {
+            activeExpandedPath = null;
+            StateHasChanged();
+        }
+    }
+
+    private void CloseExpandedCard()
+    {
+        if (activeExpandedPath != null)
         {
             activeExpandedPath = null;
             StateHasChanged();
@@ -589,6 +612,11 @@
         catch (Exception ex)
         {
             NotificationService.Show($"Failed to copy image: {ex.Message}", "Error", NotificationType.Error);
+        }
+        finally
+        {
+            activeExpandedPath = null;
+            StateHasChanged();
         }
     }
 
