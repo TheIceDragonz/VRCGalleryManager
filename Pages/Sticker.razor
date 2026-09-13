@@ -94,13 +94,9 @@
                     @foreach (var sticker in stickers)
                     {
                         <div class="position-relative sticker-card media-card-container">
-                            <img src="@sticker.ImageUrl" class="w-100 h-100 object-fit-cover" />
+                            <img src="@sticker.ImageUrl" class="w-100 h-100 object-fit-cover" style="cursor: pointer;" @onclick="() => OpenImage(sticker)" title="View Image" />
                             
-                            <button class="btn btn-dark btn-sm rounded-circle position-absolute btn-action media-btn-open" @onclick="() => OpenImage(sticker)" title="View Image">
-                                <img src="/svg/eye-svgrepo-com.svg" class="btn-icon" style="margin: 0;" />
-                            </button>
-                            
-                            <button class="btn btn-danger btn-sm rounded-circle position-absolute btn-action media-btn-delete" @onclick="() => DeleteSticker(sticker)" title="Delete">
+                            <button class="btn btn-danger btn-sm rounded-circle position-absolute btn-action media-btn-delete" @onclick:stopPropagation="true" @onclick="() => DeleteSticker(sticker)" title="Delete">
                                 <img src="/svg/trash-bin-trash-svgrepo-com.svg" class="btn-icon" style="margin: 0;" />
                             </button>
                         </div>

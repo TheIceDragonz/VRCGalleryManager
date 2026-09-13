@@ -71,25 +71,21 @@
                     {
                         if (img.Category == ItemCategory.Print && CropPrints)
                         {
-                            <img src="@img.Url" style="width: 106.66%; height: 133.33%; object-fit: fill; position: absolute; top: -6.38%; left: -3.33%;" loading="lazy" />
+                            <img src="@img.Url" style="width: 106.66%; height: 133.33%; object-fit: fill; position: absolute; top: -6.38%; left: -3.33%; cursor: pointer;" loading="lazy" @onclick="() => OpenImage(img)" title="View Image" />
                         }
                         else
                         {
-                            <img src="@img.Url" class="w-100 h-100 object-fit-cover" loading="lazy" />
+                            <img src="@img.Url" class="w-100 h-100 object-fit-cover" style="cursor: pointer;" loading="lazy" @onclick="() => OpenImage(img)" title="View Image" />
                         }
                     }
-                    <div class="position-absolute w-100 text-center media-card-label picflow-label fw-bold @(!string.IsNullOrEmpty(img.UserId) ? "cursor-pointer" : "") @(!string.IsNullOrEmpty(img.UserId) && img.UserId == Auth.CurrentUser?.Id ? "text-self-user" : (!string.IsNullOrEmpty(img.UserId) && Auth.CurrentUser?.Friends?.Contains(img.UserId) == true ? "text-warning" : ""))" @onclick="() => OpenUserInBrowser(img.UserId)" title="@(!string.IsNullOrEmpty(img.UserId) ? "Open Profile in Browser" : "")">
+                    <div class="position-absolute w-100 text-center media-card-label picflow-label fw-bold @(!string.IsNullOrEmpty(img.UserId) ? "cursor-pointer" : "") @(!string.IsNullOrEmpty(img.UserId) && img.UserId == Auth.CurrentUser?.Id ? "text-self-user" : (!string.IsNullOrEmpty(img.UserId) && Auth.CurrentUser?.Friends?.Contains(img.UserId) == true ? "text-warning" : ""))" @onclick:stopPropagation="true" @onclick="() => OpenUserInBrowser(img.UserId)" title="@(!string.IsNullOrEmpty(img.UserId) ? "Open Profile in Browser" : "")">
                         @img.Username
                     </div>
 
                     @if (!string.IsNullOrEmpty(img.Url))
                     {
-                        <button class="btn btn-success btn-sm rounded-circle position-absolute btn-action media-btn-upload" style="right: 40px;" @onclick="() => ToggleUploadMenu(img)" title="Add (upload)">
+                        <button class="btn btn-success btn-sm rounded-circle position-absolute btn-action media-btn-upload" style="right: 5px;" @onclick:stopPropagation="true" @onclick="() => ToggleUploadMenu(img)" title="Add (upload)">
                             <img src="/svg/add-circle-svgrepo-com.svg" class="btn-icon icon-white" style="margin: 0;" />
-                        </button>
-
-                        <button class="btn btn-dark btn-sm rounded-circle position-absolute btn-action media-btn-open" style="right: 5px;" @onclick="() => OpenImage(img)" title="View Image">
-                            <img src="/svg/eye-svgrepo-com.svg" class="btn-icon" style="margin: 0;" />
                         </button>
                     }
                 </div>
@@ -100,7 +96,7 @@
 
 @if (UploadMenuImage != null)
 {
-    <div class="position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center dialog-overlay" style="z-index: 10000;" @onclick="CloseUploadMenu">
+    <div class="position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center dialog-overlay" style="z-index: 20000;" @onclick="CloseUploadMenu">
         <div class="dialog-panel d-flex flex-column" @onclick:stopPropagation="true" style="min-width: 300px;">
             <div class="p-4 flex-grow-1 border-bottom border-secondary text-center">
                 <h5 class="fw-bold text-white mb-2">Upload to...</h5>
@@ -632,6 +628,7 @@
             UploadMenuImage = null;
         else
             UploadMenuImage = img;
+        StateHasChanged();
     }
 
     private void CloseUploadMenu()
@@ -695,7 +692,8 @@
             StartIndex = index,
             ShowDownloadButton = true,
             ShowInfoButton = false,
-            OnUploadRequested = (idx) => { HandleViewerUpload(idx); return Task.CompletedTask; }
+            ShowUploadButton = true,
+            OnUploadRequested = async (idx) => await HandleViewerUpload(idx)
         });
     }
 
@@ -714,13 +712,14 @@
         CacheService.Set("PicflowImages", Images);
         CacheService.Set("PicflowAllItems", _allItems);
     }
-    private void HandleViewerUpload(int index)
+    private async Task HandleViewerUpload(int index)
     {
         var targetList = Images;
         if (index >= 0 && index < targetList.Count)
         {
             var item = targetList[index];
-            ToggleUploadMenu(item);
+            UploadMenuImage = item;
+            await InvokeAsync(StateHasChanged);
         }
     }
 

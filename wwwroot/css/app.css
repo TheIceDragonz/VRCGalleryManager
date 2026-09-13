@@ -1297,6 +1297,50 @@ h6 {
     filter: var(--filter-white) !important;
 }
 
+.media-btn-select {
+    bottom: 5px;
+    right: 39px;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    opacity: 1;
+    background-color: var(--theme-btn-bg, #07242B) !important;
+    border: 1px solid var(--theme-btn-border, #053742) !important;
+}
+
+.media-btn-select .btn-icon {
+    filter: var(--filter-accent) !important;
+}
+
+.media-btn-select:hover:not(:disabled):not(.selected) {
+    background-color: var(--theme-btn-hover-bg, #0A3540) !important;
+    border-color: var(--accent, #6ae3f9) !important;
+}
+
+.media-btn-select:hover:not(:disabled):not(.selected) .btn-icon {
+    filter: var(--filter-white) !important;
+}
+
+.media-btn-select.selected,
+.media-btn-select.active {
+    background-color: var(--accent, #6ae3f9) !important;
+    border-color: var(--accent, #6ae3f9) !important;
+    box-shadow: 0 0 8px var(--accent, #6ae3f9) !important;
+    opacity: 1 !important;
+}
+
+.media-btn-select.selected .btn-icon,
+.media-btn-select.active .btn-icon {
+    filter: brightness(0) !important;
+}
+
+.media-btn-select:disabled,
+.media-btn-select.disabled {
+    cursor: default !important;
+    transform: none !important;
+    pointer-events: auto !important;
+}
+
 .media-btn-delete {
     bottom: 5px;
     right: 5px;
@@ -1490,10 +1534,47 @@ h6 {
     border-color: rgba(255, 255, 255, 0.2) !important;
 }
 
-.btn-action:hover {
+.btn-action {
+    transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.2s ease, transform 0.2s ease;
+}
+
+/* Windows / Desktop: hide action buttons until mouse hovers over the image card */
+.windows-layout .media-card-container .btn-action {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+}
+
+.windows-layout .media-card-container:hover .btn-action {
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .main-page-container:not(.android-layout) .media-card-container .btn-action {
+        opacity: 0 !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+    }
+
+    .main-page-container:not(.android-layout) .media-card-container:hover .btn-action {
+        opacity: 1 !important;
+        visibility: visible !important;
+        pointer-events: auto !important;
+    }
+}
+
+/* Phone / Mobile (Android): always show action buttons */
+.android-layout .media-card-container .btn-action {
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+}
+
+.btn-action:hover:not(:disabled) {
     opacity: 1 !important;
     transform: scale(1.1);
-    transition: all 0.2s;
 }
 
 .border-selected {
@@ -2302,6 +2383,42 @@ canvas.picking-color {
 
 .btn-viewer-action.btn-viewer-upload:hover img {
     filter: var(--filter-white) !important;
+}
+
+.btn-viewer-action.btn-viewer-select {
+    background-color: var(--theme-btn-bg, #07242B) !important;
+    border: 2px solid var(--theme-btn-border, #053742) !important;
+    opacity: 1 !important;
+}
+
+.btn-viewer-action.btn-viewer-select img {
+    filter: var(--filter-accent) !important;
+}
+
+.btn-viewer-action.btn-viewer-select:hover:not(:disabled):not(.active) {
+    background-color: var(--theme-btn-hover-bg, #0A3540) !important;
+    border-color: var(--accent, #6ae3f9) !important;
+    box-shadow: 0 0 12px var(--accent, #6ae3f9) !important;
+}
+
+.btn-viewer-action.btn-viewer-select:hover:not(:disabled):not(.active) img {
+    filter: var(--filter-white) !important;
+}
+
+.btn-viewer-action.btn-viewer-select.active,
+.btn-viewer-action.btn-viewer-select:disabled {
+    background-color: var(--accent, #6ae3f9) !important;
+    border-color: var(--accent, #6ae3f9) !important;
+    box-shadow: 0 0 10px var(--accent, #6ae3f9) !important;
+    cursor: default !important;
+    transform: none !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+}
+
+.btn-viewer-action.btn-viewer-select.active img,
+.btn-viewer-action.btn-viewer-select:disabled img {
+    filter: brightness(0) !important;
 }
 
 .btn-viewer-action img {

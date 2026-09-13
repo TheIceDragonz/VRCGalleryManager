@@ -13,8 +13,12 @@ namespace VRCGalleryManager.Core
         public bool ShowInfoButton { get; set; } = false;
         public bool? ShowUploadButton { get; set; }
         public bool? ShowDeleteButton { get; set; }
+        public bool? ShowSelectButton { get; set; }
+        public string SelectButtonTitle { get; set; } = "Set as Profile Picture";
+        public Func<int, bool>? IsItemSelected { get; set; }
         public Func<int, Task>? OnDeleteRequested { get; set; }
         public Func<int, Task>? OnUploadRequested { get; set; }
+        public Func<int, Task>? OnSelectRequested { get; set; }
         public Action? OnClosed { get; set; }
     }
 
