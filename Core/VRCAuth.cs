@@ -248,7 +248,18 @@ namespace VRCGalleryManager.Core
 
         public async Task<CurrentUser> GetCurrentUserAsync()
         {
+            var previousUser = CurrentUser;
             var user = await ApiClient.GetCurrentUserAsync();
+            if (previousUser != null && previousUser.Id == user.Id)
+            {
+                if (previousUser.IsEconomyCreator) user.IsEconomyCreator = true;
+                if ((user.Badges == null || user.Badges.Count == 0) && previousUser.Badges?.Count > 0)
+                    user.Badges = previousUser.Badges;
+                if (string.IsNullOrEmpty(user.Bio) && !string.IsNullOrEmpty(previousUser.Bio))
+                    user.Bio = previousUser.Bio;
+                if ((user.BioLinks == null || user.BioLinks.Count == 0) && previousUser.BioLinks?.Count > 0)
+                    user.BioLinks = previousUser.BioLinks;
+            }
             CurrentUser = user;
             return user;
         }

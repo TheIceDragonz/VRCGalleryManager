@@ -152,7 +152,9 @@
 
     protected override async Task LoadInitialDataAsync()
     {
-        selectedImageUrl = Auth.CurrentUser?.UserIcon;
+        selectedImageUrl = !string.IsNullOrEmpty(Auth.CurrentUser?.UserIcon) 
+            ? Auth.CurrentUser.UserIcon 
+            : Auth.CurrentUser?.IconUrl;
         var cached = CacheService.Get<List<IconItem>>("Icons");
         if (cached != null)
         {
@@ -274,6 +276,7 @@
     {
         if (!string.IsNullOrEmpty(selectedImageUrl) && selectedImageUrl == icon.ImageUrl) return true;
         if (!string.IsNullOrEmpty(Auth.CurrentUser?.UserIcon) && Auth.CurrentUser.UserIcon.Contains(icon.Id)) return true;
+        if (!string.IsNullOrEmpty(Auth.CurrentUser?.IconUrl) && Auth.CurrentUser.IconUrl.Contains(icon.Id)) return true;
         return false;
     }
 
@@ -284,7 +287,11 @@
         {
             selectedImageUrl = item.ImageUrl; // Update UI immediately
             await apiRequest.SetProfileIcon(item.ImageUrl);
-            if (Auth.CurrentUser != null) Auth.CurrentUser.UserIcon = item.ImageUrl;
+            if (Auth.CurrentUser != null)
+            {
+                Auth.CurrentUser.UserIcon = item.ImageUrl;
+                Auth.CurrentUser.IconUrl = item.ImageUrl;
+            }
             Auth.NotifyAuthStateChanged();
             NotificationService.Show("Profile icon updated successfully!", "Success", NotificationType.Success);
         }

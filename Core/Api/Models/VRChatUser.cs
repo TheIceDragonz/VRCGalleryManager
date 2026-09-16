@@ -11,11 +11,30 @@ namespace VRCGalleryManager.Core.Api.Models
         [JsonPropertyName("displayName")]
         public string DisplayName { get; set; } = "";
 
+        private string? _userIcon;
         [JsonPropertyName("userIcon")]
-        public string? UserIcon { get; set; }
+        public string? UserIcon
+        {
+            get => !string.IsNullOrEmpty(_userIcon) ? _userIcon : IconUrl;
+            set => _userIcon = value;
+        }
 
+        [JsonPropertyName("iconUrl")]
+        public string? IconUrl { get; set; }
+
+        private string? _profilePicOverride;
         [JsonPropertyName("profilePicOverride")]
-        public string? ProfilePicOverride { get; set; }
+        public string? ProfilePicOverride
+        {
+            get => !string.IsNullOrEmpty(_profilePicOverride) ? _profilePicOverride : BannerUrl;
+            set => _profilePicOverride = value;
+        }
+
+        [JsonPropertyName("bannerUrl")]
+        public string? BannerUrl { get; set; }
+
+        [JsonPropertyName("bannerType")]
+        public string? BannerType { get; set; }
 
         [JsonPropertyName("bio")]
         public string? Bio { get; set; }

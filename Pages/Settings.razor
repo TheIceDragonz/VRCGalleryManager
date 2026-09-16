@@ -67,9 +67,15 @@
                 var user = Auth.CurrentUser;
                 string avatarUrl = !string.IsNullOrEmpty(user.UserIcon) 
                     ? user.UserIcon 
-                    : (!string.IsNullOrEmpty(user.ProfilePicOverrideThumbnail) 
-                        ? user.ProfilePicOverrideThumbnail 
-                        : user.CurrentAvatarThumbnailImageUrl);
+                    : (!string.IsNullOrEmpty(user.IconUrl)
+                        ? user.IconUrl
+                        : (!string.IsNullOrEmpty(user.ProfilePicOverrideThumbnail) 
+                            ? user.ProfilePicOverrideThumbnail 
+                            : (!string.IsNullOrEmpty(user.BannerUrl)
+                                ? user.BannerUrl
+                                : (!string.IsNullOrEmpty(user.ProfilePicOverride)
+                                    ? user.ProfilePicOverride
+                                    : user.CurrentAvatarThumbnailImageUrl))));
 
                 <h4 class="mb-2 text-accent">VRChat Account</h4>
 
@@ -83,6 +89,10 @@
                                     @if (!string.IsNullOrWhiteSpace(user.Pronouns))
                                     {
                                         <span class="settings-account-pronouns" title="Pronouns: @user.Pronouns">@user.Pronouns</span>
+                                    }
+                                    @if (user.IsEconomyCreator)
+                                    {
+                                        <img src="/svg/verify-svgrepo-com.svg" class="settings-account-verified-badge" title="Economy Creator" alt="Economy Creator" />
                                     }
                                     @if (user.Badges != null && user.Badges.Any(b => b.Hidden != true))
                                     {
@@ -936,7 +946,7 @@
         }
     }
 
-    private void ApplyCurrentUser(CurrentUser user)
+    private async void ApplyCurrentUser(CurrentUser user)
     {
         if (user == null) return;
         Username = user.DisplayName;
@@ -945,6 +955,47 @@
 
         // Check VRChat Plus badge or tag
         HasVRCPlus = VRCAuth.CheckHasVRCPlus(user);
+
+        try
+        {
+            var pubProfile = await BackgroundService.GetPublicProfileAsync(user.Id);
+            if (pubProfile != null)
+            {
+                user.IsEconomyCreator = pubProfile.IsEconomyCreator;
+                if (Auth.CurrentUser != null) Auth.CurrentUser.IsEconomyCreator = pubProfile.IsEconomyCreator;
+
+                if (!string.IsNullOrEmpty(pubProfile.Pronouns) && string.IsNullOrEmpty(user.Pronouns))
+                {
+                    user.Pronouns = pubProfile.Pronouns;
+                    if (Auth.CurrentUser != null) Auth.CurrentUser.Pronouns = pubProfile.Pronouns;
+                }
+
+                if (pubProfile.Badges != null && pubProfile.Badges.Count > 0 && (user.Badges == null || user.Badges.Count == 0))
+                {
+                    user.Badges = pubProfile.Badges.Select(b => new Badge
+                    {
+                        BadgeId = b.BadgeId ?? "",
+                        BadgeName = b.BadgeName ?? "",
+                        BadgeDescription = b.BadgeDescription ?? "",
+                        BadgeImageUrl = b.BadgeImageUrl ?? "",
+                        Showcased = b.Showcased
+                    }).ToList();
+                }
+
+                if (!string.IsNullOrEmpty(pubProfile.Bio) && string.IsNullOrEmpty(user.Bio))
+                {
+                    user.Bio = pubProfile.Bio;
+                }
+
+                if (pubProfile.BioLinks != null && pubProfile.BioLinks.Count > 0 && (user.BioLinks == null || user.BioLinks.Count == 0))
+                {
+                    user.BioLinks = new List<string>(pubProfile.BioLinks);
+                }
+
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+        catch { }
     }
 
     private async Task LoadCurrentUser()

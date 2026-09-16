@@ -973,6 +973,17 @@ h6 {
     align-self: center;
 }
 
+.settings-account-verified-badge {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+    align-self: center;
+    vertical-align: middle;
+    display: inline-block;
+    filter: var(--filter-accent);
+    transition: transform 0.2s ease;
+}
+
 .settings-logout-btn {
     border-color: rgba(220, 53, 69, 0.45) !important;
     color: #ff6b6b !important;

@@ -17,8 +17,22 @@
 
 @if (CurrentUser != null && !string.IsNullOrEmpty(CurrentUser.Id))
 {
+    var profileBgUrl = !string.IsNullOrEmpty(CurrentUser.ProfilePicOverrideThumbnail)
+        ? CurrentUser.ProfilePicOverrideThumbnail
+        : (!string.IsNullOrEmpty(CurrentUser.BannerUrl)
+            ? CurrentUser.BannerUrl
+            : (!string.IsNullOrEmpty(CurrentUser.ProfilePicOverride)
+                ? CurrentUser.ProfilePicOverride
+                : CurrentUser.CurrentAvatarThumbnailImageUrl));
+
+    var profileIconUrl = !string.IsNullOrEmpty(CurrentUser.UserIcon)
+        ? CurrentUser.UserIcon
+        : (!string.IsNullOrEmpty(CurrentUser.IconUrl)
+            ? CurrentUser.IconUrl
+            : CurrentUser.CurrentAvatarThumbnailImageUrl);
+
     <div class="profile-card flex-shrink-0 position-relative m-3 nav-profile-card-container">
-        <img src="@(string.IsNullOrEmpty(CurrentUser.ProfilePicOverrideThumbnail) ? CurrentUser.CurrentAvatarThumbnailImageUrl : CurrentUser.ProfilePicOverrideThumbnail)" 
+        <img src="@profileBgUrl" 
              class="nav-profile-bg" />
         
         @if (BackgroundService.DisplayVRCCosmetics && !OperatingSystem.IsAndroid() && !string.IsNullOrEmpty(ProfileEffectUrl))
@@ -28,7 +42,7 @@
         
         <div class="position-absolute w-100 h-100 d-flex flex-column align-items-center justify-content-center nav-profile-content" style="z-index: 2;">
             <div class="position-relative d-flex align-items-center justify-content-center">
-                <img src="@(string.IsNullOrEmpty(CurrentUser.UserIcon) ? CurrentUser.CurrentAvatarThumbnailImageUrl : CurrentUser.UserIcon)" class="nav-profile-icon" />
+                <img src="@profileIconUrl" class="nav-profile-icon" />
                 @if (BackgroundService.DisplayVRCCosmetics && !string.IsNullOrEmpty(IconFrameUrl))
                 {
                     <img src="@IconFrameUrl" class="nav-icon-frame" style="position: absolute; top: -15%; left: -15%; width: 130%; height: 130%; pointer-events: none;" />
@@ -36,12 +50,19 @@
             </div>
             <span class="mt-1 fw-bold text-truncate w-100 text-center px-2 nav-profile-name" style="color: #ffffff !important;">@CurrentUser.DisplayName</span>
             
-            @if (CurrentUser.Badges != null)
+            @{
+                var displayedBadges = (CurrentUser.Badges != null && CurrentUser.Badges.Any(b => b.Showcased))
+                    ? CurrentUser.Badges.Where(b => b.Showcased).Select(b => (Url: b.BadgeImageUrl, Name: b.BadgeName)).Take(4).ToList()
+                    : (PublicProfile?.Badges != null && PublicProfile.Badges.Any(b => b.Showcased)
+                        ? PublicProfile.Badges.Where(b => b.Showcased).Select(b => (Url: b.BadgeImageUrl ?? "", Name: b.BadgeName ?? "")).Take(4).ToList()
+                        : null);
+            }
+            @if (displayedBadges != null && displayedBadges.Count > 0)
             {
                 <div class="d-flex justify-content-center gap-1 mt-0">
-                    @foreach (var badgeJson in CurrentUser.Badges.Where(b => b.Showcased).Take(4))
+                    @foreach (var badge in displayedBadges)
                     {
-                        <img src="@badgeJson.BadgeImageUrl" class="nav-badge-icon" title="@badgeJson.BadgeName" />
+                        <img src="@badge.Url" class="nav-badge-icon" title="@badge.Name" />
                     }
                 </div>
             }
@@ -236,6 +257,41 @@
             PublicProfile = await BackgroundService.GetPublicProfileAsync(CurrentUser.Id);
             ProfileTheme = BackgroundService.GetProfileTheme(PublicProfile, isDarkMode: true);
             UpdateSidebarBackground();
+
+            if (PublicProfile != null)
+            {
+                CurrentUser.IsEconomyCreator = PublicProfile.IsEconomyCreator;
+                if (Auth.CurrentUser != null) Auth.CurrentUser.IsEconomyCreator = PublicProfile.IsEconomyCreator;
+            }
+
+            if (PublicProfile?.Badges != null && PublicProfile.Badges.Count > 0 && (CurrentUser.Badges == null || CurrentUser.Badges.Count == 0))
+            {
+                CurrentUser.Badges = PublicProfile.Badges.Select(b => new Badge
+                {
+                    BadgeId = b.BadgeId ?? "",
+                    BadgeName = b.BadgeName ?? "",
+                    BadgeDescription = b.BadgeDescription ?? "",
+                    BadgeImageUrl = b.BadgeImageUrl ?? "",
+                    Showcased = b.Showcased
+                }).ToList();
+
+                if (Auth.CurrentUser != null)
+                {
+                    Auth.CurrentUser.Badges = CurrentUser.Badges;
+                }
+            }
+
+            if (PublicProfile != null && !string.IsNullOrEmpty(PublicProfile.Bio) && string.IsNullOrEmpty(CurrentUser.Bio))
+            {
+                CurrentUser.Bio = PublicProfile.Bio;
+                if (Auth.CurrentUser != null) Auth.CurrentUser.Bio = PublicProfile.Bio;
+            }
+
+            if (PublicProfile != null && PublicProfile.BioLinks != null && PublicProfile.BioLinks.Count > 0 && (CurrentUser.BioLinks == null || CurrentUser.BioLinks.Count == 0))
+            {
+                CurrentUser.BioLinks = new List<string>(PublicProfile.BioLinks);
+                if (Auth.CurrentUser != null) Auth.CurrentUser.BioLinks = CurrentUser.BioLinks;
+            }
         }
         catch { }
 

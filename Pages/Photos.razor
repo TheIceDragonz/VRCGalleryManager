@@ -153,7 +153,9 @@
 
     protected override async Task LoadInitialDataAsync()
     {
-        selectedImageUrl = Auth.CurrentUser?.ProfilePicOverride;
+        selectedImageUrl = !string.IsNullOrEmpty(Auth.CurrentUser?.ProfilePicOverride) 
+            ? Auth.CurrentUser.ProfilePicOverride 
+            : Auth.CurrentUser?.BannerUrl;
         var cached = CacheService.Get<List<PhotoItem>>("Photos");
         if (cached != null)
         {
@@ -273,6 +275,7 @@
     {
         if (!string.IsNullOrEmpty(selectedImageUrl) && selectedImageUrl == photo.ImageUrl) return true;
         if (!string.IsNullOrEmpty(Auth.CurrentUser?.ProfilePicOverride) && Auth.CurrentUser.ProfilePicOverride.Contains(photo.Id)) return true;
+        if (!string.IsNullOrEmpty(Auth.CurrentUser?.BannerUrl) && Auth.CurrentUser.BannerUrl.Contains(photo.Id)) return true;
         return false;
     }
 
@@ -287,6 +290,7 @@
             {
                 Auth.CurrentUser.ProfilePicOverride = item.ImageUrl;
                 Auth.CurrentUser.ProfilePicOverrideThumbnail = item.ImageUrl;
+                Auth.CurrentUser.BannerUrl = item.ImageUrl;
             }
             Auth.NotifyAuthStateChanged();
             NotificationService.Show("Profile picture updated successfully!", "Success", NotificationType.Success);

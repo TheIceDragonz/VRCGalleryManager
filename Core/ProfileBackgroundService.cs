@@ -45,8 +45,13 @@ namespace VRCGalleryManager.Core
         [JsonPropertyName("displayName")]
         public string DisplayName { get; set; } = "";
 
+        private string? _userIcon;
         [JsonPropertyName("userIcon")]
-        public string? UserIcon { get; set; }
+        public string? UserIcon
+        {
+            get => !string.IsNullOrEmpty(_userIcon) ? _userIcon : IconUrl;
+            set => _userIcon = value;
+        }
 
         [JsonPropertyName("iconUrl")]
         public string? IconUrl { get; set; }
@@ -57,14 +62,33 @@ namespace VRCGalleryManager.Core
         [JsonPropertyName("currentAvatarThumbnailImageUrl")]
         public string? CurrentAvatarThumbnailImageUrl { get; set; }
 
+        private string? _profilePicOverride;
         [JsonPropertyName("profilePicOverride")]
-        public string? ProfilePicOverride { get; set; }
+        public string? ProfilePicOverride
+        {
+            get => !string.IsNullOrEmpty(_profilePicOverride) ? _profilePicOverride : BannerUrl;
+            set => _profilePicOverride = value;
+        }
 
+        private string? _profilePicOverrideThumbnail;
         [JsonPropertyName("profilePicOverrideThumbnail")]
-        public string? ProfilePicOverrideThumbnail { get; set; }
+        public string? ProfilePicOverrideThumbnail
+        {
+            get => !string.IsNullOrEmpty(_profilePicOverrideThumbnail) ? _profilePicOverrideThumbnail : (BannerUrl ?? ProfilePicOverride);
+            set => _profilePicOverrideThumbnail = value;
+        }
+
+        [JsonPropertyName("bannerUrl")]
+        public string? BannerUrl { get; set; }
+
+        [JsonPropertyName("nameplateEffect")]
+        public string? NameplateEffect { get; set; }
 
         [JsonPropertyName("bio")]
         public string? Bio { get; set; }
+
+        [JsonPropertyName("bioLinks")]
+        public List<string>? BioLinks { get; set; }
 
         [JsonPropertyName("pronouns")]
         public string? Pronouns { get; set; }
@@ -110,6 +134,9 @@ namespace VRCGalleryManager.Core
 
         [JsonPropertyName("badges")]
         public List<PublicProfileBadge>? Badges { get; set; }
+
+        [JsonPropertyName("isEconomyCreator")]
+        public bool IsEconomyCreator { get; set; }
     }
 
     public class VRCProfileTheme

@@ -322,13 +322,13 @@ namespace VRCGalleryManager.Core
                 var updateRequest = new UpdateUserRequest
                 {
                     AcceptedTOSVersion = user.AcceptedTOSVersion,
-                    Bio = user.Bio,
-                    BioLinks = user.BioLinks,
+                    Bio = !string.IsNullOrEmpty(user.Bio) ? user.Bio : null,
+                    BioLinks = (user.BioLinks != null && user.BioLinks.Count > 0) ? user.BioLinks : null,
                     Status = user.Status,
                     StatusDescription = user.StatusDescription,
                     Tags = user.Tags,
                     Pronouns = user.Pronouns,
-                    ProfilePicOverride = user.ProfilePicOverride,
+                    ProfilePicOverride = !string.IsNullOrEmpty(user.ProfilePicOverride) ? user.ProfilePicOverride : null,
                     UserIcon = urlImage
                 };
 
@@ -348,13 +348,13 @@ namespace VRCGalleryManager.Core
                 var updateRequest = new UpdateUserRequest
                 {
                     AcceptedTOSVersion = user.AcceptedTOSVersion,
-                    Bio = user.Bio,
-                    BioLinks = user.BioLinks,
+                    Bio = !string.IsNullOrEmpty(user.Bio) ? user.Bio : null,
+                    BioLinks = (user.BioLinks != null && user.BioLinks.Count > 0) ? user.BioLinks : null,
                     Status = user.Status,
                     StatusDescription = user.StatusDescription,
                     Tags = user.Tags,
                     Pronouns = user.Pronouns,
-                    UserIcon = user.UserIcon,
+                    UserIcon = !string.IsNullOrEmpty(user.UserIcon) ? user.UserIcon : null,
                     ProfilePicOverride = urlImage
                 };
 
