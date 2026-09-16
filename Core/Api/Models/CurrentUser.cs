@@ -31,14 +31,58 @@ namespace VRCGalleryManager.Core.Api.Models
         [JsonPropertyName("username")]
         public string? Username { get; set; }
 
+        private string? _userIcon;
         [JsonPropertyName("userIcon")]
-        public string UserIcon { get; set; } = "";
+        public string UserIcon
+        {
+            get => !string.IsNullOrEmpty(_userIcon) ? _userIcon : (!string.IsNullOrEmpty(IconUrl) ? IconUrl : "");
+            set
+            {
+                _userIcon = value;
+                if (string.IsNullOrEmpty(IconUrl) || !string.IsNullOrEmpty(value))
+                    IconUrl = value;
+            }
+        }
 
+        [JsonPropertyName("iconUrl")]
+        public string? IconUrl { get; set; }
+
+        private string? _profilePicOverride;
         [JsonPropertyName("profilePicOverride")]
-        public string ProfilePicOverride { get; set; } = "";
+        public string ProfilePicOverride
+        {
+            get => !string.IsNullOrEmpty(_profilePicOverride) ? _profilePicOverride : (!string.IsNullOrEmpty(BannerUrl) ? BannerUrl : "");
+            set
+            {
+                _profilePicOverride = value;
+                if (string.IsNullOrEmpty(BannerUrl) || !string.IsNullOrEmpty(value))
+                    BannerUrl = value;
+            }
+        }
 
+        private string? _profilePicOverrideThumbnail;
         [JsonPropertyName("profilePicOverrideThumbnail")]
-        public string ProfilePicOverrideThumbnail { get; set; } = "";
+        public string ProfilePicOverrideThumbnail
+        {
+            get => !string.IsNullOrEmpty(_profilePicOverrideThumbnail)
+                ? _profilePicOverrideThumbnail
+                : (!string.IsNullOrEmpty(BannerUrl) ? BannerUrl : (!string.IsNullOrEmpty(ProfilePicOverride) ? ProfilePicOverride : ""));
+            set
+            {
+                _profilePicOverrideThumbnail = value;
+                if (string.IsNullOrEmpty(BannerUrl) || !string.IsNullOrEmpty(value))
+                    BannerUrl = value;
+            }
+        }
+
+        [JsonPropertyName("bannerUrl")]
+        public string? BannerUrl { get; set; }
+
+        [JsonPropertyName("bannerType")]
+        public string? BannerType { get; set; }
+
+        [JsonPropertyName("nameplateEffect")]
+        public string? NameplateEffect { get; set; }
 
         [JsonPropertyName("currentAvatarThumbnailImageUrl")]
         public string CurrentAvatarThumbnailImageUrl { get; set; } = "";
@@ -84,6 +128,12 @@ namespace VRCGalleryManager.Core.Api.Models
 
         [JsonPropertyName("pronouns")]
         public string Pronouns { get; set; } = "";
+
+        [JsonPropertyName("pronounsHistory")]
+        public List<string>? PronounsHistory { get; set; }
+
+        [JsonPropertyName("isBoopingEnabled")]
+        public bool? IsBoopingEnabled { get; set; }
 
         [JsonPropertyName("requiresTwoFactorAuth")]
         public List<string>? RequiresTwoFactorAuth { get; set; }

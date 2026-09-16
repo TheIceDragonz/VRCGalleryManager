@@ -47,7 +47,7 @@
 
                 <!-- Notification Body -->
                 <div class="photo-notification-body">
-                    <div class="photo-notification-thumb-box">
+                    <div class="photo-notification-thumb-box" style="cursor: pointer;" @onclick="() => OpenViewer(popup)" title="View image">
                         @if (!string.IsNullOrEmpty(popup.ThumbnailBase64))
                         {
                             <img src="@popup.ThumbnailBase64" class="photo-notification-thumb" alt="VRChat Screenshot" />

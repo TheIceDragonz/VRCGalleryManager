@@ -26,7 +26,7 @@
             </button>
         }
 
-        <div class="image-container" @ref="imageContainerRef">
+        <div class="image-container" @ref="imageContainerRef" @oncontextmenu:preventDefault="true">
             @if (!isHighResLoaded)
             {
                 <div class="spinner-border text-accent position-absolute" style="width: 3rem; height: 3rem; border-width: 0.25em; z-index: 10;"></div>
@@ -62,6 +62,17 @@
             {
                 <button class="btn btn-icon-only btn-viewer-action" title="Copy Link" @onclick="CopyLinkCurrent">
                     <img src="/svg/link-svgrepo-com.svg" class="icon-white" />
+                </button>
+            }
+
+            @if (ShowSelectButton && OnSelectRequested.HasDelegate)
+            {
+                var isCurrentSelected = IsItemSelected?.Invoke(CurrentIndex) ?? false;
+                <button class="btn btn-icon-only btn-viewer-action btn-viewer-select @(isCurrentSelected ? "active" : "")" 
+                        disabled="@isCurrentSelected"
+                        title="@(isCurrentSelected ? (SelectButtonTitle.Contains("Icon") ? "Currently Active Profile Icon" : "Currently Active Profile Picture") : SelectButtonTitle)" 
+                        @onclick="SelectCurrent">
+                    <img src="/svg/archive-minimalistic-svgrepo-com.svg" class="@(isCurrentSelected ? "" : "icon-accent")" />
                 </button>
             }
 
@@ -432,10 +443,14 @@
     [Parameter] public EventCallback OnClosed { get; set; }
     [Parameter] public EventCallback<int> OnDeleteRequested { get; set; }
     [Parameter] public EventCallback<int> OnUploadRequested { get; set; }
+    [Parameter] public EventCallback<int> OnSelectRequested { get; set; }
     [Parameter] public bool ShowDownloadButton { get; set; } = true;
     [Parameter] public bool ShowInfoButton { get; set; } = false;
     [Parameter] public bool ShowUploadButton { get; set; } = false;
     [Parameter] public bool ShowDeleteButton { get; set; } = false;
+    [Parameter] public bool ShowSelectButton { get; set; } = false;
+    [Parameter] public string SelectButtonTitle { get; set; } = "Set as Profile Picture";
+    [Parameter] public Func<int, bool>? IsItemSelected { get; set; }
 
     public bool IsVisible { get; private set; }
     public IReadOnlyList<ViewerItem> Items { get; private set; }
@@ -970,6 +985,15 @@
         if (OnUploadRequested.HasDelegate)
         {
             await OnUploadRequested.InvokeAsync(CurrentIndex);
+        }
+    }
+
+    private async Task SelectCurrent()
+    {
+        if (OnSelectRequested.HasDelegate)
+        {
+            await OnSelectRequested.InvokeAsync(CurrentIndex);
+            StateHasChanged();
         }
     }
 

@@ -9,8 +9,12 @@
              ShowInfoButton="@currentOptions.ShowInfoButton"
              ShowUploadButton="@(currentOptions.ShowUploadButton ?? (currentOptions.OnUploadRequested != null))"
              ShowDeleteButton="@(currentOptions.ShowDeleteButton ?? (currentOptions.OnDeleteRequested != null))"
+             ShowSelectButton="@(currentOptions.ShowSelectButton ?? (currentOptions.OnSelectRequested != null))"
+             SelectButtonTitle="@currentOptions.SelectButtonTitle"
+             IsItemSelected="@currentOptions.IsItemSelected"
              OnDeleteRequested="@(currentOptions.OnDeleteRequested != null ? EventCallback.Factory.Create<int>(this, HandleDelete) : default)"
              OnUploadRequested="@(currentOptions.OnUploadRequested != null ? EventCallback.Factory.Create<int>(this, HandleUpload) : default)"
+             OnSelectRequested="@(currentOptions.OnSelectRequested != null ? EventCallback.Factory.Create<int>(this, HandleSelect) : default)"
              OnClosed="HandleClosed" />
 
 @code {
@@ -65,6 +69,15 @@
         if (currentOptions.OnUploadRequested != null)
         {
             await currentOptions.OnUploadRequested(index);
+        }
+    }
+
+    private async Task HandleSelect(int index)
+    {
+        if (currentOptions.OnSelectRequested != null)
+        {
+            await currentOptions.OnSelectRequested(index);
+            StateHasChanged();
         }
     }
 

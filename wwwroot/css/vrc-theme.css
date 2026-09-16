@@ -6,28 +6,28 @@
 /* --------------------------------------------------------------------------
    Generic Buttons (.btn) Theming
    -------------------------------------------------------------------------- */
-.has-vrc-theme .btn:not(.btn-danger):not(.btn-outline-danger):not(.btn-warning):not(.btn-outline-warning):not(.btn-viewer-action):not(.btn-icon-only):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.media-btn-open):not(.btn-dark):not(.btn-outline-dark):not(.picflow-cat-btn):not(.btn-hover-light):not(:disabled):not(.disabled) {
+.has-vrc-theme .btn:not(.btn-danger):not(.btn-outline-danger):not(.btn-warning):not(.btn-outline-warning):not(.btn-viewer-action):not(.btn-icon-only):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.media-btn-open):not(.media-btn-select):not(.media-btn-copy):not(.media-btn-download):not(.media-btn-link):not(.media-btn-folder):not(.btn-dark):not(.btn-outline-dark):not(.picflow-cat-btn):not(.btn-hover-light):not(:disabled):not(.disabled) {
     color: var(--accent) !important;
     background-color: var(--theme-btn-bg) !important;
     border-color: var(--theme-btn-border) !important;
 }
 
-.has-vrc-theme .btn:not(.btn-danger):not(.btn-outline-danger):not(.btn-warning):not(.btn-outline-warning):not(.btn-viewer-action):not(.btn-icon-only):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.media-btn-open):not(.btn-dark):not(.btn-outline-dark):not(.picflow-cat-btn):not(.btn-hover-light):not(:disabled):not(.disabled):hover {
+.has-vrc-theme .btn:not(.btn-danger):not(.btn-outline-danger):not(.btn-warning):not(.btn-outline-warning):not(.btn-viewer-action):not(.btn-icon-only):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.media-btn-open):not(.media-btn-select):not(.media-btn-copy):not(.media-btn-download):not(.media-btn-link):not(.media-btn-folder):not(.btn-dark):not(.btn-outline-dark):not(.picflow-cat-btn):not(.btn-hover-light):not(:disabled):not(.disabled):hover {
     background-color: var(--theme-btn-hover-bg) !important;
     border-color: var(--theme-btn-hover-border) !important;
     color: #ffffff !important;
 }
 
-.has-vrc-theme .btn:not(.btn-danger):not(.btn-outline-danger):not(.btn-warning):not(.btn-outline-warning):not(.btn-viewer-action):not(.btn-icon-only):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.media-btn-open):not(.btn-dark):not(.btn-outline-dark):not(.picflow-cat-btn):not(.btn-hover-light):not(:disabled):not(.disabled):active,
-.has-vrc-theme .btn:not(.btn-danger):not(.btn-outline-danger):not(.btn-warning):not(.btn-outline-warning):not(.btn-viewer-action):not(.btn-icon-only):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.media-btn-open):not(.btn-dark):not(.btn-outline-dark):not(.picflow-cat-btn):not(.btn-hover-light):not(:disabled):not(.disabled):focus {
+.has-vrc-theme .btn:not(.btn-danger):not(.btn-outline-danger):not(.btn-warning):not(.btn-outline-warning):not(.btn-viewer-action):not(.btn-icon-only):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.media-btn-open):not(.media-btn-select):not(.media-btn-copy):not(.media-btn-download):not(.media-btn-link):not(.media-btn-folder):not(.btn-dark):not(.btn-outline-dark):not(.picflow-cat-btn):not(.btn-hover-light):not(:disabled):not(.disabled):active,
+.has-vrc-theme .btn:not(.btn-danger):not(.btn-outline-danger):not(.btn-warning):not(.btn-outline-warning):not(.btn-viewer-action):not(.btn-icon-only):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.media-btn-open):not(.media-btn-select):not(.media-btn-copy):not(.media-btn-download):not(.media-btn-link):not(.media-btn-folder):not(.btn-dark):not(.btn-outline-dark):not(.picflow-cat-btn):not(.btn-hover-light):not(:disabled):not(.disabled):focus {
     background-color: var(--theme-btn-active-bg) !important;
     border-color: var(--accent) !important;
     color: #ffffff !important;
 }
 
-.has-vrc-theme .btn:not(.btn-danger):not(.btn-outline-danger):not(.btn-warning):not(.btn-outline-warning):not(.btn-viewer-action):not(.btn-icon-only):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.media-btn-open):not(.btn-dark):not(.btn-outline-dark):not(.picflow-cat-btn):not(.btn-hover-light):not(:disabled):not(.disabled):hover .btn-icon:not(.icon-danger):not(.icon-white):not(.icon-dark):not(.icon-success),
-.has-vrc-theme .btn:not(.btn-danger):not(.btn-outline-danger):not(.btn-warning):not(.btn-outline-warning):not(.btn-viewer-action):not(.btn-icon-only):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.media-btn-open):not(.btn-dark):not(.btn-outline-dark):not(.picflow-cat-btn):not(.btn-hover-light):not(:disabled):not(.disabled):active .btn-icon:not(.icon-danger):not(.icon-white):not(.icon-dark):not(.icon-success),
-.has-vrc-theme .btn:not(.btn-danger):not(.btn-outline-danger):not(.btn-warning):not(.btn-outline-warning):not(.btn-viewer-action):not(.btn-icon-only):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.media-btn-open):not(.btn-dark):not(.btn-outline-dark):not(.picflow-cat-btn):not(.btn-hover-light):not(:disabled):not(.disabled):focus .btn-icon:not(.icon-danger):not(.icon-white):not(.icon-dark):not(.icon-success) {
+.has-vrc-theme .btn:not(.btn-danger):not(.btn-outline-danger):not(.btn-warning):not(.btn-outline-warning):not(.btn-viewer-action):not(.btn-icon-only):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.media-btn-open):not(.media-btn-select):not(.media-btn-copy):not(.media-btn-download):not(.media-btn-link):not(.media-btn-folder):not(.btn-dark):not(.btn-outline-dark):not(.picflow-cat-btn):not(.btn-hover-light):not(:disabled):not(.disabled):hover .btn-icon:not(.icon-danger):not(.icon-white):not(.icon-dark):not(.icon-success),
+.has-vrc-theme .btn:not(.btn-danger):not(.btn-outline-danger):not(.btn-warning):not(.btn-outline-warning):not(.btn-viewer-action):not(.btn-icon-only):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.media-btn-open):not(.media-btn-select):not(.media-btn-copy):not(.media-btn-download):not(.media-btn-link):not(.media-btn-folder):not(.btn-dark):not(.btn-outline-dark):not(.picflow-cat-btn):not(.btn-hover-light):not(:disabled):not(.disabled):active .btn-icon:not(.icon-danger):not(.icon-white):not(.icon-dark):not(.icon-success),
+.has-vrc-theme .btn:not(.btn-danger):not(.btn-outline-danger):not(.btn-warning):not(.btn-outline-warning):not(.btn-viewer-action):not(.btn-icon-only):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.media-btn-open):not(.media-btn-select):not(.media-btn-copy):not(.media-btn-download):not(.media-btn-link):not(.media-btn-folder):not(.btn-dark):not(.btn-outline-dark):not(.picflow-cat-btn):not(.btn-hover-light):not(:disabled):not(.disabled):focus .btn-icon:not(.icon-danger):not(.icon-white):not(.icon-dark):not(.icon-success) {
     filter: var(--filter-white) !important;
 }
 
@@ -35,10 +35,10 @@
    Disabled / Deactivated Buttons (.btn:disabled, .btn.disabled)
    Recolors to the theme with the uniform 0.65 transparency matching default theme
    -------------------------------------------------------------------------- */
-.has-vrc-theme .btn:disabled:not(.picflow-cat-btn):not(.btn-nav),
-.has-vrc-theme .btn.disabled:not(.picflow-cat-btn):not(.btn-nav),
-.has-vrc-theme button:disabled:not(.picflow-cat-btn):not(.btn-nav),
-.has-vrc-theme label.btn.disabled:not(.picflow-cat-btn):not(.btn-nav) {
+.has-vrc-theme .btn:disabled:not(.picflow-cat-btn):not(.btn-nav):not(.media-btn-select):not(.btn-viewer-select),
+.has-vrc-theme .btn.disabled:not(.picflow-cat-btn):not(.btn-nav):not(.media-btn-select):not(.btn-viewer-select),
+.has-vrc-theme button:disabled:not(.picflow-cat-btn):not(.btn-nav):not(.media-btn-select):not(.btn-viewer-select),
+.has-vrc-theme label.btn.disabled:not(.picflow-cat-btn):not(.btn-nav):not(.media-btn-select):not(.btn-viewer-select) {
     opacity: 0.65 !important;
     color: var(--theme-btn-border) !important;
     background-color: var(--theme-btn-bg) !important;
@@ -49,16 +49,16 @@
     transform: none !important;
 }
 
-.has-vrc-theme .btn:disabled:not(.picflow-cat-btn) .btn-icon,
-.has-vrc-theme .btn.disabled:not(.picflow-cat-btn) .btn-icon,
-.has-vrc-theme button:disabled:not(.picflow-cat-btn) .btn-icon,
-.has-vrc-theme label.btn.disabled:not(.picflow-cat-btn) .btn-icon,
-.has-vrc-theme .btn:disabled:not(.picflow-cat-btn) img,
-.has-vrc-theme .btn.disabled:not(.picflow-cat-btn) img,
-.has-vrc-theme button:disabled:not(.picflow-cat-btn) img,
-.has-vrc-theme label.btn.disabled:not(.picflow-cat-btn) img,
-.has-vrc-theme .btn:disabled:not(.picflow-cat-btn) svg,
-.has-vrc-theme .btn.disabled:not(.picflow-cat-btn) svg {
+.has-vrc-theme .btn:disabled:not(.picflow-cat-btn):not(.media-btn-select):not(.btn-viewer-select) .btn-icon,
+.has-vrc-theme .btn.disabled:not(.picflow-cat-btn):not(.media-btn-select):not(.btn-viewer-select) .btn-icon,
+.has-vrc-theme button:disabled:not(.picflow-cat-btn):not(.media-btn-select):not(.btn-viewer-select) .btn-icon,
+.has-vrc-theme label.btn.disabled:not(.picflow-cat-btn):not(.media-btn-select):not(.btn-viewer-select) .btn-icon,
+.has-vrc-theme .btn:disabled:not(.picflow-cat-btn):not(.media-btn-select):not(.btn-viewer-select) img,
+.has-vrc-theme .btn.disabled:not(.picflow-cat-btn):not(.media-btn-select):not(.btn-viewer-select) img,
+.has-vrc-theme button:disabled:not(.picflow-cat-btn):not(.media-btn-select):not(.btn-viewer-select) img,
+.has-vrc-theme label.btn.disabled:not(.picflow-cat-btn):not(.media-btn-select):not(.btn-viewer-select) img,
+.has-vrc-theme .btn:disabled:not(.picflow-cat-btn):not(.media-btn-select):not(.btn-viewer-select) svg,
+.has-vrc-theme .btn.disabled:not(.picflow-cat-btn):not(.media-btn-select):not(.btn-viewer-select) svg {
     filter: url(#theme-border-filter) !important;
     opacity: 1 !important;
     color: var(--theme-btn-border) !important;
@@ -262,25 +262,25 @@
     filter: url(#theme-icon-filter) !important;
 }
 
-.has-vrc-theme .btn:not(.btn-danger):not(.btn-outline-danger):not(.btn-warning):not(.btn-outline-warning):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.media-btn-open):not(.btn-dark):not(.btn-outline-dark):not(:disabled):not(.disabled):not(:hover):not(:active) .btn-icon:not(.icon-danger):not(.icon-white):not(.icon-dark):not(.icon-success) {
+.has-vrc-theme .btn:not(.btn-danger):not(.btn-outline-danger):not(.btn-warning):not(.btn-outline-warning):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.media-btn-open):not(.media-btn-select):not(.btn-dark):not(.btn-outline-dark):not(:disabled):not(.disabled):not(:hover):not(:active) .btn-icon:not(.icon-danger):not(.icon-white):not(.icon-dark):not(.icon-success) {
     filter: url(#theme-icon-filter) !important;
 }
 
 /* Disabled SVG Icons (Colore identico al bordo var(--theme-btn-border)) */
-.has-vrc-theme .btn:disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.btn-viewer-upload) .btn-icon,
-.has-vrc-theme .btn.disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.btn-viewer-upload) .btn-icon,
-.has-vrc-theme button:disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.btn-viewer-upload) .btn-icon,
-.has-vrc-theme label.btn.disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.btn-viewer-upload) .btn-icon,
-.has-vrc-theme .btn:disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.btn-viewer-upload) .icon-accent,
-.has-vrc-theme .btn.disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.btn-viewer-upload) .icon-accent,
-.has-vrc-theme button:disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.btn-viewer-upload) .icon-accent,
-.has-vrc-theme label.btn.disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.btn-viewer-upload) .icon-accent,
-.has-vrc-theme .btn:disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.btn-viewer-upload) img,
-.has-vrc-theme .btn.disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.btn-viewer-upload) img,
-.has-vrc-theme button:disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.btn-viewer-upload) img,
-.has-vrc-theme label.btn.disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.btn-viewer-upload) img,
-.has-vrc-theme .btn:disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.btn-viewer-upload) svg,
-.has-vrc-theme .btn.disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.btn-viewer-upload) svg,
+.has-vrc-theme .btn:disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.btn-viewer-upload):not(.media-btn-select):not(.btn-viewer-select) .btn-icon,
+.has-vrc-theme .btn.disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.btn-viewer-upload):not(.media-btn-select):not(.btn-viewer-select) .btn-icon,
+.has-vrc-theme button:disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.btn-viewer-upload):not(.media-btn-select):not(.btn-viewer-select) .btn-icon,
+.has-vrc-theme label.btn.disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.btn-viewer-upload):not(.media-btn-select):not(.btn-viewer-select) .btn-icon,
+.has-vrc-theme .btn:disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.btn-viewer-upload):not(.media-btn-select):not(.btn-viewer-select) .icon-accent,
+.has-vrc-theme .btn.disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.btn-viewer-upload):not(.media-btn-select):not(.btn-viewer-select) .icon-accent,
+.has-vrc-theme button:disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.btn-viewer-upload):not(.media-btn-select):not(.btn-viewer-select) .icon-accent,
+.has-vrc-theme label.btn.disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.btn-viewer-upload):not(.media-btn-select):not(.btn-viewer-select) .icon-accent,
+.has-vrc-theme .btn:disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.btn-viewer-upload):not(.media-btn-select):not(.btn-viewer-select) img,
+.has-vrc-theme .btn.disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.btn-viewer-upload):not(.media-btn-select):not(.btn-viewer-select) img,
+.has-vrc-theme button:disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.btn-viewer-upload):not(.media-btn-select):not(.btn-viewer-select) img,
+.has-vrc-theme label.btn.disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.btn-viewer-upload):not(.media-btn-select):not(.btn-viewer-select) img,
+.has-vrc-theme .btn:disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.btn-viewer-upload):not(.media-btn-select):not(.btn-viewer-select) svg,
+.has-vrc-theme .btn.disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.btn-viewer-upload):not(.media-btn-select):not(.btn-viewer-select) svg,
 .has-vrc-theme .settings-toggle-row:has(input:disabled) .settings-toggle-icon img,
 .has-vrc-theme .settings-toggle-row:has(input:disabled) .settings-toggle-icon .icon-accent,
 .has-vrc-theme .settings-toggle-row.disabled .settings-toggle-icon img,
@@ -429,6 +429,50 @@
     filter: var(--filter-white) !important;
 }
 
+/* Select (Profile Selection) Buttons */
+.has-vrc-theme .media-btn-select {
+    background-color: var(--theme-btn-bg) !important;
+    border-color: var(--theme-btn-border) !important;
+    color: var(--accent) !important;
+}
+
+.has-vrc-theme .media-btn-select .btn-icon,
+.has-vrc-theme .media-btn-select img {
+    filter: url(#theme-icon-filter) !important;
+}
+
+.has-vrc-theme .media-btn-select:hover:not(:disabled):not(.selected) {
+    background-color: var(--theme-btn-hover-bg) !important;
+    border-color: var(--accent) !important;
+}
+
+.has-vrc-theme .media-btn-select:hover:not(:disabled):not(.selected) .btn-icon,
+.has-vrc-theme .media-btn-select:hover:not(:disabled):not(.selected) img {
+    filter: var(--filter-white) !important;
+}
+
+.has-vrc-theme .media-btn-select.selected,
+.has-vrc-theme .media-btn-select.active {
+    background-color: var(--accent) !important;
+    border-color: var(--accent) !important;
+    box-shadow: none !important;
+    opacity: 1 !important;
+}
+
+.has-vrc-theme .media-btn-select.selected .btn-icon,
+.has-vrc-theme .media-btn-select.selected img,
+.has-vrc-theme .media-btn-select.active .btn-icon,
+.has-vrc-theme .media-btn-select.active img {
+    filter: brightness(0) !important;
+}
+
+.has-vrc-theme .media-btn-select:disabled,
+.has-vrc-theme .media-btn-select.disabled {
+    cursor: default !important;
+    transform: none !important;
+    pointer-events: auto !important;
+}
+
 /* Profile Name & Self Indicators */
 .has-vrc-theme .nav-profile-name {
     color: #ffffff !important;
@@ -452,7 +496,7 @@
 
 .has-vrc-theme .btn-viewer-close,
 .has-vrc-theme .btn-nav:not(:disabled),
-.has-vrc-theme .btn-viewer-action:not(.btn-danger):not(.btn-success):not(.btn-viewer-delete):not(.btn-viewer-upload):not(:disabled) {
+.has-vrc-theme .btn-viewer-action:not(.btn-danger):not(.btn-success):not(.btn-viewer-delete):not(.btn-viewer-upload):not(.btn-viewer-select):not(:disabled) {
     background-color: var(--theme-btn-bg) !important;
     border: 2px solid var(--theme-btn-border) !important;
     opacity: 1 !important;
@@ -460,7 +504,7 @@
 
 .has-vrc-theme .btn-viewer-close img,
 .has-vrc-theme .btn-nav:not(:disabled) img,
-.has-vrc-theme .btn-viewer-action:not(.btn-viewer-delete):not(.btn-viewer-upload):not(:disabled) img:not(.icon-danger):not(.icon-success) {
+.has-vrc-theme .btn-viewer-action:not(.btn-viewer-delete):not(.btn-viewer-upload):not(.btn-viewer-select):not(:disabled) img:not(.icon-danger):not(.icon-success) {
     filter: url(#theme-icon-filter) !important;
 }
 
@@ -485,7 +529,7 @@
 
 .has-vrc-theme .btn-viewer-close:hover,
 .has-vrc-theme .btn-nav:not(:disabled):hover,
-.has-vrc-theme .btn-viewer-action:not(.btn-danger):not(.btn-success):not(.btn-viewer-delete):not(.btn-viewer-upload):not(:disabled):hover {
+.has-vrc-theme .btn-viewer-action:not(.btn-danger):not(.btn-success):not(.btn-viewer-delete):not(.btn-viewer-upload):not(.btn-viewer-select):not(:disabled):hover {
     background-color: var(--theme-btn-hover-bg) !important;
     border-color: var(--accent) !important;
     box-shadow: 0 0 12px rgba(var(--theme-rgb), 0.5) !important;
@@ -493,8 +537,45 @@
 
 .has-vrc-theme .btn-viewer-close:hover img,
 .has-vrc-theme .btn-nav:not(:disabled):hover img,
-.has-vrc-theme .btn-viewer-action:not(.btn-viewer-delete):not(.btn-viewer-upload):not(:disabled):hover img:not(.icon-danger):not(.icon-success) {
+.has-vrc-theme .btn-viewer-action:not(.btn-viewer-delete):not(.btn-viewer-upload):not(.btn-viewer-select):not(:disabled):hover img:not(.icon-danger):not(.icon-success) {
     filter: var(--filter-white) !important;
+}
+
+/* Select button in ImageViewer */
+.has-vrc-theme .btn-viewer-select {
+    background-color: var(--theme-btn-bg) !important;
+    border: 2px solid var(--theme-btn-border) !important;
+    opacity: 1 !important;
+}
+
+.has-vrc-theme .btn-viewer-select img {
+    filter: url(#theme-icon-filter) !important;
+}
+
+.has-vrc-theme .btn-viewer-select:hover:not(:disabled):not(.active) {
+    background-color: var(--theme-btn-hover-bg) !important;
+    border-color: var(--accent) !important;
+    box-shadow: 0 0 12px rgba(var(--theme-rgb), 0.5) !important;
+}
+
+.has-vrc-theme .btn-viewer-select:hover:not(:disabled):not(.active) img {
+    filter: var(--filter-white) !important;
+}
+
+.has-vrc-theme .btn-viewer-select.active,
+.has-vrc-theme .btn-viewer-select:disabled {
+    background-color: var(--accent) !important;
+    border-color: var(--accent) !important;
+    box-shadow: none !important;
+    cursor: default !important;
+    transform: none !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+}
+
+.has-vrc-theme .btn-viewer-select.active img,
+.has-vrc-theme .btn-viewer-select:disabled img {
+    filter: brightness(0) !important;
 }
 
 .has-vrc-theme .btn-viewer-action.active {

@@ -9,6 +9,7 @@
 @inject DialogService dialogService
 @inject VRCLogWatcherService LogWatcher
 @inject ImageViewerService ViewerService
+@inject IJSRuntime JSRuntime
 
 <div class="h-100 d-flex flex-column p-3">
     <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-secondary">
@@ -57,10 +58,17 @@
 
 
     <div class="flex-grow-1 overflow-auto">
-        <div class="media-grid gap-3 align-items-center">
+        @if (activeExpandedItem != null)
+        {
+            <div class="card-action-backdrop" @onclick="CloseExpandedCard" @oncontextmenu="CloseExpandedCard" @oncontextmenu:preventDefault="true"></div>
+        }
+        <div class="media-grid gap-3 align-items-center @(activeExpandedItem != null ? "has-card-expanded" : "")">
             @foreach (var img in FilteredImages)
             {
-                <div class="position-relative media-card-container overflow-hidden @(img.Category == ItemCategory.Print ? (CropPrints ? "photo-card-ratio" : "print-card-ratio") : "picflow-card")">
+                <div class="position-relative media-card-container overflow-hidden @(img.Category == ItemCategory.Print ? (CropPrints ? "photo-card-ratio" : "print-card-ratio") : "picflow-card") @(activeExpandedItem == img ? "card-expanded-active" : "")"
+                     @oncontextmenu="() => HandleCardContextMenu(img)"
+                     @oncontextmenu:preventDefault="true"
+                     @onmouseleave="() => HandleCardMouseLeave(img)">
                     @if (string.IsNullOrEmpty(img.Url))
                     {
                         <div class="w-100 h-100 d-flex justify-content-center align-items-center">
@@ -71,27 +79,39 @@
                     {
                         if (img.Category == ItemCategory.Print && CropPrints)
                         {
-                            <img src="@img.Url" style="width: 106.66%; height: 133.33%; object-fit: fill; position: absolute; top: -6.38%; left: -3.33%;" loading="lazy" />
+                            <img src="@img.Url" style="width: 106.66%; height: 133.33%; object-fit: fill; position: absolute; top: -6.38%; left: -3.33%; cursor: pointer;" loading="lazy" @onclick="() => OpenImage(img)" title="View Image" />
                         }
                         else
                         {
-                            <img src="@img.Url" class="w-100 h-100 object-fit-cover" loading="lazy" />
+                            <img src="@img.Url" class="w-100 h-100 object-fit-cover" style="cursor: pointer;" loading="lazy" @onclick="() => OpenImage(img)" title="View Image" />
                         }
                     }
-                    <div class="position-absolute w-100 text-center media-card-label picflow-label fw-bold @(!string.IsNullOrEmpty(img.UserId) ? "cursor-pointer" : "") @(!string.IsNullOrEmpty(img.UserId) && img.UserId == Auth.CurrentUser?.Id ? "text-self-user" : (!string.IsNullOrEmpty(img.UserId) && Auth.CurrentUser?.Friends?.Contains(img.UserId) == true ? "text-warning" : ""))" @onclick="() => OpenUserInBrowser(img.UserId)" title="@(!string.IsNullOrEmpty(img.UserId) ? "Open Profile in Browser" : "")">
+                    <div class="position-absolute w-100 text-center media-card-label picflow-label fw-bold @(!string.IsNullOrEmpty(img.UserId) ? "cursor-pointer" : "") @(!string.IsNullOrEmpty(img.UserId) && img.UserId == Auth.CurrentUser?.Id ? "text-self-user" : (!string.IsNullOrEmpty(img.UserId) && Auth.CurrentUser?.Friends?.Contains(img.UserId) == true ? "text-warning" : ""))" @onclick:stopPropagation="true" @onclick="() => OpenUserInBrowser(img.UserId)" title="@(!string.IsNullOrEmpty(img.UserId) ? "Open Profile in Browser" : "")">
                         @img.Username
                     </div>
 
-                    @if (!string.IsNullOrEmpty(img.Url))
-                    {
-                        <button class="btn btn-success btn-sm rounded-circle position-absolute btn-action media-btn-upload" style="right: 40px;" @onclick="() => ToggleUploadMenu(img)" title="Add (upload)">
-                            <img src="/svg/add-circle-svgrepo-com.svg" class="btn-icon icon-white" style="margin: 0;" />
-                        </button>
+                    <div class="media-card-actions">
+                        @if (!string.IsNullOrEmpty(img.Url))
+                        {
+                            <button class="btn btn-success btn-sm rounded-circle btn-action media-btn-upload" @onclick:stopPropagation="true" @onclick="() => ToggleUploadMenu(img)" title="Add (upload)">
+                                <img src="/svg/add-circle-svgrepo-com.svg" class="btn-icon icon-white" style="margin: 0;" />
+                            </button>
 
-                        <button class="btn btn-dark btn-sm rounded-circle position-absolute btn-action media-btn-open" style="right: 5px;" @onclick="() => OpenImage(img)" title="View Image">
-                            <img src="/svg/eye-svgrepo-com.svg" class="btn-icon" style="margin: 0;" />
-                        </button>
-                    }
+                            @if (activeExpandedItem == img)
+                            {
+                                var highResUrl = img.Url.Replace("/image/", "/file/").Replace("/256", "/file");
+                                <button class="btn btn-sm rounded-circle btn-action media-btn-copy media-btn-extra" @onclick:stopPropagation="true" @onclick="() => CopyImageToClipboardAsync(highResUrl, img.Category == ItemCategory.Print && CropPrints)" title="Copy Image">
+                                    <img src="/svg/copy-svgrepo-com.svg" class="btn-icon icon-white" style="margin: 0;" />
+                                </button>
+                                <button class="btn btn-sm rounded-circle btn-action media-btn-download media-btn-extra" @onclick:stopPropagation="true" @onclick='() => DownloadImageFileAsync(highResUrl, $"{img.Username}_{img.Category}", img.Category == ItemCategory.Print && CropPrints)' title="Download">
+                                    <img src="/svg/download-svgrepo-com.svg" class="btn-icon icon-white" style="margin: 0;" />
+                                </button>
+                                <button class="btn btn-sm rounded-circle btn-action media-btn-link media-btn-extra" @onclick:stopPropagation="true" @onclick="() => CopyLinkToClipboardAsync(highResUrl)" title="Copy Link">
+                                    <img src="/svg/link-svgrepo-com.svg" class="btn-icon icon-white" style="margin: 0;" />
+                                </button>
+                            }
+                        }
+                    </div>
                 </div>
             }
         </div>
@@ -100,7 +120,7 @@
 
 @if (UploadMenuImage != null)
 {
-    <div class="position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center dialog-overlay" style="z-index: 10000;" @onclick="CloseUploadMenu">
+    <div class="position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center dialog-overlay" style="z-index: 20000;" @onclick="CloseUploadMenu">
         <div class="dialog-panel d-flex flex-column" @onclick:stopPropagation="true" style="min-width: 300px;">
             <div class="p-4 flex-grow-1 border-bottom border-secondary text-center">
                 <h5 class="fw-bold text-white mb-2">Upload to...</h5>
@@ -632,6 +652,7 @@
             UploadMenuImage = null;
         else
             UploadMenuImage = img;
+        StateHasChanged();
     }
 
     private void CloseUploadMenu()
@@ -695,7 +716,8 @@
             StartIndex = index,
             ShowDownloadButton = true,
             ShowInfoButton = false,
-            OnUploadRequested = (idx) => { HandleViewerUpload(idx); return Task.CompletedTask; }
+            ShowUploadButton = true,
+            OnUploadRequested = async (idx) => await HandleViewerUpload(idx)
         });
     }
 
@@ -714,13 +736,14 @@
         CacheService.Set("PicflowImages", Images);
         CacheService.Set("PicflowAllItems", _allItems);
     }
-    private void HandleViewerUpload(int index)
+    private async Task HandleViewerUpload(int index)
     {
         var targetList = Images;
         if (index >= 0 && index < targetList.Count)
         {
             var item = targetList[index];
-            ToggleUploadMenu(item);
+            UploadMenuImage = item;
+            await InvokeAsync(StateHasChanged);
         }
     }
 
@@ -737,6 +760,199 @@
                 });
             }
             catch { }
+        }
+    }
+
+    private ImageModel? activeExpandedItem = null;
+    private DateTime _lastContextMenuTime = DateTime.MinValue;
+
+    private void HandleCardContextMenu(ImageModel img)
+    {
+        if ((DateTime.UtcNow - _lastContextMenuTime).TotalMilliseconds < 450) return;
+        _lastContextMenuTime = DateTime.UtcNow;
+
+        activeExpandedItem = (activeExpandedItem == img) ? null : img;
+        StateHasChanged();
+    }
+
+    private void HandleCardMouseLeave(ImageModel img)
+    {
+        if (activeExpandedItem == img)
+        {
+            activeExpandedItem = null;
+            StateHasChanged();
+        }
+    }
+
+    private void CloseExpandedCard()
+    {
+        if (activeExpandedItem != null)
+        {
+            activeExpandedItem = null;
+            StateHasChanged();
+        }
+    }
+
+    private async Task CopyImageToClipboardAsync(string source, bool cropPrintBorder = false)
+    {
+        if (string.IsNullOrEmpty(source)) return;
+        try
+        {
+            bool success = false;
+            if (source.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+            {
+                string tempPath = await ClipboardHandler.SaveImageFromUrlAsync(source, cropPrintBorder);
+                if (!string.IsNullOrEmpty(tempPath))
+                {
+                    success = await ClipboardHandler.CopyImageToClipboardAsync(tempPath);
+                }
+            }
+            else
+            {
+                success = await ClipboardHandler.CopyImageToClipboardAsync(source);
+            }
+
+            if (success)
+            {
+                NotificationService.Show("Image copied to clipboard.", "Copied", NotificationType.Success);
+            }
+            else
+            {
+                NotificationService.Show("Failed to copy image.", "Error", NotificationType.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            NotificationService.Show($"Failed to copy image: {ex.Message}", "Error", NotificationType.Error);
+        }
+        finally
+        {
+            activeExpandedItem = null;
+            StateHasChanged();
+        }
+    }
+
+    private async Task DownloadImageFileAsync(string source, string fileName, bool cropPrintBorder = false)
+    {
+        if (string.IsNullOrEmpty(source)) return;
+        try
+        {
+            if (string.IsNullOrWhiteSpace(fileName)) fileName = "download";
+
+            byte[] fileBytes;
+            string ext;
+
+            if (source.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+            {
+                if (cropPrintBorder)
+                {
+                    string tempCropped = await ClipboardHandler.SaveImageFromUrlAsync(source, true);
+                    if (!string.IsNullOrEmpty(tempCropped) && File.Exists(tempCropped))
+                    {
+                        fileBytes = await File.ReadAllBytesAsync(tempCropped);
+                        ext = ".png";
+                        try { File.Delete(tempCropped); } catch { }
+                    }
+                    else
+                    {
+                        var (downloadedBytes, downloadedExt) = await FileHelper.DownloadBytesFromUrlAsync(source);
+                        if (downloadedBytes == null || downloadedBytes.Length == 0)
+                        {
+                            NotificationService.Show("Failed to download image file.", "Error", NotificationType.Error);
+                            return;
+                        }
+                        fileBytes = downloadedBytes;
+                        ext = downloadedExt;
+                    }
+                }
+                else
+                {
+                    var (downloadedBytes, downloadedExt) = await FileHelper.DownloadBytesFromUrlAsync(source);
+                    if (downloadedBytes == null || downloadedBytes.Length == 0)
+                    {
+                        NotificationService.Show("Failed to download image file.", "Error", NotificationType.Error);
+                        return;
+                    }
+                    fileBytes = downloadedBytes;
+                    ext = downloadedExt;
+                }
+            }
+            else
+            {
+                if (!File.Exists(source))
+                {
+                    NotificationService.Show("Source file not found.", "Error", NotificationType.Error);
+                    return;
+                }
+                ext = Path.GetExtension(source);
+                if (string.IsNullOrEmpty(ext)) ext = ".png";
+                fileBytes = await File.ReadAllBytesAsync(source);
+            }
+
+            var (saved, destination) = await FileHelper.SaveImageToDownloadsAsync(fileName, fileBytes, ext);
+            if (saved)
+            {
+                string successMsg = OperatingSystem.IsAndroid()
+                    ? "Image saved directly to Downloads."
+                    : "Image saved successfully.";
+                NotificationService.Show(successMsg, "Saved", NotificationType.Success);
+
+                if (!string.IsNullOrEmpty(destination))
+                {
+                    string mime = ext.ToLowerInvariant() switch
+                    {
+                        ".jpg" or ".jpeg" => "image/jpeg",
+                        ".png" => "image/png",
+                        ".gif" => "image/gif",
+                        ".webp" => "image/webp",
+                        _ => "image/*"
+                    };
+                    await FileHelper.OpenFileAsync(destination, mime);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            NotificationService.Show($"Download failed: {ex.Message}", "Error", NotificationType.Error);
+        }
+        finally
+        {
+            activeExpandedItem = null;
+            StateHasChanged();
+        }
+    }
+
+    private async Task CopyLinkToClipboardAsync(string url)
+    {
+        if (string.IsNullOrEmpty(url)) return;
+        try
+        {
+            bool success = false;
+            try
+            {
+                success = await JSRuntime.InvokeAsync<bool>("clipboardInterop.writeText", url);
+            }
+            catch { }
+
+            if (!success)
+            {
+                await Microsoft.Maui.ApplicationModel.DataTransfer.Clipboard.Default.SetTextAsync(url);
+                success = true;
+            }
+
+            if (success)
+            {
+                NotificationService.Show("Link copied to clipboard.", "Copied", NotificationType.Success);
+            }
+        }
+        catch (Exception ex)
+        {
+            NotificationService.Show($"Failed to copy link: {ex.Message}", "Error", NotificationType.Error);
+        }
+        finally
+        {
+            activeExpandedItem = null;
+            StateHasChanged();
         }
     }
 }

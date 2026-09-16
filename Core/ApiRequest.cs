@@ -219,26 +219,39 @@ namespace VRCGalleryManager.Core
         public async Task<ApiDataPrint> UploadPrint(string path, string note)
         {
             var apiData = new ApiDataPrint();
+            string? preparedPath = null;
             try
             {
-                using var stream = System.IO.File.OpenRead(path);
-                var response = await ExecuteWithReloginAsync(() => Auth.ApiClient.UploadPrintAsync(
-                    stream,
-                    Path.GetFileName(path),
-                    GetMimeType(path),
-                    DateTime.UtcNow,
-                    note: note
-                ));
+                preparedPath = await ClipboardHandler.AddPrintWhiteBorderAsync(path);
+                string fileToUpload = !string.IsNullOrEmpty(preparedPath) ? preparedPath : path;
 
-                apiData.IdImageUploaded = response.Id;
-                apiData.AuthorId = response.AuthorId ?? "";
-                apiData.AuthorName = response.AuthorName ?? "";
-                apiData.FileId = response.Files?.FileId ?? "";
+                using (var stream = System.IO.File.OpenRead(fileToUpload))
+                {
+                    var response = await ExecuteWithReloginAsync(() => Auth.ApiClient.UploadPrintAsync(
+                        stream,
+                        Path.GetFileName(fileToUpload),
+                        GetMimeType(fileToUpload),
+                        DateTime.UtcNow,
+                        note: note
+                    ));
+
+                    apiData.IdImageUploaded = response.Id;
+                    apiData.AuthorId = response.AuthorId ?? "";
+                    apiData.AuthorName = response.AuthorName ?? "";
+                    apiData.FileId = response.Files?.FileId ?? "";
+                }
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
                 throw;
+            }
+            finally
+            {
+                if (!string.IsNullOrEmpty(preparedPath) && preparedPath != path && File.Exists(preparedPath))
+                {
+                    try { File.Delete(preparedPath); } catch { }
+                }
             }
             return apiData;
         }
@@ -309,13 +322,13 @@ namespace VRCGalleryManager.Core
                 var updateRequest = new UpdateUserRequest
                 {
                     AcceptedTOSVersion = user.AcceptedTOSVersion,
-                    Bio = user.Bio,
-                    BioLinks = user.BioLinks,
+                    Bio = !string.IsNullOrEmpty(user.Bio) ? user.Bio : null,
+                    BioLinks = (user.BioLinks != null && user.BioLinks.Count > 0) ? user.BioLinks : null,
                     Status = user.Status,
                     StatusDescription = user.StatusDescription,
                     Tags = user.Tags,
                     Pronouns = user.Pronouns,
-                    ProfilePicOverride = user.ProfilePicOverride,
+                    ProfilePicOverride = !string.IsNullOrEmpty(user.ProfilePicOverride) ? user.ProfilePicOverride : null,
                     UserIcon = urlImage
                 };
 
@@ -335,13 +348,13 @@ namespace VRCGalleryManager.Core
                 var updateRequest = new UpdateUserRequest
                 {
                     AcceptedTOSVersion = user.AcceptedTOSVersion,
-                    Bio = user.Bio,
-                    BioLinks = user.BioLinks,
+                    Bio = !string.IsNullOrEmpty(user.Bio) ? user.Bio : null,
+                    BioLinks = (user.BioLinks != null && user.BioLinks.Count > 0) ? user.BioLinks : null,
                     Status = user.Status,
                     StatusDescription = user.StatusDescription,
                     Tags = user.Tags,
                     Pronouns = user.Pronouns,
-                    UserIcon = user.UserIcon,
+                    UserIcon = !string.IsNullOrEmpty(user.UserIcon) ? user.UserIcon : null,
                     ProfilePicOverride = urlImage
                 };
 

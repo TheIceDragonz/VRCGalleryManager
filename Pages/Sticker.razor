@@ -89,20 +89,40 @@
         }
         else
         {
+            @if (!string.IsNullOrEmpty(activeExpandedCardId))
+            {
+                <div class="card-action-backdrop" @onclick="CloseExpandedCard" @oncontextmenu="CloseExpandedCard" @oncontextmenu:preventDefault="true"></div>
+            }
+
             <div class="flex-grow-1 overflow-auto">
-                <div class="media-grid gap-3">
+                <div class="media-grid gap-3 @(!string.IsNullOrEmpty(activeExpandedCardId) ? "has-card-expanded" : "")">
                     @foreach (var sticker in stickers)
                     {
-                        <div class="position-relative sticker-card media-card-container">
-                            <img src="@sticker.ImageUrl" class="w-100 h-100 object-fit-cover" />
+                        <div class="position-relative sticker-card media-card-container @(activeExpandedCardId == sticker.Id ? "card-expanded-active" : "")"
+                             @oncontextmenu="() => HandleCardContextMenu(sticker.Id)"
+                             @oncontextmenu:preventDefault="true"
+                             @onmouseleave="() => HandleCardMouseLeave(sticker.Id)">
+                            <img src="@sticker.ImageUrl" class="w-100 h-100 object-fit-cover" style="cursor: pointer;" @onclick="() => OpenImage(sticker)" title="View Image" />
                             
-                            <button class="btn btn-dark btn-sm rounded-circle position-absolute btn-action media-btn-open" @onclick="() => OpenImage(sticker)" title="View Image">
-                                <img src="/svg/eye-svgrepo-com.svg" class="btn-icon" style="margin: 0;" />
-                            </button>
-                            
-                            <button class="btn btn-danger btn-sm rounded-circle position-absolute btn-action media-btn-delete" @onclick="() => DeleteSticker(sticker)" title="Delete">
-                                <img src="/svg/trash-bin-trash-svgrepo-com.svg" class="btn-icon" style="margin: 0;" />
-                            </button>
+                            <div class="media-card-actions">
+                                <button class="btn btn-danger btn-sm rounded-circle btn-action media-btn-delete" @onclick:stopPropagation="true" @onclick="() => DeleteSticker(sticker)" title="Delete">
+                                    <img src="/svg/trash-bin-trash-svgrepo-com.svg" class="btn-icon" style="margin: 0;" />
+                                </button>
+
+                                @if (activeExpandedCardId == sticker.Id)
+                                {
+                                    var highResUrl = sticker.ImageUrl.Replace("/image/", "/file/").Replace("/256", "/file");
+                                    <button class="btn btn-sm rounded-circle btn-action media-btn-copy media-btn-extra" @onclick:stopPropagation="true" @onclick="() => CopyImageToClipboardAsync(highResUrl)" title="Copy Image">
+                                        <img src="/svg/copy-svgrepo-com.svg" class="btn-icon icon-white" style="margin: 0;" />
+                                    </button>
+                                    <button class="btn btn-sm rounded-circle btn-action media-btn-download media-btn-extra" @onclick:stopPropagation="true" @onclick='() => DownloadImageFileAsync(highResUrl, "sticker_" + sticker.Id)' title="Download">
+                                        <img src="/svg/download-svgrepo-com.svg" class="btn-icon icon-white" style="margin: 0;" />
+                                    </button>
+                                    <button class="btn btn-sm rounded-circle btn-action media-btn-link media-btn-extra" @onclick:stopPropagation="true" @onclick="() => CopyLinkToClipboardAsync(highResUrl)" title="Copy Link">
+                                        <img src="/svg/link-svgrepo-com.svg" class="btn-icon icon-white" style="margin: 0;" />
+                                    </button>
+                                }
+                            </div>
                         </div>
                     }
                 </div>

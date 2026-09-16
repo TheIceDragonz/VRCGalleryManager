@@ -24,7 +24,16 @@ namespace VRCGalleryManager.Core.Components
         protected bool isRefreshing = false;
         protected bool hasNetworkError = false;
         protected string errorMessage = "";
-        protected int imageCount = 0;
+        private int _imageCount = 0;
+        protected int imageCount
+        {
+            get => _imageCount;
+            set
+            {
+                _imageCount = value;
+                UpdateDropAllowedState();
+            }
+        }
         
         protected string editingBase64Image = null;
         protected bool isDragging = false;
@@ -41,10 +50,22 @@ namespace VRCGalleryManager.Core.Components
             NetworkStatus.OnNetworkStatusChanged += HandleBaseNetworkStatusChanged;
             
             await LoadInitialDataAsync();
+            UpdateDropAllowedState();
 
             if (!string.IsNullOrEmpty(uploadPath) && File.Exists(uploadPath))
             {
-                await LoadLocalFileForEditing(uploadPath);
+                if (imageCount >= MaxImageCount)
+                {
+                    NotificationService.Show(
+                        $"This category is full ({imageCount}/{MaxImageCount}). Please delete an existing item before uploading a new one.",
+                        "Limit Reached",
+                        NotificationType.Error,
+                        6000);
+                }
+                else
+                {
+                    await LoadLocalFileForEditing(uploadPath);
+                }
             }
         }
 
@@ -78,6 +99,7 @@ namespace VRCGalleryManager.Core.Components
         protected async Task OnDropFile(InputFileChangeEventArgs e)
         {
             isDragging = false;
+            if (imageCount >= MaxImageCount) return;
             await OnInputFileChange(e);
         }
 
@@ -266,16 +288,30 @@ namespace VRCGalleryManager.Core.Components
             }
         }
 
+        protected void UpdateDropAllowedState()
+        {
+            if (FileDropService != null)
+            {
+                FileDropService.IsDropAllowed = imageCount < MaxImageCount;
+            }
+        }
+
         public virtual void Dispose()
         {
-            FileDropService.OnDragEnter -= HandleDragEnter;
-            FileDropService.OnDragLeave -= HandleDragLeave;
-            FileDropService.OnFileDropped -= HandleFileDropped;
+            if (FileDropService != null)
+            {
+                FileDropService.IsDropAllowed = true;
+                FileDropService.OnDragEnter -= HandleDragEnter;
+                FileDropService.OnDragLeave -= HandleDragLeave;
+                FileDropService.OnFileDropped -= HandleFileDropped;
+            }
             NetworkStatus.OnNetworkStatusChanged -= HandleBaseNetworkStatusChanged;
         }
 
         protected void HandleDragEnter()
         {
+            if (imageCount >= MaxImageCount) return;
+
             InvokeAsync(() =>
             {
                 isDragging = true;
@@ -297,6 +333,16 @@ namespace VRCGalleryManager.Core.Components
             InvokeAsync(async () =>
             {
                 isDragging = false;
+                if (imageCount >= MaxImageCount)
+                {
+                    NotificationService.Show(
+                        $"This category is full ({imageCount}/{MaxImageCount}). Please delete an existing item before uploading.",
+                        "Limit Reached",
+                        NotificationType.Error,
+                        5000);
+                    return;
+                }
+
                 if (files != null && files.Length > 0)
                 {
                     var filePath = files[0];
@@ -308,6 +354,181 @@ namespace VRCGalleryManager.Core.Components
                 }
                 StateHasChanged();
             });
+        }
+
+        protected string? activeExpandedCardId = null;
+        private DateTime _lastContextMenuTime = DateTime.MinValue;
+
+        protected void HandleCardContextMenu(string? id)
+        {
+            if (!string.IsNullOrEmpty(id))
+            {
+                if ((DateTime.UtcNow - _lastContextMenuTime).TotalMilliseconds < 450)
+                {
+                    return;
+                }
+                _lastContextMenuTime = DateTime.UtcNow;
+
+                activeExpandedCardId = (activeExpandedCardId == id) ? null : id;
+                StateHasChanged();
+            }
+        }
+
+        protected void HandleCardMouseLeave(string? id)
+        {
+            if (activeExpandedCardId != null && activeExpandedCardId == id)
+            {
+                activeExpandedCardId = null;
+                StateHasChanged();
+            }
+        }
+
+        protected void CloseExpandedCard()
+        {
+            if (activeExpandedCardId != null)
+            {
+                activeExpandedCardId = null;
+                StateHasChanged();
+            }
+        }
+
+        protected async Task CopyImageToClipboardAsync(string source)
+        {
+            if (string.IsNullOrEmpty(source)) return;
+            try
+            {
+                bool success = false;
+                if (source.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+                {
+                    string tempPath = await ClipboardHandler.SaveImageFromUrlAsync(source, false);
+                    if (!string.IsNullOrEmpty(tempPath))
+                    {
+                        success = await ClipboardHandler.CopyImageToClipboardAsync(tempPath);
+                    }
+                }
+                else
+                {
+                    success = await ClipboardHandler.CopyImageToClipboardAsync(source);
+                }
+
+                if (success)
+                {
+                    NotificationService.Show("Image copied to clipboard.", "Copied", NotificationType.Success);
+                }
+                else
+                {
+                    NotificationService.Show("Failed to copy image.", "Error", NotificationType.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                NotificationService.Show($"Failed to copy image: {ex.Message}", "Error", NotificationType.Error);
+            }
+            finally
+            {
+                activeExpandedCardId = null;
+                StateHasChanged();
+            }
+        }
+
+        protected async Task DownloadImageFileAsync(string source, string fileName)
+        {
+            if (string.IsNullOrEmpty(source)) return;
+            try
+            {
+                if (string.IsNullOrWhiteSpace(fileName)) fileName = "download";
+
+                byte[] fileBytes;
+                string ext;
+
+                if (source.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+                {
+                    var (downloadedBytes, downloadedExt) = await FileHelper.DownloadBytesFromUrlAsync(source);
+                    if (downloadedBytes == null || downloadedBytes.Length == 0)
+                    {
+                        NotificationService.Show("Failed to download image file.", "Error", NotificationType.Error);
+                        return;
+                    }
+                    fileBytes = downloadedBytes;
+                    ext = downloadedExt;
+                }
+                else
+                {
+                    if (!File.Exists(source))
+                    {
+                        NotificationService.Show("Source file not found.", "Error", NotificationType.Error);
+                        return;
+                    }
+                    ext = Path.GetExtension(source);
+                    if (string.IsNullOrEmpty(ext)) ext = ".png";
+                    fileBytes = await File.ReadAllBytesAsync(source);
+                }
+
+                var (saved, destination) = await FileHelper.SaveImageToDownloadsAsync(fileName, fileBytes, ext);
+                if (saved)
+                {
+                    string successMsg = OperatingSystem.IsAndroid()
+                        ? "Image saved directly to Downloads."
+                        : "Image saved successfully.";
+                    NotificationService.Show(successMsg, "Saved", NotificationType.Success);
+
+                    if (!string.IsNullOrEmpty(destination))
+                    {
+                        string mime = ext.ToLowerInvariant() switch
+                        {
+                            ".jpg" or ".jpeg" => "image/jpeg",
+                            ".png" => "image/png",
+                            ".gif" => "image/gif",
+                            ".webp" => "image/webp",
+                            _ => "image/*"
+                        };
+                        await FileHelper.OpenFileAsync(destination, mime);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                NotificationService.Show($"Download failed: {ex.Message}", "Error", NotificationType.Error);
+            }
+            finally
+            {
+                activeExpandedCardId = null;
+                StateHasChanged();
+            }
+        }
+
+        protected async Task CopyLinkToClipboardAsync(string url)
+        {
+            if (string.IsNullOrEmpty(url)) return;
+            try
+            {
+                bool success = false;
+                try
+                {
+                    success = await JSRuntime.InvokeAsync<bool>("clipboardInterop.writeText", url);
+                }
+                catch { }
+
+                if (!success)
+                {
+                    await Microsoft.Maui.ApplicationModel.DataTransfer.Clipboard.Default.SetTextAsync(url);
+                    success = true;
+                }
+
+                if (success)
+                {
+                    NotificationService.Show("Link copied to clipboard.", "Copied", NotificationType.Success);
+                }
+            }
+            catch (Exception ex)
+            {
+                NotificationService.Show($"Failed to copy link: {ex.Message}", "Error", NotificationType.Error);
+            }
+            finally
+            {
+                activeExpandedCardId = null;
+                StateHasChanged();
+            }
         }
     }
 }

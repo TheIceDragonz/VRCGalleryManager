@@ -188,6 +188,42 @@ namespace VRCGalleryManager.Core
             }
         }
 
+        public static async Task<string> AddPrintWhiteBorderAsync(string inputPath)
+        {
+            if (string.IsNullOrEmpty(inputPath) || !File.Exists(inputPath))
+            {
+                return inputPath;
+            }
+
+            using var stream = File.OpenRead(inputPath);
+            using var src = await Image.LoadAsync<Rgba32>(stream);
+
+            // If already full print resolution (2048 x 1440), no border addition needed
+            if (src.Width == 2048 && src.Height == 1440)
+            {
+                return inputPath;
+            }
+
+            // Ensure photo is 1920x1080 (16:9 Full HD)
+            if (src.Width != 1920 || src.Height != 1080)
+            {
+                src.Mutate(x => x.Resize(1920, 1080, KnownResamplers.Bicubic));
+            }
+
+            // Create 2048 x 1440 white canvas
+            // Margins: 64px left, 64px right, 69px top, 291px bottom
+            using var printCanvas = new Image<Rgba32>(2048, 1440);
+            printCanvas.Mutate(x =>
+            {
+                x.BackgroundColor(Color.White);
+                x.DrawImage(src, new Point(64, 69), 1f);
+            });
+
+            string outputPath = GetTempFilePath("Print-Upload");
+            await printCanvas.SaveAsPngAsync(outputPath);
+            return outputPath;
+        }
+
         private static string GetTempFilePath(string prefix)
             => Path.Combine(TempDirectory, $"{prefix}_{Guid.NewGuid():N}.png");
 

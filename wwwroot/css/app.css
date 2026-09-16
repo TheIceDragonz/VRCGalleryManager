@@ -973,6 +973,17 @@ h6 {
     align-self: center;
 }
 
+.settings-account-verified-badge {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+    align-self: center;
+    vertical-align: middle;
+    display: inline-block;
+    filter: var(--filter-accent);
+    transition: transform 0.2s ease;
+}
+
 .settings-logout-btn {
     border-color: rgba(220, 53, 69, 0.45) !important;
     color: #ff6b6b !important;
@@ -1236,6 +1247,8 @@ h6 {
 .media-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(var(--grid-min, 150px), 1fr));
+    padding: 10px;
+    box-sizing: border-box;
 }
 
 .grid-wide {
@@ -1253,6 +1266,16 @@ h6 {
     border-radius: 20px;
     border: 2px solid transparent;
     overflow: hidden;
+    -webkit-touch-callout: none !important;
+    -webkit-user-select: none !important;
+    user-select: none !important;
+}
+
+.media-card-container img,
+.media-card-container .spritesheet-animator {
+    -webkit-touch-callout: none !important;
+    -webkit-user-select: none !important;
+    user-select: none !important;
 }
 
 .icon-card,
@@ -1297,6 +1320,50 @@ h6 {
     filter: var(--filter-white) !important;
 }
 
+.media-btn-select {
+    bottom: 5px;
+    right: 39px;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    opacity: 1;
+    background-color: var(--theme-btn-bg, #07242B) !important;
+    border: 1px solid var(--theme-btn-border, #053742) !important;
+}
+
+.media-btn-select .btn-icon {
+    filter: var(--filter-accent) !important;
+}
+
+.media-btn-select:hover:not(:disabled):not(.selected) {
+    background-color: var(--theme-btn-hover-bg, #0A3540) !important;
+    border-color: var(--accent, #6ae3f9) !important;
+}
+
+.media-btn-select:hover:not(:disabled):not(.selected) .btn-icon {
+    filter: var(--filter-white) !important;
+}
+
+.media-btn-select.selected,
+.media-btn-select.active {
+    background-color: var(--accent, #6ae3f9) !important;
+    border-color: var(--accent, #6ae3f9) !important;
+    box-shadow: none !important;
+    opacity: 1 !important;
+}
+
+.media-btn-select.selected .btn-icon,
+.media-btn-select.active .btn-icon {
+    filter: brightness(0) !important;
+}
+
+.media-btn-select:disabled,
+.media-btn-select.disabled {
+    cursor: default !important;
+    transform: none !important;
+    pointer-events: auto !important;
+}
+
 .media-btn-delete {
     bottom: 5px;
     right: 5px;
@@ -1305,7 +1372,7 @@ h6 {
     padding: 0;
     opacity: 1;
     background-color: #420505 !important;
-    border-color: #6a0b0b !important;
+    border: 2px solid #6a0b0b !important;
 }
 
 .media-btn-delete:hover {
@@ -1321,7 +1388,7 @@ h6 {
     padding: 0;
     opacity: 1;
     background-color: #0b3d16 !important;
-    border-color: #125e22 !important;
+    border: 2px solid #125e22 !important;
 }
 
 .media-btn-upload:hover {
@@ -1341,7 +1408,7 @@ h6 {
     padding: 0;
     opacity: 1;
     background-color: #3b2a08 !important;
-    border-color: #593f0c !important;
+    border: 2px solid #593f0c !important;
 }
 
 .media-btn-folder:hover {
@@ -1352,6 +1419,96 @@ h6 {
 .media-btn-folder .btn-icon {
     filter: var(--filter-white) !important;
 }
+
+.media-card-actions {
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    display: flex;
+    flex-direction: row-reverse;
+    align-items: center;
+    gap: 4px;
+    z-index: 5;
+    max-width: calc(100% - 10px);
+}
+
+.media-card-actions .btn-action {
+    position: relative !important;
+    bottom: auto !important;
+    right: auto !important;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    flex-shrink: 0;
+    border-width: 2px !important;
+    border-style: solid !important;
+}
+
+.media-btn-extra {
+    animation: btnExtraPopIn 0.16s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+}
+
+@keyframes btnExtraPopIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.5);
+    }
+
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.media-btn-copy {
+    background-color: #1a222d !important;
+    border: 2px solid #2c3b4e !important;
+}
+
+.media-btn-copy:hover {
+    background-color: #2c3b4e !important;
+    border-color: var(--accent, #6ae3f9) !important;
+    box-shadow: 0 0 8px rgba(106, 227, 249, 0.4) !important;
+}
+
+.media-btn-copy .btn-icon {
+    filter: var(--filter-white) !important;
+}
+
+.media-btn-download {
+    background-color: #082d33 !important;
+    border: 2px solid #0e4b55 !important;
+}
+
+.media-btn-download:hover {
+    background-color: #0e4b55 !important;
+    border-color: var(--accent, #6ae3f9) !important;
+    box-shadow: 0 0 8px rgba(106, 227, 249, 0.5) !important;
+}
+
+.media-btn-download .btn-icon {
+    filter: var(--filter-white) !important;
+}
+
+.media-btn-link {
+    background-color: #261b38 !important;
+    border: 2px solid #402e5d !important;
+}
+
+.media-btn-link:hover {
+    background-color: #402e5d !important;
+    border-color: #a855f7 !important;
+    box-shadow: 0 0 8px rgba(168, 85, 247, 0.4) !important;
+}
+
+.media-btn-link .btn-icon {
+    filter: var(--filter-white) !important;
+}
+
 
 /* ==========================================================================
    Unified Notifications & Screenshot Popup Host (Adaptive Bottom-to-Top Stack)
@@ -1490,14 +1647,103 @@ h6 {
     border-color: rgba(255, 255, 255, 0.2) !important;
 }
 
-.btn-action:hover {
+.btn-action {
+    transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.2s ease, transform 0.2s ease;
+}
+
+/* Windows / Desktop: hide action buttons until mouse hovers over the image card */
+.windows-layout .media-card-container .btn-action {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+}
+
+.windows-layout .media-card-container:hover .btn-action {
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .main-page-container:not(.android-layout) .media-card-container .btn-action {
+        opacity: 0 !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+    }
+
+    .main-page-container:not(.android-layout) .media-card-container:hover .btn-action {
+        opacity: 1 !important;
+        visibility: visible !important;
+        pointer-events: auto !important;
+    }
+}
+
+/* Phone / Mobile (Android / Touch): hide action buttons in preview when NOT expanded */
+.android-layout .media-card-container:not(.card-expanded-active) .btn-action {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+}
+
+@media (hover: none) {
+    .media-card-container:not(.card-expanded-active) .btn-action {
+        opacity: 0 !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+    }
+}
+
+.btn-action:hover:not(:disabled) {
     opacity: 1 !important;
     transform: scale(1.1);
-    transition: all 0.2s;
 }
 
 .border-selected {
     border: 3px solid var(--accent) !important;
+}
+
+/* Mobile & Desktop Action Backdrop & Focus Spotlight Effect */
+.card-action-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 800;
+    background: rgba(0, 0, 0, 0.001);
+    touch-action: manipulation;
+    cursor: default;
+}
+
+.media-card-container {
+    transition: filter 0.25s ease, opacity 0.25s ease, transform 0.25s ease, border-color 0.2s ease;
+}
+
+/* Blur all other media cards without darkening when one card is in focus / expanded */
+.has-card-expanded .media-card-container:not(.card-expanded-active),
+.media-grid:has(.card-expanded-active) .media-card-container:not(.card-expanded-active) {
+    filter: blur(5px) !important;
+    transform: scale(0.98);
+    pointer-events: none !important;
+}
+
+.media-card-container.card-expanded-active {
+    z-index: 1000 !important;
+    position: relative !important;
+    filter: none !important;
+    opacity: 1 !important;
+    transform: scale(1.04);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.65), 0 0 0 2px var(--accent) !important;
+}
+
+.android-layout .media-card-container.card-expanded-active .btn-action,
+.media-card-container.card-expanded-active .btn-action,
+.card-expanded-active .btn-action {
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
 }
 
 /* Icons */
@@ -1505,6 +1751,32 @@ h6 {
     aspect-ratio: 1 / 1;
     border-radius: 50% 50% 20px 50% !important;
     overflow: hidden;
+}
+
+.icon-droplet-card .media-card-actions {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 5;
+    max-width: none;
+    display: block;
+}
+
+.icon-droplet-card .media-card-actions .btn-action {
+    position: absolute !important;
+    pointer-events: auto;
+    bottom: 5px;
+    right: 5px;
+}
+
+.icon-droplet-card .media-card-actions .media-btn-delete {
+    right: 5px;
+    bottom: 5px;
+}
+
+.icon-droplet-card .media-card-actions .media-btn-select {
+    right: 39px;
+    bottom: 5px;
 }
 
 /* Gallery */
@@ -2302,6 +2574,40 @@ canvas.picking-color {
 
 .btn-viewer-action.btn-viewer-upload:hover img {
     filter: var(--filter-white) !important;
+}
+
+.btn-viewer-action.btn-viewer-select {
+    background-color: var(--theme-btn-bg, #07242B) !important;
+    border: 2px solid var(--theme-btn-border, #053742) !important;
+    opacity: 1 !important;
+}
+
+.btn-viewer-action.btn-viewer-select img {
+    filter: var(--filter-accent) !important;
+}
+
+.btn-viewer-action.btn-viewer-select:hover:not(:disabled):not(.active) {
+    background-color: var(--theme-btn-hover-bg, #0A3540) !important;
+    border-color: var(--accent, #6ae3f9) !important;
+}
+
+.btn-viewer-action.btn-viewer-select:hover:not(:disabled):not(.active) img {
+    filter: var(--filter-white) !important;
+}
+
+.btn-viewer-action.btn-viewer-select.active,
+.btn-viewer-action.btn-viewer-select:disabled {
+    background-color: var(--accent, #6ae3f9) !important;
+    border-color: var(--accent, #6ae3f9) !important;
+    cursor: default !important;
+    transform: none !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+}
+
+.btn-viewer-action.btn-viewer-select.active img,
+.btn-viewer-action.btn-viewer-select:disabled img {
+    filter: brightness(0) !important;
 }
 
 .btn-viewer-action img {

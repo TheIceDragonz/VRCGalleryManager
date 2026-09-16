@@ -61,12 +61,20 @@
             }
             else
             {
-                <div class="media-grid gap-3 pb-3">
+                @if (!string.IsNullOrEmpty(activeExpandedPath))
+                {
+                    <div class="card-action-backdrop" @onclick="CloseExpandedCard" @oncontextmenu="CloseExpandedCard" @oncontextmenu:preventDefault="true"></div>
+                }
+
+                <div class="media-grid gap-3 pb-3 @(!string.IsNullOrEmpty(activeExpandedPath) ? "has-card-expanded" : "")">
                     @foreach (var item in Items)
                     {
-                        <div class="position-relative gallery-icon-card media-card-container"
-                             style="@(item.IsFolder ? "cursor: pointer;" : "")"
-                             @onclick="() => { if(item.IsFolder) OnItemClick(item); }"
+                        <div class="position-relative gallery-icon-card media-card-container @(!item.IsFolder && activeExpandedPath == item.Path ? "card-expanded-active" : "")"
+                             style="cursor: pointer;"
+                             @onclick="() => { if(item.IsFolder) OnItemClick(item); else OpenFile(item.Path); }"
+                             @oncontextmenu="() => { if(!item.IsFolder) HandleCardContextMenu(item.Path); }"
+                             @oncontextmenu:preventDefault="!item.IsFolder"
+                             @onmouseleave="() => { if(!item.IsFolder) HandleCardMouseLeave(item.Path); }"
                              title="@GetItemTooltip(item)">
 
                             @if (item.IsFolder)
@@ -96,13 +104,26 @@
                                 @if (!string.IsNullOrEmpty(item.ThumbnailBase64))
                                 {
                                     <img src="@item.ThumbnailBase64" class="w-100 h-100 object-fit-cover" />
-                                    <button class="btn btn-success btn-sm rounded-circle position-absolute btn-action media-btn-upload" style="right: 40px;" @onclick:stopPropagation="true" @onclick="() => { SelectedImage = item; ToggleUploadMenu(); }" title="Upload">
-                                        <img src="/svg/add-circle-svgrepo-com.svg" class="btn-icon icon-white" style="margin: 0;" />
-                                    </button>
+                                    
+                                    <div class="media-card-actions">
+                                        <button class="btn btn-danger btn-sm rounded-circle btn-action media-btn-delete" @onclick:stopPropagation="true" @onclick="() => DeleteItem(item)" title="Delete">
+                                            <img src="/svg/trash-bin-trash-svgrepo-com.svg" class="btn-icon" style="margin: 0;" />
+                                        </button>
 
-                                    <button class="btn btn-dark btn-sm rounded-circle position-absolute btn-action media-btn-open" style="right: 5px;" @onclick:stopPropagation="true" @onclick="() => OpenFile(item.Path)" title="View Image">
-                                        <img src="/svg/eye-svgrepo-com.svg" class="btn-icon" style="margin: 0;" />
-                                    </button>
+                                        <button class="btn btn-success btn-sm rounded-circle btn-action media-btn-upload" @onclick:stopPropagation="true" @onclick="() => { SelectedImage = item; ToggleUploadMenu(); }" title="Upload">
+                                            <img src="/svg/add-circle-svgrepo-com.svg" class="btn-icon icon-white" style="margin: 0;" />
+                                        </button>
+
+                                        @if (activeExpandedPath == item.Path)
+                                        {
+                                            <button class="btn btn-sm rounded-circle btn-action media-btn-copy media-btn-extra" @onclick:stopPropagation="true" @onclick="() => CopyImageToClipboardAsync(item.Path)" title="Copy Image">
+                                                <img src="/svg/copy-svgrepo-com.svg" class="btn-icon icon-white" style="margin: 0;" />
+                                            </button>
+                                            <button class="btn btn-sm rounded-circle btn-action media-btn-folder media-btn-extra" @onclick:stopPropagation="true" @onclick="() => OpenInExplorer(item.Path)" title="Open Location">
+                                                <img src="/svg/folder-open-svgrepo-com.svg" class="btn-icon icon-white" style="margin: 0;" />
+                                            </button>
+                                        }
+                                    </div>
                                 }
                                 else if (item.IsThumbLoading)
                                 {
@@ -123,7 +144,7 @@
 
 @if (ShowUploadMenu)
 {
-    <div class="position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center dialog-overlay" style="z-index: 10000;" @onclick="CloseUploadMenu">
+    <div class="position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center dialog-overlay" style="z-index: 20000;" @onclick="CloseUploadMenu">
         <div class="dialog-panel d-flex flex-column" @onclick:stopPropagation="true" style="min-width: 300px;">
             <div class="p-4 flex-grow-1 border-bottom border-secondary text-center">
                 <h5 class="fw-bold text-white mb-2">Upload to...</h5>
@@ -517,6 +538,8 @@
                 StartIndex = index,
                 ShowDownloadButton = false,
                 ShowInfoButton = true,
+                ShowDeleteButton = true,
+                ShowUploadButton = true,
                 OnDeleteRequested = async (idx) => await HandleViewerDelete(idx),
                 OnUploadRequested = async (idx) => { HandleViewerUpload(idx); await Task.CompletedTask; }
             });
@@ -534,6 +557,67 @@
             }
         }
         catch { }
+        finally
+        {
+            activeExpandedPath = null;
+            StateHasChanged();
+        }
+    }
+
+    private string? activeExpandedPath = null;
+    private DateTime _lastContextMenuTime = DateTime.MinValue;
+
+    private void HandleCardContextMenu(string path)
+    {
+        if ((DateTime.UtcNow - _lastContextMenuTime).TotalMilliseconds < 450) return;
+        _lastContextMenuTime = DateTime.UtcNow;
+
+        activeExpandedPath = (activeExpandedPath == path) ? null : path;
+        StateHasChanged();
+    }
+
+    private void HandleCardMouseLeave(string path)
+    {
+        if (activeExpandedPath == path)
+        {
+            activeExpandedPath = null;
+            StateHasChanged();
+        }
+    }
+
+    private void CloseExpandedCard()
+    {
+        if (activeExpandedPath != null)
+        {
+            activeExpandedPath = null;
+            StateHasChanged();
+        }
+    }
+
+    private async Task CopyImageToClipboardAsync(string filePath)
+    {
+        if (string.IsNullOrEmpty(filePath)) return;
+        try
+        {
+            bool success = await ClipboardHandler.CopyImageToClipboardAsync(filePath);
+            if (success)
+            {
+                NotificationService.Show("Image copied to clipboard.", "Copied", NotificationType.Success);
+            }
+            else
+            {
+                NotificationService.Show("Failed to copy image.", "Error", NotificationType.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            NotificationService.Show($"Failed to copy image: {ex.Message}", "Error", NotificationType.Error);
+        }
+        finally
+        {
+            activeExpandedPath = null;
+            StateHasChanged();
+        }
     }
 
     private async Task LoadFullPreviewAsync(GalleryItem item)
@@ -552,14 +636,14 @@
     private void ToggleUploadMenu() => ShowUploadMenu = !ShowUploadMenu;
     private void CloseUploadMenu() { if (ShowUploadMenu) ShowUploadMenu = false; }
 
-    private void HandleViewerUpload(int index)
+    private async Task HandleViewerUpload(int index)
     {
         var targetList = Items.Where(x => !x.IsFolder).ToList();
         if (index >= 0 && index < targetList.Count)
         {
             SelectedImage = targetList[index];
             ShowUploadMenu = true;
-            StateHasChanged();
+            await InvokeAsync(StateHasChanged);
         }
     }
 
@@ -619,6 +703,8 @@
                         StartIndex = Math.Min(index, viewerItems.Count - 1),
                         ShowDownloadButton = false,
                         ShowInfoButton = true,
+                        ShowDeleteButton = true,
+                        ShowUploadButton = true,
                         OnDeleteRequested = async (idx) => await HandleViewerDelete(idx),
                         OnUploadRequested = async (idx) => { HandleViewerUpload(idx); await Task.CompletedTask; }
                     });
@@ -626,6 +712,38 @@
                 else
                 {
                     ViewerService.Close();
+                }
+
+                StateHasChanged();
+                NotificationService.Show("Photo moved to the Recycle Bin.", "Deleted", NotificationType.Success);
+            }
+            catch (Exception ex)
+            {
+                NotificationService.Show($"Delete failed: {ex.Message}", "Delete Error", NotificationType.Error);
+            }
+        }
+    }
+
+    private async Task DeleteItem(GalleryItem item)
+    {
+        if (item == null || item.IsFolder) return;
+
+        bool confirm = await dialogService.ShowConfirmAsync("Delete Photo", $"Are you sure you want to move \"{item.Name}\" to the Recycle Bin?", "Delete", "Cancel");
+        if (confirm)
+        {
+            try
+            {
+                bool deleted = FileHelper.DeleteToRecycleBin(item.Path);
+                if (!deleted)
+                {
+                    NotificationService.Show("Failed to delete the photo.", "Delete Error", NotificationType.Error);
+                    return;
+                }
+
+                Items.Remove(item);
+                if (SelectedImage == item)
+                {
+                    SelectedImage = null;
                 }
 
                 StateHasChanged();
