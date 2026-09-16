@@ -100,10 +100,10 @@
                             @if (activeExpandedItem == img)
                             {
                                 var highResUrl = img.Url.Replace("/image/", "/file/").Replace("/256", "/file");
-                                <button class="btn btn-sm rounded-circle btn-action media-btn-copy media-btn-extra" @onclick:stopPropagation="true" @onclick="() => CopyImageToClipboardAsync(highResUrl)" title="Copy Image">
+                                <button class="btn btn-sm rounded-circle btn-action media-btn-copy media-btn-extra" @onclick:stopPropagation="true" @onclick="() => CopyImageToClipboardAsync(highResUrl, img.Category == ItemCategory.Print && CropPrints)" title="Copy Image">
                                     <img src="/svg/copy-svgrepo-com.svg" class="btn-icon icon-white" style="margin: 0;" />
                                 </button>
-                                <button class="btn btn-sm rounded-circle btn-action media-btn-download media-btn-extra" @onclick:stopPropagation="true" @onclick='() => DownloadImageFileAsync(highResUrl, $"{img.Username}_{img.Category}")' title="Download">
+                                <button class="btn btn-sm rounded-circle btn-action media-btn-download media-btn-extra" @onclick:stopPropagation="true" @onclick='() => DownloadImageFileAsync(highResUrl, $"{img.Username}_{img.Category}", img.Category == ItemCategory.Print && CropPrints)' title="Download">
                                     <img src="/svg/download-svgrepo-com.svg" class="btn-icon icon-white" style="margin: 0;" />
                                 </button>
                                 <button class="btn btn-sm rounded-circle btn-action media-btn-link media-btn-extra" @onclick:stopPropagation="true" @onclick="() => CopyLinkToClipboardAsync(highResUrl)" title="Copy Link">
@@ -793,7 +793,7 @@
         }
     }
 
-    private async Task CopyImageToClipboardAsync(string source)
+    private async Task CopyImageToClipboardAsync(string source, bool cropPrintBorder = false)
     {
         if (string.IsNullOrEmpty(source)) return;
         try
@@ -801,7 +801,7 @@
             bool success = false;
             if (source.StartsWith("http", StringComparison.OrdinalIgnoreCase))
             {
-                string tempPath = await ClipboardHandler.SaveImageFromUrlAsync(source, false);
+                string tempPath = await ClipboardHandler.SaveImageFromUrlAsync(source, cropPrintBorder);
                 if (!string.IsNullOrEmpty(tempPath))
                 {
                     success = await ClipboardHandler.CopyImageToClipboardAsync(tempPath);
@@ -832,7 +832,7 @@
         }
     }
 
-    private async Task DownloadImageFileAsync(string source, string fileName)
+    private async Task DownloadImageFileAsync(string source, string fileName, bool cropPrintBorder = false)
     {
         if (string.IsNullOrEmpty(source)) return;
         try
@@ -844,14 +844,38 @@
 
             if (source.StartsWith("http", StringComparison.OrdinalIgnoreCase))
             {
-                var (downloadedBytes, downloadedExt) = await FileHelper.DownloadBytesFromUrlAsync(source);
-                if (downloadedBytes == null || downloadedBytes.Length == 0)
+                if (cropPrintBorder)
                 {
-                    NotificationService.Show("Failed to download image file.", "Error", NotificationType.Error);
-                    return;
+                    string tempCropped = await ClipboardHandler.SaveImageFromUrlAsync(source, true);
+                    if (!string.IsNullOrEmpty(tempCropped) && File.Exists(tempCropped))
+                    {
+                        fileBytes = await File.ReadAllBytesAsync(tempCropped);
+                        ext = ".png";
+                        try { File.Delete(tempCropped); } catch { }
+                    }
+                    else
+                    {
+                        var (downloadedBytes, downloadedExt) = await FileHelper.DownloadBytesFromUrlAsync(source);
+                        if (downloadedBytes == null || downloadedBytes.Length == 0)
+                        {
+                            NotificationService.Show("Failed to download image file.", "Error", NotificationType.Error);
+                            return;
+                        }
+                        fileBytes = downloadedBytes;
+                        ext = downloadedExt;
+                    }
                 }
-                fileBytes = downloadedBytes;
-                ext = downloadedExt;
+                else
+                {
+                    var (downloadedBytes, downloadedExt) = await FileHelper.DownloadBytesFromUrlAsync(source);
+                    if (downloadedBytes == null || downloadedBytes.Length == 0)
+                    {
+                        NotificationService.Show("Failed to download image file.", "Error", NotificationType.Error);
+                        return;
+                    }
+                    fileBytes = downloadedBytes;
+                    ext = downloadedExt;
+                }
             }
             else
             {

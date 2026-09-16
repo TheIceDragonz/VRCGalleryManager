@@ -219,26 +219,39 @@ namespace VRCGalleryManager.Core
         public async Task<ApiDataPrint> UploadPrint(string path, string note)
         {
             var apiData = new ApiDataPrint();
+            string? preparedPath = null;
             try
             {
-                using var stream = System.IO.File.OpenRead(path);
-                var response = await ExecuteWithReloginAsync(() => Auth.ApiClient.UploadPrintAsync(
-                    stream,
-                    Path.GetFileName(path),
-                    GetMimeType(path),
-                    DateTime.UtcNow,
-                    note: note
-                ));
+                preparedPath = await ClipboardHandler.AddPrintWhiteBorderAsync(path);
+                string fileToUpload = !string.IsNullOrEmpty(preparedPath) ? preparedPath : path;
 
-                apiData.IdImageUploaded = response.Id;
-                apiData.AuthorId = response.AuthorId ?? "";
-                apiData.AuthorName = response.AuthorName ?? "";
-                apiData.FileId = response.Files?.FileId ?? "";
+                using (var stream = System.IO.File.OpenRead(fileToUpload))
+                {
+                    var response = await ExecuteWithReloginAsync(() => Auth.ApiClient.UploadPrintAsync(
+                        stream,
+                        Path.GetFileName(fileToUpload),
+                        GetMimeType(fileToUpload),
+                        DateTime.UtcNow,
+                        note: note
+                    ));
+
+                    apiData.IdImageUploaded = response.Id;
+                    apiData.AuthorId = response.AuthorId ?? "";
+                    apiData.AuthorName = response.AuthorName ?? "";
+                    apiData.FileId = response.Files?.FileId ?? "";
+                }
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
                 throw;
+            }
+            finally
+            {
+                if (!string.IsNullOrEmpty(preparedPath) && preparedPath != path && File.Exists(preparedPath))
+                {
+                    try { File.Delete(preparedPath); } catch { }
+                }
             }
             return apiData;
         }
