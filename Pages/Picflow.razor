@@ -81,10 +81,11 @@
                         {
                             var animUrl = img.HighResUrl;
                             <div class="spritesheet-animator w-100 h-100" 
-                                 style="background-image: url('@animUrl'); background-size: @(img.Frames <= 16 ? "400% 400%" : "800% 800%"); cursor: pointer;"
+                                 style="background-image: url('@animUrl'); background-size: @(img.Frames <= 4 ? "200% 200%" : (img.Frames <= 16 ? "400% 400%" : "800% 800%")); cursor: pointer;"
                                  data-animated="true"
                                  data-frames="@img.Frames"
                                  data-fps="@(img.FramesOverTime > 0 ? img.FramesOverTime : 15)"
+                                 data-cols="@(img.Frames <= 4 ? 2 : (img.Frames <= 16 ? 4 : 8))"
                                  @onclick="() => OpenImage(img)"
                                  title="View Image">
                             </div>
@@ -142,10 +143,11 @@
                 {
                     <div class="overflow-hidden position-relative d-inline-block rounded shadow-sm mx-auto" style="height: 200px; aspect-ratio: 1/1;">
                         <div class="spritesheet-animator w-100 h-100" 
-                             style="background-image: url('@UploadMenuImage.HighResUrl'); background-size: @(UploadMenuImage.Frames <= 16 ? "400% 400%" : "800% 800%");"
+                             style="background-image: url('@UploadMenuImage.HighResUrl'); background-size: @(UploadMenuImage.Frames <= 4 ? "200% 200%" : (UploadMenuImage.Frames <= 16 ? "400% 400%" : "800% 800%"));"
                              data-animated="true"
                              data-frames="@UploadMenuImage.Frames"
-                             data-fps="@(UploadMenuImage.FramesOverTime > 0 ? UploadMenuImage.FramesOverTime : 15)">
+                             data-fps="@(UploadMenuImage.FramesOverTime > 0 ? UploadMenuImage.FramesOverTime : 15)"
+                             data-cols="@(UploadMenuImage.Frames <= 4 ? 2 : (UploadMenuImage.Frames <= 16 ? 4 : 8))">
                         </div>
                     </div>
                 }
@@ -829,9 +831,16 @@
                 }
             }
 
-            if (model.Frames <= 1 && (unescaped.Contains("spritesheet", StringComparison.OrdinalIgnoreCase) || unescaped.Contains("sprite_sheet", StringComparison.OrdinalIgnoreCase)))
+            if (model.Frames <= 1)
             {
-                model.Frames = 16;
+                if (unescaped.Contains("2x2", StringComparison.OrdinalIgnoreCase))
+                {
+                    model.Frames = 4;
+                }
+                else if (unescaped.Contains("spritesheet", StringComparison.OrdinalIgnoreCase) || unescaped.Contains("sprite_sheet", StringComparison.OrdinalIgnoreCase))
+                {
+                    model.Frames = 16;
+                }
             }
         }
 

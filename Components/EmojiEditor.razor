@@ -237,32 +237,17 @@
                 else if (IsSpritesheetMode)
                 {
                     <div class="mb-3">
-                        <label class="form-label small text-muted mb-1">Grid Layout</label>
-                        <div class="btn-group w-100" role="group">
-                            <button type="button" class="btn btn-sm @(GridMode == "Auto" ? "btn-info fw-bold" : "btn-dark text-muted")" 
-                                    @onclick='() => SetGridMode("Auto")'>Auto</button>
-                            <button type="button" class="btn btn-sm @(GridMode == "4x4" ? "btn-info fw-bold" : "btn-dark text-muted")" 
-                                    @onclick='() => SetGridMode("4x4")'>4×4</button>
-                            <button type="button" class="btn btn-sm @(GridMode == "8x8" ? "btn-info fw-bold" : "btn-dark text-muted")" 
-                                    @onclick='() => SetGridMode("8x8")'>8×8</button>
-                        </div>
-                    </div>
-
-                    <div class="mb-3">
                         <label class="form-label small text-muted mb-1 d-flex justify-content-between">
                             <span>Total Frames</span>
                             <span class="text-accent fw-bold">@FinalFrameCount</span>
                         </label>
-                        <input type="range" class="form-range" min="2" max="@MaxAllowedFrames" value="@FinalFrameCount" 
+                        <input type="range" class="form-range" min="2" max="64" value="@FinalFrameCount" 
                                @oninput="OnSpritesheetFrameInput" @onchange="OnSpritesheetFrameChanged" />
                         <div class="d-flex gap-1 flex-wrap mt-1">
                             @foreach (var f in QuickFramePresets)
                             {
-                                if (f <= MaxAllowedFrames)
-                                {
-                                    <button type="button" class="btn btn-sm @(FinalFrameCount == f ? "btn-info fw-bold" : "btn-dark text-muted") py-0 px-2" 
-                                            style="font-size: 0.75rem;" @onclick="() => SetFrameCount(f)">@f</button>
-                                }
+                                <button type="button" class="btn btn-sm @(FinalFrameCount == f ? "btn-info fw-bold" : "btn-dark text-muted") py-0 px-2" 
+                                        style="font-size: 0.75rem;" @onclick="() => SetFrameCount(f)">@f</button>
                             }
                         </div>
                     </div>
@@ -406,15 +391,8 @@
     [Parameter] public int FramesOverTime { get; set; } = 30;
     private bool IsGifSource = false;
     private bool IsSpritesheetMode = false;
-    private string GridMode = "Auto";
-    private int SelectedCols => GridMode switch
-    {
-        "4x4" => 4,
-        "8x8" => 8,
-        _ => (FinalFrameCount <= 16 ? 4 : 8)
-    };
-    private int MaxAllowedFrames => GridMode == "4x4" ? 16 : 64;
-    private readonly int[] QuickFramePresets = new int[] { 4, 8, 12, 16, 24, 32, 48, 64 };
+    private int SelectedCols => FinalFrameCount <= 4 ? 2 : (FinalFrameCount <= 16 ? 4 : 8);
+    private readonly int[] QuickFramePresets = new int[] { 2, 4, 8, 12, 16, 24, 32, 48, 64 };
     private int TotalFrames = 1;
     private int StartFrame = 0;
     private int EndFrame = 0;
@@ -528,11 +506,16 @@
             hasMetadata = true;
         }
 
+        if (nameToScan.Contains("2x2", StringComparison.OrdinalIgnoreCase))
+        {
+            FinalFrameCount = 4;
+            hasMetadata = true;
+        }
+
         if (hasMetadata)
         {
             IsSpritesheetMode = true;
             IsAnimatedMode = true;
-            GridMode = FinalFrameCount > 16 ? "8x8" : "4x4";
         }
 
         foreach (var style in EmojiStyles)
@@ -634,7 +617,7 @@
                 {
                     if (originalImage == null) return;
                     int cols = SelectedCols;
-                    int rows = cols == 4 ? 4 : 8;
+                    int rows = cols;
                     int cellW = originalImage.Width / cols;
                     int cellH = originalImage.Height / rows;
 
@@ -675,7 +658,7 @@
 
     private void SetFrameCount(int count)
     {
-        FinalFrameCount = Math.Clamp(count, 2, MaxAllowedFrames);
+        FinalFrameCount = Math.Clamp(count, 2, 64);
         UpdateSpritesheetPreview();
     }
 
@@ -685,21 +668,11 @@
         UpdateSpritesheetPreview();
     }
 
-    private void SetGridMode(string mode)
-    {
-        GridMode = mode;
-        if (GridMode == "4x4" && FinalFrameCount > 16)
-        {
-            FinalFrameCount = 16;
-        }
-        UpdateSpritesheetPreview();
-    }
-
     private void OnSpritesheetFrameInput(ChangeEventArgs e)
     {
         if (int.TryParse(e.Value?.ToString(), out int val))
         {
-            FinalFrameCount = Math.Clamp(val, 2, MaxAllowedFrames);
+            FinalFrameCount = Math.Clamp(val, 2, 64);
             _ = Task.Run(async () => {
                 await Task.Delay(30);
                 await InvokeAsync(() => JSRuntime.InvokeVoidAsync("spritesheetAnimator.initAll"));
@@ -711,7 +684,7 @@
     {
         if (int.TryParse(e.Value?.ToString(), out int val))
         {
-            FinalFrameCount = Math.Clamp(val, 2, MaxAllowedFrames);
+            FinalFrameCount = Math.Clamp(val, 2, 64);
             UpdateSpritesheetPreview();
         }
     }
@@ -834,7 +807,6 @@
         {
             FinalFrameCount = 16;
             FramesOverTime = 30;
-            GridMode = "Auto";
             SelectedEmojiType = "Select Type...";
             UpdateSpritesheetPreview();
             return;

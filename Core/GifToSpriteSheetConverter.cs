@@ -113,7 +113,12 @@ namespace VRCGalleryManager.Core
 
             int squareSize, cols, rows;
 
-            if (framesToUse <= 16)
+            if (framesToUse <= 4)
+            {
+                squareSize = textureSize / 2;
+                cols = rows = 2;
+            }
+            else if (framesToUse <= 16)
             {
                 squareSize = textureSize / 4;
                 cols = rows = 4;

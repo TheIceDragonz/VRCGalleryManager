@@ -531,7 +531,7 @@ window.spritesheetAnimator = {
         }
 
         const customCols = parseInt(element.getAttribute('data-cols') || '0');
-        const cols = customCols > 0 ? customCols : (frames <= 16 ? 4 : 8);
+        const cols = customCols > 0 ? customCols : (frames <= 4 ? 2 : (frames <= 16 ? 4 : 8));
 
         const existing = this.animators.find(a => a.el === element);
         if (existing) {

@@ -106,10 +106,11 @@
                             @if (emoji.IsAnimated)
                             {
                                 <div class="spritesheet-animator w-100 h-100" 
-                                     style="background-image: url('@emoji.FileUrl'); cursor: pointer;"
+                                     style="background-image: url('@emoji.FileUrl'); background-size: @(emoji.Frames <= 4 ? "200% 200%" : (emoji.Frames <= 16 ? "400% 400%" : "800% 800%")); cursor: pointer;"
                                      data-animated="true"
                                      data-frames="@emoji.Frames"
                                      data-fps="@emoji.FramesOverTime"
+                                     data-cols="@(emoji.Frames <= 4 ? 2 : (emoji.Frames <= 16 ? 4 : 8))"
                                      @onclick="() => OpenImage(emoji)"
                                      title="View Image">
                                 </div>
