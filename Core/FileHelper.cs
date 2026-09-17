@@ -42,7 +42,12 @@ namespace VRCGalleryManager.Core
         /// <returns>True if successfully deleted or recycled, false otherwise.</returns>
         public static bool DeleteToRecycleBin(string filePath)
         {
-            if (string.IsNullOrWhiteSpace(filePath) || !File.Exists(filePath))
+            if (string.IsNullOrWhiteSpace(filePath))
+                return false;
+
+            bool isFile = File.Exists(filePath);
+            bool isDir = Directory.Exists(filePath);
+            if (!isFile && !isDir)
                 return false;
 
 #if WINDOWS
@@ -77,12 +82,15 @@ namespace VRCGalleryManager.Core
             // Fallback for Android or non-Windows / unhandled drives
             try
             {
-                File.Delete(filePath);
+                if (isDir)
+                    Directory.Delete(filePath, true);
+                else
+                    File.Delete(filePath);
                 return true;
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"File.Delete error: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Delete error: {ex.Message}");
                 return false;
             }
         }

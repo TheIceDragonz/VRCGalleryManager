@@ -1,8 +1,12 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using VRCGalleryManager.Core.DTO;
 
@@ -532,6 +536,185 @@ namespace VRCGalleryManager.Core.Components
             {
                 activeExpandedCardId = null;
                 StateHasChanged();
+            }
+        }
+
+        // ── Multi-Selection ───────────────────────────────────────────────────
+        protected bool isMultiSelectMode = false;
+        protected HashSet<string> selectedIds = new();
+        protected bool isDeleting = false;
+        protected bool isMouseDown = false;
+        protected bool hasDragged = false;
+        protected bool dragSelectMode = true;
+        protected string? dragStartId = null;
+
+        protected void StartMultiSelect(string id)
+        {
+            activeExpandedCardId = null;
+            isMultiSelectMode = true;
+            selectedIds.Clear();
+            isMouseDown = false;
+            hasDragged = false;
+            dragStartId = null;
+            if (!string.IsNullOrEmpty(id))
+            {
+                selectedIds.Add(id);
+            }
+            StateHasChanged();
+        }
+
+        protected void HandleMouseDown(string id)
+        {
+            if (!isMultiSelectMode || string.IsNullOrEmpty(id)) return;
+            isMouseDown = true;
+            hasDragged = false;
+            dragStartId = id;
+            dragSelectMode = !selectedIds.Contains(id);
+        }
+
+        protected void HandleMouseEnter(string id)
+        {
+            if (!isMultiSelectMode || !isMouseDown || string.IsNullOrEmpty(id)) return;
+
+            if (!hasDragged)
+            {
+                hasDragged = true;
+                if (!string.IsNullOrEmpty(dragStartId))
+                {
+                    if (dragSelectMode)
+                        selectedIds.Add(dragStartId);
+                    else
+                        selectedIds.Remove(dragStartId);
+                }
+            }
+
+            if (dragSelectMode)
+                selectedIds.Add(id);
+            else
+                selectedIds.Remove(id);
+
+            StateHasChanged();
+        }
+
+        protected void HandleMouseUp()
+        {
+            isMouseDown = false;
+        }
+
+        protected void ToggleSelection(string id)
+        {
+            if (string.IsNullOrEmpty(id)) return;
+
+            if (selectedIds.Contains(id))
+            {
+                selectedIds.Remove(id);
+            }
+            else
+            {
+                selectedIds.Add(id);
+            }
+            StateHasChanged();
+        }
+
+        protected void SelectAll(IEnumerable<string> allIds)
+        {
+            selectedIds = allIds.Where(id => !string.IsNullOrEmpty(id)).ToHashSet();
+            StateHasChanged();
+        }
+
+        protected void DeselectAll()
+        {
+            selectedIds.Clear();
+            StateHasChanged();
+        }
+
+        protected void CancelMultiSelect()
+        {
+            isMultiSelectMode = false;
+            selectedIds.Clear();
+            isMouseDown = false;
+            hasDragged = false;
+            dragStartId = null;
+            StateHasChanged();
+        }
+
+        protected void HandleKeyDown(KeyboardEventArgs e)
+        {
+            if (isMultiSelectMode && e.Key == "Escape")
+            {
+                CancelMultiSelect();
+            }
+        }
+
+        protected async Task DeleteSelectedItemsAsync<T>(
+            List<T> itemList,
+            Func<T, string> getIdFunc,
+            string itemDisplayName,
+            string cacheKey,
+            string countCacheKey,
+            Func<string, Task> deleteApiCall)
+        {
+            if (isDeleting || selectedIds.Count == 0) return;
+
+            int count = selectedIds.Count;
+            string title = count == 1 ? $"Delete {itemDisplayName}" : $"Delete {itemDisplayName}s";
+            string message = count == 1
+                ? $"Are you sure you want to delete the selected {itemDisplayName.ToLower()}?"
+                : $"Are you sure you want to delete {count} selected {itemDisplayName.ToLower()}s?";
+
+            bool confirm = await dialogService.ShowConfirmAsync(title, message, "Delete", "Cancel");
+            if (confirm)
+            {
+                isDeleting = true;
+                StateHasChanged();
+
+                int deletedCount = 0;
+                var idsToDelete = selectedIds.ToList();
+
+                try
+                {
+                    await Task.Run(async () =>
+                    {
+                        foreach (var id in idsToDelete)
+                        {
+                            try
+                            {
+                                await deleteApiCall(id);
+                                Interlocked.Increment(ref deletedCount);
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine($"Error deleting {id}: {ex.Message}");
+                            }
+                        }
+                    });
+
+                    var idsSet = idsToDelete.ToHashSet();
+                    itemList.RemoveAll(x => idsSet.Contains(getIdFunc(x)));
+                    imageCount = Math.Max(0, imageCount - deletedCount);
+                    CacheService.Set(cacheKey, new List<T>(itemList));
+                    CacheService.Set(countCacheKey, imageCount);
+
+                    selectedIds.Clear();
+                    isMultiSelectMode = false;
+
+                    if (deletedCount > 0)
+                    {
+                        NotificationService.Show(
+                            deletedCount == 1 ? $"{itemDisplayName} deleted successfully." : $"{deletedCount} {itemDisplayName.ToLower()}s deleted successfully.",
+                            "Deleted",
+                            NotificationType.Success);
+                    }
+                    else
+                    {
+                        NotificationService.Show($"Failed to delete selected {itemDisplayName.ToLower()}s.", "Delete Error", NotificationType.Error);
+                    }
+                }
+                finally
+                {
+                    isDeleting = false;
+                    StateHasChanged();
+                }
             }
         }
     }

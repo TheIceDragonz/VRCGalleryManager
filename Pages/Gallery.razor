@@ -9,38 +9,120 @@
 @inject DialogService dialogService
 @inject NotificationService NotificationService
 @inject ImageViewerService ViewerService
+@inject IJSRuntime JS
 
-<div class="h-100 d-flex flex-column p-3">
+<div class="h-100 d-flex flex-column p-3 @(isMultiSelectMode ? "gallery-multiselect-active" : "")" @onmouseup="HandleMouseUp">
     @* TOP TOOLBAR *@
     <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-secondary">
         <div class="d-flex align-items-center text-truncate me-2">
             <h3 class="mb-0 text-accent d-flex align-items-center gap-2 text-nowrap">
                 <img src="/svg/gallery-wide-svgrepo-com.svg" class="media-page-icon" /> Gallery
             </h3>
-            @if (!string.IsNullOrEmpty(CurrentFolder))
+            @{
+                var breadcrumbs = GetBreadcrumbs();
+            }
+            @if (breadcrumbs.Count > 0)
+            {
+                <nav class="gallery-breadcrumbs ms-3 d-flex align-items-center flex-nowrap" aria-label="breadcrumb">
+                    @for (int i = 0; i < breadcrumbs.Count; i++)
+                    {
+                        var crumb = breadcrumbs[i];
+                        if (i > 0)
+                        {
+                            <span class="gallery-breadcrumb-sep">/</span>
+                        }
+                        if (crumb.IsCurrent)
+                        {
+                            <span class="gallery-breadcrumb-item current text-truncate" title="@crumb.Path">
+                                @crumb.Name
+                            </span>
+                        }
+                        else
+                        {
+                            <button type="button"
+                                    class="gallery-breadcrumb-item btn-link-crumb text-truncate"
+                                    @onclick="() => NavigateToFolder(crumb.Path)"
+                                    title="Go to @crumb.Name">
+                                @crumb.Name
+                            </button>
+                        }
+                    }
+                </nav>
+            }
+            else if (!string.IsNullOrEmpty(CurrentFolder))
             {
                 <span class="text-white-50 ms-3 small mb-0 text-truncate" style="max-width: 450px;" title="@CurrentFolder">@CurrentFolder</span>
             }
         </div>
 
-        <div class="d-flex align-items-center gap-2 flex-shrink-0">
-            <button class="btn btn-outline-secondary btn-sm" @onclick="GoBack" disabled="@(!CanGoBack)" title="Go back">
-                <img src="/svg/back-arrow-svgrepo-com.svg" class="btn-icon" style="margin: 0;" />
-            </button>
-            <button class="btn btn-outline-secondary btn-sm" @onclick="Refresh" disabled="@IsLoading" title="Refresh">
-                <img src="/svg/rotate-right-svgrepo-com.svg" class="btn-icon @(IsLoading ? "spin" : "")" style="margin: 0;" />
-            </button>
-            <button class="btn btn-secondary btn-sm" @onclick="ChangeFolder" title="Change folder">
-                <img src="/svg/folder-open-svgrepo-com.svg" class="btn-icon" /> Change
-            </button>
-        </div>
+        @if (isMultiSelectMode)
+        {
+            <div class="d-flex align-items-center gap-2 flex-shrink-0">
+                <span class="gallery-multiselect-badge text-nowrap me-1">
+                    <span class="badge-count-accent">@selectedPaths.Count</span>
+                    <span class="badge-count-sep">/</span>
+                    <span class="badge-count-total">@(Items.Count(x => !x.IsFolder))</span>
+                    <span class="badge-label">selected</span>
+                </span>
+
+                <button type="button"
+                        class="gallery-tb-circle-btn checked"
+                        @onclick="SelectAll"
+                        title="Select all">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#12161c" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                </button>
+
+                <button type="button"
+                        class="gallery-tb-circle-btn"
+                        @onclick="DeselectAll"
+                        title="Deselect all">
+                </button>
+
+                <button class="btn btn-danger btn-sm"
+                        disabled="@(selectedPaths.Count == 0 || isDeleting)"
+                        @onclick="DeleteSelectedItems"
+                        title="@(selectedPaths.Count > 0 ? $"Delete {selectedPaths.Count} selected" : "Delete selected")">
+                    @if (isDeleting)
+                    {
+                        <div class="spinner-border spinner-border-sm text-white" style="width: 14px; height: 14px; margin: 0;" role="status"></div>
+                    }
+                    else
+                    {
+                        <img src="/svg/trash-bin-trash-svgrepo-com.svg" class="btn-icon icon-white" style="margin: 0;" />
+                    }
+                </button>
+
+                <button class="btn btn-secondary btn-sm"
+                        id="gallery-cancel-multiselect-btn"
+                        @onclick="CancelMultiSelect"
+                        title="Cancel multi-selection">
+                    <img src="/svg/close-bold-svgrepo-com.svg" class="btn-icon" /> Annulla
+                </button>
+            </div>
+        }
+        else
+        {
+            <div class="d-flex align-items-center gap-2 flex-shrink-0">
+                <button class="btn btn-outline-secondary btn-sm" @onclick="GoBack" disabled="@(!CanGoBack)" title="Go back">
+                    <img src="/svg/back-arrow-svgrepo-com.svg" class="btn-icon" style="margin: 0;" />
+                </button>
+                <button class="btn btn-outline-secondary btn-sm" @onclick="Refresh" disabled="@IsLoading" title="Refresh">
+                    <img src="/svg/rotate-right-svgrepo-com.svg" class="btn-icon @(IsLoading ? "spin" : "")" style="margin: 0;" />
+                </button>
+                <button class="btn btn-secondary btn-sm" @onclick="ChangeFolder" title="Change folder">
+                    <img src="/svg/folder-open-svgrepo-com.svg" class="btn-icon" /> Change
+                </button>
+            </div>
+        }
     </div>
 
     @* MAIN CONTENT *@
     <div class="flex-grow-1 overflow-hidden d-flex gap-3" @onclick="CloseUploadMenu">
         
         @* GRID *@
-        <div class="flex-grow-1 overflow-auto h-100 pe-2" @key="CurrentFolder">
+        <div class="flex-grow-1 overflow-auto h-100 pe-2 gallery-scroll-container" id="gallery-scroll-container" data-folder="@CurrentFolder">
             @if (string.IsNullOrEmpty(RootFolder) || !Directory.Exists(RootFolder))
             {
                 <div class="h-100 d-flex flex-column align-items-center justify-content-center text-white-50">
@@ -66,15 +148,18 @@
                     <div class="card-action-backdrop" @onclick="CloseExpandedCard" @oncontextmenu="CloseExpandedCard" @oncontextmenu:preventDefault="true"></div>
                 }
 
-                <div class="media-grid gap-3 pb-3 @(!string.IsNullOrEmpty(activeExpandedPath) ? "has-card-expanded" : "")">
+                <div class="media-grid gap-3 pb-3 @(!string.IsNullOrEmpty(activeExpandedPath) ? "has-card-expanded" : "")" @onmouseup="HandleMouseUp">
                     @foreach (var item in Items)
                     {
-                        <div class="position-relative gallery-icon-card media-card-container @(!item.IsFolder && activeExpandedPath == item.Path ? "card-expanded-active" : "")"
+                        <div @key="item.Path"
+                             class="position-relative gallery-icon-card media-card-container @(item.IsFolder ? "gallery-folder-item" : "") @(activeExpandedPath == item.Path ? "card-expanded-active" : "") @(!item.IsFolder && isMultiSelectMode && selectedPaths.Contains(item.Path) ? "is-selected" : "")"
                              style="cursor: pointer;"
-                             @onclick="() => { if(item.IsFolder) OnItemClick(item); else OpenFile(item.Path); }"
-                             @oncontextmenu="() => { if(!item.IsFolder) HandleCardContextMenu(item.Path); }"
-                             @oncontextmenu:preventDefault="!item.IsFolder"
-                             @onmouseleave="() => { if(!item.IsFolder) HandleCardMouseLeave(item.Path); }"
+                             @onmousedown="() => HandleMouseDown(item)"
+                             @onmouseenter="() => HandleMouseEnter(item)"
+                             @onclick="() => HandleCardClick(item)"
+                             @oncontextmenu="() => { if(!isMultiSelectMode) HandleCardContextMenu(item.Path); }"
+                             @oncontextmenu:preventDefault="true"
+                             @onmouseleave="() => { if(!isMultiSelectMode) HandleCardMouseLeave(item.Path); }"
                              title="@GetItemTooltip(item)">
 
                             @if (item.IsFolder)
@@ -82,7 +167,7 @@
                                 <div class="w-100 h-100 d-flex flex-column" style="background-color: var(--bg-hover);">
                                     @if (!string.IsNullOrEmpty(item.ThumbnailBase64))
                                     {
-                                        <img src="@item.ThumbnailBase64" class="position-absolute top-0 start-0 w-100 h-100 object-fit-cover" style="filter: brightness(0.4);" />
+                                        <img src="@item.ThumbnailBase64" class="position-absolute top-0 start-0 w-100 h-100 object-fit-cover" style="filter: brightness(0.4);" draggable="false" />
                                     }
                                     <div class="folder-icon position-relative z-1" style="flex: 1; display: flex; align-items: center; justify-content: center;">
                                         @if (item.IsThumbLoading && string.IsNullOrEmpty(item.ThumbnailBase64))
@@ -91,20 +176,76 @@
                                         }
                                         else
                                         {
-                                            <img src="/svg/folder-open-svgrepo-com.svg" class="folder-svg-icon" />
+                                            <img src="/svg/folder-open-svgrepo-com.svg" class="folder-svg-icon" draggable="false" />
                                         }
                                     </div>
                                     <div class="media-card-label position-absolute w-100 text-truncate text-center z-2">
                                         @item.Name
                                     </div>
                                 </div>
+
+                                @* Folder action buttons (shown on right-click) *@
+                                @if (!isMultiSelectMode && activeExpandedPath == item.Path)
+                                {
+                                    <div class="media-card-actions" style="z-index: 10;">
+                                        <button class="btn btn-danger btn-sm rounded-circle btn-action media-btn-delete"
+                                                @onclick:stopPropagation="true"
+                                                @onclick="() => DeleteFolder(item)"
+                                                title="Delete Folder">
+                                            <img src="/svg/trash-bin-trash-svgrepo-com.svg" class="btn-icon" style="margin: 0;" />
+                                        </button>
+
+                                        <button class="btn btn-sm rounded-circle btn-action media-btn-folder media-btn-extra"
+                                                @onclick:stopPropagation="true"
+                                                @onclick="() => OpenInExplorer(item.Path)"
+                                                title="Open in Explorer">
+                                            <img src="/svg/folder-open-svgrepo-com.svg" class="btn-icon icon-white" style="margin: 0;" />
+                                        </button>
+                                    </div>
+                                }
                             }
                             else
                             {
                                 @if (!string.IsNullOrEmpty(item.ThumbnailBase64))
                                 {
-                                    <img src="@item.ThumbnailBase64" class="w-100 h-100 object-fit-cover" />
-                                    
+                                    <img src="@item.ThumbnailBase64" class="w-100 h-100 object-fit-cover" draggable="false" />
+                                }
+                                else if (item.IsThumbLoading)
+                                {
+                                    <div class="w-100 h-100 d-flex align-items-center justify-content-center">
+                                        <div class="spinner-border spinner-border-sm text-primary"></div>
+                                    </div>
+                                }
+
+                                @* Multi-select trigger button (appears on right-click in top-right of the card as an unselected circle) *@
+                                @if (!isMultiSelectMode && activeExpandedPath == item.Path)
+                                {
+                                    <div class="gallery-multiselect-checkbox media-btn-multiselect-trigger"
+                                         @onclick:stopPropagation="true"
+                                         @onclick="() => StartMultiSelect(item.Path)"
+                                         title="Select">
+                                    </div>
+                                }
+
+                                @* Multi-select mode checkbox indicator on each image card *@
+                                @if (isMultiSelectMode)
+                                {
+                                    <div class="gallery-multiselect-checkbox @(selectedPaths.Contains(item.Path) ? "checked" : "")"
+                                         @onclick:stopPropagation="true"
+                                         @onclick="() => HandleCardClick(item)"
+                                         title="@(selectedPaths.Contains(item.Path) ? "Deselect" : "Select")">
+                                        @if (selectedPaths.Contains(item.Path))
+                                        {
+                                            <svg viewBox="0 0 24 24" width="16" height="16" stroke="#12161c" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                <polyline points="20 6 9 17 4 12"></polyline>
+                                            </svg>
+                                        }
+                                    </div>
+                                }
+
+                                @* Standard card actions (hidden during multi-selection mode) *@
+                                @if (!isMultiSelectMode && !string.IsNullOrEmpty(item.ThumbnailBase64))
+                                {
                                     <div class="media-card-actions">
                                         <button class="btn btn-danger btn-sm rounded-circle btn-action media-btn-delete" @onclick:stopPropagation="true" @onclick="() => DeleteItem(item)" title="Delete">
                                             <img src="/svg/trash-bin-trash-svgrepo-com.svg" class="btn-icon" style="margin: 0;" />
@@ -123,12 +264,6 @@
                                                 <img src="/svg/folder-open-svgrepo-com.svg" class="btn-icon icon-white" style="margin: 0;" />
                                             </button>
                                         }
-                                    </div>
-                                }
-                                else if (item.IsThumbLoading)
-                                {
-                                    <div class="w-100 h-100 d-flex align-items-center justify-content-center">
-                                        <div class="spinner-border spinner-border-sm text-primary"></div>
                                     </div>
                                 }
                             }
@@ -177,8 +312,16 @@
 
     private bool IsLoading;
     private bool ShowUploadMenu;
+    private bool _shouldRestoreScroll = false;
 
     private CancellationTokenSource _cts;
+
+    private bool isMultiSelectMode = false;
+    private HashSet<string> selectedPaths = new();
+    private bool _isMouseDown = false;
+    private bool _hasDragged = false;
+    private bool _dragSelectMode = true;
+    private string? _dragStartPath = null;
 
     private bool CanGoBack =>
         !string.IsNullOrEmpty(CurrentFolder) &&
@@ -191,6 +334,13 @@
             StringComparison.OrdinalIgnoreCase);
 
     // ── Model ─────────────────────────────────────────────────────────────
+    public class BreadcrumbItem
+    {
+        public string Name { get; set; } = string.Empty;
+        public string Path { get; set; } = string.Empty;
+        public bool IsCurrent { get; set; }
+    }
+
     public class GalleryItem
     {
         public bool IsFolder { get; set; }
@@ -223,6 +373,7 @@
                 RootFolder = cachedRootFolder;
                 CurrentFolder = cachedCurrentFolder ?? cachedRootFolder;
                 Items = cachedItems;
+                _shouldRestoreScroll = true;
             }
             else
             {
@@ -233,17 +384,144 @@
         }
     }
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_shouldRestoreScroll && !IsLoading && !string.IsNullOrEmpty(CurrentFolder))
+        {
+            _shouldRestoreScroll = false;
+            try
+            {
+                await JS.InvokeVoidAsync("restoreGalleryScroll", CurrentFolder);
+            }
+            catch { }
+        }
+    }
+
     // ── Navigation ────────────────────────────────────────────────────────
     private async Task GoBack()
     {
         if (!CanGoBack) return;
         SelectedImage = null;
+        if (!string.IsNullOrEmpty(CurrentFolder))
+        {
+            try { await JS.InvokeVoidAsync("saveGalleryScroll", CurrentFolder); } catch { }
+        }
         var parent = Directory.GetParent(CurrentFolder);
         if (parent != null)
         {
             CurrentFolder = parent.FullName;
             await LoadFolderAsync();
         }
+    }
+
+    private async Task NavigateToFolder(string folderPath)
+    {
+        if (string.IsNullOrEmpty(folderPath) || !Directory.Exists(folderPath)) return;
+        if (string.Equals(Path.GetFullPath(CurrentFolder).TrimEnd(Path.DirectorySeparatorChar),
+                          Path.GetFullPath(folderPath).TrimEnd(Path.DirectorySeparatorChar),
+                          StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        SelectedImage = null;
+        if (!string.IsNullOrEmpty(CurrentFolder))
+        {
+            try { await JS.InvokeVoidAsync("saveGalleryScroll", CurrentFolder); } catch { }
+        }
+
+        CurrentFolder = folderPath;
+        await LoadFolderAsync();
+    }
+
+    private List<BreadcrumbItem> GetBreadcrumbs()
+    {
+        var result = new List<BreadcrumbItem>();
+        if (string.IsNullOrEmpty(CurrentFolder)) return result;
+
+        try
+        {
+            var currentFull = Path.GetFullPath(CurrentFolder).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+            var rootFull = !string.IsNullOrEmpty(RootFolder)
+                ? Path.GetFullPath(RootFolder).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
+                : null;
+
+            if (rootFull != null && currentFull.StartsWith(rootFull, StringComparison.OrdinalIgnoreCase))
+            {
+                var rootName = Path.GetFileName(rootFull);
+                if (string.IsNullOrEmpty(rootName)) rootName = rootFull;
+
+                result.Add(new BreadcrumbItem
+                {
+                    Name = rootName,
+                    Path = rootFull,
+                    IsCurrent = string.Equals(currentFull, rootFull, StringComparison.OrdinalIgnoreCase)
+                });
+
+                if (currentFull.Length > rootFull.Length)
+                {
+                    var relative = currentFull.Substring(rootFull.Length).TrimStart(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+                    var parts = relative.Split(new[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries);
+
+                    var accumPath = rootFull;
+                    for (int i = 0; i < parts.Length; i++)
+                    {
+                        accumPath = Path.Combine(accumPath, parts[i]);
+                        result.Add(new BreadcrumbItem
+                        {
+                            Name = parts[i],
+                            Path = accumPath,
+                            IsCurrent = (i == parts.Length - 1)
+                        });
+                    }
+                }
+            }
+            else
+            {
+                var parts = currentFull.Split(new[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries);
+                var rootDrive = Path.GetPathRoot(currentFull) ?? "";
+
+                int vrcIndex = -1;
+                for (int i = 0; i < parts.Length; i++)
+                {
+                    if (string.Equals(parts[i], "VRChat", StringComparison.OrdinalIgnoreCase))
+                    {
+                        vrcIndex = i;
+                        break;
+                    }
+                }
+
+                int startIndex = (vrcIndex >= 0) ? vrcIndex : Math.Max(0, parts.Length - 4);
+                var accumPath = rootDrive.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+                for (int i = 0; i < startIndex; i++)
+                {
+                    accumPath = string.IsNullOrEmpty(accumPath) ? parts[i] : Path.Combine(accumPath, parts[i]);
+                }
+
+                for (int i = startIndex; i < parts.Length; i++)
+                {
+                    accumPath = string.IsNullOrEmpty(accumPath) ? parts[i] : Path.Combine(accumPath, parts[i]);
+                    result.Add(new BreadcrumbItem
+                    {
+                        Name = parts[i],
+                        Path = accumPath,
+                        IsCurrent = (i == parts.Length - 1)
+                    });
+                }
+            }
+        }
+        catch
+        {
+            result.Clear();
+            result.Add(new BreadcrumbItem
+            {
+                Name = Path.GetFileName(CurrentFolder) ?? CurrentFolder,
+                Path = CurrentFolder,
+                IsCurrent = true
+            });
+        }
+
+        return result;
     }
 
     private async Task Refresh() => await LoadFolderAsync();
@@ -259,6 +537,7 @@
             var picked = await FolderPickerHelper.PickFolderAsync(startPath, "Select VRChat Screenshots Folder");
             if (!string.IsNullOrEmpty(picked) && Directory.Exists(picked))
             {
+                try { await JS.InvokeVoidAsync("clearGalleryScroll"); } catch { }
                 Config.Set("PathGallery", picked);
                 RootFolder = picked;
                 CurrentFolder = picked;
@@ -283,6 +562,11 @@
         var token = _cts.Token;
 
         IsLoading = true;
+        isMultiSelectMode = false;
+        selectedPaths.Clear();
+        _isMouseDown = false;
+        _hasDragged = false;
+        _dragStartPath = null;
         Items = new List<GalleryItem>();
         SelectedImage = null;
         StateHasChanged();
@@ -346,6 +630,7 @@
         cachedCurrentFolder = CurrentFolder;
 
         IsLoading = false;
+        _shouldRestoreScroll = true;
         StateHasChanged();
 
         _ = LoadThumbnailsAsync(token);
@@ -483,14 +768,18 @@
     }
 
     // ── Item Interaction ──────────────────────────────────────────────────
-    private void OnItemClick(GalleryItem item)
+    private async Task OnItemClick(GalleryItem item)
     {
         ShowUploadMenu = false;
 
         if (item.IsFolder)
         {
+            if (!string.IsNullOrEmpty(CurrentFolder))
+            {
+                try { await JS.InvokeVoidAsync("saveGalleryScroll", CurrentFolder); } catch { }
+            }
             CurrentFolder = item.Path;
-            _ = LoadFolderAsync();
+            await LoadFolderAsync();
         }
         else
         {
@@ -509,8 +798,13 @@
             OpenFile(SelectedImage.Path);
     }
 
+    private DateTime _lastOpenFileTime = DateTime.MinValue;
+
     private void OpenFile(string path)
     {
+        if ((DateTime.UtcNow - _lastOpenFileTime).TotalMilliseconds < 400) return;
+        _lastOpenFileTime = DateTime.UtcNow;
+
         try
         {
             var viewerItems = Items.Where(x => !x.IsFolder).Select(x => new VRCGalleryManager.Components.ImageViewer.ViewerItem {
@@ -555,6 +849,10 @@
             {
                 System.Diagnostics.Process.Start("explorer.exe", $"/select,\"{filePath}\"");
             }
+            else if (Directory.Exists(filePath))
+            {
+                System.Diagnostics.Process.Start("explorer.exe", $"\"{filePath}\"");
+            }
         }
         catch { }
         finally
@@ -591,6 +889,209 @@
         {
             activeExpandedPath = null;
             StateHasChanged();
+        }
+    }
+
+    // ── Multi-Selection ───────────────────────────────────────────────────
+    private void StartMultiSelect(string initialPath)
+    {
+        activeExpandedPath = null;
+        isMultiSelectMode = true;
+        selectedPaths.Clear();
+        _isMouseDown = false;
+        _hasDragged = false;
+        _dragStartPath = null;
+        if (!string.IsNullOrEmpty(initialPath))
+        {
+            selectedPaths.Add(initialPath);
+        }
+        StateHasChanged();
+    }
+
+    private void HandleMouseDown(GalleryItem item)
+    {
+        if (!isMultiSelectMode || item.IsFolder || string.IsNullOrEmpty(item.Path)) return;
+
+        _isMouseDown = true;
+        _hasDragged = false;
+        _dragStartPath = item.Path;
+        _dragSelectMode = !selectedPaths.Contains(item.Path);
+    }
+
+    private void HandleMouseEnter(GalleryItem item)
+    {
+        if (!isMultiSelectMode || !_isMouseDown || item.IsFolder || string.IsNullOrEmpty(item.Path)) return;
+
+        if (!_hasDragged)
+        {
+            _hasDragged = true;
+            if (!string.IsNullOrEmpty(_dragStartPath))
+            {
+                if (_dragSelectMode)
+                    selectedPaths.Add(_dragStartPath);
+                else
+                    selectedPaths.Remove(_dragStartPath);
+            }
+        }
+
+        if (_dragSelectMode)
+            selectedPaths.Add(item.Path);
+        else
+            selectedPaths.Remove(item.Path);
+
+        StateHasChanged();
+    }
+
+    private void HandleMouseUp()
+    {
+        _isMouseDown = false;
+    }
+
+    private void HandleCardClick(GalleryItem item)
+    {
+        if (isMultiSelectMode)
+        {
+            if (item.IsFolder || string.IsNullOrEmpty(item.Path)) return;
+            if (!_hasDragged)
+            {
+                ToggleSelection(item.Path);
+            }
+            _hasDragged = false;
+        }
+        else
+        {
+            if (item.IsFolder)
+                _ = OnItemClick(item);
+            else
+                OpenFile(item.Path);
+        }
+    }
+
+    private void ToggleSelection(string path)
+    {
+        if (string.IsNullOrEmpty(path)) return;
+
+        if (selectedPaths.Contains(path))
+        {
+            selectedPaths.Remove(path);
+        }
+        else
+        {
+            selectedPaths.Add(path);
+        }
+        StateHasChanged();
+    }
+
+    private void SelectAll()
+    {
+        var allImages = Items.Where(x => !x.IsFolder && !string.IsNullOrEmpty(x.Path)).Select(x => x.Path).ToList();
+        selectedPaths = allImages.ToHashSet();
+        StateHasChanged();
+    }
+
+    private void DeselectAll()
+    {
+        selectedPaths.Clear();
+        StateHasChanged();
+    }
+
+    private void ToggleSelectAll()
+    {
+        var allImages = Items.Where(x => !x.IsFolder && !string.IsNullOrEmpty(x.Path)).Select(x => x.Path).ToList();
+        if (selectedPaths.Count >= allImages.Count)
+        {
+            selectedPaths.Clear();
+        }
+        else
+        {
+            selectedPaths = allImages.ToHashSet();
+        }
+        StateHasChanged();
+    }
+
+    private void CancelMultiSelect()
+    {
+        isMultiSelectMode = false;
+        selectedPaths.Clear();
+        _isMouseDown = false;
+        _hasDragged = false;
+        _dragStartPath = null;
+        StateHasChanged();
+    }
+
+    private void HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (isMultiSelectMode && e.Key == "Escape")
+        {
+            CancelMultiSelect();
+        }
+    }
+
+    private bool isDeleting = false;
+
+    private async Task DeleteSelectedItems()
+    {
+        if (isDeleting || selectedPaths.Count == 0) return;
+
+        int count = selectedPaths.Count;
+        string title = count == 1 ? "Delete Photo" : "Delete Photos";
+        string message = count == 1
+            ? "Are you sure you want to move the selected photo to the Recycle Bin?"
+            : $"Are you sure you want to move {count} selected photos to the Recycle Bin?";
+
+        bool confirm = await dialogService.ShowConfirmAsync(title, message, "Delete", "Cancel");
+        if (confirm)
+        {
+            isDeleting = true;
+            StateHasChanged();
+
+            int deletedCount = 0;
+            var pathsToDelete = selectedPaths.ToList();
+
+            try
+            {
+                await Task.Run(() =>
+                {
+                    foreach (var path in pathsToDelete)
+                    {
+                        try
+                        {
+                            if (FileHelper.DeleteToRecycleBin(path))
+                            {
+                                Interlocked.Increment(ref deletedCount);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"Error deleting {path}: {ex.Message}");
+                        }
+                    }
+                });
+
+                var deletedSet = pathsToDelete.ToHashSet();
+                Items.RemoveAll(x => deletedSet.Contains(x.Path));
+
+                cachedItems = Items;
+                selectedPaths.Clear();
+                isMultiSelectMode = false;
+
+                if (deletedCount > 0)
+                {
+                    NotificationService.Show(
+                        deletedCount == 1 ? "Photo moved to the Recycle Bin." : $"{deletedCount} photos moved to the Recycle Bin.",
+                        "Deleted",
+                        NotificationType.Success);
+                }
+                else
+                {
+                    NotificationService.Show("Failed to delete selected photos.", "Delete Error", NotificationType.Error);
+                }
+            }
+            finally
+            {
+                isDeleting = false;
+                StateHasChanged();
+            }
         }
     }
 
@@ -724,6 +1225,34 @@
         }
     }
 
+    private async Task DeleteFolder(GalleryItem item)
+    {
+        if (item == null || !item.IsFolder || string.IsNullOrEmpty(item.Path)) return;
+
+        bool confirm = await dialogService.ShowConfirmAsync("Delete Folder", $"Are you sure you want to move the folder \"{item.Name}\" and all its contents to the Recycle Bin?", "Delete", "Cancel");
+        if (confirm)
+        {
+            try
+            {
+                bool deleted = await Task.Run(() => FileHelper.DeleteToRecycleBin(item.Path));
+                if (!deleted)
+                {
+                    NotificationService.Show("Failed to delete the folder.", "Delete Error", NotificationType.Error);
+                    return;
+                }
+
+                Items.Remove(item);
+                activeExpandedPath = null;
+                StateHasChanged();
+                NotificationService.Show("Folder moved to the Recycle Bin.", "Deleted", NotificationType.Success);
+            }
+            catch (Exception ex)
+            {
+                NotificationService.Show($"Delete failed: {ex.Message}", "Delete Error", NotificationType.Error);
+            }
+        }
+    }
+
     private async Task DeleteItem(GalleryItem item)
     {
         if (item == null || item.IsFolder) return;
@@ -733,7 +1262,7 @@
         {
             try
             {
-                bool deleted = FileHelper.DeleteToRecycleBin(item.Path);
+                bool deleted = await Task.Run(() => FileHelper.DeleteToRecycleBin(item.Path));
                 if (!deleted)
                 {
                     NotificationService.Show("Failed to delete the photo.", "Delete Error", NotificationType.Error);

@@ -6,7 +6,7 @@
 @using Microsoft.AspNetCore.Components.Forms
 @using Microsoft.JSInterop
 
-<div class="h-100 d-flex flex-column p-3 position-relative">
+<div class="h-100 d-flex flex-column p-3 position-relative @(isMultiSelectMode ? "gallery-multiselect-active" : "")" @onmouseup="HandleMouseUp" @onkeydown="HandleKeyDown" tabindex="0">
     
     @if (isDragging)
     {
@@ -35,20 +35,70 @@
                     <span class="@(imageCount >= 18 ? "badge bg-danger fs-6 ms-2" : "text-white-50 fs-6 ms-2")">@imageCount/18</span>
                 </h3>
             </div>
-            <div class="d-flex align-items-center gap-2">
-                <button class="btn btn-outline-secondary btn-sm" @onclick="RefreshList" disabled="@isRefreshing" title="Refresh">
-                    <img src="/svg/rotate-right-svgrepo-com.svg" class="btn-icon @(isRefreshing ? "spin" : "")" style="margin: 0;" />
-                </button>
+            @if (isMultiSelectMode)
+            {
+                <div class="d-flex align-items-center gap-2 flex-shrink-0">
+                    <span class="gallery-multiselect-badge text-nowrap me-1">
+                        <span class="badge-count-accent">@selectedIds.Count</span>
+                        <span class="badge-count-sep">/</span>
+                        <span class="badge-count-total">@emojis.Count</span>
+                        <span class="badge-label">selected</span>
+                    </span>
 
-                <label class="btn btn-secondary btn-sm m-0 @(imageCount >= 18 ? "disabled" : "")">
-                    <InputFile OnChange="OnInputFileChange" class="d-none" disabled="@(imageCount >= 18)" accept="image/png, image/jpeg, image/gif, image/webp" />
-                    <img src="/svg/folder-open-svgrepo-com.svg" class="btn-icon" /> Upload
-                </label>
-                
-                <button class="btn btn-secondary btn-sm" @onclick="PasteFromClipboard" disabled="@(imageCount >= 18)">
-                    <img src="/svg/paste-svgrepo-com.svg" class="btn-icon" /> Paste
-                </button>
-            </div>
+                    <button type="button"
+                            class="gallery-tb-circle-btn checked"
+                            @onclick="() => SelectAll(emojis.Select(x => x.Id))"
+                            title="Select all">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#12161c" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                    </button>
+
+                    <button type="button"
+                            class="gallery-tb-circle-btn"
+                            @onclick="DeselectAll"
+                            title="Deselect all">
+                    </button>
+
+                    <button class="btn btn-danger btn-sm"
+                            disabled="@(selectedIds.Count == 0 || isDeleting)"
+                            @onclick="DeleteSelectedEmojis"
+                            title="@(selectedIds.Count > 0 ? $"Delete {selectedIds.Count} selected" : "Delete selected")">
+                        @if (isDeleting)
+                        {
+                            <div class="spinner-border spinner-border-sm text-white" style="width: 14px; height: 14px; margin: 0;" role="status"></div>
+                        }
+                        else
+                        {
+                            <img src="/svg/trash-bin-trash-svgrepo-com.svg" class="btn-icon icon-white" style="margin: 0;" />
+                        }
+                    </button>
+
+                    <button class="btn btn-secondary btn-sm"
+                            id="gallery-cancel-multiselect-btn"
+                            @onclick="CancelMultiSelect"
+                            title="Cancel multi-selection">
+                        <img src="/svg/close-bold-svgrepo-com.svg" class="btn-icon" /> Annulla
+                    </button>
+                </div>
+            }
+            else
+            {
+                <div class="d-flex align-items-center gap-2">
+                    <button class="btn btn-outline-secondary btn-sm" @onclick="RefreshList" disabled="@isRefreshing" title="Refresh">
+                        <img src="/svg/rotate-right-svgrepo-com.svg" class="btn-icon @(isRefreshing ? "spin" : "")" style="margin: 0;" />
+                    </button>
+
+                    <label class="btn btn-secondary btn-sm m-0 @(imageCount >= 18 ? "disabled" : "")">
+                        <InputFile OnChange="OnInputFileChange" class="d-none" disabled="@(imageCount >= 18)" accept="image/png, image/jpeg, image/gif, image/webp" />
+                        <img src="/svg/folder-open-svgrepo-com.svg" class="btn-icon" /> Upload
+                    </label>
+                    
+                    <button class="btn btn-secondary btn-sm" @onclick="PasteFromClipboard" disabled="@(imageCount >= 18)">
+                        <img src="/svg/paste-svgrepo-com.svg" class="btn-icon" /> Paste
+                    </button>
+                </div>
+            }
         </div>
 
         @if (isLoading)
@@ -96,49 +146,83 @@
             }
 
             <div class="flex-grow-1 overflow-auto">
-                <div class="media-grid gap-3 @(!string.IsNullOrEmpty(activeExpandedCardId) ? "has-card-expanded" : "")">
+                <div class="media-grid gap-3 @(!string.IsNullOrEmpty(activeExpandedCardId) ? "has-card-expanded" : "")" @onmouseup="HandleMouseUp">
                     @foreach (var emoji in emojis)
                     {
-                        <div class="position-relative emoji-card media-card-container @(activeExpandedCardId == emoji.Id ? "card-expanded-active" : "")"
-                             @oncontextmenu="() => HandleCardContextMenu(emoji.Id)"
+                        <div @key="emoji.Id"
+                             class="position-relative emoji-card media-card-container @(activeExpandedCardId == emoji.Id ? "card-expanded-active" : "") @(isMultiSelectMode && selectedIds.Contains(emoji.Id) ? "is-selected" : "")"
+                             style="cursor: pointer;"
+                             @onmousedown="() => HandleMouseDown(emoji.Id)"
+                             @onmouseenter="() => HandleMouseEnter(emoji.Id)"
+                             @onclick="() => HandleCardClick(emoji)"
+                             @oncontextmenu="() => { if (!isMultiSelectMode) HandleCardContextMenu(emoji.Id); }"
                              @oncontextmenu:preventDefault="true"
-                             @onmouseleave="() => HandleCardMouseLeave(emoji.Id)">
+                             @onmouseleave="() => { if (!isMultiSelectMode) HandleCardMouseLeave(emoji.Id); }">
                             @if (emoji.IsAnimated)
                             {
                                 <div class="spritesheet-animator w-100 h-100" 
-                                     style="background-image: url('@emoji.FileUrl'); background-size: @(emoji.Frames <= 4 ? "200% 200%" : (emoji.Frames <= 16 ? "400% 400%" : "800% 800%")); cursor: pointer;"
+                                     style="background-image: url('@emoji.FileUrl'); background-size: @(emoji.Frames <= 4 ? "200% 200%" : (emoji.Frames <= 16 ? "400% 400%" : "800% 800%"));"
                                      data-animated="true"
                                      data-frames="@emoji.Frames"
                                      data-fps="@emoji.FramesOverTime"
                                      data-cols="@(emoji.Frames <= 4 ? 2 : (emoji.Frames <= 16 ? 4 : 8))"
-                                     @onclick="() => OpenImage(emoji)"
                                      title="View Image">
                                 </div>
                             }
                             else
                             {
-                                <img src="@emoji.ImageUrl" class="w-100 h-100 object-fit-cover" style="cursor: pointer;" @onclick="() => OpenImage(emoji)" title="View Image" />
+                                <img src="@emoji.ImageUrl" class="w-100 h-100 object-fit-cover" draggable="false" title="View Image" />
                             }
-                            
-                            <div class="media-card-actions">
-                                <button class="btn btn-danger btn-sm rounded-circle btn-action media-btn-delete" @onclick:stopPropagation="true" @onclick="() => DeleteEmoji(emoji)" title="Delete">
-                                    <img src="/svg/trash-bin-trash-svgrepo-com.svg" class="btn-icon" style="margin: 0;" />
-                                </button>
 
-                                @if (activeExpandedCardId == emoji.Id)
-                                {
-                                    var targetUrl = !string.IsNullOrEmpty(emoji.FileUrl) ? emoji.FileUrl : emoji.ImageUrl.Replace("/image/", "/file/").Replace("/256", "/file");
-                                    <button class="btn btn-sm rounded-circle btn-action media-btn-copy media-btn-extra" @onclick:stopPropagation="true" @onclick="() => CopyImageToClipboardAsync(targetUrl)" title="Copy Image">
-                                        <img src="/svg/copy-svgrepo-com.svg" class="btn-icon icon-white" style="margin: 0;" />
+                            @* Multi-select trigger button (appears on right-click in top-right of the card as an unselected circle) *@
+                            @if (!isMultiSelectMode && activeExpandedCardId == emoji.Id)
+                            {
+                                <div class="gallery-multiselect-checkbox media-btn-multiselect-trigger"
+                                     @onclick:stopPropagation="true"
+                                     @onclick="() => StartMultiSelect(emoji.Id)"
+                                     title="Select">
+                                </div>
+                            }
+
+                            @* Multi-select mode checkbox indicator on each image card *@
+                            @if (isMultiSelectMode)
+                            {
+                                <div class="gallery-multiselect-checkbox @(selectedIds.Contains(emoji.Id) ? "checked" : "")"
+                                     @onclick:stopPropagation="true"
+                                     @onclick="() => ToggleSelection(emoji.Id)"
+                                     title="@(selectedIds.Contains(emoji.Id) ? "Deselect" : "Select")">
+                                    @if (selectedIds.Contains(emoji.Id))
+                                    {
+                                        <svg viewBox="0 0 24 24" width="16" height="16" stroke="#12161c" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                            <polyline points="20 6 9 17 4 12"></polyline>
+                                        </svg>
+                                    }
+                                </div>
+                            }
+
+                            @* Standard card actions (hidden during multi-selection mode) *@
+                            @if (!isMultiSelectMode)
+                            {
+                                <div class="media-card-actions">
+                                    <button class="btn btn-danger btn-sm rounded-circle btn-action media-btn-delete" @onclick:stopPropagation="true" @onclick="() => DeleteEmoji(emoji)" title="Delete">
+                                        <img src="/svg/trash-bin-trash-svgrepo-com.svg" class="btn-icon" style="margin: 0;" />
                                     </button>
-                                    <button class="btn btn-sm rounded-circle btn-action media-btn-download media-btn-extra" @onclick:stopPropagation="true" @onclick='() => DownloadImageFileAsync(targetUrl, emoji.IsAnimated ? $"emoji_{emoji.Id}_{emoji.Frames}frames_{emoji.FramesOverTime}fps" : "emoji_" + emoji.Id)' title="Download">
-                                        <img src="/svg/download-svgrepo-com.svg" class="btn-icon icon-white" style="margin: 0;" />
-                                    </button>
-                                    <button class="btn btn-sm rounded-circle btn-action media-btn-link media-btn-extra" @onclick:stopPropagation="true" @onclick="() => CopyLinkToClipboardAsync(targetUrl)" title="Copy Link">
-                                        <img src="/svg/link-svgrepo-com.svg" class="btn-icon icon-white" style="margin: 0;" />
-                                    </button>
-                                }
-                            </div>
+
+                                    @if (activeExpandedCardId == emoji.Id)
+                                    {
+                                        var targetUrl = !string.IsNullOrEmpty(emoji.FileUrl) ? emoji.FileUrl : emoji.ImageUrl.Replace("/image/", "/file/").Replace("/256", "/file");
+                                        <button class="btn btn-sm rounded-circle btn-action media-btn-copy media-btn-extra" @onclick:stopPropagation="true" @onclick="() => CopyImageToClipboardAsync(targetUrl)" title="Copy Image">
+                                            <img src="/svg/copy-svgrepo-com.svg" class="btn-icon icon-white" style="margin: 0;" />
+                                        </button>
+                                        <button class="btn btn-sm rounded-circle btn-action media-btn-download media-btn-extra" @onclick:stopPropagation="true" @onclick='() => DownloadImageFileAsync(targetUrl, emoji.IsAnimated ? $"emoji_{emoji.Id}_{emoji.Frames}frames_{emoji.FramesOverTime}fps" : "emoji_" + emoji.Id)' title="Download">
+                                            <img src="/svg/download-svgrepo-com.svg" class="btn-icon icon-white" style="margin: 0;" />
+                                        </button>
+                                        <button class="btn btn-sm rounded-circle btn-action media-btn-link media-btn-extra" @onclick:stopPropagation="true" @onclick="() => CopyLinkToClipboardAsync(targetUrl)" title="Copy Link">
+                                            <img src="/svg/link-svgrepo-com.svg" class="btn-icon icon-white" style="margin: 0;" />
+                                        </button>
+                                    }
+                                </div>
+                            }
                         </div>
                     }
                 </div>
@@ -239,6 +323,27 @@
             isRefreshing = false;
             StateHasChanged();
         }
+    }
+
+    private void HandleCardClick(EmojiItem emoji)
+    {
+        if (isMultiSelectMode)
+        {
+            if (!hasDragged)
+            {
+                ToggleSelection(emoji.Id);
+            }
+            hasDragged = false;
+        }
+        else
+        {
+            OpenImage(emoji);
+        }
+    }
+
+    private async Task DeleteSelectedEmojis()
+    {
+        await DeleteSelectedItemsAsync(emojis, e => e.Id, "Emoji", "Emojis", "EmojisCount", id => apiRequest.DeleteApiData(id));
     }
 
     private void OpenImage(EmojiItem item)

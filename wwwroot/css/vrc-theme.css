@@ -37,7 +37,7 @@
    -------------------------------------------------------------------------- */
 .has-vrc-theme .btn:disabled:not(.picflow-cat-btn):not(.btn-nav):not(.media-btn-select):not(.btn-viewer-select),
 .has-vrc-theme .btn.disabled:not(.picflow-cat-btn):not(.btn-nav):not(.media-btn-select):not(.btn-viewer-select),
-.has-vrc-theme button:disabled:not(.picflow-cat-btn):not(.btn-nav):not(.media-btn-select):not(.btn-viewer-select),
+.has-vrc-theme button:disabled:not(.picflow-cat-btn):not(.btn-nav):not(.media-btn-select):not(.btn-viewer-select):not(.gallery-tb-circle-btn),
 .has-vrc-theme label.btn.disabled:not(.picflow-cat-btn):not(.btn-nav):not(.media-btn-select):not(.btn-viewer-select) {
     opacity: 0.65 !important;
     color: var(--theme-btn-border) !important;
@@ -784,3 +784,31 @@
     animation: none !important;
     transition: none !important;
 }
+
+/* Gallery Multi-Selection Counter Badge Theme Support */
+.has-vrc-theme .gallery-multiselect-badge {
+    background-color: var(--theme-btn-bg) !important;
+    border-color: var(--theme-btn-border) !important;
+    box-shadow: 0 0 10px rgba(var(--theme-rgb, 106, 227, 249), 0.2) !important;
+}
+
+.has-vrc-theme .gallery-multiselect-badge .badge-count-accent {
+    color: var(--accent) !important;
+}
+
+/* Gallery Breadcrumbs Theme Support */
+.has-vrc-theme .gallery-breadcrumbs {
+    background-color: var(--theme-btn-bg) !important;
+    border-color: var(--theme-btn-border) !important;
+}
+
+.has-vrc-theme .gallery-breadcrumb-item.btn-link-crumb {
+    color: var(--accent) !important;
+}
+
+.has-vrc-theme .gallery-breadcrumb-item.btn-link-crumb:hover {
+    color: #ffffff !important;
+    background-color: var(--theme-btn-hover-bg) !important;
+}
+
+
