@@ -7,6 +7,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using VRCGalleryManager.Core.Api.Models;
 
 namespace VRCGalleryManager.Core
 {
@@ -19,125 +20,6 @@ namespace VRCGalleryManager.Core
         public bool IsVRCPlus { get; set; }
     }
 
-    public class PublicProfileBadge
-    {
-        [JsonPropertyName("badgeId")]
-        public string? BadgeId { get; set; }
-
-        [JsonPropertyName("badgeName")]
-        public string? BadgeName { get; set; }
-
-        [JsonPropertyName("badgeDescription")]
-        public string? BadgeDescription { get; set; }
-
-        [JsonPropertyName("badgeImageUrl")]
-        public string? BadgeImageUrl { get; set; }
-
-        [JsonPropertyName("showcased")]
-        public bool Showcased { get; set; }
-    }
-
-    public class VRChatPublicProfile
-    {
-        [JsonPropertyName("id")]
-        public string Id { get; set; } = "";
-
-        [JsonPropertyName("displayName")]
-        public string DisplayName { get; set; } = "";
-
-        private string? _userIcon;
-        [JsonPropertyName("userIcon")]
-        public string? UserIcon
-        {
-            get => !string.IsNullOrEmpty(_userIcon) ? _userIcon : IconUrl;
-            set => _userIcon = value;
-        }
-
-        [JsonPropertyName("iconUrl")]
-        public string? IconUrl { get; set; }
-
-        [JsonPropertyName("currentAvatarImageUrl")]
-        public string? CurrentAvatarImageUrl { get; set; }
-
-        [JsonPropertyName("currentAvatarThumbnailImageUrl")]
-        public string? CurrentAvatarThumbnailImageUrl { get; set; }
-
-        private string? _profilePicOverride;
-        [JsonPropertyName("profilePicOverride")]
-        public string? ProfilePicOverride
-        {
-            get => !string.IsNullOrEmpty(_profilePicOverride) ? _profilePicOverride : BannerUrl;
-            set => _profilePicOverride = value;
-        }
-
-        private string? _profilePicOverrideThumbnail;
-        [JsonPropertyName("profilePicOverrideThumbnail")]
-        public string? ProfilePicOverrideThumbnail
-        {
-            get => !string.IsNullOrEmpty(_profilePicOverrideThumbnail) ? _profilePicOverrideThumbnail : (BannerUrl ?? ProfilePicOverride);
-            set => _profilePicOverrideThumbnail = value;
-        }
-
-        [JsonPropertyName("bannerUrl")]
-        public string? BannerUrl { get; set; }
-
-        [JsonPropertyName("nameplateEffect")]
-        public string? NameplateEffect { get; set; }
-
-        [JsonPropertyName("bio")]
-        public string? Bio { get; set; }
-
-        [JsonPropertyName("bioLinks")]
-        public List<string>? BioLinks { get; set; }
-
-        [JsonPropertyName("pronouns")]
-        public string? Pronouns { get; set; }
-
-        [JsonPropertyName("status")]
-        public string? Status { get; set; }
-
-        [JsonPropertyName("statusDescription")]
-        public string? StatusDescription { get; set; }
-
-        [JsonPropertyName("backgroundType")]
-        public string? BackgroundType { get; set; }
-
-        [JsonPropertyName("backgroundGradientTop")]
-        public string? BackgroundGradientTop { get; set; }
-
-        [JsonPropertyName("backgroundGradientBottom")]
-        public string? BackgroundGradientBottom { get; set; }
-
-        [JsonPropertyName("backgroundTextureId")]
-        public string? BackgroundTextureId { get; set; }
-
-        [JsonPropertyName("profileEffect")]
-        public string? ProfileEffect { get; set; }
-
-        [JsonPropertyName("iconFrame")]
-        public string? IconFrame { get; set; }
-
-        [JsonPropertyName("themeButtonColor")]
-        public string? ThemeButtonColor { get; set; }
-
-        [JsonPropertyName("themeIconColor")]
-        public string? ThemeIconColor { get; set; }
-
-        [JsonPropertyName("themeSubtextColor")]
-        public string? ThemeSubtextColor { get; set; }
-
-        [JsonPropertyName("bannerColor")]
-        public string? BannerColor { get; set; }
-
-        [JsonPropertyName("bannerType")]
-        public string? BannerType { get; set; }
-
-        [JsonPropertyName("badges")]
-        public List<PublicProfileBadge>? Badges { get; set; }
-
-        [JsonPropertyName("isEconomyCreator")]
-        public bool IsEconomyCreator { get; set; }
-    }
 
     public class VRCProfileTheme
     {
@@ -430,6 +312,14 @@ namespace VRCGalleryManager.Core
             return null;
         }
 
+        public void InvalidateProfile(string? userId)
+        {
+            if (!string.IsNullOrEmpty(userId))
+            {
+                _profileCache.TryRemove(userId, out _);
+            }
+        }
+
         public async Task<VRChatPublicProfile?> GetPublicProfileAsync(string userId)
         {
             if (string.IsNullOrEmpty(userId)) return null;
@@ -441,7 +331,9 @@ namespace VRCGalleryManager.Core
 
             try
             {
-                using var request = new HttpRequestMessage(HttpMethod.Get, $"profile/{userId}");
+                bool asSelf = _auth.CurrentUser != null && _auth.CurrentUser.Id == userId;
+                string endpoint = asSelf ? $"profile/{userId}?asSelf=true" : $"profile/{userId}";
+                using var request = new HttpRequestMessage(HttpMethod.Get, endpoint);
                 request.Headers.TryAddWithoutValidation("User-Agent", Api.VRChatApiClient.DefaultUserAgent);
                 if (!string.IsNullOrEmpty(_auth.CookieHeader))
                 {

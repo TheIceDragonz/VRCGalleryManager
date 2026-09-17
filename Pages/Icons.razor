@@ -237,6 +237,11 @@
 
     protected override async Task LoadInitialDataAsync()
     {
+        if (Auth.CurrentUser != null && string.IsNullOrEmpty(Auth.CurrentUser.UserIcon))
+        {
+            await Auth.HydrateUserProfileAsync(Auth.CurrentUser);
+        }
+
         selectedImageUrl = !string.IsNullOrEmpty(Auth.CurrentUser?.UserIcon) 
             ? Auth.CurrentUser.UserIcon 
             : Auth.CurrentUser?.IconUrl;
@@ -380,7 +385,7 @@
 
     private bool IsSelected(IconItem icon)
     {
-        if (!string.IsNullOrEmpty(selectedImageUrl) && selectedImageUrl == icon.ImageUrl) return true;
+        if (!string.IsNullOrEmpty(selectedImageUrl) && (selectedImageUrl == icon.ImageUrl || selectedImageUrl.Contains(icon.Id))) return true;
         if (!string.IsNullOrEmpty(Auth.CurrentUser?.UserIcon) && Auth.CurrentUser.UserIcon.Contains(icon.Id)) return true;
         if (!string.IsNullOrEmpty(Auth.CurrentUser?.IconUrl) && Auth.CurrentUser.IconUrl.Contains(icon.Id)) return true;
         return false;

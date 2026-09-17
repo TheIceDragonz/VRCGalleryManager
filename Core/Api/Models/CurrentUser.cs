@@ -78,6 +78,22 @@ namespace VRCGalleryManager.Core.Api.Models
         [JsonPropertyName("bannerUrl")]
         public string? BannerUrl { get; set; }
 
+        private string? _bannerCustomUrl;
+        [JsonPropertyName("bannerCustomUrl")]
+        public string? BannerCustomUrl
+        {
+            get => !string.IsNullOrEmpty(_bannerCustomUrl) ? _bannerCustomUrl : (!string.IsNullOrEmpty(_profilePicOverride) ? _profilePicOverride : BannerUrl);
+            set
+            {
+                _bannerCustomUrl = value;
+                if (!string.IsNullOrEmpty(value))
+                {
+                    _profilePicOverride = value;
+                    BannerUrl = value;
+                }
+            }
+        }
+
         [JsonPropertyName("bannerType")]
         public string? BannerType { get; set; }
 

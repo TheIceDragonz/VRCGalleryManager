@@ -238,9 +238,14 @@
 
     protected override async Task LoadInitialDataAsync()
     {
+        if (Auth.CurrentUser != null && string.IsNullOrEmpty(Auth.CurrentUser.ProfilePicOverride) && string.IsNullOrEmpty(Auth.CurrentUser.BannerUrl))
+        {
+            await Auth.HydrateUserProfileAsync(Auth.CurrentUser);
+        }
+
         selectedImageUrl = !string.IsNullOrEmpty(Auth.CurrentUser?.ProfilePicOverride) 
             ? Auth.CurrentUser.ProfilePicOverride 
-            : Auth.CurrentUser?.BannerUrl;
+            : (!string.IsNullOrEmpty(Auth.CurrentUser?.BannerUrl) ? Auth.CurrentUser.BannerUrl : Auth.CurrentUser?.BannerCustomUrl);
         var cached = CacheService.Get<List<PhotoItem>>("Photos");
         if (cached != null)
         {
@@ -379,9 +384,10 @@
 
     private bool IsSelected(PhotoItem photo)
     {
-        if (!string.IsNullOrEmpty(selectedImageUrl) && selectedImageUrl == photo.ImageUrl) return true;
+        if (!string.IsNullOrEmpty(selectedImageUrl) && (selectedImageUrl == photo.ImageUrl || selectedImageUrl.Contains(photo.Id))) return true;
         if (!string.IsNullOrEmpty(Auth.CurrentUser?.ProfilePicOverride) && Auth.CurrentUser.ProfilePicOverride.Contains(photo.Id)) return true;
         if (!string.IsNullOrEmpty(Auth.CurrentUser?.BannerUrl) && Auth.CurrentUser.BannerUrl.Contains(photo.Id)) return true;
+        if (!string.IsNullOrEmpty(Auth.CurrentUser?.BannerCustomUrl) && Auth.CurrentUser.BannerCustomUrl.Contains(photo.Id)) return true;
         return false;
     }
 
@@ -397,6 +403,8 @@
                 Auth.CurrentUser.ProfilePicOverride = item.ImageUrl;
                 Auth.CurrentUser.ProfilePicOverrideThumbnail = item.ImageUrl;
                 Auth.CurrentUser.BannerUrl = item.ImageUrl;
+                Auth.CurrentUser.BannerCustomUrl = item.ImageUrl;
+                Auth.CurrentUser.BannerType = "customImage";
             }
             Auth.NotifyAuthStateChanged();
             NotificationService.Show("Profile picture updated successfully!", "Success", NotificationType.Success);
