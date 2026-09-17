@@ -36,6 +36,7 @@ namespace VRCGalleryManager.Core.Components
         }
         
         protected string editingBase64Image = null;
+        protected string? editingFileName = null;
         protected bool isDragging = false;
 
         [Parameter]
@@ -140,6 +141,7 @@ namespace VRCGalleryManager.Core.Components
         {
             try
             {
+                editingFileName = file.Name;
                 bool isGif = file.ContentType.Contains("gif", StringComparison.OrdinalIgnoreCase) || 
                              file.Name.EndsWith(".gif", StringComparison.OrdinalIgnoreCase);
 
@@ -181,6 +183,7 @@ namespace VRCGalleryManager.Core.Components
         {
             try
             {
+                editingFileName = Path.GetFileName(filePath);
                 byte[] bytes = await File.ReadAllBytesAsync(filePath);
                 string contentType = GetContentType(filePath);
 
@@ -215,6 +218,7 @@ namespace VRCGalleryManager.Core.Components
         protected void OnEditorCancel()
         {
             editingBase64Image = null;
+            editingFileName = null;
         }
 
         protected async Task<string> SaveBase64ToTempFileAsync(string base64String, string filePrefix = "upload")

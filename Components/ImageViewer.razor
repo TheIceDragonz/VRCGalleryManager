@@ -859,6 +859,16 @@
                 fileName = "download";
             }
 
+            if (!fileName.Contains("frame", StringComparison.OrdinalIgnoreCase) && !string.IsNullOrEmpty(src))
+            {
+                var fMatch = System.Text.RegularExpressions.Regex.Match(src, @"(?:^|[_\-\s\.])(\d{1,2})\s*[_\-]?\s*(?:frames|frame|f)(?:[_\-\s\.]|$)", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+                var fpsMatch = System.Text.RegularExpressions.Regex.Match(src, @"(?:^|[_\-\s\.])(\d{1,2})\s*[_\-]?\s*fps(?:[_\-\s\.]|$)", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+                if (fMatch.Success && fpsMatch.Success)
+                {
+                    fileName += $"_{fMatch.Groups[1].Value}frames_{fpsMatch.Groups[1].Value}fps";
+                }
+            }
+
             byte[] fileBytes;
             string ext;
 

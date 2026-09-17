@@ -77,7 +77,19 @@
                     }
                     else
                     {
-                        if (img.Category == ItemCategory.Print && CropPrints)
+                        if (img.IsAnimated)
+                        {
+                            var animUrl = img.HighResUrl;
+                            <div class="spritesheet-animator w-100 h-100" 
+                                 style="background-image: url('@animUrl'); background-size: @(img.Frames <= 16 ? "400% 400%" : "800% 800%"); cursor: pointer;"
+                                 data-animated="true"
+                                 data-frames="@img.Frames"
+                                 data-fps="@(img.FramesOverTime > 0 ? img.FramesOverTime : 15)"
+                                 @onclick="() => OpenImage(img)"
+                                 title="View Image">
+                            </div>
+                        }
+                        else if (img.Category == ItemCategory.Print && CropPrints)
                         {
                             <img src="@img.Url" style="width: 106.66%; height: 133.33%; object-fit: fill; position: absolute; top: -6.38%; left: -3.33%; cursor: pointer;" loading="lazy" @onclick="() => OpenImage(img)" title="View Image" />
                         }
@@ -99,11 +111,11 @@
 
                             @if (activeExpandedItem == img)
                             {
-                                var highResUrl = img.Url.Replace("/image/", "/file/").Replace("/256", "/file");
+                                var highResUrl = img.HighResUrl;
                                 <button class="btn btn-sm rounded-circle btn-action media-btn-copy media-btn-extra" @onclick:stopPropagation="true" @onclick="() => CopyImageToClipboardAsync(highResUrl, img.Category == ItemCategory.Print && CropPrints)" title="Copy Image">
                                     <img src="/svg/copy-svgrepo-com.svg" class="btn-icon icon-white" style="margin: 0;" />
                                 </button>
-                                <button class="btn btn-sm rounded-circle btn-action media-btn-download media-btn-extra" @onclick:stopPropagation="true" @onclick='() => DownloadImageFileAsync(highResUrl, $"{img.Username}_{img.Category}", img.Category == ItemCategory.Print && CropPrints)' title="Download">
+                                <button class="btn btn-sm rounded-circle btn-action media-btn-download media-btn-extra" @onclick:stopPropagation="true" @onclick='() => DownloadImageFileAsync(highResUrl, GetDownloadFileName(img), img.Category == ItemCategory.Print && CropPrints)' title="Download">
                                     <img src="/svg/download-svgrepo-com.svg" class="btn-icon icon-white" style="margin: 0;" />
                                 </button>
                                 <button class="btn btn-sm rounded-circle btn-action media-btn-link media-btn-extra" @onclick:stopPropagation="true" @onclick="() => CopyLinkToClipboardAsync(highResUrl)" title="Copy Link">
@@ -126,7 +138,18 @@
                 <h5 class="fw-bold text-white mb-2">Upload to...</h5>
                 <p class="text-light mb-3 small">Select the category where you want to upload this image.</p>
                 
-                @if (UploadMenuImage.Category == ItemCategory.Print && CropPrints)
+                @if (UploadMenuImage.IsAnimated)
+                {
+                    <div class="overflow-hidden position-relative d-inline-block rounded shadow-sm mx-auto" style="height: 200px; aspect-ratio: 1/1;">
+                        <div class="spritesheet-animator w-100 h-100" 
+                             style="background-image: url('@UploadMenuImage.HighResUrl'); background-size: @(UploadMenuImage.Frames <= 16 ? "400% 400%" : "800% 800%");"
+                             data-animated="true"
+                             data-frames="@UploadMenuImage.Frames"
+                             data-fps="@(UploadMenuImage.FramesOverTime > 0 ? UploadMenuImage.FramesOverTime : 15)">
+                        </div>
+                    </div>
+                }
+                else if (UploadMenuImage.Category == ItemCategory.Print && CropPrints)
                 {
                     <div class="overflow-hidden position-relative d-inline-block rounded shadow-sm mx-auto" style="height: 200px; aspect-ratio: 16/9;">
                         <img src="@UploadMenuImage.Url" style="width: 106.66%; height: 133.33%; object-fit: fill; position: absolute; top: -6.38%; left: -3.33%;" />
@@ -254,7 +277,28 @@
         public string UserId { get; set; } = "";
         public string ItemId { get; set; }
         public string Url { get; set; }
+        public string? FileUrl { get; set; }
         public ItemCategory Category { get; set; }
+        public int Frames { get; set; }
+        public int FramesOverTime { get; set; }
+        public string? AnimationStyle { get; set; }
+        public string? Name { get; set; }
+
+        public bool IsAnimated => Frames > 1;
+        public string HighResUrl
+        {
+            get
+            {
+                string source = !string.IsNullOrEmpty(Url) ? Url : (FileUrl ?? "");
+                var m = Regex.Match(source, @"(file_[a-f0-9\-]+)", RegexOptions.IgnoreCase);
+                if (m.Success)
+                {
+                    return $"https://api.vrchat.cloud/api/1/file/{m.Groups[1].Value}/1/file";
+                }
+                if (!string.IsNullOrEmpty(FileUrl)) return FileUrl;
+                return Url ?? "";
+            }
+        }
     }
 
     private bool CropPrints = true;
@@ -268,6 +312,10 @@
         if (cachedImg != null)
         {
             Images = cachedImg;
+            foreach (var img in Images)
+            {
+                ExtractAnimationMetadata(img, img.FileUrl, img.Url, img.Name);
+            }
             _allItems = CacheService.Get<HashSet<string>>("PicflowAllItems") ?? new HashSet<string>();
             LogStatus = CacheService.Get<string>("PicflowLogStatus") ?? "";
 
@@ -281,6 +329,15 @@
         {
             await LoadFromLogs();
         }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("spritesheetAnimator.initAll");
+        }
+        catch { }
     }
 
     private void HandlePicflowNetworkChange(bool isOnline)
@@ -555,6 +612,13 @@
                 if (!string.IsNullOrEmpty(cachedItem.Url))
                 {
                     imgModel.Url = cachedItem.Url;
+                    imgModel.Frames = cachedItem.Frames;
+                    imgModel.FramesOverTime = cachedItem.FramesOverTime;
+                    imgModel.AnimationStyle = cachedItem.AnimationStyle;
+                    imgModel.Name = cachedItem.Name;
+
+                    ExtractAnimationMetadata(imgModel, cachedItem.Url, cachedItem.Name);
+
                     if (!string.IsNullOrEmpty(cachedItem.Username))
                     {
                         imgModel.Username = cachedItem.Username;
@@ -563,7 +627,15 @@
                     {
                         imgModel.UserId = cachedItem.UserId;
                     }
-                    InvokeAsync(StateHasChanged);
+                    InvokeAsync(async () =>
+                    {
+                        StateHasChanged();
+                        if (imgModel.IsAnimated)
+                        {
+                            await Task.Delay(30);
+                            await JSRuntime.InvokeVoidAsync("spritesheetAnimator.initAll");
+                        }
+                    });
                     return;
                 }
             }
@@ -583,12 +655,29 @@
                     if (imgModel.Category == ItemCategory.Emoji)
                     {
                         imgModel.Username = await ApiReq.GetUserName(imgModel.UserId);
+                        imgModel.Name = invInfo.Name;
+                        if (invInfo.Metadata != null)
+                        {
+                            imgModel.Frames = invInfo.Metadata.Frames;
+                            imgModel.FramesOverTime = invInfo.Metadata.FramesOverTime;
+                            imgModel.AnimationStyle = invInfo.Metadata.AnimationStyle;
+                        }
                     }
 
-                    string fileId = invInfo.Metadata?.FileId;
+                    string? fileId = invInfo.Metadata?.FileId;
+                    if (string.IsNullOrEmpty(fileId) && !string.IsNullOrEmpty(invInfo.ImageUrl))
+                    {
+                        var m = Regex.Match(invInfo.ImageUrl, @"(file_[a-f0-9\-]+)", RegexOptions.IgnoreCase);
+                        if (m.Success)
+                        {
+                            fileId = m.Groups[1].Value;
+                        }
+                    }
+
                     if (!string.IsNullOrEmpty(fileId))
                     {
                         imgModel.Url = ApiRequest.ImageThumbnailUrl(fileId);
+                        imgModel.FileUrl = $"https://api.vrchat.cloud/api/1/file/{fileId}/1/file";
                     }
                     else if (!string.IsNullOrEmpty(invInfo.ImageUrl))
                     {
@@ -598,6 +687,18 @@
                             url = url.Replace("/file/", "/image/").Replace("/file", "/256");
                         }
                         imgModel.Url = url;
+                        imgModel.FileUrl = url;
+                    }
+
+                    if (imgModel.Category == ItemCategory.Emoji)
+                    {
+                        ExtractAnimationMetadata(imgModel, invInfo.ImageUrl, imgModel.Url, invInfo.Name);
+
+                        if (invInfo.Tags != null && (invInfo.Tags.Contains("animated") || invInfo.Tags.Contains("emojianimated")))
+                        {
+                            if (imgModel.Frames <= 1) imgModel.Frames = 16;
+                            if (imgModel.FramesOverTime <= 0) imgModel.FramesOverTime = 15;
+                        }
                     }
                 }
                 else if (NetworkStatus.IsOnline)
@@ -632,8 +733,21 @@
 
             if (!string.IsNullOrEmpty(imgModel.Url))
             {
-                PicflowDatabase.SaveItem(imgModel.ItemId, imgModel.Username, imgModel.UserId, imgModel.Url, (int)imgModel.Category);
-                InvokeAsync(StateHasChanged);
+                int frames = imgModel.Category == ItemCategory.Emoji ? imgModel.Frames : 0;
+                int fps = imgModel.Category == ItemCategory.Emoji ? imgModel.FramesOverTime : 0;
+                string? animStyle = imgModel.Category == ItemCategory.Emoji ? imgModel.AnimationStyle : null;
+                string? name = imgModel.Category == ItemCategory.Emoji ? imgModel.Name : null;
+
+                PicflowDatabase.SaveItem(imgModel.ItemId, imgModel.Username, imgModel.UserId, imgModel.Url, (int)imgModel.Category, frames, fps, animStyle, name);
+                InvokeAsync(async () =>
+                {
+                    StateHasChanged();
+                    if (imgModel.IsAnimated)
+                    {
+                        await Task.Delay(30);
+                        await JSRuntime.InvokeVoidAsync("spritesheetAnimator.initAll");
+                    }
+                });
             }
         }
         catch
@@ -653,6 +767,14 @@
         else
             UploadMenuImage = img;
         StateHasChanged();
+        if (UploadMenuImage != null && UploadMenuImage.IsAnimated)
+        {
+            _ = Task.Run(async () =>
+            {
+                await Task.Delay(50);
+                await InvokeAsync(() => JSRuntime.InvokeVoidAsync("spritesheetAnimator.initAll"));
+            });
+        }
     }
 
     private void CloseUploadMenu()
@@ -673,11 +795,81 @@
         _ = ProcessUploadRoute(img, route);
     }
 
+    private void ExtractAnimationMetadata(ImageModel model, params string?[] sources)
+    {
+        if (model.Category != ItemCategory.Emoji) return;
+
+        foreach (var src in sources)
+        {
+            if (string.IsNullOrEmpty(src)) continue;
+
+            string unescaped = Uri.UnescapeDataString(src);
+
+            if (model.Frames <= 1)
+            {
+                var fMatch = System.Text.RegularExpressions.Regex.Match(
+                    unescaped, 
+                    @"(?:^|[_\-\s\(\[\.])(\d{1,2})\s*[_\-]?\s*(?:frames|frame|f)(?:[_\-\s\)\]\.]|$)", 
+                    System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+                if (fMatch.Success && int.TryParse(fMatch.Groups[1].Value, out int f) && f >= 2 && f <= 64)
+                {
+                    model.Frames = f;
+                }
+            }
+
+            if (model.FramesOverTime <= 0)
+            {
+                var fpsMatch = System.Text.RegularExpressions.Regex.Match(
+                    unescaped, 
+                    @"(?:^|[_\-\s\(\[\.])(\d{1,2})\s*[_\-]?\s*fps(?:[_\-\s\)\]\.]|$)", 
+                    System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+                if (fpsMatch.Success && int.TryParse(fpsMatch.Groups[1].Value, out int fps) && fps >= 1 && fps <= 64)
+                {
+                    model.FramesOverTime = fps;
+                }
+            }
+
+            if (model.Frames <= 1 && (unescaped.Contains("spritesheet", StringComparison.OrdinalIgnoreCase) || unescaped.Contains("sprite_sheet", StringComparison.OrdinalIgnoreCase)))
+            {
+                model.Frames = 16;
+            }
+        }
+
+        if (model.Frames > 1 && model.FramesOverTime <= 0)
+        {
+            model.FramesOverTime = 15;
+        }
+    }
+
     private async Task ProcessUploadRoute(ImageModel img, string route)
     {
-        string highResUrl = img.Url.Replace("/image/", "/file/").Replace("/256", "/file");
+        string highResUrl = img.HighResUrl;
         bool cropBorder = img.Category == ItemCategory.Print && CropPrints;
-        string localPath = await ClipboardHandler.SaveImageFromUrlAsync(highResUrl, cropBorder);
+        string? suggestedName = null;
+        if (route == "emoji" || img.Category == ItemCategory.Emoji)
+        {
+            int frames = img.Frames;
+            int fps = img.FramesOverTime > 0 ? img.FramesOverTime : 15;
+
+            if (frames <= 0 && !string.IsNullOrEmpty(highResUrl))
+            {
+                var fMatch = System.Text.RegularExpressions.Regex.Match(highResUrl, @"(?:^|[_\-\s\.])(\d{1,2})\s*[_\-]?\s*(?:frames|frame|f)(?:[_\-\s\.]|$)", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+                var fpsMatch = System.Text.RegularExpressions.Regex.Match(highResUrl, @"(?:^|[_\-\s\.])(\d{1,2})\s*[_\-]?\s*fps(?:[_\-\s\.]|$)", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+                if (fMatch.Success && int.TryParse(fMatch.Groups[1].Value, out int f)) frames = f;
+                if (fpsMatch.Success && int.TryParse(fpsMatch.Groups[1].Value, out int spd)) fps = spd;
+            }
+
+            string baseName = !string.IsNullOrEmpty(img.Name) ? img.Name : "Emoji";
+            if (frames > 0)
+            {
+                suggestedName = $"{baseName}_{frames}frames_{fps}fps";
+                if (!string.IsNullOrEmpty(img.AnimationStyle))
+                {
+                    suggestedName += $"_{img.AnimationStyle}";
+                }
+            }
+        }
+        string localPath = await ClipboardHandler.SaveImageFromUrlAsync(highResUrl, cropBorder, suggestedName);
         if (!string.IsNullOrEmpty(localPath))
         {
             var encoded = Uri.EscapeDataString(localPath);
@@ -687,6 +879,35 @@
         {
             NotificationService.Show("Failed to download image.", "Download Error", NotificationType.Error);
         }
+    }
+
+    private string GetDownloadFileName(ImageModel img)
+    {
+        if (img.Category == ItemCategory.Emoji)
+        {
+            int frames = img.Frames;
+            int fps = img.FramesOverTime > 0 ? img.FramesOverTime : 15;
+
+            if (frames <= 0 && !string.IsNullOrEmpty(img.Url))
+            {
+                var fMatch = System.Text.RegularExpressions.Regex.Match(img.Url, @"(?:^|[_\-\s\.])(\d{1,2})\s*[_\-]?\s*(?:frames|frame|f)(?:[_\-\s\.]|$)", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+                var fpsMatch = System.Text.RegularExpressions.Regex.Match(img.Url, @"(?:^|[_\-\s\.])(\d{1,2})\s*[_\-]?\s*fps(?:[_\-\s\.]|$)", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+                if (fMatch.Success && int.TryParse(fMatch.Groups[1].Value, out int f)) frames = f;
+                if (fpsMatch.Success && int.TryParse(fpsMatch.Groups[1].Value, out int spd)) fps = spd;
+            }
+
+            if (frames > 0)
+            {
+                string baseName = !string.IsNullOrEmpty(img.Name) ? img.Name : $"{img.Username}_Emoji";
+                string res = $"{baseName}_{frames}frames_{fps}fps";
+                if (!string.IsNullOrEmpty(img.AnimationStyle))
+                {
+                    res += $"_{img.AnimationStyle}";
+                }
+                return res;
+            }
+        }
+        return $"{img.Username}_{img.Category}";
     }
 
     private async Task DeleteImage(ImageModel img)
@@ -701,12 +922,12 @@
     private void OpenImage(ImageModel img)
     {
         var viewerItems = Images.Select(i => new VRCGalleryManager.Components.ImageViewer.ViewerItem {
-            HighResSource = i.Url.Replace("/image/", "/file/").Replace("/256", "/file"),
+            HighResSource = i.HighResUrl,
             LowResSource = i.Url,
-            Title = $"{i.Username} - {i.Category}"
+            Title = GetDownloadFileName(i)
         }).ToList();
         
-        var currentUrl = img.Url.Replace("/image/", "/file/").Replace("/256", "/file");
+        var currentUrl = img.HighResUrl;
         var index = viewerItems.FindIndex(i => i.HighResSource == currentUrl);
         if (index == -1) index = 0;
         

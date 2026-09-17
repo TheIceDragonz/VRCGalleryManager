@@ -11,6 +11,7 @@
 @inject NotificationService Notifications
 @inject ProfileBackgroundService BackgroundService
 @inject VRCLogWatcherService PhotoWatcher
+@inject MediaCacheService CacheService
 @implements IDisposable
 
 <div class="settings-page container-fluid h-100 p-4 overflow-y-auto">
@@ -1557,7 +1558,11 @@
         if (confirmed)
         {
             PicflowDatabase.Clear();
+            CacheService.Remove("PicflowImages");
+            CacheService.Remove("PicflowAllItems");
+            CacheService.Remove("PicflowLogStatus");
             UpdatePicflowDbStats();
+            StateHasChanged();
             Notifications.Show("Picflow database has been successfully cleared!", "System", VRCGalleryManager.Core.NotificationType.Success);
         }
     }

@@ -116,7 +116,7 @@ namespace VRCGalleryManager.Core
             }
         }
 
-        public static async Task<string> SaveImageFromUrlAsync(string url, bool cropPrintBorder = false)
+        public static async Task<string> SaveImageFromUrlAsync(string url, bool cropPrintBorder = false, string? customFileName = null)
         {
             try
             {
@@ -153,9 +153,68 @@ namespace VRCGalleryManager.Core
                 bool isGif = ct.Equals("image/gif", StringComparison.OrdinalIgnoreCase) ||
                              cleanUrl.EndsWith(".gif", StringComparison.OrdinalIgnoreCase);
 
+                // Check if URL or headers contain rich filename metadata
+                string? urlFileName = null;
+                var cd = res.Content.Headers.ContentDisposition;
+                if (!string.IsNullOrEmpty(cd?.FileName))
+                    urlFileName = cd.FileName.Trim('\"', '\'');
+                else if (!string.IsNullOrEmpty(cd?.FileNameStar))
+                    urlFileName = cd.FileNameStar.Trim('\"', '\'');
+
+                if (string.IsNullOrEmpty(urlFileName))
+                {
+                    var finalUri = res.RequestMessage?.RequestUri;
+                    if (finalUri != null)
+                    {
+                        string candidate = Path.GetFileName(finalUri.AbsolutePath);
+                        if (!string.IsNullOrEmpty(candidate) && candidate != "file" && candidate.Contains('.'))
+                        {
+                            urlFileName = Uri.UnescapeDataString(candidate);
+                        }
+                    }
+                }
+
+                if (string.IsNullOrEmpty(urlFileName))
+                {
+                    try
+                    {
+                        var initUri = new Uri(url);
+                        string candidate = Path.GetFileName(initUri.AbsolutePath);
+                        if (!string.IsNullOrEmpty(candidate) && candidate != "file" && candidate.Contains('.'))
+                        {
+                            urlFileName = Uri.UnescapeDataString(candidate);
+                        }
+                    }
+                    catch { }
+                }
+
+                string? resolvedName = customFileName;
+                if (string.IsNullOrEmpty(resolvedName))
+                {
+                    resolvedName = urlFileName;
+                }
+                else if (!string.IsNullOrEmpty(urlFileName) && 
+                         !resolvedName.Contains("frame", StringComparison.OrdinalIgnoreCase) && 
+                         urlFileName.Contains("frame", StringComparison.OrdinalIgnoreCase))
+                {
+                    resolvedName = urlFileName;
+                }
+
+                string baseName = "Downloaded-Image";
+                if (!string.IsNullOrEmpty(resolvedName))
+                {
+                    string nameNoExt = Path.GetFileNameWithoutExtension(resolvedName);
+                    if (!string.IsNullOrEmpty(nameNoExt))
+                    {
+                        baseName = string.Join("_", nameNoExt.Split(Path.GetInvalidFileNameChars()));
+                    }
+                }
+
+                string ext = isGif ? ".gif" : ".png";
+                string filePath = Path.Combine(TempDirectory, $"{baseName}_{Guid.NewGuid().ToString("N")[..8]}{ext}");
+
                 if (isGif)
                 {
-                    string filePath = Path.Combine(TempDirectory, $"Downloaded-Image_{Guid.NewGuid():N}.gif");
                     using (var stream = await res.Content.ReadAsStreamAsync())
                     using (var fileStream = File.Create(filePath))
                     {
@@ -176,7 +235,6 @@ namespace VRCGalleryManager.Core
                         src.Mutate(x => x.Crop(rectangle));
                     }
 
-                    string filePath = GetTempFilePath("Downloaded-Image");
                     src.SaveAsPng(filePath);
                     return filePath;
                 }

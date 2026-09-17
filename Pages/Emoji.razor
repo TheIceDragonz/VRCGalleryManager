@@ -22,7 +22,7 @@
     @if (editingBase64Image != null)
     {
         <div class="flex-grow-1 media-page-container">
-            <VRCGalleryManager.Components.EmojiEditor Base64Image="@editingBase64Image" 
+            <VRCGalleryManager.Components.EmojiEditor Base64Image="@editingBase64Image" FileName="@editingFileName"
                 OnSave="OnEditorSave" OnCancel="OnEditorCancel" />
         </div>
     }
@@ -130,7 +130,7 @@
                                     <button class="btn btn-sm rounded-circle btn-action media-btn-copy media-btn-extra" @onclick:stopPropagation="true" @onclick="() => CopyImageToClipboardAsync(targetUrl)" title="Copy Image">
                                         <img src="/svg/copy-svgrepo-com.svg" class="btn-icon icon-white" style="margin: 0;" />
                                     </button>
-                                    <button class="btn btn-sm rounded-circle btn-action media-btn-download media-btn-extra" @onclick:stopPropagation="true" @onclick='() => DownloadImageFileAsync(targetUrl, "emoji_" + emoji.Id)' title="Download">
+                                    <button class="btn btn-sm rounded-circle btn-action media-btn-download media-btn-extra" @onclick:stopPropagation="true" @onclick='() => DownloadImageFileAsync(targetUrl, emoji.IsAnimated ? $"emoji_{emoji.Id}_{emoji.Frames}frames_{emoji.FramesOverTime}fps" : "emoji_" + emoji.Id)' title="Download">
                                         <img src="/svg/download-svgrepo-com.svg" class="btn-icon icon-white" style="margin: 0;" />
                                     </button>
                                     <button class="btn btn-sm rounded-circle btn-action media-btn-link media-btn-extra" @onclick:stopPropagation="true" @onclick="() => CopyLinkToClipboardAsync(targetUrl)" title="Copy Link">
@@ -245,7 +245,7 @@
         var viewerItems = emojis.Select(e => new VRCGalleryManager.Components.ImageViewer.ViewerItem {
             HighResSource = e.ImageUrl.Replace("/image/", "/file/").Replace("/256", "/file"),
             LowResSource = e.ImageUrl,
-            Title = "Emoji"
+            Title = e.IsAnimated ? $"emoji_{e.Id}_{e.Frames}frames_{e.FramesOverTime}fps" : $"emoji_{e.Id}"
         }).ToList();
         
         var currentUrl = item.ImageUrl.Replace("/image/", "/file/").Replace("/256", "/file");
@@ -272,7 +272,10 @@
     {
         try
         {
-            string tempPath = await SaveBase64ToTempFileAsync(result.Base64, "upload_emoji");
+            string prefix = result.IsAnimated
+                ? $"SpriteSheet_{result.Frames}frames_{result.FramesOverTime}fps"
+                : "upload_emoji";
+            string tempPath = await SaveBase64ToTempFileAsync(result.Base64, prefix);
 
             if (result.IsAnimated)
             {
@@ -288,6 +291,7 @@
             await Task.Delay(2000);
             await RefreshList();
             editingBase64Image = null;
+            editingFileName = null;
         }
         catch (Exception ex)
         {

@@ -37,6 +37,11 @@ namespace VRCGalleryManager.Core
             return default;
         }
 
+        public void Remove(string key)
+        {
+            Caches.Remove(key);
+        }
+
         public void ClearAll()
         {
             Caches.Clear();
