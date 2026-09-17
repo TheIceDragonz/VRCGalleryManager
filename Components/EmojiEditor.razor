@@ -392,6 +392,7 @@
     private bool IsGifSource = false;
     private bool IsSpritesheetMode = false;
     private int SelectedCols => FinalFrameCount <= 4 ? 2 : (FinalFrameCount <= 16 ? 4 : 8);
+    private const int MaxAllowedFrames = 64;
     private readonly int[] QuickFramePresets = new int[] { 2, 4, 8, 12, 16, 24, 32, 48, 64 };
     private int TotalFrames = 1;
     private int StartFrame = 0;
