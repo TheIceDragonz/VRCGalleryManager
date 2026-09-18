@@ -1792,7 +1792,6 @@ h6 {
 
 .gallery-icon-card img {
     -webkit-user-drag: none;
-    user-drag: none;
     user-select: none;
     -webkit-user-select: none;
     pointer-events: none;
@@ -1919,7 +1918,6 @@ h6 {
 .gallery-multiselect-active img,
 .gallery-multiselect-active .spritesheet-animator {
     -webkit-user-drag: none;
-    user-drag: none;
     user-select: none;
     -webkit-user-select: none;
     pointer-events: none;
