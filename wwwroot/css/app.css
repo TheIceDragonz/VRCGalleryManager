@@ -1792,7 +1792,6 @@ h6 {
 
 .gallery-icon-card img {
     -webkit-user-drag: none;
-    user-drag: none;
     user-select: none;
     -webkit-user-select: none;
     pointer-events: none;
@@ -1919,7 +1918,6 @@ h6 {
 .gallery-multiselect-active img,
 .gallery-multiselect-active .spritesheet-animator {
     -webkit-user-drag: none;
-    user-drag: none;
     user-select: none;
     -webkit-user-select: none;
     pointer-events: none;
@@ -2569,22 +2567,89 @@ canvas.picking-color {
     flex-basis: 120px;
 }
 
-/* Adapt Upload, Paste, Reload buttons for mobile (Icon-only) */
+/* Adapt header toolbar for mobile (Prevent button wrap and keep single row) */
+.android-layout .main-content-container article.content > .h-100 {
+    padding: 10px 10px !important;
+}
+
 .android-layout .border-secondary.border-bottom {
-    flex-wrap: wrap !important;
-    gap: 10px !important;
+    flex-wrap: nowrap !important;
+    gap: 6px !important;
+}
+
+.android-layout .border-secondary.border-bottom > div:first-child {
+    min-width: 0;
+    flex-shrink: 1;
+    overflow: hidden;
+}
+
+.android-layout .border-secondary.border-bottom h3 {
+    font-size: 1.15rem !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.android-layout .border-secondary.border-bottom h3 .media-page-icon {
+    width: 22px !important;
+    height: 22px !important;
+    min-width: 22px !important;
+}
+
+.android-layout .border-secondary.border-bottom h3 .badge,
+.android-layout .border-secondary.border-bottom h3 span {
+    font-size: 0.72rem !important;
+    padding: 2px 6px !important;
+    margin-left: 4px !important;
+}
+
+/* Hide page counter and breadcrumbs during multi-selection on mobile to prevent clipping/overflow */
+.android-layout .gallery-multiselect-active .border-secondary.border-bottom h3 span,
+.android-layout .gallery-multiselect-active .border-secondary.border-bottom h3 .badge,
+.android-layout .gallery-multiselect-active .border-secondary.border-bottom .gallery-breadcrumbs,
+.android-layout .gallery-multiselect-active .border-secondary.border-bottom .text-truncate span {
+    display: none !important;
+}
+
+.android-layout .border-secondary.border-bottom > div:last-child {
+    flex-shrink: 0 !important;
+    flex-wrap: nowrap !important;
+    gap: 5px !important;
 }
 
 .android-layout .border-secondary.border-bottom .btn {
-    font-size: 0 !important;
-    padding: 0.375rem 0.5rem !important;
+    padding: 0.28rem 0.45rem !important;
+    font-size: 0.78rem !important;
+    font-weight: 500;
+    line-height: 1.2 !important;
+    white-space: nowrap !important;
     display: inline-flex !important;
     align-items: center;
     justify-content: center;
 }
 
-.android-layout .d-flex.justify-content-between.border-bottom .btn .btn-icon {
-    margin: 0 !important;
+.android-layout .border-secondary.border-bottom .btn .btn-icon {
+    width: 16px !important;
+    height: 16px !important;
+    margin-right: 4px;
+}
+
+.android-layout .border-secondary.border-bottom .gallery-multiselect-badge {
+    padding: 2px 6px !important;
+    font-size: 0.72rem !important;
+    gap: 3px !important;
+}
+
+.android-layout .border-secondary.border-bottom .gallery-tb-circle-btn {
+    width: 24px !important;
+    height: 24px !important;
+    min-width: 24px !important;
+    min-height: 24px !important;
+}
+
+.android-layout .border-secondary.border-bottom .gallery-tb-circle-btn svg {
+    width: 12px !important;
+    height: 12px !important;
 }
 
 .disabled-nav {
