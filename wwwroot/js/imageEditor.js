@@ -492,19 +492,62 @@ window.imageEditor = {
 window.spritesheetAnimator = {
     animators: [],
     loopActive: false,
+    observer: null,
+
+    initObserver: function () {
+        if (this.observer || typeof MutationObserver === 'undefined') return;
+        if (!document.body) {
+            document.addEventListener('DOMContentLoaded', () => this.initObserver());
+            return;
+        }
+        this.observer = new MutationObserver((mutations) => {
+            for (const mutation of mutations) {
+                for (const node of mutation.addedNodes) {
+                    if (node.nodeType === 1) { // ELEMENT_NODE
+                        if (node.classList && node.classList.contains('spritesheet-animator')) {
+                            this.register(node);
+                        } else if (node.querySelectorAll) {
+                            const children = node.querySelectorAll('.spritesheet-animator');
+                            children.forEach(child => this.register(child));
+                        }
+                    }
+                }
+            }
+        });
+        this.observer.observe(document.body, { childList: true, subtree: true });
+    },
 
     register: function (element) {
         if (!element) return;
-        // Check if already registered
-        if (this.animators.some(a => a.el === element)) return;
+        this.initObserver();
 
         const frames = parseInt(element.getAttribute('data-frames') || '1');
         const fps = parseInt(element.getAttribute('data-fps') || '15');
         const isAnimated = element.getAttribute('data-animated') === 'true';
 
-        if (!isAnimated || frames < 1) return;
+        if (!isAnimated || frames < 1) {
+            this.unregister(element);
+            return;
+        }
 
-        const cols = frames <= 16 ? 4 : 8;
+        const customCols = parseInt(element.getAttribute('data-cols') || '0');
+        const cols = customCols > 0 ? customCols : (frames <= 4 ? 2 : (frames <= 16 ? 4 : 8));
+
+        const existing = this.animators.find(a => a.el === element);
+        if (existing) {
+            if (existing.frames === frames && existing.fps === fps && existing.cols === cols) {
+                return;
+            }
+            existing.frames = frames;
+            existing.fps = fps;
+            existing.cols = cols;
+            existing.currentFrame = -1;
+            element.style.backgroundSize = `${cols * 100}% ${cols * 100}%`;
+            return;
+        }
+
+        element.style.backgroundSize = `${cols * 100}% ${cols * 100}%`;
+        element.style.backgroundPosition = '0% 0%';
 
         this.animators.push({
             el: element,
@@ -521,9 +564,9 @@ window.spritesheetAnimator = {
     },
 
     initAll: function () {
+        this.initObserver();
         const elements = document.querySelectorAll('.spritesheet-animator');
         elements.forEach(el => {
-            this.unregister(el);
             this.register(el);
         });
     },

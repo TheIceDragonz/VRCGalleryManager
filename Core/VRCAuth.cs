@@ -141,6 +141,7 @@ namespace VRCGalleryManager.Core
                     return VRCAuthStatus.Error;
                 }
 
+                await HydrateUserProfileAsync(user);
                 await SaveCookiesAsync();
                 LoggedIn = true;
                 CookieLoaded = true;
@@ -228,6 +229,7 @@ namespace VRCGalleryManager.Core
                     return VRCAuthStatus.Error;
                 }
 
+                await HydrateUserProfileAsync(user);
                 await SaveCookiesAsync();
                 LoggedIn = true;
                 CookieLoaded = true;
@@ -246,6 +248,49 @@ namespace VRCGalleryManager.Core
             }
         }
 
+        public async Task HydrateUserProfileAsync(CurrentUser? user)
+        {
+            if (user == null || string.IsNullOrEmpty(user.Id)) return;
+
+            try
+            {
+                var profile = await ApiClient.GetPublicProfileAsync(user.Id, asSelf: true);
+                if (profile != null)
+                {
+                    if (!string.IsNullOrEmpty(profile.UserIcon))
+                        user.UserIcon = profile.UserIcon;
+                    if (!string.IsNullOrEmpty(profile.IconUrl))
+                        user.IconUrl = profile.IconUrl;
+
+                    if (!string.IsNullOrEmpty(profile.BannerCustomUrl))
+                        user.BannerCustomUrl = profile.BannerCustomUrl;
+                    if (!string.IsNullOrEmpty(profile.ProfilePicOverride))
+                        user.ProfilePicOverride = profile.ProfilePicOverride;
+                    if (!string.IsNullOrEmpty(profile.ProfilePicOverrideThumbnail))
+                        user.ProfilePicOverrideThumbnail = profile.ProfilePicOverrideThumbnail;
+                    if (!string.IsNullOrEmpty(profile.BannerUrl))
+                        user.BannerUrl = profile.BannerUrl;
+                    if (!string.IsNullOrEmpty(profile.BannerType))
+                        user.BannerType = profile.BannerType;
+
+                    if (profile.Bio != null)
+                        user.Bio = profile.Bio;
+                    if (profile.BioLinks != null)
+                        user.BioLinks = profile.BioLinks;
+                    if (profile.Badges != null && profile.Badges.Count > 0)
+                        user.Badges = profile.Badges;
+                    if (profile.IsEconomyCreator)
+                        user.IsEconomyCreator = true;
+                    if (profile.HasVrcPlus.HasValue)
+                        user.IsVRCPlus = profile.HasVrcPlus.Value;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"HydrateUserProfileAsync warning: {ex.Message}");
+            }
+        }
+
         public async Task<CurrentUser> GetCurrentUserAsync()
         {
             var previousUser = CurrentUser;
@@ -259,7 +304,18 @@ namespace VRCGalleryManager.Core
                     user.Bio = previousUser.Bio;
                 if ((user.BioLinks == null || user.BioLinks.Count == 0) && previousUser.BioLinks?.Count > 0)
                     user.BioLinks = previousUser.BioLinks;
+                if (string.IsNullOrEmpty(user.UserIcon) && !string.IsNullOrEmpty(previousUser.UserIcon))
+                    user.UserIcon = previousUser.UserIcon;
+                if (string.IsNullOrEmpty(user.ProfilePicOverride) && !string.IsNullOrEmpty(previousUser.ProfilePicOverride))
+                    user.ProfilePicOverride = previousUser.ProfilePicOverride;
+                if (string.IsNullOrEmpty(user.BannerUrl) && !string.IsNullOrEmpty(previousUser.BannerUrl))
+                    user.BannerUrl = previousUser.BannerUrl;
+                if (string.IsNullOrEmpty(user.BannerCustomUrl) && !string.IsNullOrEmpty(previousUser.BannerCustomUrl))
+                    user.BannerCustomUrl = previousUser.BannerCustomUrl;
             }
+
+            await HydrateUserProfileAsync(user);
+
             CurrentUser = user;
             return user;
         }

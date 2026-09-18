@@ -594,6 +594,27 @@ namespace VRCGalleryManager.Core.Api
             return await SendAsync<CurrentUser>(req, ct).ConfigureAwait(false);
         }
 
+        public async Task<VRChatPublicProfile> GetPublicProfileAsync(string userId, bool asSelf = false, bool withGroupsAndWorlds = false, CancellationToken ct = default)
+        {
+            var query = new List<string>();
+            if (asSelf) query.Add("asSelf=true");
+            if (withGroupsAndWorlds) query.Add("withGroupsAndWorlds=true");
+            var queryString = query.Count > 0 ? "?" + string.Join("&", query) : "";
+
+            using var req = new HttpRequestMessage(HttpMethod.Get, $"profile/{Uri.EscapeDataString(userId)}{queryString}");
+            return await SendAsync<VRChatPublicProfile>(req, ct).ConfigureAwait(false);
+        }
+
+        public async Task<VRChatPublicProfile> UpdateProfileAsync(string userId, UpdateProfileRequest updateRequest, CancellationToken ct = default)
+        {
+            var json = JsonSerializer.Serialize(updateRequest, _jsonOptions);
+            using var req = new HttpRequestMessage(HttpMethod.Put, $"profile/{Uri.EscapeDataString(userId)}")
+            {
+                Content = new StringContent(json, Encoding.UTF8, "application/json")
+            };
+            return await SendAsync<VRChatPublicProfile>(req, ct).ConfigureAwait(false);
+        }
+
         public async Task<VRChatWorld> GetWorldAsync(string worldId, CancellationToken ct = default)
         {
             using var req = new HttpRequestMessage(HttpMethod.Get, $"worlds/{Uri.EscapeDataString(worldId)}");

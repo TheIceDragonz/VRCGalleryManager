@@ -8,7 +8,6 @@
 
   [![Platform](https://img.shields.io/badge/Platforms-Windows%20%7C%20Android-512BD4?style=flat-square&logo=dotnet)](https://github.com/TheIceDragonz/VRCGalleryManager)
   [![Framework](https://img.shields.io/badge/Framework-.NET%209%20MAUI%20Blazor-blue?style=flat-square&logo=blazor)](https://dotnet.microsoft.com/download/dotnet/9.0)
-  [![ImageSharp](https://img.shields.io/badge/ImageSharp-4.1.0-orange?style=flat-square)](https://github.com/SixLabors/ImageSharp)
   [![Release](https://img.shields.io/github/v/release/TheIceDragonz/VRCGalleryManager?style=flat-square&color=success)](https://github.com/TheIceDragonz/VRCGalleryManager/releases/latest)
 
   <p align="center">
@@ -53,6 +52,9 @@
 - **Profile Details Card**: View your profile bio, status, pronouns, trust rank, unlimited user badges, icon frames, and avatar pictures directly in-app.
 
 ### 🖼️ Comprehensive VRChat Plus Media Management
+- **Multi-Selection & Batch Operations**: Select multiple items with click or intuitive mouse drag-to-select across all media pages (Gallery, Photos, Stickers, Emojis, Prints, Profile Icons).
+- **Safe Batch Deletion**: Bulk delete media assets with confirmation dialogs and real-time progress indicators. Local screenshots are safely moved to the **Windows Recycle Bin** (preventing accidental loss), while VRChat Plus cloud media is deleted asynchronously in the background.
+- **Batch Selection Toolbar**: Floating contextual toolbar displaying live selection counts, Select All, Deselect All, and quick dismissal (<kbd>Esc</kbd> key supported).
 - **Stickers & Emojis**: Create, upload, organize, and delete VRChat custom stickers and emojis.
 - **Photos & Gallery**: Browse, manage, and upload high-resolution screenshots to your VRChat Plus online gallery.
 - **Smart Folder Browser**: Folder picker with automatic VRChat Pictures directory detection, subfolder navigation, and real-time photo count badges and tooltips.
@@ -83,7 +85,9 @@
 ### ✂️ Integrated Image & Emoji Editors
 - **Quality Scale & Size Preview**: Real-time file size calculation and quality scaling slider before uploading to ensure images never exceed VRChat limits.
 - **Refine Edge & Crop**: Built-in canvas tools for cropping and refining edges.
-- **GIF to Sprite Sheet Converter**: Convert animated GIFs into VRChat-compatible sprite sheet animations with configurable FPS and timeline settings.
+- **Advanced Spritesheet Support**: Direct spritesheet creation and editing with automatic grid layout derivation (2×2, 3×3, 4×4, up to 8×8) dynamically computed from frame count.
+- **Live Spritesheet Animation & Preview**: Real-time animation preview with configurable playback FPS, customizable frame limits, and an interactive frame-by-frame thumbnail strip.
+- **GIF to Sprite Sheet Converter**: Convert animated GIFs into VRChat-compatible sprite sheet animations with configurable FPS, frame selection, and timeline settings.
 
 <div align="center">
   <table>
@@ -97,6 +101,7 @@
 ### 🌐 Picflow - Global Explorer & Local Database
 - **Worldwide Sticker Explorer**: Browse stickers placed across VRChat worlds with lazy-loading.
 - **Themed Category Filters**: Filter smoothly between Stickers, Emojis, and Prints with dynamic active theme styling.
+- **Live Animated Emojis**: Spritesheet-based emojis animate smoothly directly within the Picflow discovery grid using hardware-accelerated CSS frame stepping.
 - **Live Stream Mode (Windows)**: Monitor and inspect new stickers in real time from VRChat logs as players place them.
 - **Local Database (`PicflowDatabase`)**: Persistent local storage to cache and quickly search through discovered stickers and prints with one-click cleanup.
 - **Info Dialog & Direct Upload**: Quick inspection modal with creator details, asset info, and one-click upload to your personal collection.

@@ -12,11 +12,27 @@
 
     function layoutDropletCard(card) {
         if (!card) return;
-        const actions = card.querySelector('.media-card-actions');
-        if (!actions) return;
 
         const W = card.offsetWidth;
         if (W <= 0) return;
+
+        // Adatta il pulsante / checkbox di selezione all'arco circolare superiore destro
+        const chk = card.querySelector('.gallery-multiselect-checkbox');
+        if (chk) {
+            const r_btn = 14.0; // raggio pulsante (diametro 28px / 2)
+            const m = 6.0;      // margine costante e uniforme dal bordo curvo della card
+            const R = W / 2.0;  // raggio del quadrante circolare superiore-destro
+            const r_center = Math.max(10.0, R - m - r_btn);
+            // Sull'asse diagonale a 45°:
+            // x_center = W/2 + r_center * cos(45°), y_center = W/2 - r_center * sin(45°)
+            // right = W - (x_center + r_btn), top = y_center - r_btn
+            const offset = R - r_center * Math.SQRT1_2 - r_btn;
+            chk.style.setProperty('top', offset.toFixed(1) + 'px', 'important');
+            chk.style.setProperty('right', offset.toFixed(1) + 'px', 'important');
+        }
+
+        const actions = card.querySelector('.media-card-actions');
+        if (!actions) return;
 
         const buttons = actions.querySelectorAll('.btn-action');
         if (buttons.length === 0) return;

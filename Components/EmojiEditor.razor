@@ -43,7 +43,8 @@
                          style="background-image: url('@AnimatedPreviewBase64'); background-repeat: no-repeat; width: auto; height: auto;" 
                          data-animated="true" 
                          data-frames="@FinalFrameCount" 
-                         data-fps="@FramesOverTime" />
+                         data-fps="@FramesOverTime"
+                         data-cols="@SelectedCols" />
                 </div>
                 
                 @if (GifFrameThumbnails.Count > 0)
@@ -52,11 +53,12 @@
                         @for (int i = 0; i < GifFrameThumbnails.Count; i++)
                         {
                             var index = i;
-                            var isSelected = index >= StartFrame && index <= EndFrame;
+                            var isSelected = IsGifSource ? (index >= StartFrame && index <= EndFrame) : (index < FinalFrameCount);
                             var thumbB64 = GifFrameThumbnails[i];
                             <div class="rounded @(isSelected ? "border border-info bg-info bg-opacity-25" : "border border-secondary bg-dark")" 
                                  style="min-width: 44px; height: 44px; cursor: pointer; padding: 2px; transition: all 0.2s ease; flex-shrink: 0;"
-                                 @onclick="() => OnThumbnailClicked(index)">
+                                 @onclick="() => OnThumbnailClicked(index)"
+                                 title="@($"Frame {index + 1}")">
                                 <img src="@thumbB64" class="w-100 h-100 rounded" style="object-fit: cover;" />
                             </div>
                         }
@@ -79,6 +81,23 @@
             <div class="p-3 editor-sidebar-content flex-shrink-0">
 
             
+            @if (!IsGifSource)
+            {
+                <div class="mb-3">
+                    <label class="form-label small text-muted mb-1">Mode</label>
+                    <div class="btn-group w-100" role="group">
+                        <button type="button" class="btn btn-sm @(!IsSpritesheetMode ? "btn-info fw-bold" : "btn-dark text-muted")"
+                                @onclick="() => SetSpritesheetMode(false)">
+                            Static
+                        </button>
+                        <button type="button" class="btn btn-sm @(IsSpritesheetMode ? "btn-info fw-bold" : "btn-dark text-muted")"
+                                @onclick="() => SetSpritesheetMode(true)">
+                            Spritesheet
+                        </button>
+                    </div>
+                </div>
+            }
+
             <div class="mb-2">
                 <label class="form-label small text-muted mb-1">Preset Type</label>
                 <div class="dropdown w-100 position-relative">
@@ -194,9 +213,7 @@
             }
             else
             {
-
-
-                @if (TotalFrames > 1)
+                @if (IsGifSource)
                 {
                     <div class="mb-2">
                         <label class="form-label small text-muted mb-1 d-flex justify-content-between">
@@ -216,7 +233,40 @@
                         </label>
                         <input type="range" class="form-range" min="1" max="64" value="@FramesOverTime" @oninput="OnFpsInput" @onchange="UpdateAnimatedPreview">
                     </div>
+                }
+                else if (IsSpritesheetMode)
+                {
+                    <div class="mb-3">
+                        <label class="form-label small text-muted mb-1 d-flex justify-content-between">
+                            <span>Total Frames</span>
+                            <span class="text-accent fw-bold">@FinalFrameCount</span>
+                        </label>
+                        <input type="range" class="form-range" min="2" max="64" value="@FinalFrameCount" 
+                               @oninput="OnSpritesheetFrameInput" @onchange="OnSpritesheetFrameChanged" />
+                        <div class="d-flex gap-1 flex-wrap mt-1">
+                            @foreach (var f in QuickFramePresets)
+                            {
+                                <button type="button" class="btn btn-sm @(FinalFrameCount == f ? "btn-info fw-bold" : "btn-dark text-muted") py-0 px-2" 
+                                        style="font-size: 0.75rem;" @onclick="() => SetFrameCount(f)">@f</button>
+                            }
+                        </div>
+                    </div>
 
+                    <div class="mb-3">
+                        <label class="form-label small text-muted mb-1 d-flex justify-content-between">
+                            <span>FPS</span>
+                            <span class="text-accent fw-bold">@FramesOverTime</span>
+                        </label>
+                        <input type="range" class="form-range" min="1" max="64" value="@FramesOverTime" 
+                               @oninput="OnFpsInput" @onchange="UpdateSpritesheetPreview" />
+                        <div class="d-flex gap-1 flex-wrap mt-1">
+                            @foreach (var fpsVal in new int[] { 10, 15, 20, 24, 30, 60 })
+                            {
+                                <button type="button" class="btn btn-sm @(FramesOverTime == fpsVal ? "btn-info fw-bold" : "btn-dark text-muted") py-0 px-2" 
+                                        style="font-size: 0.75rem;" @onclick="() => SetFps(fpsVal)">@fpsVal</button>
+                            }
+                        </div>
+                    </div>
                 }
             }
             </div>
@@ -251,11 +301,11 @@
                 </div>
             }
             <div class="d-flex gap-2 mb-2">
-                @if (!IsAnimatedMode)
+                @if (!IsGifSource)
                 {
                     <button class="btn btn-sm flex-grow-1 btn-reset" @onclick="Reset">Reset</button>
                 }
-                <button class="btn btn-sm btn-outline-danger @(IsAnimatedMode ? "w-100" : "flex-grow-1")" @onclick="OnCancelClick">Cancel</button>
+                <button class="btn btn-sm btn-outline-danger @(IsGifSource ? "w-100" : "flex-grow-1")" @onclick="OnCancelClick">Cancel</button>
             </div>
             <button class="btn btn-sm w-100 fw-bold @(isUploading ? "btn-secondary" : "btn-primary")" @onclick="OnSaveClick" disabled="@(SizeMb > 10 || isUploading)">
                 @if (isUploading)
@@ -271,6 +321,7 @@
         </div>
     };
     [Parameter] public string Base64Image { get; set; }
+    [Parameter] public string FileName { get; set; }
     [Parameter] public EventCallback<(string Base64, bool IsAnimated, string AnimStyle, int Frames, int FramesOverTime)> OnSave { get; set; }
     [Parameter] public EventCallback OnCancel { get; set; }
     [Parameter] public bool IsAnimatedMode { get; set; } = false;
@@ -338,10 +389,15 @@
     // Animated State
     [Parameter] public string AnimationStyle { get; set; } = "Loop";
     [Parameter] public int FramesOverTime { get; set; } = 30;
+    private bool IsGifSource = false;
+    private bool IsSpritesheetMode = false;
+    private int SelectedCols => FinalFrameCount <= 4 ? 2 : (FinalFrameCount <= 16 ? 4 : 8);
+    private const int MaxAllowedFrames = 64;
+    private readonly int[] QuickFramePresets = new int[] { 2, 4, 8, 12, 16, 24, 32, 48, 64 };
     private int TotalFrames = 1;
     private int StartFrame = 0;
     private int EndFrame = 0;
-    private int FinalFrameCount = 1;
+    private int FinalFrameCount = 16;
     private string AnimatedPreviewBase64 = "";
     private string TempGifPath = "";
     private List<string> GifFrameThumbnails = new();
@@ -380,9 +436,16 @@
 
             if (TotalFrames > 1)
             {
+                IsGifSource = true;
                 IsAnimatedMode = true;
                 EndFrame = Math.Min(TotalFrames - 1, 63);
+                FinalFrameCount = EndFrame - StartFrame + 1;
                 _ = ExtractGifThumbnailsAsync();
+            }
+            else
+            {
+                IsGifSource = false;
+                CheckFileNameAutoDetect();
             }
 
             isLoading = false;
@@ -391,14 +454,239 @@
             {
                 QueueUpdatePreview();
             }
-            else if (IsAnimatedMode)
+            else if (IsSpritesheetMode)
             {
-                UpdateAnimatedPreview();
+                UpdateSpritesheetPreview();
             }
         }
         else
         {
             isLoading = false;
+        }
+    }
+
+    private void CheckFileNameAutoDetect()
+    {
+        if (string.IsNullOrEmpty(FileName)) return;
+
+        bool hasMetadata = false;
+        string nameToScan = Uri.UnescapeDataString(FileName);
+
+        var frameMatch = System.Text.RegularExpressions.Regex.Match(
+            nameToScan, 
+            @"(?:^|[_\-\s\(\[\.])(\d{1,2})\s*[_\-]?\s*(?:frames|frame|f)(?:[_\-\s\)\]\.]|$)", 
+            System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+
+        if (frameMatch.Success && int.TryParse(frameMatch.Groups[1].Value, out int detectedFrames))
+        {
+            if (detectedFrames >= 2 && detectedFrames <= 64)
+            {
+                FinalFrameCount = detectedFrames;
+                hasMetadata = true;
+            }
+        }
+
+        var fpsMatch = System.Text.RegularExpressions.Regex.Match(
+            nameToScan, 
+            @"(?:^|[_\-\s\(\[\.])(\d{1,2})\s*[_\-]?\s*fps(?:[_\-\s\)\]\.]|$)", 
+            System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+
+        if (fpsMatch.Success && int.TryParse(fpsMatch.Groups[1].Value, out int detectedFps))
+        {
+            if (detectedFps >= 1 && detectedFps <= 64)
+            {
+                FramesOverTime = detectedFps;
+                hasMetadata = true;
+            }
+        }
+
+        if (nameToScan.Contains("spritesheet", StringComparison.OrdinalIgnoreCase) || 
+            nameToScan.Contains("sprite_sheet", StringComparison.OrdinalIgnoreCase) ||
+            nameToScan.Contains("sheet", StringComparison.OrdinalIgnoreCase))
+        {
+            hasMetadata = true;
+        }
+
+        if (nameToScan.Contains("2x2", StringComparison.OrdinalIgnoreCase))
+        {
+            FinalFrameCount = 4;
+            hasMetadata = true;
+        }
+
+        if (hasMetadata)
+        {
+            IsSpritesheetMode = true;
+            IsAnimatedMode = true;
+        }
+
+        foreach (var style in EmojiStyles)
+        {
+            if (nameToScan.Contains(style.Name, StringComparison.OrdinalIgnoreCase))
+            {
+                SelectedEmojiType = style.Name;
+                break;
+            }
+        }
+    }
+
+    private void SetSpritesheetMode(bool enable)
+    {
+        if (IsSpritesheetMode == enable) return;
+        IsSpritesheetMode = enable;
+        IsAnimatedMode = enable;
+
+        if (IsSpritesheetMode)
+        {
+            if (FinalFrameCount <= 1)
+            {
+                FinalFrameCount = 16;
+            }
+            UpdateSpritesheetPreview();
+        }
+        else
+        {
+            _ = Task.Run(async () =>
+            {
+                await Task.Delay(100);
+                await InvokeAsync(async () =>
+                {
+                    dotNetRef = DotNetObjectReference.Create(this);
+                    await JSRuntime.InvokeVoidAsync("imageEditor.init", "emojiEditorCanvas", dotNetRef);
+                    QueueUpdatePreview();
+                });
+            });
+        }
+        StateHasChanged();
+    }
+
+    private async void UpdateSpritesheetPreview()
+    {
+        if (!IsSpritesheetMode || originalImage == null) return;
+
+        isRendering = true;
+        await InvokeAsync(StateHasChanged);
+        await Task.Delay(20);
+
+        try
+        {
+            await Task.Run(() =>
+            {
+                lock (_imageLock)
+                {
+                    if (originalImage == null) return;
+                    using var copy = originalImage.Clone();
+                    if (copy.Width != 1024 || copy.Height != 1024)
+                    {
+                        copy.Mutate(x => x.Resize(1024, 1024, KnownResamplers.Bicubic));
+                    }
+                    using MemoryStream ms = new MemoryStream();
+                    copy.SaveAsPng(ms, new SixLabors.ImageSharp.Formats.Png.PngEncoder 
+                    { 
+                        CompressionLevel = SixLabors.ImageSharp.Formats.Png.PngCompressionLevel.BestSpeed 
+                    });
+                    AnimatedPreviewBase64 = "data:image/png;base64," + Convert.ToBase64String(ms.ToArray());
+                    SizeMb = ms.Length / (1024.0 * 1024.0);
+                }
+            });
+
+            _ = ExtractSpritesheetThumbnailsAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error updating spritesheet preview: {ex.Message}");
+        }
+        finally
+        {
+            isRendering = false;
+            await InvokeAsync(StateHasChanged);
+        }
+
+        _ = Task.Run(async () => {
+            await Task.Delay(50);
+            await InvokeAsync(() => JSRuntime.InvokeVoidAsync("spritesheetAnimator.initAll"));
+        });
+    }
+
+    private async Task ExtractSpritesheetThumbnailsAsync()
+    {
+        try
+        {
+            var thumbnails = new List<string>();
+            await Task.Run(() =>
+            {
+                lock (_imageLock)
+                {
+                    if (originalImage == null) return;
+                    int cols = SelectedCols;
+                    int rows = cols;
+                    int cellW = originalImage.Width / cols;
+                    int cellH = originalImage.Height / rows;
+
+                    if (cellW <= 0 || cellH <= 0) return;
+
+                    int count = Math.Min(FinalFrameCount, cols * rows);
+
+                    for (int i = 0; i < count; i++)
+                    {
+                        int col = i % cols;
+                        int row = i / cols;
+                        int srcX = col * cellW;
+                        int srcY = row * cellH;
+
+                        if (srcX + cellW > originalImage.Width || srcY + cellH > originalImage.Height) break;
+
+                        using Image<Rgba32> thumb = new Image<Rgba32>(64, 64);
+                        using Image<Rgba32> cell = originalImage.Clone(x =>
+                        {
+                            x.Crop(new Rectangle(srcX, srcY, cellW, cellH));
+                            x.Resize(64, 64, KnownResamplers.Bicubic);
+                        });
+                        thumb.Mutate(x => x.DrawImage(cell, new Point(0, 0), 1f));
+                        using MemoryStream ms = new MemoryStream();
+                        thumb.SaveAsPng(ms, new SixLabors.ImageSharp.Formats.Png.PngEncoder 
+                        { 
+                            CompressionLevel = SixLabors.ImageSharp.Formats.Png.PngCompressionLevel.BestSpeed 
+                        });
+                        thumbnails.Add("data:image/png;base64," + Convert.ToBase64String(ms.ToArray()));
+                    }
+                }
+            });
+            GifFrameThumbnails = thumbnails;
+            await InvokeAsync(StateHasChanged);
+        }
+        catch { }
+    }
+
+    private void SetFrameCount(int count)
+    {
+        FinalFrameCount = Math.Clamp(count, 2, 64);
+        UpdateSpritesheetPreview();
+    }
+
+    private void SetFps(int fps)
+    {
+        FramesOverTime = Math.Clamp(fps, 1, 64);
+        UpdateSpritesheetPreview();
+    }
+
+    private void OnSpritesheetFrameInput(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out int val))
+        {
+            FinalFrameCount = Math.Clamp(val, 2, 64);
+            _ = Task.Run(async () => {
+                await Task.Delay(30);
+                await InvokeAsync(() => JSRuntime.InvokeVoidAsync("spritesheetAnimator.initAll"));
+            });
+        }
+    }
+
+    private void OnSpritesheetFrameChanged(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out int val))
+        {
+            FinalFrameCount = Math.Clamp(val, 2, 64);
+            UpdateSpritesheetPreview();
         }
     }
 
@@ -417,7 +705,10 @@
         {
             if (originalImage != null)
             {
-                UpdateAnimatedPreview();
+                if (IsGifSource)
+                    UpdateAnimatedPreview();
+                else
+                    UpdateSpritesheetPreview();
             }
         }
     }
@@ -426,7 +717,10 @@
     {
         if (IsAnimatedMode)
         {
-            UpdateAnimatedPreview();
+            if (IsGifSource)
+                UpdateAnimatedPreview();
+            else
+                UpdateSpritesheetPreview();
         }
         else
         {
@@ -508,7 +802,16 @@
 
     private void Reset()
     {
-        if (IsAnimatedMode) return;
+        if (IsGifSource) return;
+
+        if (IsSpritesheetMode)
+        {
+            FinalFrameCount = 16;
+            FramesOverTime = 30;
+            SelectedEmojiType = "Select Type...";
+            UpdateSpritesheetPreview();
+            return;
+        }
 
         CurrentAdaptationMode = AdaptationMode.Fit;
         ZoomFactor = 1.0f;
@@ -755,14 +1058,22 @@
 
     private void OnThumbnailClicked(int index)
     {
-        if (index < StartFrame) StartFrame = index;
-        else if (index > EndFrame) EndFrame = index;
-        else 
+        if (IsGifSource)
         {
-            StartFrame = index;
-            if (EndFrame < StartFrame) EndFrame = StartFrame;
+            if (index < StartFrame) StartFrame = index;
+            else if (index > EndFrame) EndFrame = index;
+            else 
+            {
+                StartFrame = index;
+                if (EndFrame < StartFrame) EndFrame = StartFrame;
+            }
+            UpdateAnimatedPreview();
         }
-        UpdateAnimatedPreview();
+        else if (IsSpritesheetMode)
+        {
+            FinalFrameCount = Math.Clamp(index + 1, 2, MaxAllowedFrames);
+            UpdateSpritesheetPreview();
+        }
     }
 
     private void OnStartFrameInput(ChangeEventArgs e)
@@ -841,9 +1152,32 @@
 
             if (IsAnimatedMode)
             {
+                string b64ToSave = AnimatedPreviewBase64;
+                if (IsSpritesheetMode)
+                {
+                    b64ToSave = await Task.Run(() =>
+                    {
+                        lock (_imageLock)
+                        {
+                            if (originalImage == null) return AnimatedPreviewBase64;
+                            using var copy = originalImage.Clone();
+                            if (copy.Width != 1024 || copy.Height != 1024)
+                            {
+                                copy.Mutate(x => x.Resize(1024, 1024, KnownResamplers.Bicubic));
+                            }
+                            using MemoryStream ms = new MemoryStream();
+                            copy.SaveAsPng(ms, new SixLabors.ImageSharp.Formats.Png.PngEncoder 
+                            { 
+                                CompressionLevel = SixLabors.ImageSharp.Formats.Png.PngCompressionLevel.BestSpeed 
+                            });
+                            return "data:image/png;base64," + Convert.ToBase64String(ms.ToArray());
+                        }
+                    });
+                }
+
                 if (OnSave.HasDelegate)
                 {
-                    await OnSave.InvokeAsync((AnimatedPreviewBase64, IsAnimatedMode, styleToPass, FinalFrameCount, FramesOverTime));
+                    await OnSave.InvokeAsync((b64ToSave, IsAnimatedMode, styleToPass, FinalFrameCount, FramesOverTime));
                 }
                 return;
             }

@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 
+using System.Text.Json.Serialization;
+
 namespace VRCGalleryManager.Core
 {
     public class CachedItem
@@ -12,6 +14,18 @@ namespace VRCGalleryManager.Core
         public string UserId { get; set; } = "";
         public string Url { get; set; } = "";
         public int CategoryInt { get; set; }
+
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public int Frames { get; set; }
+
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public int FramesOverTime { get; set; }
+
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public string? AnimationStyle { get; set; }
+
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public string? Name { get; set; }
     }
 
     public static class PicflowDatabase
@@ -113,12 +127,12 @@ namespace VRCGalleryManager.Core
             }
         }
 
-        public static void SaveItem(string itemId, string username, string userId, string url, int category)
+        public static void SaveItem(string itemId, string username, string userId, string url, int category, int frames = 0, int framesOverTime = 0, string? animStyle = null, string? name = null)
         {
             bool isNewOrUpdated = false;
             lock (_lock)
             {
-                if (!_db.ContainsKey(itemId) || _db[itemId].Url != url)
+                if (!_db.ContainsKey(itemId) || _db[itemId].Url != url || _db[itemId].Frames != frames)
                 {
                     _db[itemId] = new CachedItem
                     {
@@ -126,7 +140,11 @@ namespace VRCGalleryManager.Core
                         Username = username,
                         UserId = userId,
                         Url = url,
-                        CategoryInt = category
+                        CategoryInt = category,
+                        Frames = frames,
+                        FramesOverTime = framesOverTime,
+                        AnimationStyle = animStyle,
+                        Name = name
                     };
                     isNewOrUpdated = true;
                 }
@@ -148,11 +166,28 @@ namespace VRCGalleryManager.Core
 
         public static void Clear()
         {
+            lock (_saveLock)
+            {
+                _debounceTimer?.Dispose();
+                _debounceTimer = null;
+                _isDirty = false;
+            }
+
             lock (_lock)
             {
                 _db.Clear();
+                try
+                {
+                    EnsureFolderExists();
+                    var options = new JsonSerializerOptions { WriteIndented = true };
+                    var jsonString = JsonSerializer.Serialize(_db, options);
+                    File.WriteAllText(PathDbJson, jsonString);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Error clearing Picflow DB: " + ex.Message);
+                }
             }
-            Flush();
         }
     }
 }

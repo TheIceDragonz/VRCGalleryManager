@@ -40,7 +40,7 @@
         <ApplicationIcon>Icon.ico</ApplicationIcon>
 
         <!-- Versions -->
-        <Version>2.0.2</Version>
+        <Version>2.0.3</Version>
         
         <FileVersion>$(Version)</FileVersion>
         <AssemblyVersion>$(Version)</AssemblyVersion>

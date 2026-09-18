@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
 using VRCGalleryManager.Core.Api;
@@ -14,10 +15,12 @@ namespace VRCGalleryManager.Core
     public class ApiRequest
     {
         private readonly VRCAuth Auth;
+        private readonly ProfileBackgroundService? _profileBackgroundService;
 
-        public ApiRequest(VRCAuth auth)
+        public ApiRequest(VRCAuth auth, ProfileBackgroundService? profileBackgroundService = null)
         {
             Auth = auth;
+            _profileBackgroundService = profileBackgroundService;
         }
 
         public class ApiData
@@ -316,9 +319,20 @@ namespace VRCGalleryManager.Core
 
         public async Task SetProfileIcon(string urlImage)
         {
+            var user = await ExecuteWithReloginAsync(() => Auth.GetCurrentUserAsync());
+            
+            var updateProfileRequest = new UpdateProfileRequest
+            {
+                UserIcon = urlImage
+            };
+
             try
             {
-                var user = await ExecuteWithReloginAsync(() => Auth.GetCurrentUserAsync());
+                await ExecuteWithReloginAsync(() => Auth.ApiClient.UpdateProfileAsync(user.Id, updateProfileRequest));
+            }
+            catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                // Fallback to legacy updateUser if endpoint is not available
                 var updateRequest = new UpdateUserRequest
                 {
                     AcceptedTOSVersion = user.AcceptedTOSVersion,
@@ -331,20 +345,37 @@ namespace VRCGalleryManager.Core
                     ProfilePicOverride = !string.IsNullOrEmpty(user.ProfilePicOverride) ? user.ProfilePicOverride : null,
                     UserIcon = urlImage
                 };
-
                 await ExecuteWithReloginAsync(() => Auth.ApiClient.UpdateUserAsync(user.Id, updateRequest));
             }
-            catch (Exception ex)
+
+            if (Auth.CurrentUser != null)
             {
-                Console.WriteLine($"Error: {ex.Message}");
+                Auth.CurrentUser.UserIcon = urlImage;
+                Auth.CurrentUser.IconUrl = urlImage;
             }
+            _profileBackgroundService?.InvalidateProfile(user.Id);
+            Auth.NotifyAuthStateChanged();
         }
 
         public async Task SetProfilePicture(string urlImage)
         {
+            var user = await ExecuteWithReloginAsync(() => Auth.GetCurrentUserAsync());
+
+            var updateProfileRequest = new UpdateProfileRequest
+            {
+                BannerType = "customImage",
+                BannerCustomUrl = urlImage,
+                ProfilePicOverride = urlImage,
+                BannerUrl = urlImage
+            };
+
             try
             {
-                var user = await ExecuteWithReloginAsync(() => Auth.GetCurrentUserAsync());
+                await ExecuteWithReloginAsync(() => Auth.ApiClient.UpdateProfileAsync(user.Id, updateProfileRequest));
+            }
+            catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                // Fallback to legacy updateUser if endpoint is not available
                 var updateRequest = new UpdateUserRequest
                 {
                     AcceptedTOSVersion = user.AcceptedTOSVersion,
@@ -357,13 +388,19 @@ namespace VRCGalleryManager.Core
                     UserIcon = !string.IsNullOrEmpty(user.UserIcon) ? user.UserIcon : null,
                     ProfilePicOverride = urlImage
                 };
-
                 await ExecuteWithReloginAsync(() => Auth.ApiClient.UpdateUserAsync(user.Id, updateRequest));
             }
-            catch (Exception ex)
+
+            if (Auth.CurrentUser != null)
             {
-                Console.WriteLine($"Error: {ex.Message}");
+                Auth.CurrentUser.ProfilePicOverride = urlImage;
+                Auth.CurrentUser.ProfilePicOverrideThumbnail = urlImage;
+                Auth.CurrentUser.BannerUrl = urlImage;
+                Auth.CurrentUser.BannerCustomUrl = urlImage;
+                Auth.CurrentUser.BannerType = "customImage";
             }
+            _profileBackgroundService?.InvalidateProfile(user.Id);
+            Auth.NotifyAuthStateChanged();
         }
 
         public async Task<ApiDataWorld?> GetWorldInfo(string worldId)
