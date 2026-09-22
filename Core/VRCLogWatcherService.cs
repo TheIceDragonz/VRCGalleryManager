@@ -345,6 +345,26 @@ namespace VRCGalleryManager.Core
                     authorDisplayName = photoMetadata.Author?.DisplayName;
                     authorId = photoMetadata.Author?.Id;
                     players = photoMetadata.Players ?? new();
+
+                    try
+                    {
+                        var fi = new FileInfo(normalizedPath);
+                        if (fi.Exists)
+                        {
+                            MetadataScanCache.Set(normalizedPath, new CachedPhotoMetadata
+                            {
+                                Path = normalizedPath,
+                                LastModifiedUtc = fi.LastWriteTimeUtc,
+                                TakenAtUtc = fi.CreationTimeUtc,
+                                HasMetadata = true,
+                                WorldId = worldId,
+                                WorldName = worldName,
+                                AuthorName = authorDisplayName
+                            });
+                            MetadataScanCache.SaveIfDirty();
+                        }
+                    }
+                    catch { }
                 }
             }
             catch { }

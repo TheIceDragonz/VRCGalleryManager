@@ -811,4 +811,125 @@
     background-color: var(--theme-btn-hover-bg) !important;
 }
 
+/* --------------------------------------------------------------------------
+   Gallery Worlds Sort Dropdown, Menu & Count Pill Theme Support
+   -------------------------------------------------------------------------- */
+.has-vrc-theme .gallery-sort-label {
+    color: rgba(255, 255, 255, 0.5) !important;
+}
+
+.has-vrc-theme .gallery-dropdown-btn {
+    background-color: var(--theme-btn-bg) !important;
+    border-color: var(--theme-btn-border) !important;
+    color: var(--accent) !important;
+}
+
+.has-vrc-theme .gallery-dropdown-btn:hover,
+.has-vrc-theme .gallery-dropdown-btn.open {
+    background-color: var(--theme-btn-hover-bg) !important;
+    border-color: var(--theme-btn-hover-border) !important;
+    color: #ffffff !important;
+}
+
+.has-vrc-theme .gallery-dropdown-btn .dropdown-chevron {
+    color: var(--accent) !important;
+}
+
+.has-vrc-theme .gallery-dropdown-btn:hover .dropdown-chevron,
+.has-vrc-theme .gallery-dropdown-btn.open .dropdown-chevron {
+    color: #ffffff !important;
+}
+
+.has-vrc-theme .custom-dropdown-menu {
+    background-color: var(--theme-btn-bg) !important;
+    border: 1px solid var(--theme-btn-border) !important;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.75), 0 0 16px rgba(var(--theme-rgb), 0.25) !important;
+}
+
+.has-vrc-theme .custom-dropdown-item {
+    color: var(--text-main, #e1e7ec) !important;
+}
+
+.has-vrc-theme .custom-dropdown-item:hover {
+    background-color: var(--theme-btn-hover-bg) !important;
+    color: #ffffff !important;
+}
+
+.has-vrc-theme .custom-dropdown-item.active {
+    background-color: var(--theme-btn-active-bg) !important;
+    color: var(--accent) !important;
+    border: 1px solid var(--accent) !important;
+}
+
+.has-vrc-theme .custom-dropdown-item.active svg {
+    color: var(--accent) !important;
+    stroke: var(--accent) !important;
+}
+
+.has-vrc-theme .gallery-count-pill {
+    background-color: var(--theme-btn-bg) !important;
+    border-color: var(--theme-btn-border) !important;
+    color: #ffffff !important;
+}
+
+.has-vrc-theme .gallery-count-pill .text-accent {
+    color: var(--accent) !important;
+}
+
+.has-vrc-theme .gallery-world-capsule-btn {
+    background-color: var(--theme-btn-bg) !important;
+    border-color: var(--theme-btn-border) !important;
+}
+
+.has-vrc-theme .gallery-world-capsule-btn.clickable:hover {
+    background-color: var(--theme-btn-hover-bg) !important;
+    border-color: var(--theme-btn-hover-border) !important;
+}
+
+.has-vrc-theme .gallery-world-capsule-btn.clickable:active {
+    background-color: var(--theme-btn-active-bg) !important;
+    border-color: var(--accent) !important;
+}
+
+.has-vrc-theme .gallery-world-capsule-link-icon {
+    filter: var(--filter-accent) !important;
+}
+
+.has-vrc-theme .gallery-world-capsule-btn.clickable:hover .gallery-world-capsule-link-icon {
+    filter: var(--filter-white) !important;
+}
+
+.has-vrc-theme .gallery-search-pill {
+    background-color: var(--theme-btn-bg) !important;
+    border-color: var(--theme-btn-border) !important;
+}
+
+.has-vrc-theme .gallery-search-pill:hover {
+    background-color: var(--theme-btn-hover-bg) !important;
+    border-color: var(--theme-btn-hover-border) !important;
+}
+
+.has-vrc-theme .gallery-search-pill:focus-within {
+    background-color: var(--theme-btn-hover-bg) !important;
+    border-color: var(--accent) !important;
+    box-shadow: 0 0 0 2px rgba(var(--theme-rgb), 0.35) !important;
+}
+
+.has-vrc-theme .gallery-search-icon {
+    filter: var(--filter-accent) !important;
+}
+
+.has-vrc-theme .gallery-search-pill:hover .gallery-search-icon,
+.has-vrc-theme .gallery-search-pill:focus-within .gallery-search-icon {
+    filter: var(--filter-white) !important;
+}
+
+.has-vrc-theme .btn-clear-search {
+    color: var(--accent) !important;
+}
+
+.has-vrc-theme .btn-clear-search:hover {
+    color: #ffffff !important;
+}
+
 

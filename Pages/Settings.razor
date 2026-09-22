@@ -454,6 +454,40 @@
                     <h5 class="mt-0 mb-3 text-muted fw-bold text-uppercase" style="letter-spacing: 0.5px; font-size: 0.8rem;">Screenshots & Images</h5>
                     <div class="d-flex flex-column mb-4 panel shadow-none border-0" style="background-color: var(--bg-hover); padding: 0;">
 
+                        <!-- VRChat Screenshots Folder -->
+                        <div class="settings-toggle-row p-3 border-bottom" style="border-color: var(--border-color) !important;">
+                            <div class="settings-toggle-info">
+                                <div class="settings-toggle-icon">
+                                    <img src="/svg/folder-open-svgrepo-com.svg" class="icon-accent" style="width: 20px; height: 20px;" alt="Folder" />
+                                </div>
+                                <div class="settings-toggle-text">
+                                    <h6>VRChat Screenshots Folder</h6>
+                                    <div class="settings-toggle-desc text-truncate" title="@(string.IsNullOrEmpty(GalleryPath) ? "No folder selected" : GalleryPath)">
+                                        @(string.IsNullOrEmpty(GalleryPath) ? "No folder selected" : GalleryPath)
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center gap-2 flex-shrink-0 ms-auto">
+                                @if (OperatingSystem.IsWindows() && !string.IsNullOrEmpty(GalleryPath) && Directory.Exists(GalleryPath))
+                                {
+                                    <button type="button" class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-1" @onclick="OpenGalleryFolderInExplorer" title="Open in Explorer">
+                                        <img src="/svg/folder-open-svgrepo-com.svg" class="btn-icon" style="width: 14px; height: 14px; margin: 0;" />
+                                        <span>Open</span>
+                                    </button>
+                                }
+                                <button type="button" class="btn btn-secondary btn-sm d-flex align-items-center gap-1" @onclick="ChangeGalleryFolder" title="Change folder">
+                                    <img src="/svg/folder-open-svgrepo-com.svg" class="btn-icon" style="width: 14px; height: 14px; margin: 0;" />
+                                    <span>Change</span>
+                                </button>
+                                @if (!string.IsNullOrEmpty(DefaultGalleryPath) && GalleryPath != DefaultGalleryPath)
+                                {
+                                    <button type="button" class="btn btn-outline-secondary btn-sm" @onclick="ResetGalleryFolder" title="Reset to default VRChat folder">
+                                        <img src="/svg/rotate-right-svgrepo-com.svg" class="btn-icon" style="width: 14px; height: 14px; margin: 0;" />
+                                    </button>
+                                }
+                            </div>
+                        </div>
+
                         <!-- Screenshot Popup -->
                         <div class="settings-toggle-row p-3 border-bottom" style="border-color: var(--border-color) !important;">
                             <div class="settings-toggle-info">
@@ -868,8 +902,73 @@
 
     private bool IsLoggedIn => (Auth.LoggedIn || Auth.CookieLoaded) && Auth.CurrentUser != null && !string.IsNullOrEmpty(Auth.CurrentUser.Id);
 
+    private string? GalleryPath;
+    private string? DefaultGalleryPath;
+
+    private async Task ChangeGalleryFolder()
+    {
+        try
+        {
+            string? start = !string.IsNullOrEmpty(GalleryPath) && Directory.Exists(GalleryPath)
+                ? GalleryPath
+                : DefaultGalleryPath;
+
+            var picked = await FolderPickerHelper.PickFolderAsync(start, "Select VRChat Screenshots Folder");
+            if (!string.IsNullOrEmpty(picked) && Directory.Exists(picked))
+            {
+                Config.Set("PathGallery", picked);
+                GalleryPath = picked;
+                Gallery.ResetCache();
+                Notifications.Show("VRChat screenshots folder updated.", "Folder Updated", NotificationType.Success);
+                StateHasChanged();
+            }
+        }
+        catch (Exception ex)
+        {
+            Notifications.Show($"Error selecting folder: {ex.Message}", "Error", NotificationType.Error);
+        }
+    }
+
+    private void ResetGalleryFolder()
+    {
+        try
+        {
+            if (!string.IsNullOrEmpty(DefaultGalleryPath) && Directory.Exists(DefaultGalleryPath))
+            {
+                Config.Set("PathGallery", DefaultGalleryPath);
+                GalleryPath = DefaultGalleryPath;
+                Gallery.ResetCache();
+                Notifications.Show("VRChat screenshots folder reset to default.", "Folder Reset", NotificationType.Success);
+                StateHasChanged();
+            }
+        }
+        catch (Exception ex)
+        {
+            Notifications.Show($"Error resetting folder: {ex.Message}", "Error", NotificationType.Error);
+        }
+    }
+
+    private void OpenGalleryFolderInExplorer()
+    {
+        try
+        {
+            if (!string.IsNullOrEmpty(GalleryPath) && Directory.Exists(GalleryPath))
+            {
+                System.Diagnostics.Process.Start("explorer.exe", $"\"{GalleryPath}\"");
+            }
+        }
+        catch { }
+    }
+
     protected override async Task OnInitializedAsync()
     {
+        DefaultGalleryPath = FolderPickerHelper.GetDefaultVRChatPhotoPath();
+        GalleryPath = Config.GetPath("PathGallery");
+        if (string.IsNullOrEmpty(GalleryPath) && !string.IsNullOrEmpty(DefaultGalleryPath))
+        {
+            GalleryPath = DefaultGalleryPath;
+        }
+
         AppEvents.RequestPromptUpdate += HandleRequestPromptUpdate;
         await Auth.EnsureInitializedAsync();
         _startWithWindows = Config.Get("StartWithWindows", "false") == "true";

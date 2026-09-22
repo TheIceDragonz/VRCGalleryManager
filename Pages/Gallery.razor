@@ -2,6 +2,7 @@
 @using System.IO
 @using System.Threading
 @using VRCGalleryManager.Core
+@using VRCGalleryManager.Core.Helpers
 @using SixLabors.ImageSharp
 @using SixLabors.ImageSharp.Processing
 @inject VRCAuth Auth
@@ -9,7 +10,9 @@
 @inject DialogService dialogService
 @inject NotificationService NotificationService
 @inject ImageViewerService ViewerService
+@inject VRCLogWatcherService PhotoWatcher
 @inject IJSRuntime JS
+@implements IDisposable
 
 <div class="h-100 d-flex flex-column p-3 @(isMultiSelectMode ? "gallery-multiselect-active" : "")" @onmouseup="HandleMouseUp">
     @* TOP TOOLBAR *@
@@ -18,261 +21,747 @@
             <h3 class="mb-0 text-accent d-flex align-items-center gap-2 text-nowrap">
                 <img src="/svg/gallery-wide-svgrepo-com.svg" class="media-page-icon" /> Gallery
             </h3>
-            @{
+            @if (currentView == GalleryView.Photos)
+            {
                 var breadcrumbs = GetBreadcrumbs();
+                if (breadcrumbs.Count > 0)
+                {
+                    <nav class="gallery-breadcrumbs ms-3 d-flex align-items-center flex-nowrap" aria-label="breadcrumb">
+                        @for (int i = 0; i < breadcrumbs.Count; i++)
+                        {
+                            var crumb = breadcrumbs[i];
+                            if (i > 0)
+                            {
+                                <span class="gallery-breadcrumb-sep">/</span>
+                            }
+                            if (crumb.IsCurrent)
+                            {
+                                <span class="gallery-breadcrumb-item current text-truncate" title="@crumb.Path">
+                                    @crumb.Name
+                                </span>
+                            }
+                            else
+                            {
+                                <button type="button"
+                                        class="gallery-breadcrumb-item btn-link-crumb text-truncate"
+                                        @onclick="() => NavigateToFolder(crumb.Path)"
+                                        title="Go to @crumb.Name">
+                                    @crumb.Name
+                                </button>
+                            }
+                        }
+                    </nav>
+                }
+                else if (!string.IsNullOrEmpty(CurrentFolder))
+                {
+                    <span class="text-white-50 ms-3 small mb-0 text-truncate" style="max-width: 450px;" title="@CurrentFolder">@CurrentFolder</span>
+                }
             }
-            @if (breadcrumbs.Count > 0)
+            else if (currentView == GalleryView.Worlds)
             {
                 <nav class="gallery-breadcrumbs ms-3 d-flex align-items-center flex-nowrap" aria-label="breadcrumb">
-                    @for (int i = 0; i < breadcrumbs.Count; i++)
+                    @if (selectedWorld != null)
                     {
-                        var crumb = breadcrumbs[i];
-                        if (i > 0)
-                        {
-                            <span class="gallery-breadcrumb-sep">/</span>
-                        }
-                        if (crumb.IsCurrent)
-                        {
-                            <span class="gallery-breadcrumb-item current text-truncate" title="@crumb.Path">
-                                @crumb.Name
-                            </span>
-                        }
-                        else
-                        {
-                            <button type="button"
-                                    class="gallery-breadcrumb-item btn-link-crumb text-truncate"
-                                    @onclick="() => NavigateToFolder(crumb.Path)"
-                                    title="Go to @crumb.Name">
-                                @crumb.Name
-                            </button>
-                        }
-                    }
-                </nav>
-            }
-            else if (!string.IsNullOrEmpty(CurrentFolder))
-            {
-                <span class="text-white-50 ms-3 small mb-0 text-truncate" style="max-width: 450px;" title="@CurrentFolder">@CurrentFolder</span>
-            }
-        </div>
-
-        @if (isMultiSelectMode)
-        {
-            <div class="d-flex align-items-center gap-2 flex-shrink-0">
-                <span class="gallery-multiselect-badge text-nowrap me-1">
-                    <span class="badge-count-accent">@selectedPaths.Count</span>
-                    <span class="badge-count-sep">/</span>
-                    <span class="badge-count-total">@(Items.Count(x => !x.IsFolder))</span>
-                    <span class="badge-label">selected</span>
-                </span>
-
-                <button type="button"
-                        class="gallery-tb-circle-btn checked"
-                        @onclick="SelectAll"
-                        title="Select all">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#12161c" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="20 6 9 17 4 12"></polyline>
-                    </svg>
-                </button>
-
-                <button type="button"
-                        class="gallery-tb-circle-btn"
-                        @onclick="DeselectAll"
-                        title="Deselect all">
-                </button>
-
-                <button class="btn btn-danger btn-sm"
-                        disabled="@(selectedPaths.Count == 0 || isDeleting)"
-                        @onclick="DeleteSelectedItems"
-                        title="@(selectedPaths.Count > 0 ? $"Delete {selectedPaths.Count} selected" : "Delete selected")">
-                    @if (isDeleting)
-                    {
-                        <div class="spinner-border spinner-border-sm text-white" style="width: 14px; height: 14px; margin: 0;" role="status"></div>
+                        <button type="button"
+                                class="gallery-breadcrumb-item btn-link-crumb text-truncate"
+                                @onclick="() => selectedWorld = null"
+                                title="Back to all worlds">
+                            Worlds
+                        </button>
+                        <span class="gallery-breadcrumb-sep">/</span>
+                        <span class="gallery-breadcrumb-item current text-truncate" title="@selectedWorld.Name">
+                            @selectedWorld.Name
+                        </span>
                     }
                     else
                     {
-                        <img src="/svg/trash-bin-trash-svgrepo-com.svg" class="btn-icon icon-white" style="margin: 0;" />
+                        <span class="gallery-breadcrumb-item current text-truncate" title="Worlds">
+                            Worlds
+                        </span>
                     }
-                </button>
+                </nav>
+            }
+        </div>
 
-                <button class="btn btn-secondary btn-sm"
-                        id="gallery-cancel-multiselect-btn"
-                        @onclick="CancelMultiSelect"
-                        title="Cancel multi-selection">
-                    <img src="/svg/close-bold-svgrepo-com.svg" class="btn-icon" /> Cancel
-                </button>
-            </div>
+        @if (currentView == GalleryView.Photos)
+        {
+            @if (isMultiSelectMode)
+            {
+                <div class="d-flex align-items-center gap-2 flex-shrink-0">
+                    <span class="gallery-multiselect-badge text-nowrap me-1">
+                        <span class="badge-count-accent">@selectedPaths.Count</span>
+                        <span class="badge-count-sep">/</span>
+                        <span class="badge-count-total">@(FilteredItems.Count(x => !x.IsFolder))</span>
+                        <span class="badge-label">selected</span>
+                    </span>
+
+                    <button type="button"
+                            class="gallery-tb-circle-btn checked"
+                            @onclick="SelectAll"
+                            title="Select all">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#12161c" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                    </button>
+
+                    <button type="button"
+                            class="gallery-tb-circle-btn"
+                            @onclick="DeselectAll"
+                            title="Deselect all">
+                    </button>
+
+                    <button class="btn btn-danger btn-sm"
+                            disabled="@(selectedPaths.Count == 0 || isDeleting)"
+                            @onclick="DeleteSelectedItems"
+                            title="@(selectedPaths.Count > 0 ? $"Delete {selectedPaths.Count} selected" : "Delete selected")">
+                        @if (isDeleting)
+                        {
+                            <div class="spinner-border spinner-border-sm text-white" style="width: 14px; height: 14px; margin: 0;" role="status"></div>
+                        }
+                        else
+                        {
+                            <img src="/svg/trash-bin-trash-svgrepo-com.svg" class="btn-icon icon-white" style="margin: 0;" />
+                        }
+                    </button>
+
+                    <button class="btn btn-secondary btn-sm"
+                            id="gallery-cancel-multiselect-btn"
+                            @onclick="CancelMultiSelect"
+                            title="Cancel multi-selection">
+                        <img src="/svg/close-bold-svgrepo-com.svg" class="btn-icon" /> Cancel
+                    </button>
+                </div>
+            }
+            else
+            {
+                <div class="d-flex align-items-center gap-2 flex-shrink-0">
+                    <button class="btn btn-outline-secondary btn-sm" @onclick="GoBack" disabled="@(!CanGoBack)" title="Go back">
+                        <img src="/svg/back-arrow-svgrepo-com.svg" class="btn-icon" style="margin: 0;" />
+                    </button>
+                    <button class="btn btn-outline-secondary btn-sm" @onclick="Refresh" disabled="@IsLoading" title="Refresh">
+                        <img src="/svg/rotate-right-svgrepo-com.svg" class="btn-icon @(IsLoading ? "spin" : "")" style="margin: 0;" />
+                    </button>
+                </div>
+            }
         }
-        else
+        else if (currentView == GalleryView.Worlds)
         {
             <div class="d-flex align-items-center gap-2 flex-shrink-0">
                 <button class="btn btn-outline-secondary btn-sm" @onclick="GoBack" disabled="@(!CanGoBack)" title="Go back">
                     <img src="/svg/back-arrow-svgrepo-com.svg" class="btn-icon" style="margin: 0;" />
                 </button>
-                <button class="btn btn-outline-secondary btn-sm" @onclick="Refresh" disabled="@IsLoading" title="Refresh">
-                    <img src="/svg/rotate-right-svgrepo-com.svg" class="btn-icon @(IsLoading ? "spin" : "")" style="margin: 0;" />
-                </button>
-                <button class="btn btn-secondary btn-sm" @onclick="ChangeFolder" title="Change folder">
-                    <img src="/svg/folder-open-svgrepo-com.svg" class="btn-icon" /> Change
+                <button class="btn btn-outline-secondary btn-sm" @onclick="() => ScanWorldsAsync(forceRefresh: true)" disabled="@isScanningWorlds" title="Rescan Worlds">
+                    <img src="/svg/rotate-right-svgrepo-com.svg" class="btn-icon @(isScanningWorlds ? "spin" : "")" style="margin: 0;" />
                 </button>
             </div>
         }
     </div>
 
+    @* CAPSULE NAVIGATION ROW (WITH SEARCH & SORT ON THE SAME ROW) *@
+    <div class="gallery-controls-row mb-3">
+        @* LEFT: Search worlds/photos input OR Selected World Name & Creator *@
+        <div class="gallery-controls-left">
+            @if (currentView == GalleryView.Worlds)
+            {
+                @if (selectedWorld != null)
+                {
+                    var hasValidWorldId = !string.IsNullOrEmpty(selectedWorld.WorldId) && selectedWorld.WorldId.StartsWith("wrld_");
+                    <button type="button"
+                            class="btn gallery-world-capsule-btn @(hasValidWorldId ? "clickable" : "non-clickable") shadow-sm"
+                            @onclick="() => { if (hasValidWorldId) OpenWorldInBrowser(selectedWorld.WorldId); }"
+                            title="@(hasValidWorldId ? $"Open {selectedWorld.Name} on VRChat website" : selectedWorld.Name)">
+                        <div class="gallery-world-capsule-thumb">
+                            @if (!string.IsNullOrEmpty(selectedWorld.WorldImageUrl) && selectedWorld.WorldImageUrl != "unavailable")
+                            {
+                                <img src="@selectedWorld.WorldImageUrl"
+                                     alt="@selectedWorld.Name"
+                                     onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';" />
+                                <div class="gallery-selected-world-placeholder align-items-center justify-content-center" style="display: none;">
+                                    <img src="/svg/world-svgrepo-com.svg" class="btn-icon" style="width: 13px; height: 13px; opacity: 0.5; margin: 0;" />
+                                </div>
+                            }
+                            else if (isScanningWorlds || isLoadingWorldDetails)
+                            {
+                                <div class="w-100 h-100 d-flex align-items-center justify-content-center">
+                                    <div class="spinner-border spinner-border-sm text-accent" style="width: 11px; height: 11px;"></div>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="gallery-selected-world-placeholder d-flex align-items-center justify-content-center">
+                                    <img src="/svg/world-svgrepo-com.svg" class="btn-icon" style="width: 13px; height: 13px; opacity: 0.5; margin: 0;" />
+                                </div>
+                            }
+                        </div>
+
+                        <div class="d-flex align-items-center gap-1 overflow-hidden text-truncate">
+                            <span class="gallery-world-capsule-title text-truncate">@selectedWorld.Name</span>
+                            @if (!string.IsNullOrEmpty(selectedWorld.AuthorName))
+                            {
+                                <span class="gallery-world-capsule-author flex-shrink-0">by @selectedWorld.AuthorName</span>
+                            }
+                        </div>
+
+                        @if (hasValidWorldId)
+                        {
+                            <img src="/svg/link-svgrepo-com.svg" class="btn-icon gallery-world-capsule-link-icon flex-shrink-0" alt="Link" />
+                        }
+                    </button>
+                }
+                else if (worldGroups.Count > 0)
+                {
+                    <div class="gallery-search-pill d-flex align-items-center px-3 rounded-pill shadow-sm">
+                        <img src="/svg/search-alt-2-svgrepo-com.svg" class="btn-icon gallery-search-icon flex-shrink-0" alt="Search" />
+                        <input type="text"
+                               class="gallery-search-input"
+                               placeholder="Search worlds, author..."
+                               @bind="worldSearchQuery"
+                               @bind:event="oninput" />
+                        @if (!string.IsNullOrEmpty(worldSearchQuery))
+                        {
+                            <button type="button" class="btn-clear-search ms-1" @onclick="() => worldSearchQuery = string.Empty" title="Clear search">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                                </svg>
+                            </button>
+                        }
+                    </div>
+                }
+            }
+        </div>
+
+        @* CENTER: Capsule Navigation Bar *@
+        <div class="gallery-controls-center">
+            <div class="gallery-view-nav d-flex gap-1 p-1 rounded-pill shadow-sm align-items-center">
+                <button class="btn btn-sm rounded-pill px-3 picflow-cat-btn d-inline-flex align-items-center @GetGalleryViewBtnClass(GalleryView.Photos)"
+                        @onclick="() => SwitchGalleryView(GalleryView.Photos)">
+                    <img src="/svg/gallery-wide-svgrepo-com.svg" class="btn-icon @(currentView == GalleryView.Photos ? "icon-white" : "")" style="width: 14px; height: 14px; margin: 0 6px 0 0;" />
+                    <span>Photos</span>
+                </button>
+                <button class="btn btn-sm rounded-pill px-3 picflow-cat-btn d-inline-flex align-items-center @GetGalleryViewBtnClass(GalleryView.Worlds)"
+                        @onclick="() => SwitchGalleryView(GalleryView.Worlds)">
+                    <img src="/svg/world-svgrepo-com.svg" class="btn-icon @(currentView == GalleryView.Worlds ? "icon-white" : "")" style="width: 14px; height: 14px; margin: 0 6px 0 0;" />
+                    <span>Worlds</span>
+                </button>
+            </div>
+        </div>
+
+        @* RIGHT: Sort Dropdown & Content Count Badge *@
+        <div class="gallery-controls-right">
+            @if (currentView == GalleryView.Worlds)
+            {
+                @if (selectedWorld != null)
+                {
+                    @if (selectedWorld.Photos.Count > 1)
+                    {
+                        <span class="gallery-sort-label text-white-50 small fw-semibold">Sort:</span>
+                        <div class="gallery-dropdown-container">
+                            <button type="button" class="btn btn-secondary btn-sm rounded-pill px-3 gallery-dropdown-btn d-inline-flex align-items-center gap-2 @(isPhotoSortDropdownOpen ? "open" : "")" @onclick="TogglePhotoSortDropdown" @onclick:stopPropagation="true">
+                                <span>@GetPhotoSortLabel(photoSortBy)</span>
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="dropdown-chevron @(isPhotoSortDropdownOpen ? "open" : "")">
+                                    <polyline points="6 9 12 15 18 9"></polyline>
+                                </svg>
+                            </button>
+                            @if (isPhotoSortDropdownOpen)
+                            {
+                                <div class="custom-dropdown-backdrop" @onclick="ClosePhotoSortDropdown" @onclick:stopPropagation="true"></div>
+                                <div class="custom-dropdown-menu" @onclick:stopPropagation="true">
+                                    <button type="button" class="custom-dropdown-item d-flex align-items-center justify-content-between @(photoSortBy == "newest" ? "active" : "")" @onclick='() => SelectPhotoSort("newest")'>
+                                        <span>Newest First</span>
+                                        @if (photoSortBy == "newest")
+                                        {
+                                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                                <polyline points="20 6 9 17 4 12"></polyline>
+                                            </svg>
+                                        }
+                                    </button>
+                                    <button type="button" class="custom-dropdown-item d-flex align-items-center justify-content-between @(photoSortBy == "oldest" ? "active" : "")" @onclick='() => SelectPhotoSort("oldest")'>
+                                        <span>Oldest First</span>
+                                        @if (photoSortBy == "oldest")
+                                        {
+                                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                                <polyline points="20 6 9 17 4 12"></polyline>
+                                            </svg>
+                                        }
+                                    </button>
+                                    <button type="button" class="custom-dropdown-item d-flex align-items-center justify-content-between @(photoSortBy == "name" ? "active" : "")" @onclick='() => SelectPhotoSort("name")'>
+                                        <span>Name (A-Z)</span>
+                                        @if (photoSortBy == "name")
+                                        {
+                                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                                <polyline points="20 6 9 17 4 12"></polyline>
+                                            </svg>
+                                        }
+                                    </button>
+                                </div>
+                            }
+                        </div>
+                    }
+
+                    <div class="gallery-count-pill px-3 py-1 rounded-pill small shadow-sm d-flex align-items-center gap-1">
+                        <span class="text-accent fw-bold">@selectedWorld.Photos.Count</span>
+                        <span class="text-white-50">@(selectedWorld.Photos.Count == 1 ? "photo" : "photos")</span>
+                    </div>
+                }
+                else if (worldGroups.Count > 0)
+                {
+                    <span class="gallery-sort-label text-white-50 small fw-semibold">Sort:</span>
+                    <div class="gallery-dropdown-container">
+                        <button type="button" class="btn btn-secondary btn-sm rounded-pill px-3 gallery-dropdown-btn d-inline-flex align-items-center gap-2 @(isSortDropdownOpen ? "open" : "")" @onclick="ToggleSortDropdown" @onclick:stopPropagation="true">
+                            <span>@GetSortLabel(worldSortBy)</span>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="dropdown-chevron @(isSortDropdownOpen ? "open" : "")">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </button>
+                        @if (isSortDropdownOpen)
+                        {
+                            <div class="custom-dropdown-backdrop" @onclick="CloseSortDropdown" @onclick:stopPropagation="true"></div>
+                            <div class="custom-dropdown-menu" @onclick:stopPropagation="true">
+                                <button type="button" class="custom-dropdown-item d-flex align-items-center justify-content-between @(worldSortBy == "count" ? "active" : "")" @onclick='() => SelectSort("count")'>
+                                    <span>Most Photos</span>
+                                    @if (worldSortBy == "count")
+                                    {
+                                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                            <polyline points="20 6 9 17 4 12"></polyline>
+                                        </svg>
+                                    }
+                                </button>
+                                <button type="button" class="custom-dropdown-item d-flex align-items-center justify-content-between @(worldSortBy == "recent" ? "active" : "")" @onclick='() => SelectSort("recent")'>
+                                    <span>Recently Visited</span>
+                                    @if (worldSortBy == "recent")
+                                    {
+                                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                            <polyline points="20 6 9 17 4 12"></polyline>
+                                        </svg>
+                                    }
+                                </button>
+                                <button type="button" class="custom-dropdown-item d-flex align-items-center justify-content-between @(worldSortBy == "name" ? "active" : "")" @onclick='() => SelectSort("name")'>
+                                    <span>Name (A-Z)</span>
+                                    @if (worldSortBy == "name")
+                                    {
+                                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                            <polyline points="20 6 9 17 4 12"></polyline>
+                                        </svg>
+                                    }
+                                </button>
+                            </div>
+                        }
+                    </div>
+                    <div class="gallery-count-pill px-3 py-1 rounded-pill small shadow-sm d-flex align-items-center gap-1">
+                        <span class="text-accent fw-bold">@FilteredWorlds.Count</span>
+                        <span class="text-white-50">@(FilteredWorlds.Count == 1 ? "world" : "worlds")</span>
+                    </div>
+                }
+            }
+            else if (currentView == GalleryView.Photos)
+            {
+                @if (Items.Count > 0)
+                {
+                    <span class="gallery-sort-label text-white-50 small fw-semibold">Sort:</span>
+                    <div class="gallery-dropdown-container">
+                        <button type="button" class="btn btn-secondary btn-sm rounded-pill px-3 gallery-dropdown-btn d-inline-flex align-items-center gap-2 @(isPhotoSortDropdownOpen ? "open" : "")" @onclick="TogglePhotoSortDropdown" @onclick:stopPropagation="true">
+                            <span>@GetPhotoSortLabel(photoSortBy)</span>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="dropdown-chevron @(isPhotoSortDropdownOpen ? "open" : "")">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </button>
+                        @if (isPhotoSortDropdownOpen)
+                        {
+                            <div class="custom-dropdown-backdrop" @onclick="ClosePhotoSortDropdown" @onclick:stopPropagation="true"></div>
+                            <div class="custom-dropdown-menu" @onclick:stopPropagation="true">
+                                <button type="button" class="custom-dropdown-item d-flex align-items-center justify-content-between @(photoSortBy == "newest" ? "active" : "")" @onclick='() => SelectPhotoSort("newest")'>
+                                    <span>Newest First</span>
+                                    @if (photoSortBy == "newest")
+                                    {
+                                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                            <polyline points="20 6 9 17 4 12"></polyline>
+                                        </svg>
+                                    }
+                                </button>
+                                <button type="button" class="custom-dropdown-item d-flex align-items-center justify-content-between @(photoSortBy == "oldest" ? "active" : "")" @onclick='() => SelectPhotoSort("oldest")'>
+                                    <span>Oldest First</span>
+                                    @if (photoSortBy == "oldest")
+                                    {
+                                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                            <polyline points="20 6 9 17 4 12"></polyline>
+                                        </svg>
+                                    }
+                                </button>
+                                <button type="button" class="custom-dropdown-item d-flex align-items-center justify-content-between @(photoSortBy == "name" ? "active" : "")" @onclick='() => SelectPhotoSort("name")'>
+                                    <span>Name (A-Z)</span>
+                                    @if (photoSortBy == "name")
+                                    {
+                                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                            <polyline points="20 6 9 17 4 12"></polyline>
+                                        </svg>
+                                    }
+                                </button>
+                            </div>
+                        }
+                    </div>
+
+                    <div class="gallery-count-pill px-3 py-1 rounded-pill small shadow-sm d-flex align-items-center gap-1">
+                        @if (FilteredFolderCount > 0 && FilteredPhotoCount > 0)
+                        {
+                            <span class="text-accent fw-bold">@FilteredFolderCount</span>
+                            <span class="text-white-50">@(FilteredFolderCount == 1 ? "folder" : "folders"),</span>
+                            <span class="text-accent fw-bold">@FilteredPhotoCount</span>
+                            <span class="text-white-50">@(FilteredPhotoCount == 1 ? "photo" : "photos")</span>
+                        }
+                        else if (FilteredFolderCount > 0)
+                        {
+                            <span class="text-accent fw-bold">@FilteredFolderCount</span>
+                            <span class="text-white-50">@(FilteredFolderCount == 1 ? "folder" : "folders")</span>
+                        }
+                        else
+                        {
+                            <span class="text-accent fw-bold">@FilteredPhotoCount</span>
+                            <span class="text-white-50">@(FilteredPhotoCount == 1 ? "photo" : "photos")</span>
+                        }
+                    </div>
+                }
+            }
+        </div>
+    </div>
+
     @* MAIN CONTENT *@
     <div class="flex-grow-1 overflow-hidden d-flex gap-3" @onclick="CloseUploadMenu">
         
-        @* GRID *@
-        <div class="flex-grow-1 overflow-auto h-100 pe-2 gallery-scroll-container" id="gallery-scroll-container" data-folder="@CurrentFolder">
-            @if (string.IsNullOrEmpty(RootFolder) || !Directory.Exists(RootFolder))
+        @if (currentView == GalleryView.Photos)
+        {
+            @* STANDARD PHOTOS GRID *@
+            <div class="flex-grow-1 overflow-auto h-100 pe-2 gallery-scroll-container" id="gallery-scroll-container" data-folder="@CurrentFolder">
+                @if (string.IsNullOrEmpty(RootFolder) || !Directory.Exists(RootFolder))
+                {
+                    <div class="h-100 d-flex flex-column align-items-center justify-content-center text-white-50">
+                        <img src="/svg/folder-open-svgrepo-com.svg" class="mb-3 opacity-50 folder-svg-icon" />
+                        <h5 class="text-white">No folder selected</h5>
+                        <p>Go to <strong>Settings</strong> to configure your VRChat screenshots folder.</p>
+                        <button class="btn btn-primary mt-2 d-flex align-items-center gap-2" @onclick='() => Nav.NavigateTo("/settings")'>
+                            <img src="/svg/settings-svgrepo-com.svg" class="btn-icon icon-white" /> Open Settings
+                        </button>
+                    </div>
+                }
+                else if (Items.Count == 0 && !IsLoading)
+                {
+                    <div class="h-100 d-flex flex-column align-items-center justify-content-center text-white-50">
+                        <img src="/svg/folder-open-svgrepo-com.svg" class="mb-3 opacity-50 folder-svg-icon" />
+                        <h5>This folder is empty</h5>
+                    </div>
+                }
+                else
+                {
+                    @if (!string.IsNullOrEmpty(activeExpandedPath))
+                    {
+                        <div class="card-action-backdrop" @onclick="CloseExpandedCard" @oncontextmenu="CloseExpandedCard" @oncontextmenu:preventDefault="true"></div>
+                    }
+
+                    <div class="media-grid gap-3 pb-3 @(!string.IsNullOrEmpty(activeExpandedPath) ? "has-card-expanded" : "")" @onmouseup="HandleMouseUp">
+                        @foreach (var item in FilteredItems)
+                        {
+                            <div @key="item.Path"
+                                 class="position-relative gallery-icon-card media-card-container @(item.IsFolder ? "gallery-folder-item" : "") @(activeExpandedPath == item.Path ? "card-expanded-active" : "") @(!item.IsFolder && isMultiSelectMode && selectedPaths.Contains(item.Path) ? "is-selected" : "")"
+                                 style="cursor: pointer;"
+                                 @onmousedown="() => HandleMouseDown(item)"
+                                 @onmouseenter="() => HandleMouseEnter(item)"
+                                 @onclick="() => HandleCardClick(item)"
+                                 @oncontextmenu="() => { if(!isMultiSelectMode) HandleCardContextMenu(item.Path); }"
+                                 @oncontextmenu:preventDefault="true"
+                                 @onmouseleave="() => { if(!isMultiSelectMode) HandleCardMouseLeave(item.Path); }"
+                                 title="@GetItemTooltip(item)">
+
+                                @if (item.IsFolder)
+                                {
+                                    <div class="w-100 h-100 d-flex flex-column" style="background-color: var(--bg-hover);">
+                                        @if (!string.IsNullOrEmpty(item.ThumbnailBase64))
+                                        {
+                                            <img src="@item.ThumbnailBase64" class="position-absolute top-0 start-0 w-100 h-100 object-fit-cover" style="filter: brightness(0.4);" draggable="false" />
+                                        }
+                                        <div class="folder-icon position-relative z-1" style="flex: 1; display: flex; align-items: center; justify-content: center;">
+                                            @if (item.IsThumbLoading && string.IsNullOrEmpty(item.ThumbnailBase64))
+                                            {
+                                                <div class="spinner-border spinner-border-sm text-primary"></div>
+                                            }
+                                            else
+                                            {
+                                                <img src="/svg/folder-open-svgrepo-com.svg" class="folder-svg-icon" draggable="false" />
+                                            }
+                                        </div>
+                                        <div class="media-card-label position-absolute w-100 text-truncate text-center z-2">
+                                            @item.Name
+                                        </div>
+                                    </div>
+
+                                    @* Folder action buttons (shown on right-click) *@
+                                    @if (!isMultiSelectMode && activeExpandedPath == item.Path)
+                                    {
+                                        <div class="media-card-actions" style="z-index: 10;">
+                                            <button class="btn btn-danger btn-sm rounded-circle btn-action media-btn-delete"
+                                                    @onclick:stopPropagation="true"
+                                                    @onclick="() => DeleteFolder(item)"
+                                                    title="Delete Folder">
+                                                <img src="/svg/trash-bin-trash-svgrepo-com.svg" class="btn-icon" style="margin: 0;" />
+                                            </button>
+
+                                            <button class="btn btn-sm rounded-circle btn-action media-btn-folder media-btn-extra"
+                                                    @onclick:stopPropagation="true"
+                                                    @onclick="() => OpenInExplorer(item.Path)"
+                                                    title="Open in Explorer">
+                                                <img src="/svg/folder-open-svgrepo-com.svg" class="btn-icon icon-white" style="margin: 0;" />
+                                            </button>
+                                        </div>
+                                    }
+                                }
+                                else
+                                {
+                                    @if (!string.IsNullOrEmpty(item.ThumbnailBase64))
+                                    {
+                                        <img src="@item.ThumbnailBase64" class="w-100 h-100 object-fit-cover" draggable="false" />
+                                    }
+                                    else if (item.IsThumbLoading)
+                                    {
+                                        <div class="w-100 h-100 d-flex align-items-center justify-content-center">
+                                            <div class="spinner-border spinner-border-sm text-primary"></div>
+                                        </div>
+                                    }
+
+                                    @* Multi-select trigger button (appears on right-click in top-right of the card as an unselected circle) *@
+                                    @if (!isMultiSelectMode && activeExpandedPath == item.Path)
+                                    {
+                                        <div class="gallery-multiselect-checkbox media-btn-multiselect-trigger"
+                                             @onclick:stopPropagation="true"
+                                             @onclick="() => StartMultiSelect(item.Path)"
+                                             title="Select">
+                                        </div>
+                                    }
+
+                                    @* Multi-select mode checkbox indicator on each image card *@
+                                    @if (isMultiSelectMode)
+                                    {
+                                        <div class="gallery-multiselect-checkbox @(selectedPaths.Contains(item.Path) ? "checked" : "")"
+                                             @onclick:stopPropagation="true"
+                                             @onclick="() => HandleCardClick(item)"
+                                             title="@(selectedPaths.Contains(item.Path) ? "Deselect" : "Select")">
+                                            @if (selectedPaths.Contains(item.Path))
+                                            {
+                                                <svg viewBox="0 0 24 24" width="16" height="16" stroke="#12161c" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                                </svg>
+                                            }
+                                        </div>
+                                    }
+
+                                    @* Standard card actions (hidden during multi-selection mode) *@
+                                    @if (!isMultiSelectMode && !string.IsNullOrEmpty(item.ThumbnailBase64))
+                                    {
+                                        <div class="media-card-actions">
+                                            <button class="btn btn-danger btn-sm rounded-circle btn-action media-btn-delete" @onclick:stopPropagation="true" @onclick="() => DeleteItem(item)" title="Delete">
+                                                <img src="/svg/trash-bin-trash-svgrepo-com.svg" class="btn-icon" style="margin: 0;" />
+                                            </button>
+
+                                            <button class="btn btn-success btn-sm rounded-circle btn-action media-btn-upload" @onclick:stopPropagation="true" @onclick="() => { SelectedImage = item; ToggleUploadMenu(); }" title="Upload">
+                                                <img src="/svg/add-circle-svgrepo-com.svg" class="btn-icon icon-white" style="margin: 0;" />
+                                            </button>
+
+                                            @if (activeExpandedPath == item.Path)
+                                            {
+                                                <button class="btn btn-sm rounded-circle btn-action media-btn-copy media-btn-extra" @onclick:stopPropagation="true" @onclick="() => CopyImageToClipboardAsync(item.Path)" title="Copy Image">
+                                                    <img src="/svg/copy-svgrepo-com.svg" class="btn-icon icon-white" style="margin: 0;" />
+                                                </button>
+                                                <button class="btn btn-sm rounded-circle btn-action media-btn-folder media-btn-extra" @onclick:stopPropagation="true" @onclick="() => OpenInExplorer(item.Path)" title="Open Location">
+                                                    <img src="/svg/folder-open-svgrepo-com.svg" class="btn-icon icon-white" style="margin: 0;" />
+                                                </button>
+                                            }
+                                        </div>
+                                    }
+                                }
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        }
+        else if (currentView == GalleryView.Worlds)
+        {
+            @if (selectedWorld == null)
             {
-                <div class="h-100 d-flex flex-column align-items-center justify-content-center text-white-50">
-                    <img src="/svg/folder-open-svgrepo-com.svg" class="mb-3 opacity-50 folder-svg-icon" />
-                    <h5 class="text-white">No folder selected</h5>
-                    <p>Click <strong>Change</strong> or select below to pick your VRChat screenshots folder.</p>
-                    <button class="btn btn-primary mt-2 d-flex align-items-center gap-2" @onclick="ChangeFolder">
-                        <img src="/svg/folder-open-svgrepo-com.svg" class="btn-icon icon-white" /> Select Folder
-                    </button>
-                </div>
-            }
-            else if (Items.Count == 0 && !IsLoading)
-            {
-                <div class="h-100 d-flex flex-column align-items-center justify-content-center text-white-50">
-                    <img src="/svg/folder-open-svgrepo-com.svg" class="mb-3 opacity-50 folder-svg-icon" />
-                    <h5>This folder is empty</h5>
+                @* WORLDS LIST *@
+                <div class="flex-grow-1 overflow-auto h-100 pe-2">
+                    @if (string.IsNullOrEmpty(RootFolder) || !Directory.Exists(RootFolder))
+                    {
+                        <div class="h-100 d-flex flex-column align-items-center justify-content-center text-white-50">
+                            <img src="/svg/folder-open-svgrepo-com.svg" class="mb-3 opacity-50 folder-svg-icon" />
+                            <h5 class="text-white">No folder selected</h5>
+                            <p>Go to <strong>Settings</strong> to configure your VRChat screenshots folder.</p>
+                            <button class="btn btn-primary mt-2 d-flex align-items-center gap-2" @onclick='() => Nav.NavigateTo("/settings")'>
+                                <img src="/svg/settings-svgrepo-com.svg" class="btn-icon icon-white" /> Open Settings
+                            </button>
+                        </div>
+                    }
+                    else if (isScanningWorlds && worldGroups.Count == 0)
+                    {
+                        <div class="h-100 d-flex flex-column align-items-center justify-content-center text-white-50">
+                            <div class="spinner-border text-accent mb-3" style="width: 2.5rem; height: 2.5rem;" role="status"></div>
+                            <h5 class="text-white">Scanning Screenshot Metadata...</h5>
+                            <p class="small text-white-50">Analyzing VRChat worlds from photos (@scannedCount / @totalFilesToScan photos scanned)</p>
+                        </div>
+                    }
+                    else if (worldGroups.Count == 0)
+                    {
+                        <div class="h-100 d-flex flex-column align-items-center justify-content-center text-white-50 text-center px-4">
+                            <img src="/svg/world-svgrepo-com.svg" class="mb-3 opacity-50 icon-white" style="width: 56px; height: 56px;" />
+                            <h5 class="text-white">No World Metadata Found</h5>
+                            <p class="small" style="max-width: 480px;">No photos with VRChat world metadata were found in this folder. Keep <strong>VRCGalleryManager</strong> running while taking photos in VRChat to automatically embed world metadata.</p>
+                            <button class="btn btn-outline-secondary btn-sm mt-2" @onclick="() => ScanWorldsAsync(forceRefresh: true)">
+                                <img src="/svg/rotate-right-svgrepo-com.svg" class="btn-icon" /> Scan Again
+                            </button>
+                        </div>
+                    }
+                    else
+                    {
+                        @if (!string.IsNullOrEmpty(activeExpandedPath))
+                        {
+                            <div class="card-action-backdrop" @onclick="CloseExpandedCard" @oncontextmenu="CloseExpandedCard" @oncontextmenu:preventDefault="true"></div>
+                        }
+
+                        <div class="media-grid grid-medium gap-3 pb-3 @(!string.IsNullOrEmpty(activeExpandedPath) ? "has-card-expanded" : "")">
+                            @foreach (var world in FilteredWorlds)
+                            {
+                                var worldKey = !string.IsNullOrEmpty(world.WorldId) ? world.WorldId : $"name_{world.Name}";
+                                <div @key="worldKey"
+                                     class="gallery-world-card media-card-container @(activeExpandedPath == worldKey ? "card-expanded-active" : "")"
+                                     @onclick="() => SelectWorld(world)"
+                                     @oncontextmenu="() => HandleCardContextMenu(worldKey)"
+                                     @oncontextmenu:preventDefault="true"
+                                     @onmouseleave="() => HandleCardMouseLeave(worldKey)"
+                                     title="@GetWorldCardTitle(world)">
+                                    @if (!string.IsNullOrEmpty(world.WorldImageUrl) && world.WorldImageUrl != "unavailable")
+                                    {
+                                        <img src="@world.WorldImageUrl" class="gallery-world-cover" alt="@world.Name" loading="lazy" draggable="false" onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';" />
+                                        <div class="gallery-world-placeholder" style="display: none;">
+                                            <span class="gallery-world-placeholder-label">Preview Unavailable</span>
+                                        </div>
+                                    }
+                                    else if (isScanningWorlds || isLoadingWorldDetails)
+                                    {
+                                        <div class="w-100 h-100 d-flex flex-column align-items-center justify-content-center" style="background-color: #12161c;">
+                                            <div class="spinner-border spinner-border-sm text-accent"></div>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="gallery-world-placeholder">
+                                            <span class="gallery-world-placeholder-label">Preview Unavailable</span>
+                                        </div>
+                                    }
+                                    <div class="gallery-world-gradient"></div>
+                                    <div class="gallery-world-badge">
+                                        <img src="/svg/camera-svgrepo-com.svg" class="btn-icon" />
+                                        <span>@(world.Photos.Count == 1 ? "1 photo" : $"{world.Photos.Count} photos")</span>
+                                    </div>
+                                    <div class="gallery-world-info">
+                                        <h5 class="gallery-world-title text-truncate">@world.Name</h5>
+                                        @if (!string.IsNullOrEmpty(world.AuthorName))
+                                        {
+                                            <p class="gallery-world-subtitle text-truncate">by @world.AuthorName</p>
+                                        }
+                                    </div>
+
+                                    @if (activeExpandedPath == worldKey)
+                                    {
+                                        <div class="media-card-actions" style="z-index: 10; bottom: 10px; right: 10px;">
+                                            @if (!string.IsNullOrEmpty(world.WorldId) && world.WorldId.StartsWith("wrld_"))
+                                            {
+                                                <button class="btn btn-sm rounded-circle btn-action media-btn-world media-btn-extra"
+                                                        @onclick:stopPropagation="true"
+                                                        @onclick="() => OpenWorldFromCard(world.WorldId)"
+                                                        title="Open in VRChat (Browser)">
+                                                    <img src="/svg/world-svgrepo-com.svg" class="btn-icon icon-white" style="width: 15px; height: 15px; margin: 0;" />
+                                                </button>
+                                                <button class="btn btn-sm rounded-circle btn-action media-btn-link media-btn-extra"
+                                                        @onclick:stopPropagation="true"
+                                                        @onclick="() => CopyWorldLinkAsync(world)"
+                                                        title="Copy World Link">
+                                                    <img src="/svg/link-svgrepo-com.svg" class="btn-icon icon-white" style="width: 14px; height: 14px; margin: 0;" />
+                                                </button>
+                                            }
+                                        </div>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    }
                 </div>
             }
             else
             {
-                @if (!string.IsNullOrEmpty(activeExpandedPath))
-                {
-                    <div class="card-action-backdrop" @onclick="CloseExpandedCard" @oncontextmenu="CloseExpandedCard" @oncontextmenu:preventDefault="true"></div>
-                }
-
-                <div class="media-grid gap-3 pb-3 @(!string.IsNullOrEmpty(activeExpandedPath) ? "has-card-expanded" : "")" @onmouseup="HandleMouseUp">
-                    @foreach (var item in Items)
+                @* SINGLE WORLD PHOTOS VIEW *@
+                <div class="flex-grow-1 overflow-auto h-100 pe-2">
+                    @if (!string.IsNullOrEmpty(activeExpandedPath))
                     {
-                        <div @key="item.Path"
-                             class="position-relative gallery-icon-card media-card-container @(item.IsFolder ? "gallery-folder-item" : "") @(activeExpandedPath == item.Path ? "card-expanded-active" : "") @(!item.IsFolder && isMultiSelectMode && selectedPaths.Contains(item.Path) ? "is-selected" : "")"
-                             style="cursor: pointer;"
-                             @onmousedown="() => HandleMouseDown(item)"
-                             @onmouseenter="() => HandleMouseEnter(item)"
-                             @onclick="() => HandleCardClick(item)"
-                             @oncontextmenu="() => { if(!isMultiSelectMode) HandleCardContextMenu(item.Path); }"
-                             @oncontextmenu:preventDefault="true"
-                             @onmouseleave="() => { if(!isMultiSelectMode) HandleCardMouseLeave(item.Path); }"
-                             title="@GetItemTooltip(item)">
+                        <div class="card-action-backdrop" @onclick="CloseExpandedCard" @oncontextmenu="CloseExpandedCard" @oncontextmenu:preventDefault="true"></div>
+                    }
 
-                            @if (item.IsFolder)
-                            {
-                                <div class="w-100 h-100 d-flex flex-column" style="background-color: var(--bg-hover);">
-                                    @if (!string.IsNullOrEmpty(item.ThumbnailBase64))
-                                    {
-                                        <img src="@item.ThumbnailBase64" class="position-absolute top-0 start-0 w-100 h-100 object-fit-cover" style="filter: brightness(0.4);" draggable="false" />
-                                    }
-                                    <div class="folder-icon position-relative z-1" style="flex: 1; display: flex; align-items: center; justify-content: center;">
-                                        @if (item.IsThumbLoading && string.IsNullOrEmpty(item.ThumbnailBase64))
-                                        {
-                                            <div class="spinner-border spinner-border-sm text-primary"></div>
-                                        }
-                                        else
-                                        {
-                                            <img src="/svg/folder-open-svgrepo-com.svg" class="folder-svg-icon" draggable="false" />
-                                        }
-                                    </div>
-                                    <div class="media-card-label position-absolute w-100 text-truncate text-center z-2">
-                                        @item.Name
-                                    </div>
-                                </div>
 
-                                @* Folder action buttons (shown on right-click) *@
-                                @if (!isMultiSelectMode && activeExpandedPath == item.Path)
+                    <div class="media-grid gap-3 pb-3 @(!string.IsNullOrEmpty(activeExpandedPath) ? "has-card-expanded" : "")">
+                        @foreach (var photo in SortedSelectedWorldPhotos)
+                        {
+                            <div @key="photo.Path"
+                                 class="position-relative gallery-icon-card media-card-container @(activeExpandedPath == photo.Path ? "card-expanded-active" : "")"
+                                 style="cursor: pointer;"
+                                 @onclick="() => OpenFileInWorld(photo.Path)"
+                                 @oncontextmenu="() => HandleCardContextMenu(photo.Path)"
+                                 @oncontextmenu:preventDefault="true"
+                                 @onmouseleave="() => HandleCardMouseLeave(photo.Path)"
+                                 title="@photo.Name">
+
+                                @if (!string.IsNullOrEmpty(photo.ThumbnailBase64))
                                 {
-                                    <div class="media-card-actions" style="z-index: 10;">
-                                        <button class="btn btn-danger btn-sm rounded-circle btn-action media-btn-delete"
-                                                @onclick:stopPropagation="true"
-                                                @onclick="() => DeleteFolder(item)"
-                                                title="Delete Folder">
-                                            <img src="/svg/trash-bin-trash-svgrepo-com.svg" class="btn-icon" style="margin: 0;" />
-                                        </button>
-
-                                        <button class="btn btn-sm rounded-circle btn-action media-btn-folder media-btn-extra"
-                                                @onclick:stopPropagation="true"
-                                                @onclick="() => OpenInExplorer(item.Path)"
-                                                title="Open in Explorer">
-                                            <img src="/svg/folder-open-svgrepo-com.svg" class="btn-icon icon-white" style="margin: 0;" />
-                                        </button>
-                                    </div>
+                                    <img src="@photo.ThumbnailBase64" class="w-100 h-100 object-fit-cover" draggable="false" />
                                 }
-                            }
-                            else
-                            {
-                                @if (!string.IsNullOrEmpty(item.ThumbnailBase64))
-                                {
-                                    <img src="@item.ThumbnailBase64" class="w-100 h-100 object-fit-cover" draggable="false" />
-                                }
-                                else if (item.IsThumbLoading)
+                                else
                                 {
                                     <div class="w-100 h-100 d-flex align-items-center justify-content-center">
                                         <div class="spinner-border spinner-border-sm text-primary"></div>
                                     </div>
                                 }
 
-                                @* Multi-select trigger button (appears on right-click in top-right of the card as an unselected circle) *@
-                                @if (!isMultiSelectMode && activeExpandedPath == item.Path)
-                                {
-                                    <div class="gallery-multiselect-checkbox media-btn-multiselect-trigger"
-                                         @onclick:stopPropagation="true"
-                                         @onclick="() => StartMultiSelect(item.Path)"
-                                         title="Select">
-                                    </div>
-                                }
-
-                                @* Multi-select mode checkbox indicator on each image card *@
-                                @if (isMultiSelectMode)
-                                {
-                                    <div class="gallery-multiselect-checkbox @(selectedPaths.Contains(item.Path) ? "checked" : "")"
-                                         @onclick:stopPropagation="true"
-                                         @onclick="() => HandleCardClick(item)"
-                                         title="@(selectedPaths.Contains(item.Path) ? "Deselect" : "Select")">
-                                        @if (selectedPaths.Contains(item.Path))
-                                        {
-                                            <svg viewBox="0 0 24 24" width="16" height="16" stroke="#12161c" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                                <polyline points="20 6 9 17 4 12"></polyline>
-                                            </svg>
-                                        }
-                                    </div>
-                                }
-
-                                @* Standard card actions (hidden during multi-selection mode) *@
-                                @if (!isMultiSelectMode && !string.IsNullOrEmpty(item.ThumbnailBase64))
+                                @if (activeExpandedPath == photo.Path && !string.IsNullOrEmpty(photo.ThumbnailBase64))
                                 {
                                     <div class="media-card-actions">
-                                        <button class="btn btn-danger btn-sm rounded-circle btn-action media-btn-delete" @onclick:stopPropagation="true" @onclick="() => DeleteItem(item)" title="Delete">
+                                        <button class="btn btn-danger btn-sm rounded-circle btn-action media-btn-delete"
+                                                @onclick:stopPropagation="true"
+                                                @onclick="() => DeleteWorldItem(photo)"
+                                                title="Delete">
                                             <img src="/svg/trash-bin-trash-svgrepo-com.svg" class="btn-icon" style="margin: 0;" />
                                         </button>
-
-                                        <button class="btn btn-success btn-sm rounded-circle btn-action media-btn-upload" @onclick:stopPropagation="true" @onclick="() => { SelectedImage = item; ToggleUploadMenu(); }" title="Upload">
+                                        <button class="btn btn-success btn-sm rounded-circle btn-action media-btn-upload"
+                                                @onclick:stopPropagation="true"
+                                                @onclick="() => { SelectedImage = photo; ToggleUploadMenu(); }"
+                                                title="Add (upload)">
                                             <img src="/svg/add-circle-svgrepo-com.svg" class="btn-icon icon-white" style="margin: 0;" />
                                         </button>
-
-                                        @if (activeExpandedPath == item.Path)
-                                        {
-                                            <button class="btn btn-sm rounded-circle btn-action media-btn-copy media-btn-extra" @onclick:stopPropagation="true" @onclick="() => CopyImageToClipboardAsync(item.Path)" title="Copy Image">
-                                                <img src="/svg/copy-svgrepo-com.svg" class="btn-icon icon-white" style="margin: 0;" />
-                                            </button>
-                                            <button class="btn btn-sm rounded-circle btn-action media-btn-folder media-btn-extra" @onclick:stopPropagation="true" @onclick="() => OpenInExplorer(item.Path)" title="Open Location">
-                                                <img src="/svg/folder-open-svgrepo-com.svg" class="btn-icon icon-white" style="margin: 0;" />
-                                            </button>
-                                        }
+                                        <button class="btn btn-sm rounded-circle btn-action media-btn-copy media-btn-extra"
+                                                @onclick:stopPropagation="true"
+                                                @onclick="() => CopyImageToClipboardAsync(photo.Path)"
+                                                title="Copy Image">
+                                            <img src="/svg/copy-svgrepo-com.svg" class="btn-icon icon-white" style="margin: 0;" />
+                                        </button>
+                                        <button class="btn btn-sm rounded-circle btn-action media-btn-folder media-btn-extra"
+                                                @onclick:stopPropagation="true"
+                                                @onclick="() => OpenInExplorer(photo.Path)"
+                                                title="Open in Explorer">
+                                            <img src="/svg/folder-open-svgrepo-com.svg" class="btn-icon icon-white" style="margin: 0;" />
+                                        </button>
                                     </div>
                                 }
-                            }
-                        </div>
-                    }
+                            </div>
+                        }
+                    </div>
                 </div>
             }
-        </div>
-
+        }
 
     </div>
 </div>
@@ -300,6 +789,234 @@
 }
 
 @code {
+    // ── View Mode ─────────────────────────────────────────────────────────
+    public enum GalleryView
+    {
+        Photos,
+        Worlds
+    }
+
+    private static GalleryView cachedCurrentView = GalleryView.Photos;
+    private static WorldGroupItem? cachedSelectedWorld = null;
+    private static string? cachedSelectedWorldId = null;
+    private static string? cachedSelectedWorldName = null;
+
+    private GalleryView currentView
+    {
+        get => cachedCurrentView;
+        set => cachedCurrentView = value;
+    }
+
+    private WorldGroupItem? selectedWorld
+    {
+        get => cachedSelectedWorld;
+        set
+        {
+            cachedSelectedWorld = value;
+            cachedSelectedWorldId = value?.WorldId;
+            cachedSelectedWorldName = value?.Name;
+        }
+    }
+
+    private void RestoreSelectedWorld()
+    {
+        try
+        {
+            if (worldGroups.Count == 0) return;
+
+            if (selectedWorld != null)
+            {
+                var match = worldGroups.FirstOrDefault(w =>
+                    (!string.IsNullOrEmpty(selectedWorld.WorldId) && !string.IsNullOrEmpty(w.WorldId) && string.Equals(w.WorldId, selectedWorld.WorldId, StringComparison.OrdinalIgnoreCase)) ||
+                    (!string.IsNullOrEmpty(selectedWorld.Name) && !string.IsNullOrEmpty(w.Name) && string.Equals(w.Name, selectedWorld.Name, StringComparison.OrdinalIgnoreCase)));
+                if (match != null)
+                {
+                    selectedWorld = match;
+                }
+                _ = LoadWorldPhotosThumbnailsAsync(selectedWorld);
+                return;
+            }
+
+            var savedId = cachedSelectedWorldId;
+            var savedName = cachedSelectedWorldName;
+
+            if (!string.IsNullOrEmpty(savedId) || !string.IsNullOrEmpty(savedName))
+            {
+                var match = worldGroups.FirstOrDefault(w =>
+                    (!string.IsNullOrEmpty(savedId) && !string.IsNullOrEmpty(w.WorldId) && string.Equals(w.WorldId, savedId, StringComparison.OrdinalIgnoreCase)) ||
+                    (!string.IsNullOrEmpty(savedName) && !string.IsNullOrEmpty(w.Name) && string.Equals(w.Name, savedName, StringComparison.OrdinalIgnoreCase)));
+                if (match != null)
+                {
+                    selectedWorld = match;
+                    _ = LoadWorldPhotosThumbnailsAsync(match);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[Gallery] Error restoring selected world: {ex.Message}");
+        }
+    }
+
+    private List<WorldGroupItem> worldGroups = new();
+    private static List<WorldGroupItem>? cachedWorldGroups = null;
+    private bool isScanningWorlds = false;
+    private bool isLoadingWorldDetails = false;
+    private string worldSearchQuery = string.Empty;
+    private static string cachedWorldSortBy = "count";
+    private string worldSortBy
+    {
+        get => cachedWorldSortBy;
+        set => cachedWorldSortBy = value;
+    }
+    private bool isSortDropdownOpen = false;
+    private void ToggleSortDropdown() => isSortDropdownOpen = !isSortDropdownOpen;
+    private void CloseSortDropdown() => isSortDropdownOpen = false;
+    private void SelectSort(string sortBy)
+    {
+        worldSortBy = sortBy;
+        isSortDropdownOpen = false;
+    }
+    private string GetSortLabel(string sortKey) => sortKey switch
+    {
+        "recent" => "Recently Visited",
+        "name" => "Name (A-Z)",
+        _ => "Most Photos"
+    };
+
+    private static string cachedPhotoSortBy = "newest";
+    private string photoSortBy
+    {
+        get => cachedPhotoSortBy;
+        set
+        {
+            cachedPhotoSortBy = value;
+            try { Config.Set("GalleryPhotoSortBy", value); } catch { }
+        }
+    }
+    private bool isPhotoSortDropdownOpen = false;
+    private void TogglePhotoSortDropdown() => isPhotoSortDropdownOpen = !isPhotoSortDropdownOpen;
+    private void ClosePhotoSortDropdown() => isPhotoSortDropdownOpen = false;
+    private void SelectPhotoSort(string sortBy)
+    {
+        photoSortBy = sortBy;
+        isPhotoSortDropdownOpen = false;
+    }
+    private string GetPhotoSortLabel(string sortKey) => sortKey switch
+    {
+        "oldest" => "Oldest First",
+        "name" => "Name (A-Z)",
+        _ => "Newest First"
+    };
+
+    private string photoSearchQuery = string.Empty;
+
+    private int FilteredFolderCount => FilteredItems.Count(x => x.IsFolder);
+    private int FilteredPhotoCount => FilteredItems.Count(x => !x.IsFolder);
+
+    private List<GalleryItem> FilteredItems
+    {
+        get
+        {
+            var folders = Items.Where(x => x.IsFolder);
+            var files = Items.Where(x => !x.IsFolder);
+
+            folders = photoSortBy switch
+            {
+                "oldest" => folders.OrderBy(x => x.FileDate ?? DateTime.MinValue).ThenBy(x => x.Name),
+                "name" => folders.OrderBy(x => x.Name, StringComparer.OrdinalIgnoreCase),
+                _ => folders.OrderByDescending(x => x.FileDate ?? DateTime.MinValue).ThenBy(x => x.Name)
+            };
+
+            files = photoSortBy switch
+            {
+                "oldest" => files.OrderBy(x => x.FileDate ?? DateTime.MinValue).ThenBy(x => x.Name),
+                "name" => files.OrderBy(x => x.Name, StringComparer.OrdinalIgnoreCase),
+                _ => files.OrderByDescending(x => x.FileDate ?? DateTime.MinValue).ThenBy(x => x.Name)
+            };
+
+            return folders.Concat(files).ToList();
+        }
+    }
+
+    private List<GalleryItem> SortedSelectedWorldPhotos
+    {
+        get
+        {
+            if (selectedWorld == null) return new List<GalleryItem>();
+            IEnumerable<GalleryItem> query = selectedWorld.Photos;
+            return photoSortBy switch
+            {
+                "oldest" => query.OrderBy(x => x.FileDate ?? DateTime.MinValue).ThenBy(x => x.Name).ToList(),
+                "name" => query.OrderBy(x => x.Name, StringComparer.OrdinalIgnoreCase).ToList(),
+                _ => query.OrderByDescending(x => x.FileDate ?? DateTime.MinValue).ThenBy(x => x.Name).ToList()
+            };
+        }
+    }
+
+    private int scannedCount = 0;
+    private int totalFilesToScan = 0;
+
+    private List<WorldGroupItem> FilteredWorlds
+    {
+        get
+        {
+            IEnumerable<WorldGroupItem> query = worldGroups;
+            if (!string.IsNullOrWhiteSpace(worldSearchQuery))
+            {
+                var term = worldSearchQuery.Trim();
+                var termWithoutBy = term.StartsWith("by ", StringComparison.OrdinalIgnoreCase) ? term[3..].Trim() : term;
+                query = query.Where(w => w.Name.Contains(term, StringComparison.OrdinalIgnoreCase) ||
+                                         (!string.IsNullOrEmpty(w.AuthorName) && (w.AuthorName.Contains(term, StringComparison.OrdinalIgnoreCase) || w.AuthorName.Contains(termWithoutBy, StringComparison.OrdinalIgnoreCase))));
+            }
+
+            query = worldSortBy switch
+            {
+                "recent" => query.OrderByDescending(w => w.LastVisited ?? DateTime.MinValue),
+                "name" => query.OrderBy(w => w.Name, StringComparer.OrdinalIgnoreCase),
+                _ => query.OrderByDescending(w => w.Photos.Count).ThenBy(w => w.Name)
+            };
+
+            return query.ToList();
+        }
+    }
+
+    private static string GetWorldCardTitle(WorldGroupItem world)
+    {
+        var author = !string.IsNullOrEmpty(world.AuthorName) ? $" by {world.AuthorName}" : string.Empty;
+        var count = world.Photos.Count == 1 ? "1 photo" : $"{world.Photos.Count} photos";
+        return $"{world.Name}{author} ({count})";
+    }
+
+    private static DateTime? GetFolderDate(string dirPath)
+    {
+        try
+        {
+            var name = Path.GetFileName(dirPath);
+            if (!string.IsNullOrEmpty(name))
+            {
+                if (DateTime.TryParseExact(name, new[] { "yyyy-MM", "yyyy-MM-dd", "yyyy_MM", "yyyy_MM_dd", "yyyyMMdd" },
+                    System.Globalization.CultureInfo.InvariantCulture,
+                    System.Globalization.DateTimeStyles.None, out var exactDate))
+                {
+                    return exactDate;
+                }
+
+                if (DateTime.TryParse(name, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var parsedDate))
+                {
+                    return parsedDate;
+                }
+            }
+
+            var di = new DirectoryInfo(dirPath);
+            return di.LastWriteTime > di.CreationTime ? di.LastWriteTime : di.CreationTime;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
     // ── State ─────────────────────────────────────────────────────────────
     private string RootFolder;
     private string CurrentFolder;
@@ -309,6 +1026,18 @@
     private static string cachedRootFolder = null;
     private static string cachedCurrentFolder = null;
     private static List<GalleryItem> cachedItems = null;
+
+    public static void ResetCache()
+    {
+        cachedRootFolder = null;
+        cachedCurrentFolder = null;
+        cachedItems = null;
+        cachedWorldGroups = null;
+        cachedSelectedWorld = null;
+        cachedSelectedWorldId = null;
+        cachedSelectedWorldName = null;
+        cachedCurrentView = GalleryView.Photos;
+    }
 
     private bool IsLoading;
     private bool ShowUploadMenu;
@@ -324,14 +1053,16 @@
     private string? _dragStartPath = null;
 
     private bool CanGoBack =>
-        !string.IsNullOrEmpty(CurrentFolder) &&
-        !string.IsNullOrEmpty(RootFolder) &&
-        Directory.Exists(CurrentFolder) &&
-        Directory.Exists(RootFolder) &&
-        !string.Equals(
-            Path.GetFullPath(CurrentFolder).TrimEnd(Path.DirectorySeparatorChar),
-            Path.GetFullPath(RootFolder).TrimEnd(Path.DirectorySeparatorChar),
-            StringComparison.OrdinalIgnoreCase);
+        (currentView == GalleryView.Worlds && selectedWorld != null) ||
+        (currentView == GalleryView.Photos &&
+         !string.IsNullOrEmpty(CurrentFolder) &&
+         !string.IsNullOrEmpty(RootFolder) &&
+         Directory.Exists(CurrentFolder) &&
+         Directory.Exists(RootFolder) &&
+         !string.Equals(
+             Path.GetFullPath(CurrentFolder).TrimEnd(Path.DirectorySeparatorChar),
+             Path.GetFullPath(RootFolder).TrimEnd(Path.DirectorySeparatorChar),
+             StringComparison.OrdinalIgnoreCase));
 
     // ── Model ─────────────────────────────────────────────────────────────
     public class BreadcrumbItem
@@ -350,11 +1081,40 @@
         public string FullBase64 { get; set; }
         public bool IsThumbLoading { get; set; }
         public int? PhotoCount { get; set; }
+        public DateTime? FileDate { get; set; }
+        public string? WorldName { get; set; }
+        public string? WorldId { get; set; }
+    }
+
+    public class WorldGroupItem
+    {
+        public string Name { get; set; } = string.Empty;
+        public string? WorldId { get; set; }
+        public string? AuthorName { get; set; }
+        public string? WorldImageUrl { get; set; }
+        public string? CoverThumbnail { get; set; }
+        public string? CoverPath { get; set; }
+        public DateTime? LastVisited { get; set; }
+        public List<GalleryItem> Photos { get; set; } = new();
     }
 
     // ── Lifecycle ─────────────────────────────────────────────────────────
     protected override async Task OnInitializedAsync()
     {
+        try
+        {
+            Config.Set("GalleryCurrentView", null);
+            Config.Set("GallerySelectedWorldId", null);
+            Config.Set("GallerySelectedWorldName", null);
+        }
+        catch { }
+
+        var savedPhotoSort = Config.Get("GalleryPhotoSortBy", null);
+        if (!string.IsNullOrEmpty(savedPhotoSort))
+        {
+            cachedPhotoSortBy = savedPhotoSort;
+        }
+
         var path = Config.GetPath("PathGallery");
         if (string.IsNullOrEmpty(path) || !Directory.Exists(path))
         {
@@ -377,10 +1137,37 @@
             }
             else
             {
+                cachedItems = null;
+                cachedWorldGroups = null;
+                selectedWorld = null;
                 RootFolder = path;
                 CurrentFolder = path;
                 await LoadFolderAsync();
             }
+
+            if (currentView == GalleryView.Worlds)
+            {
+                if (cachedWorldGroups != null && cachedWorldGroups.Count > 0)
+                {
+                    worldGroups = cachedWorldGroups;
+                }
+                else
+                {
+                    var cachedList = BuildWorldGroupsFromMetadataCache(path);
+                    if (cachedList.Count > 0)
+                    {
+                        worldGroups = cachedList;
+                        cachedWorldGroups = worldGroups;
+                        _ = LoadWorldDetailsAndCoversAsync();
+                    }
+                    _ = ScanWorldsAsync();
+                }
+
+                RestoreSelectedWorld();
+            }
+
+            PhotoWatcher.OnPhotoCaptured -= HandleLivePhotoCaptured;
+            PhotoWatcher.OnPhotoCaptured += HandleLivePhotoCaptured;
         }
     }
 
@@ -400,8 +1187,19 @@
     // ── Navigation ────────────────────────────────────────────────────────
     private async Task GoBack()
     {
+        if (currentView == GalleryView.Worlds)
+        {
+            if (selectedWorld != null)
+            {
+                selectedWorld = null;
+                StateHasChanged();
+            }
+            return;
+        }
+
         if (!CanGoBack) return;
         SelectedImage = null;
+        photoSearchQuery = string.Empty;
         if (!string.IsNullOrEmpty(CurrentFolder))
         {
             try { await JS.InvokeVoidAsync("saveGalleryScroll", CurrentFolder); } catch { }
@@ -425,6 +1223,7 @@
         }
 
         SelectedImage = null;
+        photoSearchQuery = string.Empty;
         if (!string.IsNullOrEmpty(CurrentFolder))
         {
             try { await JS.InvokeVoidAsync("saveGalleryScroll", CurrentFolder); } catch { }
@@ -524,7 +1323,17 @@
         return result;
     }
 
-    private async Task Refresh() => await LoadFolderAsync();
+    private async Task Refresh()
+    {
+        if (currentView == GalleryView.Photos)
+        {
+            await LoadFolderAsync();
+        }
+        else
+        {
+            await ScanWorldsAsync(forceRefresh: true);
+        }
+    }
 
     private async Task ChangeFolder()
     {
@@ -545,7 +1354,18 @@
                 cachedRootFolder = picked;
                 cachedCurrentFolder = picked;
                 SelectedImage = null;
+                worldGroups.Clear();
+                cachedWorldGroups = null;
+                selectedWorld = null;
+                var cachedList = BuildWorldGroupsFromMetadataCache(picked);
+                if (cachedList.Count > 0)
+                {
+                    worldGroups = cachedList;
+                    cachedWorldGroups = worldGroups;
+                    _ = LoadWorldDetailsAndCoversAsync();
+                }
                 await LoadFolderAsync();
+                _ = ScanWorldsAsync(forceRefresh: false);
             }
         }
         catch (Exception ex)
@@ -589,12 +1409,15 @@
             }
             catch { }
 
+            DateTime? dirDate = GetFolderDate(dir);
+
             Items.Add(new GalleryItem
             {
                 IsFolder = true,
                 Path = dir,
                 Name = Path.GetFileName(dir),
                 PhotoCount = count,
+                FileDate = dirDate,
                 IsThumbLoading = true
             });
         }
@@ -605,11 +1428,30 @@
             foreach (var file in files)
             {
                 if (token.IsCancellationRequested) break;
+                DateTime? fileDate = null;
+                string? worldName = null;
+                string? worldId = null;
+
+                if (MetadataScanCache.TryGet(file, out var meta) && meta != null)
+                {
+                    fileDate = meta.TakenAtUtc ?? meta.LastModifiedUtc;
+                    worldName = meta.WorldName;
+                    worldId = meta.WorldId;
+                }
+
+                if (!fileDate.HasValue)
+                {
+                    try { fileDate = File.GetCreationTime(file); } catch { }
+                }
+
                 Items.Add(new GalleryItem
                 {
                     IsFolder = false,
                     Path = file,
                     Name = Path.GetFileName(file),
+                    FileDate = fileDate,
+                    WorldName = worldName,
+                    WorldId = worldId,
                     IsThumbLoading = true
                 });
             }
@@ -673,6 +1515,10 @@
                         if (!string.IsNullOrEmpty(firstImg))
                         {
                             item.ThumbnailBase64 = await MakeThumbnailBase64Async(firstImg, 256, ct);
+                            if (!item.FileDate.HasValue)
+                            {
+                                try { item.FileDate = File.GetLastWriteTime(firstImg); } catch { }
+                            }
                         }
                         item.IsThumbLoading = false;
                     }
@@ -774,6 +1620,7 @@
 
         if (item.IsFolder)
         {
+            photoSearchQuery = string.Empty;
             if (!string.IsNullOrEmpty(CurrentFolder))
             {
                 try { await JS.InvokeVoidAsync("saveGalleryScroll", CurrentFolder); } catch { }
@@ -807,7 +1654,7 @@
 
         try
         {
-            var viewerItems = Items.Where(x => !x.IsFolder).Select(x => new VRCGalleryManager.Components.ImageViewer.ViewerItem {
+            var viewerItems = FilteredItems.Where(x => !x.IsFolder).Select(x => new VRCGalleryManager.Components.ImageViewer.ViewerItem {
                 HighResSource = x.Path,
                 LowResSource = x.ThumbnailBase64,
                 Title = x.Name
@@ -867,7 +1714,7 @@
 
     private void HandleCardContextMenu(string path)
     {
-        if ((DateTime.UtcNow - _lastContextMenuTime).TotalMilliseconds < 450) return;
+        if ((DateTime.UtcNow - _lastContextMenuTime).TotalMilliseconds < 150) return;
         _lastContextMenuTime = DateTime.UtcNow;
 
         activeExpandedPath = (activeExpandedPath == path) ? null : path;
@@ -984,7 +1831,7 @@
 
     private void SelectAll()
     {
-        var allImages = Items.Where(x => !x.IsFolder && !string.IsNullOrEmpty(x.Path)).Select(x => x.Path).ToList();
+        var allImages = FilteredItems.Where(x => !x.IsFolder && !string.IsNullOrEmpty(x.Path)).Select(x => x.Path).ToList();
         selectedPaths = allImages.ToHashSet();
         StateHasChanged();
     }
@@ -997,7 +1844,7 @@
 
     private void ToggleSelectAll()
     {
-        var allImages = Items.Where(x => !x.IsFolder && !string.IsNullOrEmpty(x.Path)).Select(x => x.Path).ToList();
+        var allImages = FilteredItems.Where(x => !x.IsFolder && !string.IsNullOrEmpty(x.Path)).Select(x => x.Path).ToList();
         if (selectedPaths.Count >= allImages.Count)
         {
             selectedPaths.Clear();
@@ -1021,9 +1868,17 @@
 
     private void HandleKeyDown(KeyboardEventArgs e)
     {
-        if (isMultiSelectMode && e.Key == "Escape")
+        if (e.Key == "Escape")
         {
-            CancelMultiSelect();
+            if (isMultiSelectMode)
+            {
+                CancelMultiSelect();
+            }
+            else if (currentView == GalleryView.Worlds && selectedWorld != null)
+            {
+                selectedWorld = null;
+                StateHasChanged();
+            }
         }
     }
 
@@ -1059,6 +1914,7 @@
                             if (FileHelper.DeleteToRecycleBin(path))
                             {
                                 Interlocked.Increment(ref deletedCount);
+                                MetadataScanCache.Remove(path);
                             }
                         }
                         catch (Exception ex)
@@ -1066,6 +1922,7 @@
                             System.Diagnostics.Debug.WriteLine($"Error deleting {path}: {ex.Message}");
                         }
                     }
+                    MetadataScanCache.SaveIfDirty();
                 });
 
                 var deletedSet = pathsToDelete.ToHashSet();
@@ -1135,7 +1992,7 @@
 
     // ── Upload menu ───────────────────────────────────────────────────────
     private void ToggleUploadMenu() => ShowUploadMenu = !ShowUploadMenu;
-    private void CloseUploadMenu() { if (ShowUploadMenu) ShowUploadMenu = false; }
+    private void CloseUploadMenu() { if (ShowUploadMenu) ShowUploadMenu = false; if (isSortDropdownOpen) isSortDropdownOpen = false; if (isPhotoSortDropdownOpen) isPhotoSortDropdownOpen = false; }
 
     private async Task HandleViewerUpload(int index)
     {
@@ -1270,6 +2127,8 @@
                 }
 
                 Items.Remove(item);
+                MetadataScanCache.Remove(item.Path);
+                MetadataScanCache.SaveIfDirty();
                 if (SelectedImage == item)
                 {
                     SelectedImage = null;
@@ -1298,13 +2157,857 @@
     {
         if (item.IsFolder)
         {
-            if (item.PhotoCount.HasValue)
-            {
-                return item.PhotoCount.Value == 1 ? "1 photo" : $"{item.PhotoCount.Value} photos";
-            }
+            var countStr = item.PhotoCount.HasValue
+                ? (item.PhotoCount.Value == 1 ? "1 photo" : $"{item.PhotoCount.Value} photos")
+                : null;
+            var dateStr = item.FileDate.HasValue ? item.FileDate.Value.ToString("yyyy-MM-dd") : null;
+            if (countStr != null && dateStr != null) return $"{item.Name} ({countStr} • {dateStr})";
+            if (countStr != null) return $"{item.Name} ({countStr})";
+            if (dateStr != null) return $"{item.Name} ({dateStr})";
             return item.Name;
         }
         return item.Name;
+    }
+
+    // ── Worlds View Methods ────────────────────────────────────────────────
+    private string GetGalleryViewBtnClass(GalleryView view)
+    {
+        if (currentView == view)
+            return "btn-primary fw-bold";
+        return "text-white border-0 btn-hover-light";
+    }
+
+    private async Task SwitchGalleryView(GalleryView newView)
+    {
+        try
+        {
+            if (currentView == newView)
+            {
+                return;
+            }
+
+            currentView = newView;
+            activeExpandedPath = null;
+
+            if (newView == GalleryView.Worlds)
+            {
+                if (isMultiSelectMode) CancelMultiSelect();
+                if (worldGroups.Count == 0 && !isScanningWorlds)
+                {
+                    var cachedList = BuildWorldGroupsFromMetadataCache(RootFolder);
+                    if (cachedList.Count > 0)
+                    {
+                        worldGroups = cachedList;
+                        cachedWorldGroups = worldGroups;
+                        _ = LoadWorldDetailsAndCoversAsync();
+                    }
+                    _ = ScanWorldsAsync();
+                }
+                RestoreSelectedWorld();
+            }
+
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[Gallery] Error in SwitchGalleryView: {ex.Message}");
+        }
+    }
+
+    private List<WorldGroupItem> BuildWorldGroupsFromMetadataCache(string? rootFolder)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(rootFolder)) return new List<WorldGroupItem>();
+            var cachedPhotos = MetadataScanCache.GetPhotosWithMetadata(rootFolder);
+            if (cachedPhotos.Count == 0) return new List<WorldGroupItem>();
+
+            var groupsDict = new Dictionary<string, WorldGroupItem>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var p in cachedPhotos)
+            {
+                if (!File.Exists(p.Path)) continue;
+
+                string worldId = p.WorldId?.Trim() ?? "";
+                string worldName = p.WorldName?.Trim() ?? "";
+                if (string.IsNullOrEmpty(worldName))
+                {
+                    worldName = !string.IsNullOrEmpty(worldId) ? worldId : "Unknown World";
+                }
+
+                string groupKey = !string.IsNullOrEmpty(worldId) ? worldId : $"name:{worldName}";
+                if (!groupsDict.TryGetValue(groupKey, out var group))
+                {
+                    group = new WorldGroupItem
+                    {
+                        Name = worldName,
+                        WorldId = !string.IsNullOrEmpty(worldId) ? worldId : null,
+                        AuthorName = p.AuthorName
+                    };
+                    if (!string.IsNullOrEmpty(worldId))
+                    {
+                        var cachedInfo = WorldCacheHelper.Get(worldId);
+                        if (cachedInfo != null)
+                        {
+                            if (!string.IsNullOrEmpty(cachedInfo.Name)) group.Name = cachedInfo.Name;
+                            group.AuthorName = cachedInfo.AuthorName;
+                            group.WorldImageUrl = cachedInfo.ImageUrl;
+                        }
+                    }
+                    groupsDict[groupKey] = group;
+                }
+
+                DateTime? fileDate = p.TakenAtUtc ?? p.LastModifiedUtc;
+                group.Photos.Add(new GalleryItem
+                {
+                    IsFolder = false,
+                    Path = p.Path,
+                    Name = Path.GetFileName(p.Path),
+                    WorldName = worldName,
+                    WorldId = worldId,
+                    FileDate = fileDate
+                });
+
+                if (fileDate.HasValue && (!group.LastVisited.HasValue || fileDate.Value > group.LastVisited.Value))
+                {
+                    group.LastVisited = fileDate.Value;
+                    group.CoverPath = p.Path;
+                }
+            }
+
+            foreach (var g in groupsDict.Values)
+            {
+                g.Photos = g.Photos.OrderByDescending(ph => ph.FileDate ?? DateTime.MinValue).ToList();
+                if (g.Photos.Count > 0 && string.IsNullOrEmpty(g.CoverPath))
+                {
+                    g.CoverPath = g.Photos[0].Path;
+                }
+            }
+
+            return groupsDict.Values.OrderByDescending(w => w.Photos.Count).ThenBy(w => w.Name).ToList();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[Gallery] Error building world groups from cache: {ex.Message}");
+            return new List<WorldGroupItem>();
+        }
+    }
+
+    private async Task ScanWorldsAsync(bool forceRefresh = false)
+    {
+        if (string.IsNullOrEmpty(RootFolder) || !Directory.Exists(RootFolder))
+        {
+            worldGroups.Clear();
+            return;
+        }
+
+        if (forceRefresh)
+        {
+            MetadataScanCache.Clear();
+            cachedWorldGroups = null;
+        }
+        else if (worldGroups.Count == 0)
+        {
+            var fromCache = BuildWorldGroupsFromMetadataCache(RootFolder);
+            if (fromCache.Count > 0)
+            {
+                worldGroups = fromCache;
+                cachedWorldGroups = worldGroups;
+                _ = LoadWorldDetailsAndCoversAsync();
+                RestoreSelectedWorld();
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+
+        isScanningWorlds = true;
+        scannedCount = 0;
+        totalFilesToScan = 0;
+        await InvokeAsync(StateHasChanged);
+
+        try
+        {
+            MetadataScanCache.EnsureLoaded();
+
+            var allFiles = await Task.Run(() =>
+            {
+                try
+                {
+                    var enumOptions = new EnumerationOptions
+                    {
+                        IgnoreInaccessible = true,
+                        RecurseSubdirectories = true,
+                        MaxRecursionDepth = 5
+                    };
+                    return Directory.EnumerateFiles(RootFolder, "*", enumOptions)
+                                    .Where(IsImageFile)
+                                    .OrderByDescending(File.GetCreationTimeUtc)
+                                    .ToList();
+                }
+                catch
+                {
+                    return new List<string>();
+                }
+            });
+
+            totalFilesToScan = allFiles.Count;
+            if (totalFilesToScan == 0)
+            {
+                worldGroups.Clear();
+                cachedWorldGroups = worldGroups;
+                return;
+            }
+
+            var groupsDict = new System.Collections.Concurrent.ConcurrentDictionary<string, WorldGroupItem>(StringComparer.OrdinalIgnoreCase);
+
+            int degree = Math.Clamp(Environment.ProcessorCount, 2, 8);
+            var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = degree };
+
+            int processed = 0;
+            long lastTicks = DateTime.UtcNow.Ticks;
+            bool cacheModified = false;
+
+            await Parallel.ForEachAsync(allFiles, parallelOptions, async (filePath, ct) =>
+            {
+                try
+                {
+                    var fileInfo = new FileInfo(filePath);
+                    if (!fileInfo.Exists) return;
+
+                    DateTime lastWrite = fileInfo.LastWriteTimeUtc;
+
+                    string? worldId = null;
+                    string? worldName = null;
+                    string? authorName = null;
+                    DateTime? fileDate = fileInfo.CreationTime;
+
+                    if (!forceRefresh && MetadataScanCache.TryGet(filePath, out var cached) && cached != null && Math.Abs((cached.LastModifiedUtc - lastWrite).TotalSeconds) < 1)
+                    {
+                        if (cached.HasMetadata)
+                        {
+                            worldId = cached.WorldId;
+                            worldName = cached.WorldName;
+                            authorName = cached.AuthorName;
+                            fileDate = cached.TakenAtUtc ?? fileInfo.CreationTime;
+                        }
+                    }
+                    else
+                    {
+                        var meta = MetaDataImageReader.ExtractPhotoMetadata(filePath);
+                        cacheModified = true;
+
+                        if (meta?.World != null && (!string.IsNullOrWhiteSpace(meta.World.Id) || !string.IsNullOrWhiteSpace(meta.World.Name)))
+                        {
+                            worldId = meta.World.Id?.Trim();
+                            worldName = meta.World.Name?.Trim();
+                            authorName = meta.Author?.DisplayName?.Trim();
+
+                            MetadataScanCache.Set(filePath, new CachedPhotoMetadata
+                            {
+                                Path = filePath,
+                                LastModifiedUtc = lastWrite,
+                                TakenAtUtc = fileInfo.CreationTimeUtc,
+                                HasMetadata = true,
+                                WorldId = worldId,
+                                WorldName = worldName,
+                                AuthorName = authorName
+                            });
+                        }
+                        else
+                        {
+                            MetadataScanCache.Set(filePath, new CachedPhotoMetadata
+                            {
+                                Path = filePath,
+                                LastModifiedUtc = lastWrite,
+                                TakenAtUtc = fileInfo.CreationTimeUtc,
+                                HasMetadata = false
+                            });
+                        }
+                    }
+
+                    if (!string.IsNullOrEmpty(worldId) || !string.IsNullOrEmpty(worldName))
+                    {
+                        if (string.IsNullOrEmpty(worldName))
+                        {
+                            worldName = !string.IsNullOrEmpty(worldId) ? worldId : "Unknown World";
+                        }
+
+                        string groupKey = !string.IsNullOrEmpty(worldId) ? worldId : $"name:{worldName}";
+
+                        var worldGroup = groupsDict.GetOrAdd(groupKey, key =>
+                        {
+                            var item = new WorldGroupItem
+                            {
+                                Name = worldName,
+                                WorldId = !string.IsNullOrEmpty(worldId) ? worldId : null,
+                                AuthorName = authorName
+                            };
+                            if (!string.IsNullOrEmpty(worldId))
+                            {
+                                var cachedInfo = WorldCacheHelper.Get(worldId);
+                                if (cachedInfo != null)
+                                {
+                                    if (!string.IsNullOrEmpty(cachedInfo.Name)) item.Name = cachedInfo.Name;
+                                    item.AuthorName = cachedInfo.AuthorName;
+                                    item.WorldImageUrl = cachedInfo.ImageUrl;
+                                }
+                            }
+                            return item;
+                        });
+
+                        if (!string.IsNullOrEmpty(worldId) && string.IsNullOrEmpty(worldGroup.WorldId))
+                        {
+                            worldGroup.WorldId = worldId;
+                        }
+                        if (!string.IsNullOrEmpty(worldName) && (string.IsNullOrEmpty(worldGroup.Name) || worldGroup.Name == "Unknown World" || worldGroup.Name.StartsWith("wrld_")))
+                        {
+                            worldGroup.Name = worldName;
+                        }
+
+                        var photoItem = new GalleryItem
+                        {
+                            IsFolder = false,
+                            Path = filePath,
+                            Name = Path.GetFileName(filePath),
+                            WorldName = worldName,
+                            WorldId = worldId,
+                            FileDate = fileDate
+                        };
+
+                        lock (worldGroup.Photos)
+                        {
+                            worldGroup.Photos.Add(photoItem);
+                            if (!worldGroup.LastVisited.HasValue || (fileDate.HasValue && fileDate.Value > worldGroup.LastVisited.Value))
+                            {
+                                worldGroup.LastVisited = fileDate;
+                                worldGroup.CoverPath = filePath;
+                            }
+                        }
+                    }
+                }
+                catch { }
+
+                int current = Interlocked.Increment(ref processed);
+                long nowTicks = DateTime.UtcNow.Ticks;
+                long prevTicks = Interlocked.Read(ref lastTicks);
+                if (current == totalFilesToScan || (nowTicks - prevTicks) > TimeSpan.TicksPerMillisecond * 200)
+                {
+                    Interlocked.Exchange(ref lastTicks, nowTicks);
+                    scannedCount = current;
+                    await InvokeAsync(StateHasChanged);
+                }
+            });
+
+            // Remove deleted files from cache
+            var allFileSet = new HashSet<string>(allFiles, StringComparer.OrdinalIgnoreCase);
+            var cachedUnderRoot = MetadataScanCache.GetAll()
+                .Where(c => c.Path.StartsWith(RootFolder, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+            foreach (var c in cachedUnderRoot)
+            {
+                if (!allFileSet.Contains(c.Path))
+                {
+                    MetadataScanCache.Remove(c.Path);
+                    cacheModified = true;
+                }
+            }
+
+            if (cacheModified)
+            {
+                MetadataScanCache.SaveIfDirty();
+            }
+
+            foreach (var group in groupsDict.Values)
+            {
+                group.Photos = group.Photos.OrderByDescending(p => p.FileDate ?? DateTime.MinValue).ToList();
+                if (group.Photos.Count > 0 && string.IsNullOrEmpty(group.CoverPath))
+                {
+                    group.CoverPath = group.Photos[0].Path;
+                }
+            }
+
+            worldGroups = groupsDict.Values.OrderByDescending(w => w.Photos.Count).ThenBy(w => w.Name).ToList();
+            cachedWorldGroups = worldGroups;
+
+            RestoreSelectedWorld();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error scanning worlds: {ex.Message}");
+        }
+        finally
+        {
+            isScanningWorlds = false;
+            await InvokeAsync(StateHasChanged);
+            _ = LoadWorldDetailsAndCoversAsync();
+        }
+    }
+
+    private async Task LoadWorldDetailsAndCoversAsync()
+    {
+        isLoadingWorldDetails = true;
+        try
+        {
+            var worldsToProcess = worldGroups
+                .Where(w => !string.IsNullOrEmpty(w.WorldId) && w.WorldId.StartsWith("wrld_", StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            if (worldsToProcess.Count == 0) return;
+
+            // Phase 1: Apply immediately from JSON cache (lightweight strings in memory, 0 network, 0 disk images)
+            bool localChanged = false;
+            foreach (var w in worldsToProcess)
+            {
+                var cached = WorldCacheHelper.Get(w.WorldId!);
+                if (cached != null)
+                {
+                    if (string.IsNullOrEmpty(w.AuthorName) && !string.IsNullOrEmpty(cached.AuthorName))
+                    {
+                        w.AuthorName = cached.AuthorName;
+                        localChanged = true;
+                    }
+                    if (string.IsNullOrEmpty(w.WorldImageUrl) && !string.IsNullOrEmpty(cached.ImageUrl))
+                    {
+                        w.WorldImageUrl = cached.ImageUrl;
+                        localChanged = true;
+                    }
+                    if ((string.IsNullOrEmpty(w.Name) || w.Name.StartsWith("wrld_")) && !string.IsNullOrEmpty(cached.Name))
+                    {
+                        w.Name = cached.Name;
+                        localChanged = true;
+                    }
+                }
+            }
+            if (localChanged)
+            {
+                await InvokeAsync(StateHasChanged);
+            }
+
+            // Phase 2: Fetch missing or outdated info from VRChat API (only worlds not already in JSON cache or cached with version 1, and not marked unavailable)
+            var missingFromApi = worldsToProcess
+                .Where(w => (string.IsNullOrEmpty(w.AuthorName) || string.IsNullOrEmpty(w.WorldImageUrl) || w.WorldImageUrl.Contains("/1/500")) && w.WorldImageUrl != "unavailable")
+                .ToList();
+
+            if (missingFromApi.Count > 0)
+            {
+                var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = 2 };
+                long lastTicks = DateTime.UtcNow.Ticks;
+                int count = 0;
+
+                await Parallel.ForEachAsync(missingFromApi, parallelOptions, async (w, ct) =>
+                {
+                    try
+                    {
+                        var info = await WorldCacheHelper.FetchAndCacheAsync(w.WorldId!, Auth.ApiClient, ct);
+                        if (info != null)
+                        {
+                            if (!string.IsNullOrEmpty(info.AuthorName)) w.AuthorName = info.AuthorName;
+                            if (!string.IsNullOrEmpty(info.Name) && (string.IsNullOrEmpty(w.Name) || w.Name.StartsWith("wrld_")))
+                            {
+                                w.Name = info.Name;
+                            }
+                            if (!string.IsNullOrEmpty(info.ImageUrl))
+                            {
+                                w.WorldImageUrl = info.ImageUrl;
+                            }
+                        }
+                        else
+                        {
+                            w.WorldImageUrl = "unavailable";
+                        }
+                    }
+                    catch 
+                    {
+                        w.WorldImageUrl = "unavailable";
+                    }
+
+                    int c = Interlocked.Increment(ref count);
+                    long nowTicks = DateTime.UtcNow.Ticks;
+                    long prevTicks = Interlocked.Read(ref lastTicks);
+                    if (c == missingFromApi.Count || c % 3 == 0 || (nowTicks - prevTicks) > TimeSpan.TicksPerMillisecond * 250)
+                    {
+                        Interlocked.Exchange(ref lastTicks, nowTicks);
+                        await InvokeAsync(StateHasChanged);
+                    }
+                });
+
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[Gallery] Error in LoadWorldDetailsAndCoversAsync: {ex.Message}");
+        }
+        finally
+        {
+            isLoadingWorldDetails = false;
+            foreach (var w in worldGroups)
+            {
+                if (string.IsNullOrEmpty(w.WorldImageUrl))
+                {
+                    w.WorldImageUrl = "unavailable";
+                }
+            }
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private async Task SelectWorld(WorldGroupItem world)
+    {
+        try
+        {
+            activeExpandedPath = null;
+            selectedWorld = world;
+            StateHasChanged();
+            _ = LoadWorldPhotosThumbnailsAsync(world);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[Gallery] Error in SelectWorld: {ex.Message}");
+        }
+    }
+
+    private async Task LoadWorldPhotosThumbnailsAsync(WorldGroupItem world)
+    {
+        var photosToLoad = world.Photos.Where(p => string.IsNullOrEmpty(p.ThumbnailBase64)).ToList();
+        if (photosToLoad.Count == 0) return;
+
+        var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = Math.Clamp(Environment.ProcessorCount, 2, 6) };
+        long lastTicks = DateTime.UtcNow.Ticks;
+        int count = 0;
+
+        await Parallel.ForEachAsync(photosToLoad, parallelOptions, async (p, ct) =>
+        {
+            try
+            {
+                var existing = Items.FirstOrDefault(i => i.Path == p.Path);
+                if (existing != null && !string.IsNullOrEmpty(existing.ThumbnailBase64))
+                {
+                    p.ThumbnailBase64 = existing.ThumbnailBase64;
+                }
+                else
+                {
+                    p.ThumbnailBase64 = await MakeThumbnailBase64Async(p.Path, 256, ct);
+                }
+                p.IsThumbLoading = false;
+            }
+            catch
+            {
+                p.IsThumbLoading = false;
+            }
+
+            int c = Interlocked.Increment(ref count);
+            long nowTicks = DateTime.UtcNow.Ticks;
+            long prevTicks = Interlocked.Read(ref lastTicks);
+            if (c == photosToLoad.Count || c % 10 == 0 || (nowTicks - prevTicks) > TimeSpan.TicksPerMillisecond * 150)
+            {
+                Interlocked.Exchange(ref lastTicks, nowTicks);
+                await InvokeAsync(StateHasChanged);
+            }
+        });
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private void OpenFileInWorld(string path)
+    {
+        if (selectedWorld == null || (DateTime.UtcNow - _lastOpenFileTime).TotalMilliseconds < 400) return;
+        _lastOpenFileTime = DateTime.UtcNow;
+
+        try
+        {
+            var viewerItems = SortedSelectedWorldPhotos.Select(x => new VRCGalleryManager.Components.ImageViewer.ViewerItem
+            {
+                HighResSource = x.Path,
+                LowResSource = x.ThumbnailBase64,
+                Title = x.Name
+            }).ToList();
+
+            var index = viewerItems.FindIndex(i => i.HighResSource == path);
+            if (index == -1) index = 0;
+
+            ViewerService.Open(new ImageViewerOptions
+            {
+                Items = viewerItems,
+                StartIndex = index,
+                ShowDownloadButton = false,
+                ShowInfoButton = true,
+                ShowDeleteButton = true,
+                ShowUploadButton = true,
+                OnDeleteRequested = async (idx) => await HandleWorldViewerDelete(idx),
+                OnUploadRequested = async (idx) => { HandleWorldViewerUpload(idx); await Task.CompletedTask; }
+            });
+        }
+        catch { }
+    }
+
+    private async Task HandleWorldViewerDelete(int index)
+    {
+        if (selectedWorld == null || index < 0 || index >= selectedWorld.Photos.Count) return;
+        var item = selectedWorld.Photos[index];
+
+        bool confirm = await dialogService.ShowConfirmAsync("Delete Photo", $"Are you sure you want to move \"{item.Name}\" to the Recycle Bin?", "Delete", "Cancel");
+        if (confirm)
+        {
+            try
+            {
+                bool deleted = FileHelper.DeleteToRecycleBin(item.Path);
+                if (!deleted)
+                {
+                    NotificationService.Show("Failed to delete the photo.", "Delete Error", NotificationType.Error);
+                    return;
+                }
+
+                selectedWorld.Photos.Remove(item);
+                Items.RemoveAll(x => x.Path == item.Path);
+
+                if (selectedWorld.Photos.Count > 0)
+                {
+                    var remainingPhotos = selectedWorld.Photos.Select(x => new VRCGalleryManager.Components.ImageViewer.ViewerItem
+                    {
+                        HighResSource = x.Path,
+                        LowResSource = x.ThumbnailBase64,
+                        Title = x.Name
+                    }).ToList();
+
+                    ViewerService.Open(new ImageViewerOptions
+                    {
+                        Items = remainingPhotos,
+                        StartIndex = Math.Min(index, remainingPhotos.Count - 1),
+                        ShowDownloadButton = false,
+                        ShowInfoButton = true,
+                        ShowDeleteButton = true,
+                        ShowUploadButton = true,
+                        OnDeleteRequested = async (idx) => await HandleWorldViewerDelete(idx),
+                        OnUploadRequested = async (idx) => { HandleWorldViewerUpload(idx); await Task.CompletedTask; }
+                    });
+                }
+                else
+                {
+                    ViewerService.Close();
+                    worldGroups.Remove(selectedWorld);
+                    selectedWorld = null;
+                }
+
+                StateHasChanged();
+                NotificationService.Show("Photo moved to the Recycle Bin.", "Deleted", NotificationType.Success);
+            }
+            catch (Exception ex)
+            {
+                NotificationService.Show($"Delete failed: {ex.Message}", "Delete Error", NotificationType.Error);
+            }
+        }
+    }
+
+    private void HandleWorldViewerUpload(int index)
+    {
+        if (selectedWorld == null || index < 0 || index >= selectedWorld.Photos.Count) return;
+        SelectedImage = selectedWorld.Photos[index];
+        ShowUploadMenu = true;
+        StateHasChanged();
+    }
+
+    private async Task DeleteWorldItem(GalleryItem item)
+    {
+        if (item == null || selectedWorld == null) return;
+
+        bool confirm = await dialogService.ShowConfirmAsync("Delete Photo", $"Are you sure you want to move \"{item.Name}\" to the Recycle Bin?", "Delete", "Cancel");
+        if (confirm)
+        {
+            try
+            {
+                bool deleted = await Task.Run(() => FileHelper.DeleteToRecycleBin(item.Path));
+                if (!deleted)
+                {
+                    NotificationService.Show("Failed to delete the photo.", "Delete Error", NotificationType.Error);
+                    return;
+                }
+
+                selectedWorld.Photos.Remove(item);
+                MetadataScanCache.Remove(item.Path);
+                MetadataScanCache.SaveIfDirty();
+                Items.RemoveAll(x => x.Path == item.Path);
+                activeExpandedPath = null;
+
+                if (selectedWorld.Photos.Count == 0)
+                {
+                    worldGroups.Remove(selectedWorld);
+                    selectedWorld = null;
+                }
+
+                StateHasChanged();
+                NotificationService.Show("Photo moved to the Recycle Bin.", "Deleted", NotificationType.Success);
+            }
+            catch (Exception ex)
+            {
+                NotificationService.Show($"Delete failed: {ex.Message}", "Delete Error", NotificationType.Error);
+            }
+        }
+    }
+
+    private void OpenWorldInBrowser(string? worldId)
+    {
+        if (string.IsNullOrEmpty(worldId)) return;
+        try
+        {
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = $"https://vrchat.com/home/world/{worldId}",
+                UseShellExecute = true
+            });
+        }
+        catch { }
+    }
+
+    private void OpenWorldFromCard(string? worldId)
+    {
+        activeExpandedPath = null;
+        OpenWorldInBrowser(worldId);
+        StateHasChanged();
+    }
+
+    private async Task CopyWorldLinkAsync(WorldGroupItem world)
+    {
+        if (world == null || string.IsNullOrEmpty(world.WorldId) || !world.WorldId.StartsWith("wrld_"))
+        {
+            NotificationService.Show("World ID not available for this world.", "Warning", NotificationType.Info);
+            return;
+        }
+
+        var url = $"https://vrchat.com/home/world/{world.WorldId}";
+        try
+        {
+            bool success = false;
+            try
+            {
+                success = await JS.InvokeAsync<bool>("clipboardInterop.writeText", url);
+            }
+            catch { }
+
+            if (!success)
+            {
+                await Microsoft.Maui.ApplicationModel.DataTransfer.Clipboard.Default.SetTextAsync(url);
+                success = true;
+            }
+
+            if (success)
+            {
+                NotificationService.Show("World link copied to clipboard.", "Copied", NotificationType.Success);
+            }
+        }
+        catch (Exception ex)
+        {
+            NotificationService.Show($"Failed to copy link: {ex.Message}", "Error", NotificationType.Error);
+        }
+        finally
+        {
+            activeExpandedPath = null;
+            StateHasChanged();
+        }
+    }
+
+    private void HandleLivePhotoCaptured(PhotoPopupModel popup)
+    {
+        _ = InvokeAsync(() =>
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(popup.FilePath) || !File.Exists(popup.FilePath)) return;
+
+                // 1. If currently in Photos view and in the folder where photo was saved, add to Items
+                string? photoDir = Path.GetDirectoryName(popup.FilePath);
+                if (!string.IsNullOrEmpty(photoDir) && !string.IsNullOrEmpty(CurrentFolder) &&
+                    string.Equals(Path.GetFullPath(photoDir), Path.GetFullPath(CurrentFolder), StringComparison.OrdinalIgnoreCase))
+                {
+                    if (!Items.Any(i => string.Equals(i.Path, popup.FilePath, StringComparison.OrdinalIgnoreCase)))
+                    {
+                        var newItem = new GalleryItem
+                        {
+                            IsFolder = false,
+                            Path = popup.FilePath,
+                            Name = popup.FileName,
+                            WorldName = popup.WorldName,
+                            WorldId = popup.WorldId,
+                            FileDate = DateTime.Now,
+                            ThumbnailBase64 = popup.ThumbnailBase64
+                        };
+                        Items.Insert(0, newItem);
+                        cachedItems = Items;
+                    }
+                }
+
+                // 2. Update Worlds view in memory
+                string worldId = popup.WorldId?.Trim() ?? "";
+                string worldName = popup.WorldName?.Trim() ?? "";
+                if (string.IsNullOrEmpty(worldName))
+                {
+                    worldName = !string.IsNullOrEmpty(worldId) ? worldId : "Unknown World";
+                }
+
+                var group = worldGroups.FirstOrDefault(w =>
+                    (!string.IsNullOrEmpty(worldId) && string.Equals(w.WorldId, worldId, StringComparison.OrdinalIgnoreCase)) ||
+                    (string.IsNullOrEmpty(worldId) && string.Equals(w.Name, worldName, StringComparison.OrdinalIgnoreCase)));
+
+                var newPhoto = new GalleryItem
+                {
+                    IsFolder = false,
+                    Path = popup.FilePath,
+                    Name = popup.FileName,
+                    WorldName = worldName,
+                    WorldId = worldId,
+                    FileDate = DateTime.Now,
+                    ThumbnailBase64 = popup.ThumbnailBase64
+                };
+
+                if (group != null)
+                {
+                    lock (group.Photos)
+                    {
+                        group.Photos.Insert(0, newPhoto);
+                        group.LastVisited = DateTime.Now;
+                        group.CoverPath = popup.FilePath;
+                    }
+                }
+                else
+                {
+                    group = new WorldGroupItem
+                    {
+                        Name = worldName,
+                        WorldId = !string.IsNullOrEmpty(worldId) ? worldId : null,
+                        CoverPath = popup.FilePath,
+                        LastVisited = DateTime.Now,
+                        Photos = new List<GalleryItem> { newPhoto }
+                    };
+                    if (!string.IsNullOrEmpty(worldId))
+                    {
+                        var cachedInfo = WorldCacheHelper.Get(worldId);
+                        if (cachedInfo != null)
+                        {
+                            if (!string.IsNullOrEmpty(cachedInfo.Name)) group.Name = cachedInfo.Name;
+                            group.AuthorName = cachedInfo.AuthorName;
+                            group.WorldImageUrl = cachedInfo.ImageUrl;
+                        }
+                    }
+                    worldGroups.Insert(0, group);
+                    cachedWorldGroups = worldGroups;
+                    _ = LoadWorldDetailsAndCoversAsync();
+                }
+
+                StateHasChanged();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[Gallery] Error in HandleLivePhotoCaptured: {ex.Message}");
+            }
+        });
+    }
+
+    public void Dispose()
+    {
+        try
+        {
+            PhotoWatcher.OnPhotoCaptured -= HandleLivePhotoCaptured;
+        }
+        catch { }
     }
 }
 

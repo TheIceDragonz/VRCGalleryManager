@@ -16,6 +16,9 @@ namespace VRCGalleryManager.Core.Api.Models
         [JsonPropertyName("authorId")]
         public string AuthorId { get; set; } = "";
 
+        [JsonPropertyName("authorName")]
+        public string AuthorName { get; set; } = "";
+
         [JsonPropertyName("imageUrl")]
         public string ImageUrl { get; set; } = "";
 
