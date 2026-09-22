@@ -502,7 +502,7 @@
         }
 
         var logFiles = Directory.EnumerateFiles(vrchatLogPath, "output_log_*.txt")
-                                .OrderByDescending(f => File.GetLastWriteTimeUtc(f));
+                                .OrderBy(f => File.GetLastWriteTimeUtc(f));
 
         if (!logFiles.Any())
         {
@@ -589,7 +589,7 @@
             };
             
             InvokeAsync(() => {
-                Images.Insert(0, imgModel);
+                Images.Add(imgModel);
                 StateHasChanged();
             });
             

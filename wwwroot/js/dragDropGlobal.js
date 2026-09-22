@@ -81,19 +81,35 @@ window.restoreGalleryScroll = function (folder) {
     const key = normalizeFolderPath(folder);
     const targetY = window.galleryScrollPositions.get(key) || 0;
 
-    el.scrollTop = targetY;
-    requestAnimationFrame(() => {
-        if (el) el.scrollTop = targetY;
-    });
+    if (targetY === 0) {
+        el.scrollTop = 0;
+        return;
+    }
+
+    let isRestoring = true;
+    const cancelRestoration = () => { isRestoring = false; };
+    el.addEventListener('wheel', cancelRestoration, { passive: true, once: true });
+    el.addEventListener('touchmove', cancelRestoration, { passive: true, once: true });
+    el.addEventListener('keydown', cancelRestoration, { passive: true, once: true });
+
+    const applyScroll = () => {
+        if (!isRestoring) return;
+        const currentTarget = window.galleryScrollPositions.get(key) || 0;
+        if (el) el.scrollTop = currentTarget;
+    };
+
+    applyScroll();
+    requestAnimationFrame(applyScroll);
+    setTimeout(applyScroll, 40);
+    setTimeout(applyScroll, 100);
+    setTimeout(applyScroll, 200);
+    setTimeout(applyScroll, 350);
+    setTimeout(applyScroll, 500);
     setTimeout(() => {
-        if (el) el.scrollTop = targetY;
-    }, 40);
-    setTimeout(() => {
-        if (el) el.scrollTop = targetY;
-    }, 100);
-    setTimeout(() => {
-        if (el) el.scrollTop = targetY;
-    }, 250);
+        el.removeEventListener('wheel', cancelRestoration);
+        el.removeEventListener('touchmove', cancelRestoration);
+        el.removeEventListener('keydown', cancelRestoration);
+    }, 600);
 };
 
 window.clearGalleryScroll = function () {

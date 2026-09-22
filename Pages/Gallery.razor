@@ -64,7 +64,7 @@
                     {
                         <button type="button"
                                 class="gallery-breadcrumb-item btn-link-crumb text-truncate"
-                                @onclick="() => selectedWorld = null"
+                                @onclick="ExitSelectedWorld"
                                 title="Back to all worlds">
                             Worlds
                         </button>
@@ -488,8 +488,16 @@
                                                 <img src="/svg/folder-open-svgrepo-com.svg" class="folder-svg-icon" draggable="false" />
                                             }
                                         </div>
-                                        <div class="media-card-label position-absolute w-100 text-truncate text-center z-2">
-                                            @item.Name
+                                        @if (item.PhotoCount.HasValue)
+                                        {
+                                            <div class="panel-badge">
+                                                <img src="/svg/camera-svgrepo-com.svg" class="btn-icon" />
+                                                <span>@item.PhotoCount.Value</span>
+                                            </div>
+                                        }
+                                        <div class="panel-gradient"></div>
+                                        <div class="panel-info">
+                                            <h5 class="panel-title text-truncate">@item.Name</h5>
                                         </div>
                                     </div>
 
@@ -587,7 +595,7 @@
             @if (selectedWorld == null)
             {
                 @* WORLDS LIST *@
-                <div class="flex-grow-1 overflow-auto h-100 pe-2">
+                <div class="flex-grow-1 overflow-auto h-100 pe-2 gallery-scroll-container" id="gallery-scroll-container" data-folder="@WorldsScrollKey">
                     @if (string.IsNullOrEmpty(RootFolder) || !Directory.Exists(RootFolder))
                     {
                         <div class="h-100 d-flex flex-column align-items-center justify-content-center text-white-50">
@@ -655,16 +663,16 @@
                                             <span class="gallery-world-placeholder-label">Preview Unavailable</span>
                                         </div>
                                     }
-                                    <div class="gallery-world-gradient"></div>
-                                    <div class="gallery-world-badge">
+                                    <div class="panel-gradient"></div>
+                                    <div class="panel-badge">
                                         <img src="/svg/camera-svgrepo-com.svg" class="btn-icon" />
-                                        <span>@(world.Photos.Count == 1 ? "1 photo" : $"{world.Photos.Count} photos")</span>
+                                        <span>@world.Photos.Count</span>
                                     </div>
-                                    <div class="gallery-world-info">
-                                        <h5 class="gallery-world-title text-truncate">@world.Name</h5>
+                                    <div class="panel-info">
+                                        <h5 class="panel-title text-truncate">@world.Name</h5>
                                         @if (!string.IsNullOrEmpty(world.AuthorName))
                                         {
-                                            <p class="gallery-world-subtitle text-truncate">by @world.AuthorName</p>
+                                            <p class="panel-subtitle text-truncate">by @world.AuthorName</p>
                                         }
                                     </div>
 
@@ -697,7 +705,7 @@
             else
             {
                 @* SINGLE WORLD PHOTOS VIEW *@
-                <div class="flex-grow-1 overflow-auto h-100 pe-2">
+                <div class="flex-grow-1 overflow-auto h-100 pe-2 gallery-scroll-container" id="gallery-scroll-container" data-folder="@GetWorldScrollKey(selectedWorld)">
                     @if (!string.IsNullOrEmpty(activeExpandedPath))
                     {
                         <div class="card-action-backdrop" @onclick="CloseExpandedCard" @oncontextmenu="CloseExpandedCard" @oncontextmenu:preventDefault="true"></div>
@@ -797,6 +805,9 @@
     }
 
     private static GalleryView cachedCurrentView = GalleryView.Photos;
+    private const string WorldsScrollKey = "__worlds_overview__";
+    private string? _pendingScrollKey = null;
+
     private static WorldGroupItem? cachedSelectedWorld = null;
     private static string? cachedSelectedWorldId = null;
     private static string? cachedSelectedWorldName = null;
@@ -812,9 +823,44 @@
         get => cachedSelectedWorld;
         set
         {
+            if (cachedSelectedWorld != null && value == null)
+            {
+                _pendingScrollKey = WorldsScrollKey;
+                _shouldRestoreScroll = true;
+            }
             cachedSelectedWorld = value;
             cachedSelectedWorldId = value?.WorldId;
             cachedSelectedWorldName = value?.Name;
+        }
+    }
+
+    private string GetWorldScrollKey(WorldGroupItem? world)
+    {
+        if (world == null) return "__world_none__";
+        return !string.IsNullOrEmpty(world.WorldId) ? $"__world_{world.WorldId}__" : $"__world_name_{world.Name}__";
+    }
+
+    private async Task ExitSelectedWorld()
+    {
+        try
+        {
+            if (selectedWorld != null)
+            {
+                try
+                {
+                    await JS.InvokeVoidAsync("saveGalleryScroll", GetWorldScrollKey(selectedWorld));
+                }
+                catch { }
+
+                selectedWorld = null;
+                _pendingScrollKey = WorldsScrollKey;
+                _shouldRestoreScroll = true;
+                StateHasChanged();
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[Gallery] Error in ExitSelectedWorld: {ex.Message}");
         }
     }
 
@@ -1173,14 +1219,32 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (_shouldRestoreScroll && !IsLoading && !string.IsNullOrEmpty(CurrentFolder))
+        if (_shouldRestoreScroll && !IsLoading)
         {
             _shouldRestoreScroll = false;
-            try
+            string? keyToRestore = _pendingScrollKey;
+            _pendingScrollKey = null;
+
+            if (string.IsNullOrEmpty(keyToRestore))
             {
-                await JS.InvokeVoidAsync("restoreGalleryScroll", CurrentFolder);
+                if (currentView == GalleryView.Photos)
+                {
+                    keyToRestore = CurrentFolder;
+                }
+                else if (currentView == GalleryView.Worlds)
+                {
+                    keyToRestore = selectedWorld != null ? GetWorldScrollKey(selectedWorld) : WorldsScrollKey;
+                }
             }
-            catch { }
+
+            if (!string.IsNullOrEmpty(keyToRestore))
+            {
+                try
+                {
+                    await JS.InvokeVoidAsync("restoreGalleryScroll", keyToRestore);
+                }
+                catch { }
+            }
         }
     }
 
@@ -1191,8 +1255,7 @@
         {
             if (selectedWorld != null)
             {
-                selectedWorld = null;
-                StateHasChanged();
+                await ExitSelectedWorld();
             }
             return;
         }
@@ -2174,7 +2237,7 @@
     {
         if (currentView == view)
             return "btn-primary fw-bold";
-        return "text-white border-0 btn-hover-light";
+        return "border-0 btn-hover-light";
     }
 
     private async Task SwitchGalleryView(GalleryView newView)
@@ -2185,6 +2248,20 @@
             {
                 return;
             }
+
+            try
+            {
+                if (currentView == GalleryView.Photos && !string.IsNullOrEmpty(CurrentFolder))
+                {
+                    await JS.InvokeVoidAsync("saveGalleryScroll", CurrentFolder);
+                }
+                else if (currentView == GalleryView.Worlds)
+                {
+                    string key = selectedWorld != null ? GetWorldScrollKey(selectedWorld) : WorldsScrollKey;
+                    await JS.InvokeVoidAsync("saveGalleryScroll", key);
+                }
+            }
+            catch { }
 
             currentView = newView;
             activeExpandedPath = null;
@@ -2204,6 +2281,13 @@
                     _ = ScanWorldsAsync();
                 }
                 RestoreSelectedWorld();
+                _pendingScrollKey = selectedWorld != null ? GetWorldScrollKey(selectedWorld) : WorldsScrollKey;
+                _shouldRestoreScroll = true;
+            }
+            else if (newView == GalleryView.Photos)
+            {
+                _pendingScrollKey = CurrentFolder;
+                _shouldRestoreScroll = true;
             }
 
             StateHasChanged();
@@ -2655,8 +2739,16 @@
     {
         try
         {
+            try
+            {
+                await JS.InvokeVoidAsync("saveGalleryScroll", WorldsScrollKey);
+            }
+            catch { }
+
             activeExpandedPath = null;
             selectedWorld = world;
+            _pendingScrollKey = GetWorldScrollKey(world);
+            _shouldRestoreScroll = true;
             StateHasChanged();
             _ = LoadWorldPhotosThumbnailsAsync(world);
         }

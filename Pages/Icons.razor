@@ -157,7 +157,7 @@
                              @oncontextmenu="() => { if (!isMultiSelectMode) HandleCardContextMenu(icon.Id); }"
                              @oncontextmenu:preventDefault="true"
                              @onmouseleave="() => { if (!isMultiSelectMode) HandleCardMouseLeave(icon.Id); }">
-                            <img src="@icon.ImageUrl" class="w-100 h-100 object-fit-cover" draggable="false" title="View Image" />
+                            <img src="@icon.ImageUrl" class="w-100 h-100 object-fit-cover" loading="lazy" draggable="false" title="View Image" />
 
                             @* Multi-select trigger button (appears on right-click in top-right of the card as an unselected circle) *@
                             @if (!isMultiSelectMode && activeExpandedCardId == icon.Id)
