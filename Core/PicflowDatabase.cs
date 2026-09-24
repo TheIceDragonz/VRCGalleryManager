@@ -34,6 +34,18 @@ namespace VRCGalleryManager.Core
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
             "VRCGalleryManager");
         private static readonly string PathDbJson = Path.Combine(Folder, "picflow_db.json");
+        public static string DatabasePath => PathDbJson;
+
+        public static int Count
+        {
+            get
+            {
+                lock (_lock)
+                {
+                    return _db.Count;
+                }
+            }
+        }
         
         private static Dictionary<string, CachedItem> _db = new Dictionary<string, CachedItem>();
         private static readonly object _lock = new object();

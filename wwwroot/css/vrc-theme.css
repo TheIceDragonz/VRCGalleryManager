@@ -6,28 +6,28 @@
 /* --------------------------------------------------------------------------
    Generic Buttons (.btn) Theming
    -------------------------------------------------------------------------- */
-.has-vrc-theme .btn:not(.btn-danger):not(.btn-outline-danger):not(.btn-warning):not(.btn-outline-warning):not(.btn-viewer-action):not(.btn-icon-only):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.media-btn-open):not(.media-btn-select):not(.media-btn-copy):not(.media-btn-download):not(.media-btn-link):not(.media-btn-folder):not(.btn-dark):not(.btn-outline-dark):not(.picflow-cat-btn):not(.btn-hover-light):not(:disabled):not(.disabled) {
+.has-vrc-theme .btn:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.settings-logout-btn):not(.btn-warning):not(.btn-outline-warning):not(.btn-viewer-action):not(.btn-icon-only):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.media-btn-open):not(.media-btn-select):not(.media-btn-copy):not(.media-btn-download):not(.media-btn-link):not(.media-btn-folder):not(.btn-dark):not(.btn-outline-dark):not(.picflow-cat-btn):not(.btn-hover-light):not(:disabled):not(.disabled) {
     color: var(--accent) !important;
     background-color: var(--theme-btn-bg) !important;
     border-color: var(--theme-btn-border) !important;
 }
 
-.has-vrc-theme .btn:not(.btn-danger):not(.btn-outline-danger):not(.btn-warning):not(.btn-outline-warning):not(.btn-viewer-action):not(.btn-icon-only):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.media-btn-open):not(.media-btn-select):not(.media-btn-copy):not(.media-btn-download):not(.media-btn-link):not(.media-btn-folder):not(.btn-dark):not(.btn-outline-dark):not(.picflow-cat-btn):not(.btn-hover-light):not(:disabled):not(.disabled):hover {
+.has-vrc-theme .btn:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.settings-logout-btn):not(.btn-warning):not(.btn-outline-warning):not(.btn-viewer-action):not(.btn-icon-only):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.media-btn-open):not(.media-btn-select):not(.media-btn-copy):not(.media-btn-download):not(.media-btn-link):not(.media-btn-folder):not(.btn-dark):not(.btn-outline-dark):not(.picflow-cat-btn):not(.btn-hover-light):not(:disabled):not(.disabled):hover {
     background-color: var(--theme-btn-hover-bg) !important;
     border-color: var(--theme-btn-hover-border) !important;
     color: #ffffff !important;
 }
 
-.has-vrc-theme .btn:not(.btn-danger):not(.btn-outline-danger):not(.btn-warning):not(.btn-outline-warning):not(.btn-viewer-action):not(.btn-icon-only):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.media-btn-open):not(.media-btn-select):not(.media-btn-copy):not(.media-btn-download):not(.media-btn-link):not(.media-btn-folder):not(.btn-dark):not(.btn-outline-dark):not(.picflow-cat-btn):not(.btn-hover-light):not(:disabled):not(.disabled):active,
-.has-vrc-theme .btn:not(.btn-danger):not(.btn-outline-danger):not(.btn-warning):not(.btn-outline-warning):not(.btn-viewer-action):not(.btn-icon-only):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.media-btn-open):not(.media-btn-select):not(.media-btn-copy):not(.media-btn-download):not(.media-btn-link):not(.media-btn-folder):not(.btn-dark):not(.btn-outline-dark):not(.picflow-cat-btn):not(.btn-hover-light):not(:disabled):not(.disabled):focus {
+.has-vrc-theme .btn:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.settings-logout-btn):not(.btn-warning):not(.btn-outline-warning):not(.btn-viewer-action):not(.btn-icon-only):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.media-btn-open):not(.media-btn-select):not(.media-btn-copy):not(.media-btn-download):not(.media-btn-link):not(.media-btn-folder):not(.btn-dark):not(.btn-outline-dark):not(.picflow-cat-btn):not(.btn-hover-light):not(:disabled):not(.disabled):active,
+.has-vrc-theme .btn:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.settings-logout-btn):not(.btn-warning):not(.btn-outline-warning):not(.btn-viewer-action):not(.btn-icon-only):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.media-btn-open):not(.media-btn-select):not(.media-btn-copy):not(.media-btn-download):not(.media-btn-link):not(.media-btn-folder):not(.btn-dark):not(.btn-outline-dark):not(.picflow-cat-btn):not(.btn-hover-light):not(:disabled):not(.disabled):focus {
     background-color: var(--theme-btn-active-bg) !important;
     border-color: var(--accent) !important;
     color: #ffffff !important;
 }
 
-.has-vrc-theme .btn:not(.btn-danger):not(.btn-outline-danger):not(.btn-warning):not(.btn-outline-warning):not(.btn-viewer-action):not(.btn-icon-only):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.media-btn-open):not(.media-btn-select):not(.media-btn-copy):not(.media-btn-download):not(.media-btn-link):not(.media-btn-folder):not(.btn-dark):not(.btn-outline-dark):not(.picflow-cat-btn):not(.btn-hover-light):not(:disabled):not(.disabled):hover .btn-icon:not(.icon-danger):not(.icon-white):not(.icon-dark):not(.icon-success),
-.has-vrc-theme .btn:not(.btn-danger):not(.btn-outline-danger):not(.btn-warning):not(.btn-outline-warning):not(.btn-viewer-action):not(.btn-icon-only):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.media-btn-open):not(.media-btn-select):not(.media-btn-copy):not(.media-btn-download):not(.media-btn-link):not(.media-btn-folder):not(.btn-dark):not(.btn-outline-dark):not(.picflow-cat-btn):not(.btn-hover-light):not(:disabled):not(.disabled):active .btn-icon:not(.icon-danger):not(.icon-white):not(.icon-dark):not(.icon-success),
-.has-vrc-theme .btn:not(.btn-danger):not(.btn-outline-danger):not(.btn-warning):not(.btn-outline-warning):not(.btn-viewer-action):not(.btn-icon-only):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.media-btn-open):not(.media-btn-select):not(.media-btn-copy):not(.media-btn-download):not(.media-btn-link):not(.media-btn-folder):not(.btn-dark):not(.btn-outline-dark):not(.picflow-cat-btn):not(.btn-hover-light):not(:disabled):not(.disabled):focus .btn-icon:not(.icon-danger):not(.icon-white):not(.icon-dark):not(.icon-success) {
+.has-vrc-theme .btn:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.settings-logout-btn):not(.btn-warning):not(.btn-outline-warning):not(.btn-viewer-action):not(.btn-icon-only):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.media-btn-open):not(.media-btn-select):not(.media-btn-copy):not(.media-btn-download):not(.media-btn-link):not(.media-btn-folder):not(.btn-dark):not(.btn-outline-dark):not(.picflow-cat-btn):not(.btn-hover-light):not(:disabled):not(.disabled):hover .btn-icon:not(.icon-danger):not(.icon-white):not(.icon-dark):not(.icon-success),
+.has-vrc-theme .btn:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.settings-logout-btn):not(.btn-warning):not(.btn-outline-warning):not(.btn-viewer-action):not(.btn-icon-only):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.media-btn-open):not(.media-btn-select):not(.media-btn-copy):not(.media-btn-download):not(.media-btn-link):not(.media-btn-folder):not(.btn-dark):not(.btn-outline-dark):not(.picflow-cat-btn):not(.btn-hover-light):not(:disabled):not(.disabled):active .btn-icon:not(.icon-danger):not(.icon-white):not(.icon-dark):not(.icon-success),
+.has-vrc-theme .btn:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.settings-logout-btn):not(.btn-warning):not(.btn-outline-warning):not(.btn-viewer-action):not(.btn-icon-only):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.media-btn-open):not(.media-btn-select):not(.media-btn-copy):not(.media-btn-download):not(.media-btn-link):not(.media-btn-folder):not(.btn-dark):not(.btn-outline-dark):not(.picflow-cat-btn):not(.btn-hover-light):not(:disabled):not(.disabled):focus .btn-icon:not(.icon-danger):not(.icon-white):not(.icon-dark):not(.icon-success) {
     filter: var(--filter-white) !important;
 }
 
@@ -35,10 +35,10 @@
    Disabled / Deactivated Buttons (.btn:disabled, .btn.disabled)
    Recolors to the theme with the uniform 0.65 transparency matching default theme
    -------------------------------------------------------------------------- */
-.has-vrc-theme .btn:disabled:not(.picflow-cat-btn):not(.btn-nav):not(.media-btn-select):not(.btn-viewer-select),
-.has-vrc-theme .btn.disabled:not(.picflow-cat-btn):not(.btn-nav):not(.media-btn-select):not(.btn-viewer-select),
-.has-vrc-theme button:disabled:not(.picflow-cat-btn):not(.btn-nav):not(.media-btn-select):not(.btn-viewer-select):not(.gallery-tb-circle-btn),
-.has-vrc-theme label.btn.disabled:not(.picflow-cat-btn):not(.btn-nav):not(.media-btn-select):not(.btn-viewer-select) {
+.has-vrc-theme .btn:disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.settings-logout-btn):not(.picflow-cat-btn):not(.btn-nav):not(.media-btn-select):not(.btn-viewer-select),
+.has-vrc-theme .btn.disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.settings-logout-btn):not(.picflow-cat-btn):not(.btn-nav):not(.media-btn-select):not(.btn-viewer-select),
+.has-vrc-theme button:disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.settings-logout-btn):not(.picflow-cat-btn):not(.btn-nav):not(.media-btn-select):not(.btn-viewer-select):not(.gallery-tb-circle-btn),
+.has-vrc-theme label.btn.disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.settings-logout-btn):not(.picflow-cat-btn):not(.btn-nav):not(.media-btn-select):not(.btn-viewer-select) {
     opacity: 0.65 !important;
     color: var(--theme-btn-border) !important;
     background-color: var(--theme-btn-bg) !important;
@@ -49,16 +49,16 @@
     transform: none !important;
 }
 
-.has-vrc-theme .btn:disabled:not(.picflow-cat-btn):not(.media-btn-select):not(.btn-viewer-select) .btn-icon,
-.has-vrc-theme .btn.disabled:not(.picflow-cat-btn):not(.media-btn-select):not(.btn-viewer-select) .btn-icon,
-.has-vrc-theme button:disabled:not(.picflow-cat-btn):not(.media-btn-select):not(.btn-viewer-select) .btn-icon,
-.has-vrc-theme label.btn.disabled:not(.picflow-cat-btn):not(.media-btn-select):not(.btn-viewer-select) .btn-icon,
-.has-vrc-theme .btn:disabled:not(.picflow-cat-btn):not(.media-btn-select):not(.btn-viewer-select) img,
-.has-vrc-theme .btn.disabled:not(.picflow-cat-btn):not(.media-btn-select):not(.btn-viewer-select) img,
-.has-vrc-theme button:disabled:not(.picflow-cat-btn):not(.media-btn-select):not(.btn-viewer-select) img,
-.has-vrc-theme label.btn.disabled:not(.picflow-cat-btn):not(.media-btn-select):not(.btn-viewer-select) img,
-.has-vrc-theme .btn:disabled:not(.picflow-cat-btn):not(.media-btn-select):not(.btn-viewer-select) svg,
-.has-vrc-theme .btn.disabled:not(.picflow-cat-btn):not(.media-btn-select):not(.btn-viewer-select) svg {
+.has-vrc-theme .btn:disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.settings-logout-btn):not(.picflow-cat-btn):not(.media-btn-select):not(.btn-viewer-select) .btn-icon,
+.has-vrc-theme .btn.disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.settings-logout-btn):not(.picflow-cat-btn):not(.media-btn-select):not(.btn-viewer-select) .btn-icon,
+.has-vrc-theme button:disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.settings-logout-btn):not(.picflow-cat-btn):not(.media-btn-select):not(.btn-viewer-select) .btn-icon,
+.has-vrc-theme label.btn.disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.settings-logout-btn):not(.picflow-cat-btn):not(.media-btn-select):not(.btn-viewer-select) .btn-icon,
+.has-vrc-theme .btn:disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.settings-logout-btn):not(.picflow-cat-btn):not(.media-btn-select):not(.btn-viewer-select) img,
+.has-vrc-theme .btn.disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.settings-logout-btn):not(.picflow-cat-btn):not(.media-btn-select):not(.btn-viewer-select) img,
+.has-vrc-theme button:disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.settings-logout-btn):not(.picflow-cat-btn):not(.media-btn-select):not(.btn-viewer-select) img,
+.has-vrc-theme label.btn.disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.settings-logout-btn):not(.picflow-cat-btn):not(.media-btn-select):not(.btn-viewer-select) img,
+.has-vrc-theme .btn:disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.settings-logout-btn):not(.picflow-cat-btn):not(.media-btn-select):not(.btn-viewer-select) svg,
+.has-vrc-theme .btn.disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.settings-logout-btn):not(.picflow-cat-btn):not(.media-btn-select):not(.btn-viewer-select) svg {
     filter: url(#theme-border-filter) !important;
     opacity: 1 !important;
     color: var(--theme-btn-border) !important;
@@ -262,25 +262,25 @@
     filter: url(#theme-icon-filter) !important;
 }
 
-.has-vrc-theme .btn:not(.btn-danger):not(.btn-outline-danger):not(.btn-warning):not(.btn-outline-warning):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.media-btn-open):not(.media-btn-select):not(.btn-dark):not(.btn-outline-dark):not(:disabled):not(.disabled):not(:hover):not(:active) .btn-icon:not(.icon-danger):not(.icon-white):not(.icon-dark):not(.icon-success) {
+.has-vrc-theme .btn:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.settings-logout-btn):not(.btn-warning):not(.btn-outline-warning):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.media-btn-open):not(.media-btn-select):not(.btn-dark):not(.btn-outline-dark):not(:disabled):not(.disabled):not(:hover):not(:active) .btn-icon:not(.icon-danger):not(.icon-white):not(.icon-dark):not(.icon-success) {
     filter: url(#theme-icon-filter) !important;
 }
 
 /* Disabled SVG Icons (Colore identico al bordo var(--theme-btn-border)) */
-.has-vrc-theme .btn:disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.btn-viewer-upload):not(.media-btn-select):not(.btn-viewer-select) .btn-icon,
-.has-vrc-theme .btn.disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.btn-viewer-upload):not(.media-btn-select):not(.btn-viewer-select) .btn-icon,
-.has-vrc-theme button:disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.btn-viewer-upload):not(.media-btn-select):not(.btn-viewer-select) .btn-icon,
-.has-vrc-theme label.btn.disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.btn-viewer-upload):not(.media-btn-select):not(.btn-viewer-select) .btn-icon,
-.has-vrc-theme .btn:disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.btn-viewer-upload):not(.media-btn-select):not(.btn-viewer-select) .icon-accent,
-.has-vrc-theme .btn.disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.btn-viewer-upload):not(.media-btn-select):not(.btn-viewer-select) .icon-accent,
-.has-vrc-theme button:disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.btn-viewer-upload):not(.media-btn-select):not(.btn-viewer-select) .icon-accent,
-.has-vrc-theme label.btn.disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.btn-viewer-upload):not(.media-btn-select):not(.btn-viewer-select) .icon-accent,
-.has-vrc-theme .btn:disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.btn-viewer-upload):not(.media-btn-select):not(.btn-viewer-select) img,
-.has-vrc-theme .btn.disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.btn-viewer-upload):not(.media-btn-select):not(.btn-viewer-select) img,
-.has-vrc-theme button:disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.btn-viewer-upload):not(.media-btn-select):not(.btn-viewer-select) img,
-.has-vrc-theme label.btn.disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.btn-viewer-upload):not(.media-btn-select):not(.btn-viewer-select) img,
-.has-vrc-theme .btn:disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.btn-viewer-upload):not(.media-btn-select):not(.btn-viewer-select) svg,
-.has-vrc-theme .btn.disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.btn-viewer-upload):not(.media-btn-select):not(.btn-viewer-select) svg,
+.has-vrc-theme .btn:disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.settings-logout-btn):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.btn-viewer-upload):not(.media-btn-select):not(.btn-viewer-select) .btn-icon,
+.has-vrc-theme .btn.disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.settings-logout-btn):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.btn-viewer-upload):not(.media-btn-select):not(.btn-viewer-select) .btn-icon,
+.has-vrc-theme button:disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.settings-logout-btn):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.btn-viewer-upload):not(.media-btn-select):not(.btn-viewer-select) .btn-icon,
+.has-vrc-theme label.btn.disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.settings-logout-btn):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.btn-viewer-upload):not(.media-btn-select):not(.btn-viewer-select) .btn-icon,
+.has-vrc-theme .btn:disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.settings-logout-btn):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.btn-viewer-upload):not(.media-btn-select):not(.btn-viewer-select) .icon-accent,
+.has-vrc-theme .btn.disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.settings-logout-btn):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.btn-viewer-upload):not(.media-btn-select):not(.btn-viewer-select) .icon-accent,
+.has-vrc-theme button:disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.settings-logout-btn):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.btn-viewer-upload):not(.media-btn-select):not(.btn-viewer-select) .icon-accent,
+.has-vrc-theme label.btn.disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.settings-logout-btn):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.btn-viewer-upload):not(.media-btn-select):not(.btn-viewer-select) .icon-accent,
+.has-vrc-theme .btn:disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.settings-logout-btn):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.btn-viewer-upload):not(.media-btn-select):not(.btn-viewer-select) img,
+.has-vrc-theme .btn.disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.settings-logout-btn):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.btn-viewer-upload):not(.media-btn-select):not(.btn-viewer-select) img,
+.has-vrc-theme button:disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.settings-logout-btn):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.btn-viewer-upload):not(.media-btn-select):not(.btn-viewer-select) img,
+.has-vrc-theme label.btn.disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.settings-logout-btn):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.btn-viewer-upload):not(.media-btn-select):not(.btn-viewer-select) img,
+.has-vrc-theme .btn:disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.settings-logout-btn):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.btn-viewer-upload):not(.media-btn-select):not(.btn-viewer-select) svg,
+.has-vrc-theme .btn.disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.settings-logout-btn):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.btn-viewer-upload):not(.media-btn-select):not(.btn-viewer-select) svg,
 .has-vrc-theme .settings-toggle-row:has(input:disabled) .settings-toggle-icon img,
 .has-vrc-theme .settings-toggle-row:has(input:disabled) .settings-toggle-icon .icon-accent,
 .has-vrc-theme .settings-toggle-row.disabled .settings-toggle-icon img,
@@ -299,7 +299,8 @@
 .has-vrc-theme .btn-danger,
 .has-vrc-theme .btn-outline-danger,
 .has-vrc-theme .media-btn-delete,
-.has-vrc-theme .btn-viewer-delete {
+.has-vrc-theme .btn-viewer-delete,
+.has-vrc-theme .settings-logout-btn {
     color: var(--danger) !important;
     background-color: #420505 !important;
     border-color: #6a0b0b !important;
@@ -309,10 +310,17 @@
 .has-vrc-theme .btn-outline-danger:hover,
 .has-vrc-theme .media-btn-delete:hover,
 .has-vrc-theme .btn-viewer-delete:hover,
+.has-vrc-theme .settings-logout-btn:hover,
 .has-vrc-theme .btn-danger:active,
 .has-vrc-theme .btn-outline-danger:active,
+.has-vrc-theme .media-btn-delete:active,
+.has-vrc-theme .btn-viewer-delete:active,
+.has-vrc-theme .settings-logout-btn:active,
 .has-vrc-theme .btn-danger:focus,
-.has-vrc-theme .btn-outline-danger:focus {
+.has-vrc-theme .btn-outline-danger:focus,
+.has-vrc-theme .media-btn-delete:focus,
+.has-vrc-theme .btn-viewer-delete:focus,
+.has-vrc-theme .settings-logout-btn:focus {
     color: #ffffff !important;
     background-color: #6a0b0b !important;
     border-color: #9e1414 !important;
@@ -322,6 +330,7 @@
 .has-vrc-theme .btn-outline-danger .btn-icon,
 .has-vrc-theme .media-btn-delete .btn-icon,
 .has-vrc-theme .btn-viewer-delete img,
+.has-vrc-theme .settings-logout-btn .btn-icon,
 .has-vrc-theme .icon-danger {
     filter: var(--filter-danger) !important;
 }
@@ -329,7 +338,8 @@
 .has-vrc-theme .btn-danger:hover .btn-icon,
 .has-vrc-theme .btn-outline-danger:hover .btn-icon,
 .has-vrc-theme .media-btn-delete:hover .btn-icon,
-.has-vrc-theme .btn-viewer-delete:hover img {
+.has-vrc-theme .btn-viewer-delete:hover img,
+.has-vrc-theme .settings-logout-btn:hover .btn-icon {
     filter: var(--filter-white) !important;
 }
 
@@ -367,7 +377,9 @@
 .has-vrc-theme .btn-outline-danger.disabled,
 .has-vrc-theme .media-btn-delete:disabled,
 .has-vrc-theme .media-btn-delete.disabled,
-.has-vrc-theme .btn-viewer-delete:disabled {
+.has-vrc-theme .btn-viewer-delete:disabled,
+.has-vrc-theme .settings-logout-btn:disabled,
+.has-vrc-theme .settings-logout-btn.disabled {
     color: #7a4040 !important;
     background-color: #1a0808 !important;
     border-color: #331010 !important;
@@ -379,7 +391,8 @@
 .has-vrc-theme .btn-danger:disabled .btn-icon,
 .has-vrc-theme .btn-outline-danger:disabled .btn-icon,
 .has-vrc-theme .media-btn-delete:disabled .btn-icon,
-.has-vrc-theme .btn-viewer-delete:disabled img {
+.has-vrc-theme .btn-viewer-delete:disabled img,
+.has-vrc-theme .settings-logout-btn:disabled .btn-icon {
     filter: grayscale(1) brightness(0.35) !important;
     opacity: 0.6 !important;
 }

@@ -121,6 +121,17 @@ namespace VRCGalleryManager.Core.Helpers
             Save();
         }
 
+        public static string DatabasePath => DbFilePath;
+
+        public static int Count
+        {
+            get
+            {
+                EnsureLoaded();
+                return _items.Count;
+            }
+        }
+
         public static ICollection<CachedPhotoMetadata> GetAll()
         {
             EnsureLoaded();

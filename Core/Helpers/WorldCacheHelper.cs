@@ -117,6 +117,41 @@ namespace VRCGalleryManager.Core.Helpers
             }
         }
 
+        public static string DatabasePath => DbFilePath;
+
+        public static int Count
+        {
+            get
+            {
+                EnsureLoaded();
+                return _cache.Count;
+            }
+        }
+
+        public static ICollection<CachedWorldInfo> GetAll()
+        {
+            EnsureLoaded();
+            return _cache.Values;
+        }
+
+        public static void Clear()
+        {
+            EnsureLoaded();
+            lock (_fileLock)
+            {
+                _cache.Clear();
+                SaveCache();
+                try
+                {
+                    if (File.Exists(LegacyCacheFilePath))
+                    {
+                        File.Delete(LegacyCacheFilePath);
+                    }
+                }
+                catch { }
+            }
+        }
+
         public static CachedWorldInfo? Get(string worldId)
         {
             if (string.IsNullOrEmpty(worldId)) return null;

@@ -162,14 +162,17 @@ h6 {
     font-weight: bold;
     font-family: "Segoe UI Black", sans-serif;
     transition: all 0.2s ease-in-out;
+}
+
+.btn:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.settings-logout-btn):not(.btn-warning):not(.btn-outline-warning):not(.btn-success):not(.btn-outline-success):not(.media-btn-upload):not(.btn-viewer-upload):not(.media-btn-open):not(.btn-dark):not(.btn-outline-dark) {
     color: var(--accent) !important;
     background-color: #07242B !important;
     border: 2px solid #053742 !important;
 }
 
-.btn:hover:not(:disabled):not(.disabled),
-.btn:active:not(:disabled):not(.disabled),
-.btn:focus:not(:disabled):not(.disabled) {
+.btn:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.settings-logout-btn):not(.btn-warning):not(.btn-outline-warning):not(.btn-success):not(.btn-outline-success):not(.media-btn-upload):not(.btn-viewer-upload):not(.media-btn-open):not(.btn-dark):not(.btn-outline-dark):hover:not(:disabled):not(.disabled),
+.btn:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.settings-logout-btn):not(.btn-warning):not(.btn-outline-warning):not(.btn-success):not(.btn-outline-success):not(.media-btn-upload):not(.btn-viewer-upload):not(.media-btn-open):not(.btn-dark):not(.btn-outline-dark):active:not(:disabled):not(.disabled),
+.btn:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.settings-logout-btn):not(.btn-warning):not(.btn-outline-warning):not(.btn-success):not(.btn-outline-success):not(.media-btn-upload):not(.btn-viewer-upload):not(.media-btn-open):not(.btn-dark):not(.btn-outline-dark):focus:not(:disabled):not(.disabled) {
     background-color: #0A3540 !important;
     border-color: #505050 !important;
     color: white !important;
@@ -196,17 +199,50 @@ h6 {
 
 /* Keep danger buttons distinct but matching the design language */
 .btn-danger,
-.btn-outline-danger {
+.btn-outline-danger,
+.media-btn-delete,
+.btn-viewer-delete,
+.settings-logout-btn {
     color: var(--danger) !important;
-    background-color: rgba(255, 107, 107, 0.1) !important;
-    border-color: rgba(255, 107, 107, 0.3) !important;
+    background-color: #420505 !important;
+    border: 2px solid #6a0b0b !important;
 }
 
 .btn-danger:hover,
-.btn-outline-danger:hover {
-    background-color: rgba(255, 107, 107, 0.2) !important;
-    border-color: rgba(255, 107, 107, 0.5) !important;
-    color: white !important;
+.btn-outline-danger:hover,
+.media-btn-delete:hover,
+.btn-viewer-delete:hover,
+.settings-logout-btn:hover,
+.btn-danger:active,
+.btn-outline-danger:active,
+.media-btn-delete:active,
+.btn-viewer-delete:active,
+.settings-logout-btn:active,
+.btn-danger:focus,
+.btn-outline-danger:focus,
+.media-btn-delete:focus,
+.btn-viewer-delete:focus,
+.settings-logout-btn:focus {
+    background-color: #6a0b0b !important;
+    border-color: #9e1414 !important;
+    color: #ffffff !important;
+}
+
+.btn-danger:disabled,
+.btn-outline-danger:disabled,
+.btn-danger.disabled,
+.btn-outline-danger.disabled,
+.media-btn-delete:disabled,
+.media-btn-delete.disabled,
+.btn-viewer-delete:disabled,
+.settings-logout-btn:disabled,
+.settings-logout-btn.disabled {
+    color: #7a4040 !important;
+    background-color: #1a0808 !important;
+    border-color: #331010 !important;
+    opacity: 0.65 !important;
+    cursor: not-allowed !important;
+    pointer-events: none !important;
 }
 
 /* Warning buttons */
@@ -307,13 +343,20 @@ h6 {
 }
 
 .btn-danger .btn-icon,
-.btn-outline-danger .btn-icon {
-    filter: var(--filter-danger);
+.btn-outline-danger .btn-icon,
+.media-btn-delete .btn-icon,
+.btn-viewer-delete img,
+.settings-logout-btn .btn-icon,
+.icon-danger {
+    filter: var(--filter-danger) !important;
 }
 
 .btn-danger:hover .btn-icon,
-.btn-outline-danger:hover .btn-icon {
-    filter: var(--filter-white);
+.btn-outline-danger:hover .btn-icon,
+.media-btn-delete:hover .btn-icon,
+.btn-viewer-delete:hover img,
+.settings-logout-btn:hover .btn-icon {
+    filter: var(--filter-white) !important;
 }
 
 .folder-svg-icon {
@@ -843,10 +886,12 @@ h6 {
     justify-content: center;
 }
 
-.settings-logout-btn:hover {
-    background: rgba(220, 53, 69, 0.15) !important;
-    border-color: #dc3545 !important;
-    color: #fff !important;
+.settings-logout-btn:hover,
+.settings-logout-btn:active,
+.settings-logout-btn:focus {
+    background: #6a0b0b !important;
+    border-color: #9e1414 !important;
+    color: #ffffff !important;
 }
 
 /* Settings Toggle Rows */
@@ -1188,11 +1233,15 @@ h6 {
     opacity: 1;
     background-color: #420505 !important;
     border: 2px solid #6a0b0b !important;
+    color: var(--danger) !important;
 }
 
-.media-btn-delete:hover {
+.media-btn-delete:hover,
+.media-btn-delete:active,
+.media-btn-delete:focus {
     background-color: #6a0b0b !important;
     border-color: #9e1414 !important;
+    color: #ffffff !important;
 }
 
 .media-btn-upload {
@@ -2666,15 +2715,21 @@ canvas.picking-color {
 .btn-viewer-action.btn-viewer-delete {
     background-color: #420505 !important;
     border: 2px solid #6a0b0b !important;
+    color: var(--danger) !important;
 }
 
-.btn-viewer-action.btn-viewer-delete:hover {
+.btn-viewer-action.btn-viewer-delete:hover,
+.btn-viewer-action.btn-viewer-delete:active,
+.btn-viewer-action.btn-viewer-delete:focus {
     background-color: #6a0b0b !important;
     border-color: #9e1414 !important;
     box-shadow: 0 0 12px rgba(220, 53, 69, 0.5) !important;
+    color: #ffffff !important;
 }
 
-.btn-viewer-action.btn-viewer-delete:hover img {
+.btn-viewer-action.btn-viewer-delete:hover img,
+.btn-viewer-action.btn-viewer-delete:active img,
+.btn-viewer-action.btn-viewer-delete:focus img {
     filter: var(--filter-white) !important;
 }
 

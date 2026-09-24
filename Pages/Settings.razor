@@ -2,6 +2,7 @@
 @using VRCGalleryManager.Core
 @using VRCGalleryManager.Core.Api
 @using VRCGalleryManager.Core.Api.Models
+@using VRCGalleryManager.Core.Helpers
 @using System.IO
 @using System.Reflection
 @using Microsoft.AspNetCore.Components.Web
@@ -525,10 +526,27 @@
 
                 @if (OperatingSystem.IsWindows())
                 {
-                    <h5 class="mt-4 mb-2 text-muted text-09rem">VRChat Logs Information</h5>
+                    <div class="d-flex align-items-center justify-content-between mt-4 mb-2">
+                        <h5 class="m-0 text-muted text-09rem">VRChat Logs Information</h5>
+                        <div class="d-flex align-items-center gap-2">
+                            <button class="btn btn-sm d-flex align-items-center gap-1 px-2"
+                                    style="font-size: 0.72rem; height: 24px; padding-top: 0; padding-bottom: 0;"
+                                    @onclick="OpenVRChatLogs"
+                                    title="Open Logs">
+                                <img src="/svg/folder-open-svgrepo-com.svg" class="btn-icon" style="width: 12px; height: 12px; margin: 0;" /> Open Logs
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger d-flex align-items-center gap-1 px-2"
+                                    style="font-size: 0.72rem; height: 24px; padding-top: 0; padding-bottom: 0;"
+                                    @onclick="ClearVRChatLogs"
+                                    disabled="@(VrcLogsFilesCount == 0)"
+                                    title="Clear Logs">
+                                <img src="/svg/trash-bin-trash-svgrepo-com.svg" class="btn-icon" style="width: 12px; height: 12px; margin: 0;" /> Clear Logs
+                            </button>
+                        </div>
+                    </div>
                     @if (VrcLogsExists)
                     {
-                        <div class="row g-2 mb-3">
+                        <div class="row g-2 mb-4">
                             <div class="col-6">
                                 <div class="p-3 cache-info-box h-100 d-flex align-items-center gap-3">
                                     <img src="/svg/files-fill-svgrepo-com.svg" class="icon-accent" style="width: 28px; height: 28px;" />
@@ -551,25 +569,36 @@
                     }
                     else
                     {
-                        <div class="p-3 cache-info-box text-warning d-flex align-items-center mb-3">
+                        <div class="p-3 cache-info-box text-warning d-flex align-items-center mb-4">
                             <img src="/svg/error-svgrepo-com.svg" class="icon-danger me-2" style="width: 16px; height: 16px;" /> VRChat logs folder not found.
                         </div>
                     }
-
-                    <div class="d-flex flex-column gap-2 mb-4">
-                        <button class="btn text-nowrap w-100" @onclick="OpenVRChatLogs">
-                            <img src="/svg/folder-open-svgrepo-com.svg" class="btn-icon" />Open Logs
-                        </button>
-                        <button class="btn btn-danger text-nowrap w-100" @onclick="ClearVRChatLogs">
-                            <img src="/svg/trash-bin-trash-svgrepo-com.svg" class="btn-icon" />Clear Logs
-                        </button>
-                    </div>
                 }
 
-                <h5 class="mt-4 mb-2 text-muted text-09rem">Cache Information</h5>
+                <div class="d-flex align-items-center justify-content-between mt-4 mb-2">
+                    <h5 class="m-0 text-muted text-09rem">Cache Information</h5>
+                    <div class="d-flex align-items-center gap-2">
+                        @if (!OperatingSystem.IsAndroid())
+                        {
+                            <button class="btn btn-sm d-flex align-items-center gap-1 px-2"
+                                    style="font-size: 0.72rem; height: 24px; padding-top: 0; padding-bottom: 0;"
+                                    @onclick="OpenCacheFolder"
+                                    title="Open Cache">
+                                <img src="/svg/folder-open-svgrepo-com.svg" class="btn-icon" style="width: 12px; height: 12px; margin: 0;" /> Open Cache
+                            </button>
+                        }
+                        <button class="btn btn-sm btn-outline-danger d-flex align-items-center gap-1 px-2"
+                                style="font-size: 0.72rem; height: 24px; padding-top: 0; padding-bottom: 0;"
+                                @onclick="ClearCacheFiles"
+                                disabled="@(CacheFilesCount == 0)"
+                                title="Clear Cache">
+                            <img src="/svg/trash-bin-trash-svgrepo-com.svg" class="btn-icon" style="width: 12px; height: 12px; margin: 0;" /> Clear Cache
+                        </button>
+                    </div>
+                </div>
                 @if (CacheExists)
                 {
-                    <div class="row g-2 mb-3">
+                    <div class="row g-2 mb-4">
                         <div class="col-6">
                             <div class="p-3 cache-info-box h-100 d-flex align-items-center gap-3">
                                 <img src="/svg/files-fill-svgrepo-com.svg" class="icon-accent" style="width: 28px; height: 28px;" />
@@ -592,53 +621,159 @@
                 }
                 else
                 {
-                    <div class="p-3 cache-info-box text-warning d-flex align-items-center mb-3">
+                    <div class="p-3 cache-info-box text-warning d-flex align-items-center mb-4">
                         <img src="/svg/error-svgrepo-com.svg" class="icon-danger me-2" style="width: 16px; height: 16px;" /> Cache folder not found.
                     </div>
                 }
-
-                <div class="d-flex flex-column gap-2 mb-4">
-                    @if (!OperatingSystem.IsAndroid())
-                    {
-                        <button class="btn text-nowrap w-100" @onclick="OpenCacheFolder">
-                            <img src="/svg/folder-open-svgrepo-com.svg" class="btn-icon" />Open Cache
-                        </button>
-                    }
-                    <button class="btn btn-danger text-nowrap w-100" @onclick="ClearCacheFiles">
-                        <img src="/svg/trash-bin-trash-svgrepo-com.svg" class="btn-icon" />Clear Cache
-                    </button>
-                </div>
                 
                 @if (OperatingSystem.IsWindows())
                 {
-                    <h5 class="mt-4 mb-2 text-muted text-09rem">Picflow Database</h5>
-                    <div class="row g-2 mb-3">
-                        <div class="col-6">
-                            <div class="p-3 cache-info-box h-100 d-flex align-items-center gap-3">
-                                <img src="/svg/database-svgrepo-com.svg" class="icon-accent" style="width: 28px; height: 28px;" />
-                                <div class="d-flex flex-column">
-                                    <span class="text-muted small text-uppercase fw-bold">Total Saved</span>
-                                    <span class="fw-bold fs-5">@PicflowDbTotal</span>
+                    <div class="d-flex align-items-center justify-content-between mt-4 mb-2">
+                        <h5 class="m-0 text-muted text-09rem">DataBase</h5>
+                        <button class="btn btn-sm btn-outline-danger d-flex align-items-center gap-1 px-2"
+                                style="font-size: 0.72rem; height: 24px; padding-top: 0; padding-bottom: 0;"
+                                @onclick="ClearAllDatabases"
+                                disabled="@(PicflowDbTotal == 0 && WorldsDbTotal == 0 && MetadataDbTotal == 0)"
+                                title="Clear All DataBases">
+                            <img src="/svg/trash-bin-trash-svgrepo-com.svg" class="btn-icon" style="width: 12px; height: 12px; margin: 0;" /> Clear All
+                        </button>
+                    </div>
+                    <div class="row g-2 mb-4">
+                        <!-- 1. Picflow -->
+                        <div class="col-4">
+                            <div class="p-3 cache-info-box h-100 d-flex flex-column justify-content-between">
+                                <div>
+                                    <div class="d-flex align-items-center justify-content-between mb-2">
+                                        <div class="d-flex align-items-center gap-2 overflow-hidden">
+                                            <img src="/svg/traffic-economy-svgrepo-com.svg" class="icon-accent flex-shrink-0" style="width: 18px; height: 18px;" />
+                                            <span class="fw-bold text-white small text-truncate">Picflow</span>
+                                        </div>
+                                        <span class="badge flex-shrink-0" style="background-color: var(--bg-active); color: var(--text-muted); font-size: 0.68rem; font-weight: 500;">
+                                            @PicflowDbSize
+                                        </span>
+                                    </div>
+
+                                    <div class="my-2 text-center">
+                                        <span class="text-muted small text-uppercase fw-bold d-block" style="font-size: 0.65rem; letter-spacing: 0.5px;">Total Saved</span>
+                                        <span class="fw-bold fs-4">@PicflowDbTotal</span>
+                                    </div>
+
+                                    <div class="d-flex flex-column gap-1 mb-3 px-1">
+                                        <div class="d-flex justify-content-between">
+                                            <span class="small text-muted" style="font-size: 0.75rem;">Stickers</span>
+                                            <span class="small fw-bold">@PicflowDbStickers</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between">
+                                            <span class="small text-muted" style="font-size: 0.75rem;">Emojis</span>
+                                            <span class="small fw-bold">@PicflowDbEmojis</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between">
+                                            <span class="small text-muted" style="font-size: 0.75rem;">Prints</span>
+                                            <span class="small fw-bold">@PicflowDbPrints</span>
+                                        </div>
+                                    </div>
                                 </div>
+
+                                <button class="btn btn-sm btn-outline-danger w-100 py-1 d-flex align-items-center justify-content-center gap-1"
+                                        style="font-size: 0.72rem; height: 28px;"
+                                        @onclick="ClearPicflowDb"
+                                        disabled="@(PicflowDbTotal == 0 && PicflowDbSizeBytes == 0)"
+                                        title="Clear Picflow">
+                                    <img src="/svg/trash-bin-trash-svgrepo-com.svg" class="btn-icon" style="width: 12px; height: 12px; margin: 0;" /> Clear
+                                </button>
                             </div>
                         </div>
-                        <div class="col-6">
-                            <div class="p-3 cache-info-box h-100 d-flex flex-column justify-content-center gap-1">
-                                <div class="d-flex justify-content-between">
-                                    <span class="small text-muted">Stickers</span><span class="small fw-bold">@PicflowDbStickers</span>
+
+                        <!-- 2. Worlds -->
+                        <div class="col-4">
+                            <div class="p-3 cache-info-box h-100 d-flex flex-column justify-content-between">
+                                <div>
+                                    <div class="d-flex align-items-center justify-content-between mb-2">
+                                        <div class="d-flex align-items-center gap-2 overflow-hidden">
+                                            <img src="/svg/world-svgrepo-com.svg" class="icon-accent flex-shrink-0" style="width: 18px; height: 18px;" />
+                                            <span class="fw-bold text-white small text-truncate">Worlds</span>
+                                        </div>
+                                        <span class="badge flex-shrink-0" style="background-color: var(--bg-active); color: var(--text-muted); font-size: 0.68rem; font-weight: 500;">
+                                            @WorldsDbSize
+                                        </span>
+                                    </div>
+
+                                    <div class="my-2 text-center">
+                                        <span class="text-muted small text-uppercase fw-bold d-block" style="font-size: 0.65rem; letter-spacing: 0.5px;">Data Worlds</span>
+                                        <span class="fw-bold fs-4">@WorldsDbTotal</span>
+                                    </div>
+
+                                    <div class="d-flex flex-column gap-1 mb-3 px-1">
+                                        <div class="d-flex justify-content-between">
+                                            <span class="small text-muted" style="font-size: 0.75rem;">Preview</span>
+                                            <span class="small fw-bold">@WorldsWithImages</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between">
+                                            <span class="small text-muted" style="font-size: 0.75rem;">Authors</span>
+                                            <span class="small fw-bold">@WorldsAuthors</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between">
+                                            <span class="small text-muted" style="font-size: 0.75rem;">Unavailable</span>
+                                            <span class="small fw-bold">@WorldsNoImage</span>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="d-flex justify-content-between">
-                                    <span class="small text-muted">Emojis</span><span class="small fw-bold">@PicflowDbEmojis</span>
+
+                                <button class="btn btn-sm btn-outline-danger w-100 py-1 d-flex align-items-center justify-content-center gap-1"
+                                        style="font-size: 0.72rem; height: 28px;"
+                                        @onclick="ClearWorldsDb"
+                                        disabled="@(WorldsDbTotal == 0 && WorldsDbSizeBytes == 0)"
+                                        title="Clear Worlds">
+                                    <img src="/svg/trash-bin-trash-svgrepo-com.svg" class="btn-icon" style="width: 12px; height: 12px; margin: 0;" /> Clear
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 3. Metadata -->
+                        <div class="col-4">
+                            <div class="p-3 cache-info-box h-100 d-flex flex-column justify-content-between">
+                                <div>
+                                    <div class="d-flex align-items-center justify-content-between mb-2">
+                                        <div class="d-flex align-items-center gap-2 overflow-hidden">
+                                            <img src="/svg/camera-svgrepo-com.svg" class="icon-accent flex-shrink-0" style="width: 18px; height: 18px;" />
+                                            <span class="fw-bold text-white small text-truncate">Metadata</span>
+                                        </div>
+                                        <span class="badge flex-shrink-0" style="background-color: var(--bg-active); color: var(--text-muted); font-size: 0.68rem; font-weight: 500;">
+                                            @MetadataDbSize
+                                        </span>
+                                    </div>
+
+                                    <div class="my-2 text-center">
+                                        <span class="text-muted small text-uppercase fw-bold d-block" style="font-size: 0.65rem; letter-spacing: 0.5px;">Scanned Photos</span>
+                                        <span class="fw-bold fs-4">@MetadataDbTotal</span>
+                                    </div>
+
+                                    <div class="d-flex flex-column gap-1 mb-3 px-1">
+                                        <div class="d-flex justify-content-between">
+                                            <span class="small text-muted" style="font-size: 0.75rem;">With Meta</span>
+                                            <span class="small fw-bold">@MetadataWithMeta</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between">
+                                            <span class="small text-muted" style="font-size: 0.75rem;">World Tag</span>
+                                            <span class="small fw-bold">@MetadataWithWorld</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between">
+                                            <span class="small text-muted" style="font-size: 0.75rem;">Author Tag</span>
+                                            <span class="small fw-bold">@MetadataWithAuthor</span>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="d-flex justify-content-between">
-                                    <span class="small text-muted">Prints</span><span class="small fw-bold">@PicflowDbPrints</span>
-                                </div>
+
+                                <button class="btn btn-sm btn-outline-danger w-100 py-1 d-flex align-items-center justify-content-center gap-1"
+                                        style="font-size: 0.72rem; height: 28px;"
+                                        @onclick="ClearMetadataDb"
+                                        disabled="@(MetadataDbTotal == 0 && MetadataDbSizeBytes == 0)"
+                                        title="Clear Metadata">
+                                    <img src="/svg/trash-bin-trash-svgrepo-com.svg" class="btn-icon" style="width: 12px; height: 12px; margin: 0;" /> Clear
+                                </button>
                             </div>
                         </div>
                     </div>
-                    <button class="btn btn-outline-danger w-100" @onclick="ClearPicflowDb" disabled="@(PicflowDbTotal == 0)">
-                        <img src="/svg/trash-bin-trash-svgrepo-com.svg" class="btn-icon" /> Clear Picflow Database
-                    </button>
                 }
             </div>
 
@@ -831,10 +966,27 @@
     private bool IsEmail2FA = false;
     private bool ShowLicensesModal = false;
 
+    // Storage stats
     private int PicflowDbTotal = 0;
     private int PicflowDbStickers = 0;
     private int PicflowDbEmojis = 0;
     private int PicflowDbPrints = 0;
+    private string PicflowDbSize = "0 B";
+    private long PicflowDbSizeBytes = 0;
+
+    private int WorldsDbTotal = 0;
+    private int WorldsWithImages = 0;
+    private int WorldsAuthors = 0;
+    private int WorldsNoImage = 0;
+    private string WorldsDbSize = "0 B";
+    private long WorldsDbSizeBytes = 0;
+
+    private int MetadataDbTotal = 0;
+    private int MetadataWithMeta = 0;
+    private int MetadataWithWorld = 0;
+    private int MetadataWithAuthor = 0;
+    private string MetadataDbSize = "0 B";
+    private long MetadataDbSizeBytes = 0;
 
     private bool DisplayVRCProfileBackgrounds
     {
@@ -979,7 +1131,7 @@
         {
             UpdateCacheInfo();
             UpdateVRChatLogsInfo();
-            UpdatePicflowDbStats();
+            UpdateDatabasesInfo();
             InvokeAsync(StateHasChanged);
         });
 
@@ -1639,30 +1791,151 @@
         }
     }
 
+    private string FormatBytes(long bytes)
+    {
+        if (bytes <= 0) return "0 B";
+        string[] units = { "B", "KB", "MB", "GB", "TB" };
+        double size = bytes;
+        int unitIndex = 0;
+        while (size >= 1024 && unitIndex < units.Length - 1) { size /= 1024; unitIndex++; }
+        return $"{size:0.##} {units[unitIndex]}";
+    }
+
+    private void UpdateDatabasesInfo()
+    {
+        string dbFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "VRCGalleryManager");
+        if (!Directory.Exists(dbFolder))
+        {
+            try { Directory.CreateDirectory(dbFolder); } catch { }
+        }
+
+        // 1. Picflow
+        try
+        {
+            PicflowDatabase.Load();
+            var allPicflow = PicflowDatabase.GetAll().Values;
+            PicflowDbTotal = allPicflow.Count;
+            PicflowDbStickers = allPicflow.Count(x => x.CategoryInt == 0);
+            PicflowDbEmojis = allPicflow.Count(x => x.CategoryInt == 1);
+            PicflowDbPrints = allPicflow.Count(x => x.CategoryInt == 2);
+        }
+        catch
+        {
+            PicflowDbTotal = 0;
+            PicflowDbStickers = 0;
+            PicflowDbEmojis = 0;
+            PicflowDbPrints = 0;
+        }
+
+        string picflowPath = Path.Combine(dbFolder, "picflow_db.json");
+        PicflowDbSizeBytes = File.Exists(picflowPath) ? new FileInfo(picflowPath).Length : 0;
+        PicflowDbSize = FormatBytes(PicflowDbSizeBytes);
+
+        // 2. Worlds
+        try
+        {
+            WorldCacheHelper.EnsureLoaded();
+            var allWorlds = WorldCacheHelper.GetAll();
+            WorldsDbTotal = allWorlds.Count;
+            WorldsWithImages = allWorlds.Count(x => !string.IsNullOrEmpty(x.ImageUrl) && x.ImageUrl != "unavailable");
+            WorldsAuthors = allWorlds.Select(x => x.AuthorName).Where(a => !string.IsNullOrEmpty(a)).Distinct(StringComparer.OrdinalIgnoreCase).Count();
+            WorldsNoImage = allWorlds.Count(x => string.IsNullOrEmpty(x.ImageUrl) || x.ImageUrl == "unavailable");
+        }
+        catch
+        {
+            WorldsDbTotal = 0;
+            WorldsWithImages = 0;
+            WorldsAuthors = 0;
+            WorldsNoImage = 0;
+        }
+
+        string worldsPath = Path.Combine(dbFolder, "worlds_info_db.json");
+        WorldsDbSizeBytes = File.Exists(worldsPath) ? new FileInfo(worldsPath).Length : 0;
+        WorldsDbSize = FormatBytes(WorldsDbSizeBytes);
+
+        // 3. Metadata
+        try
+        {
+            MetadataScanCache.EnsureLoaded();
+            var allMeta = MetadataScanCache.GetAll();
+            MetadataDbTotal = allMeta.Count;
+            MetadataWithMeta = allMeta.Count(x => x.HasMetadata);
+            MetadataWithWorld = allMeta.Count(x => !string.IsNullOrEmpty(x.WorldName));
+            MetadataWithAuthor = allMeta.Count(x => !string.IsNullOrEmpty(x.AuthorName));
+        }
+        catch
+        {
+            MetadataDbTotal = 0;
+            MetadataWithMeta = 0;
+            MetadataWithWorld = 0;
+            MetadataWithAuthor = 0;
+        }
+
+        string metadataPath = Path.Combine(dbFolder, "metadata_scan_db.json");
+        MetadataDbSizeBytes = File.Exists(metadataPath) ? new FileInfo(metadataPath).Length : 0;
+        MetadataDbSize = FormatBytes(MetadataDbSizeBytes);
+    }
+
     private void UpdatePicflowDbStats()
     {
-        PicflowDatabase.Load();
-        var allItems = PicflowDatabase.GetAll().Values;
-        PicflowDbTotal = allItems.Count;
-        
-        // 0 = Sticker, 1 = Emoji, 2 = Print (assuming Picflow.ItemCategory maps to 0, 1, 2)
-        PicflowDbStickers = allItems.Count(x => x.CategoryInt == 0);
-        PicflowDbEmojis = allItems.Count(x => x.CategoryInt == 1);
-        PicflowDbPrints = allItems.Count(x => x.CategoryInt == 2);
+        UpdateDatabasesInfo();
     }
 
     private async Task ClearPicflowDb()
     {
-        bool confirmed = await dialogService.ShowConfirmAsync("Clear Picflow DB", "Are you sure you want to delete all saved items from the Picflow database?", "Delete", "Cancel");
+        bool confirmed = await dialogService.ShowConfirmAsync("Clear Picflow", "Are you sure you want to delete all saved items from Picflow?", "Delete", "Cancel");
         if (confirmed)
         {
             PicflowDatabase.Clear();
             CacheService.Remove("PicflowImages");
             CacheService.Remove("PicflowAllItems");
             CacheService.Remove("PicflowLogStatus");
-            UpdatePicflowDbStats();
+            UpdateDatabasesInfo();
             StateHasChanged();
-            Notifications.Show("Picflow database has been successfully cleared!", "System", VRCGalleryManager.Core.NotificationType.Success);
+            Notifications.Show("Picflow has been successfully cleared!", "System", VRCGalleryManager.Core.NotificationType.Success);
+        }
+    }
+
+    private async Task ClearWorldsDb()
+    {
+        bool confirmed = await dialogService.ShowConfirmAsync("Clear Worlds", "Are you sure you want to delete all cached world information?", "Delete", "Cancel");
+        if (confirmed)
+        {
+            WorldCacheHelper.Clear();
+            UpdateDatabasesInfo();
+            StateHasChanged();
+            Notifications.Show("Worlds information has been successfully cleared!", "System", VRCGalleryManager.Core.NotificationType.Success);
+        }
+    }
+
+    private async Task ClearMetadataDb()
+    {
+        bool confirmed = await dialogService.ShowConfirmAsync("Clear Metadata", "Are you sure you want to delete all scanned photo metadata? This will require re-scanning your photos to re-extract world and player tags.", "Delete", "Cancel");
+        if (confirmed)
+        {
+            MetadataScanCache.Clear();
+            UpdateDatabasesInfo();
+            StateHasChanged();
+            Notifications.Show("Photo metadata has been successfully cleared!", "System", VRCGalleryManager.Core.NotificationType.Success);
+        }
+    }
+
+    private async Task ClearAllDatabases()
+    {
+        bool confirmed = await dialogService.ShowConfirmAsync("Clear All", "Are you sure you want to delete all items from Picflow, Worlds, and Metadata?", "Delete All", "Cancel");
+        if (confirmed)
+        {
+            PicflowDatabase.Clear();
+            CacheService.Remove("PicflowImages");
+            CacheService.Remove("PicflowAllItems");
+            CacheService.Remove("PicflowLogStatus");
+
+            WorldCacheHelper.Clear();
+            MetadataScanCache.Clear();
+
+            UpdateDatabasesInfo();
+            StateHasChanged();
+            Notifications.Show("All storage has been successfully cleared!", "System", VRCGalleryManager.Core.NotificationType.Success);
         }
     }
 
