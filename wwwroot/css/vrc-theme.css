@@ -6,28 +6,84 @@
 /* --------------------------------------------------------------------------
    Generic Buttons (.btn) Theming
    -------------------------------------------------------------------------- */
-.has-vrc-theme .btn:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.settings-logout-btn):not(.btn-warning):not(.btn-outline-warning):not(.btn-viewer-action):not(.btn-icon-only):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.media-btn-open):not(.media-btn-select):not(.media-btn-copy):not(.media-btn-download):not(.media-btn-link):not(.media-btn-folder):not(.btn-dark):not(.btn-outline-dark):not(.picflow-cat-btn):not(.btn-hover-light):not(:disabled):not(.disabled) {
+.has-vrc-theme .btn:not(:where(
+    .btn-danger, .btn-outline-danger, .media-btn-delete, .btn-viewer-delete, .settings-logout-btn,
+    .btn-warning, .btn-outline-warning,
+    .btn-viewer-action, .btn-icon-only, .media-btn-upload,
+    .btn-success, .btn-outline-success,
+    .media-btn-open, .media-btn-select, .media-btn-copy, .media-btn-download, .media-btn-link, .media-btn-folder, .media-btn-world,
+    .btn-dark, .btn-outline-dark,
+    .picflow-cat-btn, .btn-hover-light
+)):not(:where(:disabled, .disabled)) {
     color: var(--accent) !important;
     background-color: var(--theme-btn-bg) !important;
     border-color: var(--theme-btn-border) !important;
 }
 
-.has-vrc-theme .btn:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.settings-logout-btn):not(.btn-warning):not(.btn-outline-warning):not(.btn-viewer-action):not(.btn-icon-only):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.media-btn-open):not(.media-btn-select):not(.media-btn-copy):not(.media-btn-download):not(.media-btn-link):not(.media-btn-folder):not(.btn-dark):not(.btn-outline-dark):not(.picflow-cat-btn):not(.btn-hover-light):not(:disabled):not(.disabled):hover {
+.has-vrc-theme .btn:not(:where(
+    .btn-danger, .btn-outline-danger, .media-btn-delete, .btn-viewer-delete, .settings-logout-btn,
+    .btn-warning, .btn-outline-warning,
+    .btn-viewer-action, .btn-icon-only, .media-btn-upload,
+    .btn-success, .btn-outline-success,
+    .media-btn-open, .media-btn-select, .media-btn-copy, .media-btn-download, .media-btn-link, .media-btn-folder, .media-btn-world,
+    .btn-dark, .btn-outline-dark,
+    .picflow-cat-btn, .btn-hover-light
+)):not(:where(:disabled, .disabled)):hover {
     background-color: var(--theme-btn-hover-bg) !important;
     border-color: var(--theme-btn-hover-border) !important;
     color: #ffffff !important;
 }
 
-.has-vrc-theme .btn:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.settings-logout-btn):not(.btn-warning):not(.btn-outline-warning):not(.btn-viewer-action):not(.btn-icon-only):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.media-btn-open):not(.media-btn-select):not(.media-btn-copy):not(.media-btn-download):not(.media-btn-link):not(.media-btn-folder):not(.btn-dark):not(.btn-outline-dark):not(.picflow-cat-btn):not(.btn-hover-light):not(:disabled):not(.disabled):active,
-.has-vrc-theme .btn:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.settings-logout-btn):not(.btn-warning):not(.btn-outline-warning):not(.btn-viewer-action):not(.btn-icon-only):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.media-btn-open):not(.media-btn-select):not(.media-btn-copy):not(.media-btn-download):not(.media-btn-link):not(.media-btn-folder):not(.btn-dark):not(.btn-outline-dark):not(.picflow-cat-btn):not(.btn-hover-light):not(:disabled):not(.disabled):focus {
+.has-vrc-theme .btn:not(:where(
+    .btn-danger, .btn-outline-danger, .media-btn-delete, .btn-viewer-delete, .settings-logout-btn,
+    .btn-warning, .btn-outline-warning,
+    .btn-viewer-action, .btn-icon-only, .media-btn-upload,
+    .btn-success, .btn-outline-success,
+    .media-btn-open, .media-btn-select, .media-btn-copy, .media-btn-download, .media-btn-link, .media-btn-folder, .media-btn-world,
+    .btn-dark, .btn-outline-dark,
+    .picflow-cat-btn, .btn-hover-light
+)):not(:where(:disabled, .disabled)):active,
+.has-vrc-theme .btn:not(:where(
+    .btn-danger, .btn-outline-danger, .media-btn-delete, .btn-viewer-delete, .settings-logout-btn,
+    .btn-warning, .btn-outline-warning,
+    .btn-viewer-action, .btn-icon-only, .media-btn-upload,
+    .btn-success, .btn-outline-success,
+    .media-btn-open, .media-btn-select, .media-btn-copy, .media-btn-download, .media-btn-link, .media-btn-folder, .media-btn-world,
+    .btn-dark, .btn-outline-dark,
+    .picflow-cat-btn, .btn-hover-light
+)):not(:where(:disabled, .disabled)):focus {
     background-color: var(--theme-btn-active-bg) !important;
     border-color: var(--accent) !important;
     color: #ffffff !important;
 }
 
-.has-vrc-theme .btn:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.settings-logout-btn):not(.btn-warning):not(.btn-outline-warning):not(.btn-viewer-action):not(.btn-icon-only):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.media-btn-open):not(.media-btn-select):not(.media-btn-copy):not(.media-btn-download):not(.media-btn-link):not(.media-btn-folder):not(.btn-dark):not(.btn-outline-dark):not(.picflow-cat-btn):not(.btn-hover-light):not(:disabled):not(.disabled):hover .btn-icon:not(.icon-danger):not(.icon-white):not(.icon-dark):not(.icon-success),
-.has-vrc-theme .btn:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.settings-logout-btn):not(.btn-warning):not(.btn-outline-warning):not(.btn-viewer-action):not(.btn-icon-only):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.media-btn-open):not(.media-btn-select):not(.media-btn-copy):not(.media-btn-download):not(.media-btn-link):not(.media-btn-folder):not(.btn-dark):not(.btn-outline-dark):not(.picflow-cat-btn):not(.btn-hover-light):not(:disabled):not(.disabled):active .btn-icon:not(.icon-danger):not(.icon-white):not(.icon-dark):not(.icon-success),
-.has-vrc-theme .btn:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.settings-logout-btn):not(.btn-warning):not(.btn-outline-warning):not(.btn-viewer-action):not(.btn-icon-only):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.media-btn-open):not(.media-btn-select):not(.media-btn-copy):not(.media-btn-download):not(.media-btn-link):not(.media-btn-folder):not(.btn-dark):not(.btn-outline-dark):not(.picflow-cat-btn):not(.btn-hover-light):not(:disabled):not(.disabled):focus .btn-icon:not(.icon-danger):not(.icon-white):not(.icon-dark):not(.icon-success) {
+.has-vrc-theme .btn:not(:where(
+    .btn-danger, .btn-outline-danger, .media-btn-delete, .btn-viewer-delete, .settings-logout-btn,
+    .btn-warning, .btn-outline-warning,
+    .btn-viewer-action, .btn-icon-only, .media-btn-upload,
+    .btn-success, .btn-outline-success,
+    .media-btn-open, .media-btn-select, .media-btn-copy, .media-btn-download, .media-btn-link, .media-btn-folder, .media-btn-world,
+    .btn-dark, .btn-outline-dark,
+    .picflow-cat-btn, .btn-hover-light
+)):not(:where(:disabled, .disabled)):hover .btn-icon:not(.icon-danger):not(.icon-white):not(.icon-dark):not(.icon-success),
+.has-vrc-theme .btn:not(:where(
+    .btn-danger, .btn-outline-danger, .media-btn-delete, .btn-viewer-delete, .settings-logout-btn,
+    .btn-warning, .btn-outline-warning,
+    .btn-viewer-action, .btn-icon-only, .media-btn-upload,
+    .btn-success, .btn-outline-success,
+    .media-btn-open, .media-btn-select, .media-btn-copy, .media-btn-download, .media-btn-link, .media-btn-folder, .media-btn-world,
+    .btn-dark, .btn-outline-dark,
+    .picflow-cat-btn, .btn-hover-light
+)):not(:where(:disabled, .disabled)):active .btn-icon:not(.icon-danger):not(.icon-white):not(.icon-dark):not(.icon-success),
+.has-vrc-theme .btn:not(:where(
+    .btn-danger, .btn-outline-danger, .media-btn-delete, .btn-viewer-delete, .settings-logout-btn,
+    .btn-warning, .btn-outline-warning,
+    .btn-viewer-action, .btn-icon-only, .media-btn-upload,
+    .btn-success, .btn-outline-success,
+    .media-btn-open, .media-btn-select, .media-btn-copy, .media-btn-download, .media-btn-link, .media-btn-folder, .media-btn-world,
+    .btn-dark, .btn-outline-dark,
+    .picflow-cat-btn, .btn-hover-light
+)):not(:where(:disabled, .disabled)):focus .btn-icon:not(.icon-danger):not(.icon-white):not(.icon-dark):not(.icon-success) {
     filter: var(--filter-white) !important;
 }
 
@@ -35,10 +91,10 @@
    Disabled / Deactivated Buttons (.btn:disabled, .btn.disabled)
    Recolors to the theme with the uniform 0.65 transparency matching default theme
    -------------------------------------------------------------------------- */
-.has-vrc-theme .btn:disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.settings-logout-btn):not(.picflow-cat-btn):not(.btn-nav):not(.media-btn-select):not(.btn-viewer-select),
-.has-vrc-theme .btn.disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.settings-logout-btn):not(.picflow-cat-btn):not(.btn-nav):not(.media-btn-select):not(.btn-viewer-select),
-.has-vrc-theme button:disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.settings-logout-btn):not(.picflow-cat-btn):not(.btn-nav):not(.media-btn-select):not(.btn-viewer-select):not(.gallery-tb-circle-btn),
-.has-vrc-theme label.btn.disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.settings-logout-btn):not(.picflow-cat-btn):not(.btn-nav):not(.media-btn-select):not(.btn-viewer-select) {
+.has-vrc-theme .btn:disabled:not(:where(.btn-danger, .btn-outline-danger, .media-btn-delete, .btn-viewer-delete, .settings-logout-btn, .picflow-cat-btn, .btn-nav, .media-btn-select, .btn-viewer-select)),
+.has-vrc-theme .btn.disabled:not(:where(.btn-danger, .btn-outline-danger, .media-btn-delete, .btn-viewer-delete, .settings-logout-btn, .picflow-cat-btn, .btn-nav, .media-btn-select, .btn-viewer-select)),
+.has-vrc-theme button:disabled:not(:where(.btn-danger, .btn-outline-danger, .media-btn-delete, .btn-viewer-delete, .settings-logout-btn, .picflow-cat-btn, .btn-nav, .media-btn-select, .btn-viewer-select, .gallery-tb-circle-btn)),
+.has-vrc-theme label.btn.disabled:not(:where(.btn-danger, .btn-outline-danger, .media-btn-delete, .btn-viewer-delete, .settings-logout-btn, .picflow-cat-btn, .btn-nav, .media-btn-select, .btn-viewer-select)) {
     opacity: 0.65 !important;
     color: var(--theme-btn-border) !important;
     background-color: var(--theme-btn-bg) !important;
@@ -49,16 +105,16 @@
     transform: none !important;
 }
 
-.has-vrc-theme .btn:disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.settings-logout-btn):not(.picflow-cat-btn):not(.media-btn-select):not(.btn-viewer-select) .btn-icon,
-.has-vrc-theme .btn.disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.settings-logout-btn):not(.picflow-cat-btn):not(.media-btn-select):not(.btn-viewer-select) .btn-icon,
-.has-vrc-theme button:disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.settings-logout-btn):not(.picflow-cat-btn):not(.media-btn-select):not(.btn-viewer-select) .btn-icon,
-.has-vrc-theme label.btn.disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.settings-logout-btn):not(.picflow-cat-btn):not(.media-btn-select):not(.btn-viewer-select) .btn-icon,
-.has-vrc-theme .btn:disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.settings-logout-btn):not(.picflow-cat-btn):not(.media-btn-select):not(.btn-viewer-select) img,
-.has-vrc-theme .btn.disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.settings-logout-btn):not(.picflow-cat-btn):not(.media-btn-select):not(.btn-viewer-select) img,
-.has-vrc-theme button:disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.settings-logout-btn):not(.picflow-cat-btn):not(.media-btn-select):not(.btn-viewer-select) img,
-.has-vrc-theme label.btn.disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.settings-logout-btn):not(.picflow-cat-btn):not(.media-btn-select):not(.btn-viewer-select) img,
-.has-vrc-theme .btn:disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.settings-logout-btn):not(.picflow-cat-btn):not(.media-btn-select):not(.btn-viewer-select) svg,
-.has-vrc-theme .btn.disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.settings-logout-btn):not(.picflow-cat-btn):not(.media-btn-select):not(.btn-viewer-select) svg {
+.has-vrc-theme .btn:disabled:not(:where(.btn-danger, .btn-outline-danger, .media-btn-delete, .btn-viewer-delete, .settings-logout-btn, .picflow-cat-btn, .media-btn-select, .btn-viewer-select)) .btn-icon,
+.has-vrc-theme .btn.disabled:not(:where(.btn-danger, .btn-outline-danger, .media-btn-delete, .btn-viewer-delete, .settings-logout-btn, .picflow-cat-btn, .media-btn-select, .btn-viewer-select)) .btn-icon,
+.has-vrc-theme button:disabled:not(:where(.btn-danger, .btn-outline-danger, .media-btn-delete, .btn-viewer-delete, .settings-logout-btn, .picflow-cat-btn, .media-btn-select, .btn-viewer-select)) .btn-icon,
+.has-vrc-theme label.btn.disabled:not(:where(.btn-danger, .btn-outline-danger, .media-btn-delete, .btn-viewer-delete, .settings-logout-btn, .picflow-cat-btn, .media-btn-select, .btn-viewer-select)) .btn-icon,
+.has-vrc-theme .btn:disabled:not(:where(.btn-danger, .btn-outline-danger, .media-btn-delete, .btn-viewer-delete, .settings-logout-btn, .picflow-cat-btn, .media-btn-select, .btn-viewer-select)) img,
+.has-vrc-theme .btn.disabled:not(:where(.btn-danger, .btn-outline-danger, .media-btn-delete, .btn-viewer-delete, .settings-logout-btn, .picflow-cat-btn, .media-btn-select, .btn-viewer-select)) img,
+.has-vrc-theme button:disabled:not(:where(.btn-danger, .btn-outline-danger, .media-btn-delete, .btn-viewer-delete, .settings-logout-btn, .picflow-cat-btn, .media-btn-select, .btn-viewer-select)) img,
+.has-vrc-theme label.btn.disabled:not(:where(.btn-danger, .btn-outline-danger, .media-btn-delete, .btn-viewer-delete, .settings-logout-btn, .picflow-cat-btn, .media-btn-select, .btn-viewer-select)) img,
+.has-vrc-theme .btn:disabled:not(:where(.btn-danger, .btn-outline-danger, .media-btn-delete, .btn-viewer-delete, .settings-logout-btn, .picflow-cat-btn, .media-btn-select, .btn-viewer-select)) svg,
+.has-vrc-theme .btn.disabled:not(:where(.btn-danger, .btn-outline-danger, .media-btn-delete, .btn-viewer-delete, .settings-logout-btn, .picflow-cat-btn, .media-btn-select, .btn-viewer-select)) svg {
     filter: url(#theme-border-filter) !important;
     opacity: 1 !important;
     color: var(--theme-btn-border) !important;
@@ -262,25 +318,25 @@
     filter: url(#theme-icon-filter) !important;
 }
 
-.has-vrc-theme .btn:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.settings-logout-btn):not(.btn-warning):not(.btn-outline-warning):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.media-btn-open):not(.media-btn-select):not(.btn-dark):not(.btn-outline-dark):not(:disabled):not(.disabled):not(:hover):not(:active) .btn-icon:not(.icon-danger):not(.icon-white):not(.icon-dark):not(.icon-success) {
+.has-vrc-theme .btn:not(:where(.btn-danger, .btn-outline-danger, .media-btn-delete, .btn-viewer-delete, .settings-logout-btn, .btn-warning, .btn-outline-warning, .media-btn-upload, .btn-success, .btn-outline-success, .media-btn-open, .media-btn-select, .btn-dark, .btn-outline-dark)):not(:where(:disabled, .disabled)):not(:hover):not(:active) .btn-icon:not(.icon-danger):not(.icon-white):not(.icon-dark):not(.icon-success) {
     filter: url(#theme-icon-filter) !important;
 }
 
 /* Disabled SVG Icons (Colore identico al bordo var(--theme-btn-border)) */
-.has-vrc-theme .btn:disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.settings-logout-btn):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.btn-viewer-upload):not(.media-btn-select):not(.btn-viewer-select) .btn-icon,
-.has-vrc-theme .btn.disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.settings-logout-btn):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.btn-viewer-upload):not(.media-btn-select):not(.btn-viewer-select) .btn-icon,
-.has-vrc-theme button:disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.settings-logout-btn):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.btn-viewer-upload):not(.media-btn-select):not(.btn-viewer-select) .btn-icon,
-.has-vrc-theme label.btn.disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.settings-logout-btn):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.btn-viewer-upload):not(.media-btn-select):not(.btn-viewer-select) .btn-icon,
-.has-vrc-theme .btn:disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.settings-logout-btn):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.btn-viewer-upload):not(.media-btn-select):not(.btn-viewer-select) .icon-accent,
-.has-vrc-theme .btn.disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.settings-logout-btn):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.btn-viewer-upload):not(.media-btn-select):not(.btn-viewer-select) .icon-accent,
-.has-vrc-theme button:disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.settings-logout-btn):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.btn-viewer-upload):not(.media-btn-select):not(.btn-viewer-select) .icon-accent,
-.has-vrc-theme label.btn.disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.settings-logout-btn):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.btn-viewer-upload):not(.media-btn-select):not(.btn-viewer-select) .icon-accent,
-.has-vrc-theme .btn:disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.settings-logout-btn):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.btn-viewer-upload):not(.media-btn-select):not(.btn-viewer-select) img,
-.has-vrc-theme .btn.disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.settings-logout-btn):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.btn-viewer-upload):not(.media-btn-select):not(.btn-viewer-select) img,
-.has-vrc-theme button:disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.settings-logout-btn):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.btn-viewer-upload):not(.media-btn-select):not(.btn-viewer-select) img,
-.has-vrc-theme label.btn.disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.settings-logout-btn):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.btn-viewer-upload):not(.media-btn-select):not(.btn-viewer-select) img,
-.has-vrc-theme .btn:disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.settings-logout-btn):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.btn-viewer-upload):not(.media-btn-select):not(.btn-viewer-select) svg,
-.has-vrc-theme .btn.disabled:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.settings-logout-btn):not(.media-btn-upload):not(.btn-success):not(.btn-outline-success):not(.btn-viewer-upload):not(.media-btn-select):not(.btn-viewer-select) svg,
+.has-vrc-theme .btn:disabled:not(:where(.btn-danger, .btn-outline-danger, .media-btn-delete, .btn-viewer-delete, .settings-logout-btn, .media-btn-upload, .btn-success, .btn-outline-success, .btn-viewer-upload, .media-btn-select, .btn-viewer-select)) .btn-icon,
+.has-vrc-theme .btn.disabled:not(:where(.btn-danger, .btn-outline-danger, .media-btn-delete, .btn-viewer-delete, .settings-logout-btn, .media-btn-upload, .btn-success, .btn-outline-success, .btn-viewer-upload, .media-btn-select, .btn-viewer-select)) .btn-icon,
+.has-vrc-theme button:disabled:not(:where(.btn-danger, .btn-outline-danger, .media-btn-delete, .btn-viewer-delete, .settings-logout-btn, .media-btn-upload, .btn-success, .btn-outline-success, .btn-viewer-upload, .media-btn-select, .btn-viewer-select)) .btn-icon,
+.has-vrc-theme label.btn.disabled:not(:where(.btn-danger, .btn-outline-danger, .media-btn-delete, .btn-viewer-delete, .settings-logout-btn, .media-btn-upload, .btn-success, .btn-outline-success, .btn-viewer-upload, .media-btn-select, .btn-viewer-select)) .btn-icon,
+.has-vrc-theme .btn:disabled:not(:where(.btn-danger, .btn-outline-danger, .media-btn-delete, .btn-viewer-delete, .settings-logout-btn, .media-btn-upload, .btn-success, .btn-outline-success, .btn-viewer-upload, .media-btn-select, .btn-viewer-select)) .icon-accent,
+.has-vrc-theme .btn.disabled:not(:where(.btn-danger, .btn-outline-danger, .media-btn-delete, .btn-viewer-delete, .settings-logout-btn, .media-btn-upload, .btn-success, .btn-outline-success, .btn-viewer-upload, .media-btn-select, .btn-viewer-select)) .icon-accent,
+.has-vrc-theme button:disabled:not(:where(.btn-danger, .btn-outline-danger, .media-btn-delete, .btn-viewer-delete, .settings-logout-btn, .media-btn-upload, .btn-success, .btn-outline-success, .btn-viewer-upload, .media-btn-select, .btn-viewer-select)) .icon-accent,
+.has-vrc-theme label.btn.disabled:not(:where(.btn-danger, .btn-outline-danger, .media-btn-delete, .btn-viewer-delete, .settings-logout-btn, .media-btn-upload, .btn-success, .btn-outline-success, .btn-viewer-upload, .media-btn-select, .btn-viewer-select)) .icon-accent,
+.has-vrc-theme .btn:disabled:not(:where(.btn-danger, .btn-outline-danger, .media-btn-delete, .btn-viewer-delete, .settings-logout-btn, .media-btn-upload, .btn-success, .btn-outline-success, .btn-viewer-upload, .media-btn-select, .btn-viewer-select)) img,
+.has-vrc-theme .btn.disabled:not(:where(.btn-danger, .btn-outline-danger, .media-btn-delete, .btn-viewer-delete, .settings-logout-btn, .media-btn-upload, .btn-success, .btn-outline-success, .btn-viewer-upload, .media-btn-select, .btn-viewer-select)) img,
+.has-vrc-theme button:disabled:not(:where(.btn-danger, .btn-outline-danger, .media-btn-delete, .btn-viewer-delete, .settings-logout-btn, .media-btn-upload, .btn-success, .btn-outline-success, .btn-viewer-upload, .media-btn-select, .btn-viewer-select)) img,
+.has-vrc-theme label.btn.disabled:not(:where(.btn-danger, .btn-outline-danger, .media-btn-delete, .btn-viewer-delete, .settings-logout-btn, .media-btn-upload, .btn-success, .btn-outline-success, .btn-viewer-upload, .media-btn-select, .btn-viewer-select)) img,
+.has-vrc-theme .btn:disabled:not(:where(.btn-danger, .btn-outline-danger, .media-btn-delete, .btn-viewer-delete, .settings-logout-btn, .media-btn-upload, .btn-success, .btn-outline-success, .btn-viewer-upload, .media-btn-select, .btn-viewer-select)) svg,
+.has-vrc-theme .btn.disabled:not(:where(.btn-danger, .btn-outline-danger, .media-btn-delete, .btn-viewer-delete, .settings-logout-btn, .media-btn-upload, .btn-success, .btn-outline-success, .btn-viewer-upload, .media-btn-select, .btn-viewer-select)) svg,
 .has-vrc-theme .settings-toggle-row:has(input:disabled) .settings-toggle-icon img,
 .has-vrc-theme .settings-toggle-row:has(input:disabled) .settings-toggle-icon .icon-accent,
 .has-vrc-theme .settings-toggle-row.disabled .settings-toggle-icon img,

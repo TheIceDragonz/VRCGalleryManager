@@ -164,18 +164,90 @@ h6 {
     transition: all 0.2s ease-in-out;
 }
 
-.btn:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.settings-logout-btn):not(.btn-warning):not(.btn-outline-warning):not(.btn-success):not(.btn-outline-success):not(.media-btn-upload):not(.btn-viewer-upload):not(.media-btn-open):not(.btn-dark):not(.btn-outline-dark) {
+.btn:not(:where(
+    .btn-danger, .btn-outline-danger, .media-btn-delete, .btn-viewer-delete, .settings-logout-btn,
+    .btn-warning, .btn-outline-warning,
+    .btn-success, .btn-outline-success, .media-btn-upload, .btn-viewer-upload,
+    .btn-dark, .btn-outline-dark,
+    .btn-viewer-action, .btn-icon-only, .btn-viewer-close, .btn-nav, .btn-viewer-select,
+    .media-btn-copy, .media-btn-download, .media-btn-link, .media-btn-folder, .media-btn-select, .media-btn-open, .media-btn-world,
+    .picflow-cat-btn, .btn-hover-light,
+    .gallery-dropdown-btn, .gallery-world-capsule-btn, .gallery-view-btn, .gallery-tb-circle-btn,
+    .btn-password-toggle, .license-link-btn, .viewer-world-btn, .btn-vrcplus-subscribe
+)):not(:where(:disabled, .disabled)) {
     color: var(--accent) !important;
-    background-color: #07242B !important;
-    border: 2px solid #053742 !important;
+    background-color: var(--theme-btn-bg, #07242B) !important;
+    border: 2px solid var(--theme-btn-border, #053742) !important;
 }
 
-.btn:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.settings-logout-btn):not(.btn-warning):not(.btn-outline-warning):not(.btn-success):not(.btn-outline-success):not(.media-btn-upload):not(.btn-viewer-upload):not(.media-btn-open):not(.btn-dark):not(.btn-outline-dark):hover:not(:disabled):not(.disabled),
-.btn:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.settings-logout-btn):not(.btn-warning):not(.btn-outline-warning):not(.btn-success):not(.btn-outline-success):not(.media-btn-upload):not(.btn-viewer-upload):not(.media-btn-open):not(.btn-dark):not(.btn-outline-dark):active:not(:disabled):not(.disabled),
-.btn:not(.btn-danger):not(.btn-outline-danger):not(.media-btn-delete):not(.btn-viewer-delete):not(.settings-logout-btn):not(.btn-warning):not(.btn-outline-warning):not(.btn-success):not(.btn-outline-success):not(.media-btn-upload):not(.btn-viewer-upload):not(.media-btn-open):not(.btn-dark):not(.btn-outline-dark):focus:not(:disabled):not(.disabled) {
-    background-color: #0A3540 !important;
-    border-color: #505050 !important;
+.btn:not(:where(
+    .btn-danger, .btn-outline-danger, .media-btn-delete, .btn-viewer-delete, .settings-logout-btn,
+    .btn-warning, .btn-outline-warning,
+    .btn-success, .btn-outline-success, .media-btn-upload, .btn-viewer-upload,
+    .btn-dark, .btn-outline-dark,
+    .btn-viewer-action, .btn-icon-only, .btn-viewer-close, .btn-nav, .btn-viewer-select,
+    .media-btn-copy, .media-btn-download, .media-btn-link, .media-btn-folder, .media-btn-select, .media-btn-open, .media-btn-world,
+    .picflow-cat-btn, .btn-hover-light,
+    .gallery-dropdown-btn, .gallery-world-capsule-btn, .gallery-view-btn, .gallery-tb-circle-btn,
+    .btn-password-toggle, .license-link-btn, .viewer-world-btn, .btn-vrcplus-subscribe
+)):hover:not(:where(:disabled, .disabled)) {
+    background-color: var(--theme-btn-hover-bg, #0A3540) !important;
+    border-color: var(--theme-btn-hover-border, #505050) !important;
     color: white !important;
+}
+
+.btn:not(:where(
+    .btn-danger, .btn-outline-danger, .media-btn-delete, .btn-viewer-delete, .settings-logout-btn,
+    .btn-warning, .btn-outline-warning,
+    .btn-success, .btn-outline-success, .media-btn-upload, .btn-viewer-upload,
+    .btn-dark, .btn-outline-dark,
+    .btn-viewer-action, .btn-icon-only, .btn-viewer-close, .btn-nav, .btn-viewer-select,
+    .media-btn-copy, .media-btn-download, .media-btn-link, .media-btn-folder, .media-btn-select, .media-btn-open, .media-btn-world,
+    .picflow-cat-btn, .btn-hover-light,
+    .gallery-dropdown-btn, .gallery-world-capsule-btn, .gallery-view-btn, .gallery-tb-circle-btn,
+    .btn-password-toggle, .license-link-btn, .viewer-world-btn, .btn-vrcplus-subscribe
+)):active:not(:where(:disabled, .disabled)),
+.btn:not(:where(
+    .btn-danger, .btn-outline-danger, .media-btn-delete, .btn-viewer-delete, .settings-logout-btn,
+    .btn-warning, .btn-outline-warning,
+    .btn-success, .btn-outline-success, .media-btn-upload, .btn-viewer-upload,
+    .btn-dark, .btn-outline-dark,
+    .btn-viewer-action, .btn-icon-only, .btn-viewer-close, .btn-nav, .btn-viewer-select,
+    .media-btn-copy, .media-btn-download, .media-btn-link, .media-btn-folder, .media-btn-select, .media-btn-open, .media-btn-world,
+    .picflow-cat-btn, .btn-hover-light,
+    .gallery-dropdown-btn, .gallery-world-capsule-btn, .gallery-view-btn, .gallery-tb-circle-btn,
+    .btn-password-toggle, .license-link-btn, .viewer-world-btn, .btn-vrcplus-subscribe
+)):focus:not(:where(:disabled, .disabled)) {
+    background-color: var(--theme-btn-active-bg, #0D4452) !important;
+    border-color: var(--accent) !important;
+    color: white !important;
+}
+
+/* Default generic disabled button styling */
+.btn:not(:where(
+    .btn-danger, .btn-outline-danger, .media-btn-delete, .btn-viewer-delete, .settings-logout-btn,
+    .btn-warning, .btn-outline-warning,
+    .btn-success, .btn-outline-success, .media-btn-upload, .btn-viewer-upload,
+    .btn-dark, .btn-outline-dark,
+    .btn-viewer-action, .btn-icon-only, .btn-viewer-close, .btn-nav, .btn-viewer-select,
+    .media-btn-select
+)):disabled,
+.btn:not(:where(
+    .btn-danger, .btn-outline-danger, .media-btn-delete, .btn-viewer-delete, .settings-logout-btn,
+    .btn-warning, .btn-outline-warning,
+    .btn-success, .btn-outline-success, .media-btn-upload, .btn-viewer-upload,
+    .btn-dark, .btn-outline-dark,
+    .btn-viewer-action, .btn-icon-only, .btn-viewer-close, .btn-nav, .btn-viewer-select,
+    .media-btn-select
+)).disabled {
+    opacity: 0.65 !important;
+    color: var(--theme-btn-border, #053742) !important;
+    background-color: var(--theme-btn-bg, #07242B) !important;
+    border-color: var(--theme-btn-border, #053742) !important;
+    cursor: not-allowed !important;
+    pointer-events: none !important;
+    box-shadow: none !important;
+    transform: none !important;
 }
 
 .btn-square {
@@ -1169,11 +1241,13 @@ h6 {
     height: 30px;
     padding: 0;
     opacity: 1;
-    background-color: #07242B !important;
+    background-color: var(--theme-btn-bg, #07242B) !important;
+    border: 2px solid var(--theme-btn-border, #053742) !important;
 }
 
 .media-btn-open:hover {
-    background-color: #0A3540 !important;
+    background-color: var(--theme-btn-hover-bg, #0A3540) !important;
+    border-color: var(--accent) !important;
 }
 
 .media-btn-open .btn-icon {
@@ -3030,18 +3104,18 @@ canvas.picking-color {
     align-items: center;
     justify-content: center;
     gap: 6px;
-    background: #07242B !important;
-    border: 1px solid #053742 !important;
+    background: var(--theme-btn-bg, #07242B) !important;
+    border: 1px solid var(--theme-btn-border, #053742) !important;
     color: var(--accent) !important;
     transition: all 0.2s ease;
     cursor: pointer;
 }
 
 .viewer-world-btn:hover {
-    background: #0A3540 !important;
+    background: var(--theme-btn-hover-bg, #0A3540) !important;
     border-color: var(--accent) !important;
     color: #ffffff !important;
-    box-shadow: 0 0 12px rgba(106, 227, 249, 0.3) !important;
+    box-shadow: 0 0 12px rgba(var(--theme-rgb, 106, 227, 249), 0.3) !important;
 }
 
 /* Viewer Hint Card (No metadata advice) */
@@ -3289,8 +3363,8 @@ canvas.picking-color {
 
 .picflow-cat-btn,
 .picflow-cat-btn.border-0 {
-    border: 2px solid #053742 !important;
-    background-color: #07242B !important;
+    border: 2px solid var(--theme-btn-border, #053742) !important;
+    background-color: var(--theme-btn-bg, #07242B) !important;
     color: #ffffff !important;
     font-weight: bold !important;
     box-shadow: none !important;
@@ -3309,7 +3383,7 @@ canvas.picking-color {
 
 /* Active / Selected category button */
 .picflow-cat-btn.btn-primary:not(:disabled):not(.disabled) {
-    background-color: #0D4452 !important;
+    background-color: var(--theme-btn-active-bg, #0D4452) !important;
     border: 2px solid var(--accent) !important;
     color: #ffffff !important;
     font-weight: bold !important;
@@ -3320,8 +3394,8 @@ canvas.picking-color {
 }
 
 .picflow-cat-btn:not(:disabled):not(.btn-primary):hover {
-    background-color: #0A3540 !important;
-    border-color: #505050 !important;
+    background-color: var(--theme-btn-hover-bg, #0A3540) !important;
+    border-color: var(--theme-btn-hover-border, #505050) !important;
     color: #ffffff !important;
     transform: none !important;
 }
@@ -3330,8 +3404,8 @@ canvas.picking-color {
 .picflow-cat-btn.btn-hover-light,
 .btn-hover-light {
     opacity: 0.25 !important;
-    background-color: #07242B !important;
-    border: 2px solid #053742 !important;
+    background-color: var(--theme-btn-bg, #07242B) !important;
+    border: 2px solid var(--theme-btn-border, #053742) !important;
     color: #ffffff !important;
     box-shadow: none !important;
     transform: none !important;
@@ -3341,16 +3415,16 @@ canvas.picking-color {
 .picflow-cat-btn.btn-hover-light:hover,
 .btn-hover-light:hover {
     opacity: 1 !important;
-    background-color: #0A3540 !important;
-    border-color: #505050 !important;
+    background-color: var(--theme-btn-hover-bg, #0A3540) !important;
+    border-color: var(--theme-btn-hover-border, #505050) !important;
     color: #ffffff !important;
     transform: none !important;
 }
 
 .picflow-cat-btn:disabled {
     opacity: 0.5 !important;
-    background-color: #07242B !important;
-    border: 2px solid #053742 !important;
+    background-color: var(--theme-btn-bg, #07242B) !important;
+    border: 2px solid var(--theme-btn-border, #053742) !important;
     color: var(--text-muted) !important;
     pointer-events: none !important;
     box-shadow: none !important;
@@ -3575,8 +3649,8 @@ canvas.picking-color {
 }
 
 .license-link-btn:hover {
-    background: rgba(106, 227, 249, 0.15);
-    border-color: rgba(106, 227, 249, 0.4) !important;
+    background: rgba(var(--theme-rgb, 106, 227, 249), 0.15) !important;
+    border-color: rgba(var(--theme-rgb, 106, 227, 249), 0.4) !important;
 }
 
 .license-link-btn .btn-icon {
