@@ -81,10 +81,26 @@
 
                 <h4 class="mb-2 text-accent">VRChat Account</h4>
 
-                <div class="settings-account-card d-flex flex-column p-3">
-                    <div class="settings-account-top d-flex align-items-center justify-content-between gap-3">
+                <div class="settings-account-card d-flex flex-column p-3 position-relative">
+                    @if (BackgroundService.DisplayVRCCosmetics && !string.IsNullOrEmpty(NameplateEffectUrl))
+                    {
+                        <img src="@NameplateEffectUrl" class="settings-account-bg-nameplate" alt="" aria-hidden="true" />
+                    }
+
+                    <div class="settings-account-top d-flex align-items-center justify-content-between gap-3 position-relative" style="z-index: 2;">
                         <div class="d-flex align-items-center gap-3 min-w-0 flex-grow-1">
-                            <img src="@(string.IsNullOrEmpty(avatarUrl) ? "/svg/profile-user-svgrepo-com.svg" : avatarUrl)" class="settings-account-avatar flex-shrink-0" />
+                            <div class="position-relative settings-account-avatar-wrapper flex-shrink-0"
+                                 @onclick="OpenProfileModal"
+                                 style="cursor: pointer;"
+                                 title="Click to view full profile">
+                                <img src="@(string.IsNullOrEmpty(avatarUrl) ? "/svg/profile-user-svgrepo-com.svg" : avatarUrl)"
+                                     class="settings-account-avatar"
+                                     alt="@user.DisplayName" />
+                                @if (BackgroundService.DisplayVRCCosmetics && !string.IsNullOrEmpty(IconFrameUrl))
+                                {
+                                    <img src="@IconFrameUrl" class="settings-account-icon-frame" alt="Icon Frame" />
+                                }
+                            </div>
                             <div class="d-flex flex-column gap-1 min-w-0 flex-grow-1">
                                 <div class="d-flex align-items-center gap-2 flex-wrap">
                                     <span class="settings-account-name text-truncate" title="@user.DisplayName">@user.DisplayName</span>
@@ -148,7 +164,8 @@
                     </div>
 
                     <!-- Mobile Badges & Tags (Displayed below Avatar, Name, and Logout) -->
-                    <div class="settings-account-mobile-bottom">
+                    <div class="settings-account-mobile-bottom position-relative" style="z-index: 2;">
+
                         @if (user.Badges != null && user.Badges.Any(b => b.Hidden != true))
                         {
                             <div class="settings-badge-list justify-content-center w-100">
@@ -1056,6 +1073,8 @@
 
     private string? GalleryPath;
     private string? DefaultGalleryPath;
+    private string? NameplateEffectUrl;
+    private string? IconFrameUrl;
 
     private async Task ChangeGalleryFolder()
     {
@@ -1122,6 +1141,9 @@
         }
 
         AppEvents.RequestPromptUpdate += HandleRequestPromptUpdate;
+        BackgroundService.OnSettingsChanged += HandleSettingsCosmeticsChanged;
+        NameplateEffectUrl = BackgroundService.CachedNameplateEffectUrl;
+        IconFrameUrl = BackgroundService.CachedIconFrameUrl;
         await Auth.EnsureInitializedAsync();
         _startWithWindows = Config.Get("StartWithWindows", "false") == "true";
         _startInBackground = Config.Get("StartInBackground", "false") == "true";
@@ -1244,6 +1266,39 @@
                     user.BioLinks = new List<string>(pubProfile.BioLinks);
                 }
 
+                if (BackgroundService.DisplayVRCCosmetics)
+                {
+                    var targetEffect = !string.IsNullOrEmpty(user.NameplateEffect)
+                        ? user.NameplateEffect
+                        : pubProfile.NameplateEffect;
+
+                    if (!string.IsNullOrEmpty(targetEffect))
+                    {
+                        NameplateEffectUrl = await BackgroundService.GetNameplateEffectUrlAsync(targetEffect);
+                    }
+
+                    var targetIconFrame = !string.IsNullOrEmpty(user.IconFrame)
+                        ? user.IconFrame
+                        : pubProfile.IconFrame;
+
+                    if (!string.IsNullOrEmpty(targetIconFrame))
+                    {
+                        IconFrameUrl = await BackgroundService.GetIconFrameUrlAsync(targetIconFrame);
+                    }
+                }
+
+                await InvokeAsync(StateHasChanged);
+            }
+            else if (BackgroundService.DisplayVRCCosmetics)
+            {
+                if (!string.IsNullOrEmpty(user.NameplateEffect))
+                {
+                    NameplateEffectUrl = await BackgroundService.GetNameplateEffectUrlAsync(user.NameplateEffect);
+                }
+                if (!string.IsNullOrEmpty(user.IconFrame))
+                {
+                    IconFrameUrl = await BackgroundService.GetIconFrameUrlAsync(user.IconFrame);
+                }
                 await InvokeAsync(StateHasChanged);
             }
         }
@@ -1939,8 +1994,33 @@
         }
     }
 
+    private void HandleSettingsCosmeticsChanged()
+    {
+        _ = InvokeAsync(async () =>
+        {
+            if (BackgroundService.DisplayVRCCosmetics && Auth.CurrentUser != null)
+            {
+                if (string.IsNullOrEmpty(NameplateEffectUrl) && !string.IsNullOrEmpty(Auth.CurrentUser.NameplateEffect))
+                {
+                    NameplateEffectUrl = await BackgroundService.GetNameplateEffectUrlAsync(Auth.CurrentUser.NameplateEffect);
+                }
+                if (string.IsNullOrEmpty(IconFrameUrl) && !string.IsNullOrEmpty(Auth.CurrentUser.IconFrame))
+                {
+                    IconFrameUrl = await BackgroundService.GetIconFrameUrlAsync(Auth.CurrentUser.IconFrame);
+                }
+            }
+            StateHasChanged();
+        });
+    }
+
+    private void OpenProfileModal()
+    {
+        AppEvents.OpenProfileModal();
+    }
+
     public void Dispose()
     {
         AppEvents.RequestPromptUpdate -= HandleRequestPromptUpdate;
+        BackgroundService.OnSettingsChanged -= HandleSettingsCosmeticsChanged;
     }
 }

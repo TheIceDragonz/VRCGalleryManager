@@ -44,5 +44,15 @@ namespace VRCGalleryManager.Core
         {
             ProfileThemeChanged?.Invoke(isEnabled, buttonColor, iconColor);
         }
+
+        /// <summary>
+        /// Request opening the in-app user profile modal.
+        /// </summary>
+        public static event Action? RequestOpenProfileModal;
+
+        public static void OpenProfileModal()
+        {
+            RequestOpenProfileModal?.Invoke();
+        }
     }
 }

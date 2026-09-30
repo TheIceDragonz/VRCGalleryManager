@@ -89,6 +89,9 @@ namespace VRCGalleryManager.Core
         public string CurrentSidebarBackgroundStyle { get; private set; } = "";
         public string CurrentThemeCss { get; private set; } = "";
         public VRCProfileTheme CurrentTheme { get; private set; } = new();
+        public string? CachedProfileEffectUrl { get; set; }
+        public string? CachedIconFrameUrl { get; set; }
+        public string? CachedNameplateEffectUrl { get; set; }
         public event Action? OnSidebarBackgroundChanged;
 
         public bool DisplayVRCProfileBackgrounds
@@ -361,6 +364,135 @@ namespace VRCGalleryManager.Core
                 // Fallback / ignore network failures
             }
 
+            return null;
+        }
+
+        public async Task<string?> GetIconFrameUrlAsync(string? iconFrameId)
+        {
+            if (string.IsNullOrEmpty(iconFrameId)) return null;
+            if (!string.IsNullOrEmpty(CachedIconFrameUrl)) return CachedIconFrameUrl;
+
+            try
+            {
+                using var request = new HttpRequestMessage(HttpMethod.Get, "cosmetics/index/iconFrame");
+                request.Headers.TryAddWithoutValidation("User-Agent", Api.VRChatApiClient.DefaultUserAgent);
+                if (!string.IsNullOrEmpty(_auth.CookieHeader))
+                {
+                    request.Headers.TryAddWithoutValidation("Cookie", _auth.CookieHeader);
+                }
+
+                var response = await _httpClient.SendAsync(request);
+                if (response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    CachedIconFrameUrl = ExtractCosmeticAnimationUrl(content, iconFrameId);
+                }
+            }
+            catch { }
+
+            return CachedIconFrameUrl;
+        }
+
+        public async Task<string?> GetProfileEffectUrlAsync(string? effectId)
+        {
+            if (string.IsNullOrEmpty(effectId)) return null;
+            if (!string.IsNullOrEmpty(CachedProfileEffectUrl)) return CachedProfileEffectUrl;
+
+            try
+            {
+                using var request = new HttpRequestMessage(HttpMethod.Get, "cosmetics/index/profileEffect");
+                request.Headers.TryAddWithoutValidation("User-Agent", Api.VRChatApiClient.DefaultUserAgent);
+                if (!string.IsNullOrEmpty(_auth.CookieHeader))
+                {
+                    request.Headers.TryAddWithoutValidation("Cookie", _auth.CookieHeader);
+                }
+
+                var response = await _httpClient.SendAsync(request);
+                if (response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    CachedProfileEffectUrl = ExtractCosmeticAnimationUrl(content, effectId);
+                }
+            }
+            catch { }
+
+            return CachedProfileEffectUrl;
+        }
+
+        public async Task<string?> GetNameplateEffectUrlAsync(string? effectId)
+        {
+            if (string.IsNullOrEmpty(effectId)) return null;
+            if (!string.IsNullOrEmpty(CachedNameplateEffectUrl)) return CachedNameplateEffectUrl;
+
+            try
+            {
+                using var request = new HttpRequestMessage(HttpMethod.Get, "cosmetics/index/nameplateEffect");
+                request.Headers.TryAddWithoutValidation("User-Agent", Api.VRChatApiClient.DefaultUserAgent);
+                if (!string.IsNullOrEmpty(_auth.CookieHeader))
+                {
+                    request.Headers.TryAddWithoutValidation("Cookie", _auth.CookieHeader);
+                }
+
+                var response = await _httpClient.SendAsync(request);
+                if (response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    CachedNameplateEffectUrl = ExtractCosmeticAnimationUrl(content, effectId);
+                }
+                else
+                {
+                    using var fallbackReq = new HttpRequestMessage(HttpMethod.Get, "cosmetics/index/nameplate");
+                    fallbackReq.Headers.TryAddWithoutValidation("User-Agent", Api.VRChatApiClient.DefaultUserAgent);
+                    if (!string.IsNullOrEmpty(_auth.CookieHeader))
+                    {
+                        fallbackReq.Headers.TryAddWithoutValidation("Cookie", _auth.CookieHeader);
+                    }
+                    var fallbackResp = await _httpClient.SendAsync(fallbackReq);
+                    if (fallbackResp.IsSuccessStatusCode)
+                    {
+                        var content = await fallbackResp.Content.ReadAsStringAsync();
+                        CachedNameplateEffectUrl = ExtractCosmeticAnimationUrl(content, effectId);
+                    }
+                }
+            }
+            catch { }
+
+            return CachedNameplateEffectUrl;
+        }
+
+        public static string? ExtractCosmeticAnimationUrl(string json, string targetId)
+        {
+            try
+            {
+                using var doc = JsonDocument.Parse(json);
+                foreach (var el in doc.RootElement.EnumerateArray())
+                {
+                    if (el.TryGetProperty("id", out var idEl) && idEl.GetString() == targetId)
+                    {
+                        if (el.TryGetProperty("metadata", out var meta) && meta.TryGetProperty("assets", out var assets) && assets.ValueKind == JsonValueKind.Array)
+                        {
+                            foreach (var asset in assets.EnumerateArray())
+                            {
+                                if (asset.TryGetProperty("type", out var t) &&
+                                    (t.GetString() == "mainAnimation" || t.GetString() == "animation" || t.GetString() == "nameplateAnimation") &&
+                                    asset.TryGetProperty("url", out var u))
+                                {
+                                    return u.GetString();
+                                }
+                            }
+                            foreach (var asset in assets.EnumerateArray())
+                            {
+                                if (asset.TryGetProperty("url", out var u) && !string.IsNullOrEmpty(u.GetString()))
+                                {
+                                    return u.GetString();
+                                }
+                            }
+                        }
+                        break;
+                    }
+                }
+            }
+            catch { }
             return null;
         }
 

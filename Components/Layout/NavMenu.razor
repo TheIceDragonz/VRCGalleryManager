@@ -41,7 +41,11 @@
         }
         
         <div class="position-absolute w-100 h-100 d-flex flex-column align-items-center justify-content-center nav-profile-content" style="z-index: 2;">
-            <div class="position-relative d-flex align-items-center justify-content-center">
+            <div class="position-relative d-flex align-items-center justify-content-center cursor-pointer nav-profile-avatar-clickable"
+                 @onclick="OpenProfileModal"
+                 role="button"
+                 tabindex="0"
+                 title="View Profile">
                 <img src="@profileIconUrl" class="nav-profile-icon" />
                 @if (BackgroundService.DisplayVRCCosmetics && !string.IsNullOrEmpty(IconFrameUrl))
                 {
@@ -336,6 +340,27 @@
             }
         }
         catch { }
+
+        try
+        {
+            var nameplateTarget = !string.IsNullOrEmpty(CurrentUser.NameplateEffect)
+                ? CurrentUser.NameplateEffect
+                : PublicProfile?.NameplateEffect;
+
+            if (!string.IsNullOrEmpty(nameplateTarget))
+            {
+                await BackgroundService.GetNameplateEffectUrlAsync(nameplateTarget);
+            }
+        }
+        catch { }
+
+        BackgroundService.CachedProfileEffectUrl = ProfileEffectUrl;
+        BackgroundService.CachedIconFrameUrl = IconFrameUrl;
+    }
+
+    private void OpenProfileModal()
+    {
+        AppEvents.OpenProfileModal();
     }
 
     private static string? ExtractCosmeticAnimationUrl(string json, string targetId)
@@ -351,8 +376,16 @@
                     {
                         foreach (var asset in assets.EnumerateArray())
                         {
-                            if (asset.TryGetProperty("type", out var t) && t.GetString() == "mainAnimation" &&
+                            if (asset.TryGetProperty("type", out var t) && 
+                                (t.GetString() == "mainAnimation" || t.GetString() == "animation" || t.GetString() == "nameplateAnimation") &&
                                 asset.TryGetProperty("url", out var u))
+                            {
+                                return u.GetString();
+                            }
+                        }
+                        foreach (var asset in assets.EnumerateArray())
+                        {
+                            if (asset.TryGetProperty("url", out var u) && !string.IsNullOrEmpty(u.GetString()))
                             {
                                 return u.GetString();
                             }
