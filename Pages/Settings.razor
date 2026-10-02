@@ -89,9 +89,10 @@
 
                     <div class="settings-account-top d-flex align-items-center justify-content-between gap-3 position-relative" style="z-index: 2;">
                         <div class="d-flex align-items-center gap-3 min-w-0 flex-grow-1">
-                            <div class="position-relative settings-account-avatar-wrapper flex-shrink-0"
+                            <div class="position-relative d-flex align-items-center justify-content-center cursor-pointer settings-account-avatar-wrapper flex-shrink-0"
                                  @onclick="OpenProfileModal"
-                                 style="cursor: pointer;"
+                                 role="button"
+                                 tabindex="0"
                                  title="Click to view full profile">
                                 <img src="@(string.IsNullOrEmpty(avatarUrl) ? "/svg/profile-user-svgrepo-com.svg" : avatarUrl)"
                                      class="settings-account-avatar"
