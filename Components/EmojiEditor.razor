@@ -55,7 +55,7 @@
                             var index = i;
                             var isSelected = IsGifSource ? (index >= StartFrame && index <= EndFrame) : (index < FinalFrameCount);
                             var thumbB64 = GifFrameThumbnails[i];
-                            <div class="rounded @(isSelected ? "border border-info bg-info bg-opacity-25" : "border border-secondary bg-dark")" 
+                            <div class="rounded timeline-frame-item @(isSelected ? "selected" : "")" 
                                  style="min-width: 44px; height: 44px; cursor: pointer; padding: 2px; transition: all 0.2s ease; flex-shrink: 0;"
                                  @onclick="() => OnThumbnailClicked(index)"
                                  title="@($"Frame {index + 1}")">
@@ -86,11 +86,11 @@
                 <div class="mb-3">
                     <label class="form-label small text-muted mb-1">Mode</label>
                     <div class="btn-group w-100" role="group">
-                        <button type="button" class="btn btn-sm @(!IsSpritesheetMode ? "btn-info fw-bold" : "btn-dark text-muted")"
+                        <button type="button" class="btn btn-sm editor-toggle-btn @(!IsSpritesheetMode ? "active" : "")"
                                 @onclick="() => SetSpritesheetMode(false)">
                             Static
                         </button>
-                        <button type="button" class="btn btn-sm @(IsSpritesheetMode ? "btn-info fw-bold" : "btn-dark text-muted")"
+                        <button type="button" class="btn btn-sm editor-toggle-btn @(IsSpritesheetMode ? "active" : "")"
                                 @onclick="() => SetSpritesheetMode(true)">
                             Spritesheet
                         </button>
@@ -101,7 +101,7 @@
             <div class="mb-2">
                 <label class="form-label small text-muted mb-1">Preset Type</label>
                 <div class="dropdown w-100 position-relative">
-                    <button class="btn btn-sm btn-dark w-100 dropdown-toggle text-start d-flex justify-content-between align-items-center editor-dropdown-btn" type="button" @onclick="() => isEmojiTypeDropdownOpen = !isEmojiTypeDropdownOpen">
+                    <button class="btn btn-sm w-100 dropdown-toggle text-start d-flex justify-content-between align-items-center editor-dropdown-btn" type="button" @onclick="() => isEmojiTypeDropdownOpen = !isEmojiTypeDropdownOpen">
                         @SelectedEmojiType
                     </button>
                     @if (isEmojiTypeDropdownOpen)
@@ -111,7 +111,7 @@
                             <div class="d-flex flex-wrap gap-2 justify-content-center">
                                 @foreach (var style in EmojiStyles)
                                 {
-                                    <div class="emoji-style-item rounded-3 p-2 d-flex flex-row align-items-center @(SelectedEmojiType == style.Name ? "bg-info bg-opacity-25 border-info" : "border-secondary bg-dark")"
+                                    <div class="emoji-style-item rounded-3 p-2 d-flex flex-row align-items-center @(SelectedEmojiType == style.Name ? "active" : "")"
                                          @onclick="@(() => { SelectedEmojiType = style.Name; isEmojiTypeDropdownOpen = false; })">
                                         <img src="/animationStyle/@style.GifFile" class="rounded emoji-style-img" />
                                         <span class="ms-2 fw-bold emoji-style-name">@style.Name</span>
@@ -130,7 +130,7 @@
                     <label class="form-label small text-muted mb-1">Adaptation</label>
                     <div class="d-flex gap-2">
                         <div class="dropdown w-50">
-                            <button class="btn btn-sm btn-dark w-100 dropdown-toggle text-start d-flex justify-content-between align-items-center editor-dropdown-btn" type="button" @onclick="() => isAdaptationDropdownOpen = !isAdaptationDropdownOpen">
+                            <button class="btn btn-sm w-100 dropdown-toggle text-start d-flex justify-content-between align-items-center editor-dropdown-btn" type="button" @onclick="() => isAdaptationDropdownOpen = !isAdaptationDropdownOpen">
                                 @CurrentAdaptationMode.ToString()
                             </button>
                             @if (isAdaptationDropdownOpen)
@@ -143,7 +143,7 @@
                                 </ul>
                             }
                         </div>
-                        <button class="btn btn-sm btn-dark w-50 d-flex justify-content-center align-items-center editor-dropdown-btn" @onclick="Rotate" title="Rotate 90°">
+                        <button class="btn btn-sm w-50 d-flex justify-content-center align-items-center" @onclick="Rotate" title="Rotate 90°">
                             <img src="/svg/rotate-right-svgrepo-com.svg" class="btn-icon me-2" style="width: 16px; height: 16px;" /> Rotate
                         </button>
                     </div>
@@ -159,7 +159,7 @@
                 <div class="mb-3">
                     <label class="form-label small text-muted mb-1">Background Color</label>
                     <div class="d-flex align-items-center gap-2">
-                        <button class="btn btn-sm flex-grow-1 @(IsTransparentBg ? "btn-info" : "btn-outline-secondary")" @onclick="SetTransparentBg">Transparent</button>
+                        <button class="btn btn-sm flex-grow-1 editor-toggle-btn @(IsTransparentBg ? "active" : "")" @onclick="SetTransparentBg">Transparent</button>
                         <input type="color" class="form-control form-control-color form-control-sm p-1 color-picker-sm" value="@HexBgColor" @oninput="OnBgColorInput" @onchange="OnBgColorInput">
                     </div>
                 </div>
@@ -172,8 +172,8 @@
                                 <label class="form-check-label fw-bold small" for="removeBgSwitchEmoji">Remove Background</label>
                             </div>
                             <div class="d-flex align-items-center gap-1 editor-section-transition @(RemoveBgEnabled ? "" : "editor-section-disabled")">
-                                <button class="btn btn-sm @(IsColorPicking ? "btn-info" : "btn-outline-secondary") px-2 py-1" @onclick="ToggleColorPicker" disabled="@(!RemoveBgEnabled)" title="Pick color from image">
-                                    <img src="/svg/color-picker-svgrepo-com.svg" class="icon-accent" style="width: 16px; height: 16px;" />
+                                <button class="btn btn-sm editor-toggle-btn @(IsColorPicking ? "active" : "") px-2 py-1" @onclick="ToggleColorPicker" disabled="@(!RemoveBgEnabled)" title="Pick color from image">
+                                    <img src="/svg/color-picker-svgrepo-com.svg" class="btn-icon me-0" style="width: 16px; height: 16px;" />
                                 </button>
                                 <input type="color" class="form-control form-control-color form-control-sm p-1 color-picker-sm" value="@HexRemoveBgColor" @oninput="OnRemoveBgColorInput" @onchange="OnRemoveBgColorInput" disabled="@(!RemoveBgEnabled)">
                             </div>
@@ -246,7 +246,7 @@
                         <div class="d-flex gap-1 flex-wrap mt-1">
                             @foreach (var f in QuickFramePresets)
                             {
-                                <button type="button" class="btn btn-sm @(FinalFrameCount == f ? "btn-info fw-bold" : "btn-dark text-muted") py-0 px-2" 
+                                <button type="button" class="btn btn-sm editor-toggle-btn @(FinalFrameCount == f ? "active" : "") py-0 px-2" 
                                         style="font-size: 0.75rem;" @onclick="() => SetFrameCount(f)">@f</button>
                             }
                         </div>
@@ -262,7 +262,7 @@
                         <div class="d-flex gap-1 flex-wrap mt-1">
                             @foreach (var fpsVal in new int[] { 10, 15, 20, 24, 30, 60 })
                             {
-                                <button type="button" class="btn btn-sm @(FramesOverTime == fpsVal ? "btn-info fw-bold" : "btn-dark text-muted") py-0 px-2" 
+                                <button type="button" class="btn btn-sm editor-toggle-btn @(FramesOverTime == fpsVal ? "active" : "") py-0 px-2" 
                                         style="font-size: 0.75rem;" @onclick="() => SetFps(fpsVal)">@fpsVal</button>
                             }
                         </div>
@@ -441,11 +441,16 @@
                 EndFrame = Math.Min(TotalFrames - 1, 63);
                 FinalFrameCount = EndFrame - StartFrame + 1;
                 _ = ExtractGifThumbnailsAsync();
+                await UpdateAnimatedPreview();
             }
             else
             {
                 IsGifSource = false;
                 CheckFileNameAutoDetect();
+                if (IsSpritesheetMode)
+                {
+                    await UpdateSpritesheetPreview();
+                }
             }
 
             isLoading = false;
@@ -453,10 +458,6 @@
             if (!IsAnimatedMode && dotNetRef != null)
             {
                 QueueUpdatePreview();
-            }
-            else if (IsSpritesheetMode)
-            {
-                UpdateSpritesheetPreview();
             }
         }
         else
@@ -541,7 +542,7 @@
             {
                 FinalFrameCount = 16;
             }
-            UpdateSpritesheetPreview();
+            _ = UpdateSpritesheetPreview();
         }
         else
         {
@@ -559,7 +560,7 @@
         StateHasChanged();
     }
 
-    private async void UpdateSpritesheetPreview()
+    private async Task UpdateSpritesheetPreview()
     {
         if (!IsSpritesheetMode || originalImage == null) return;
 
@@ -660,13 +661,13 @@
     private void SetFrameCount(int count)
     {
         FinalFrameCount = Math.Clamp(count, 2, 64);
-        UpdateSpritesheetPreview();
+        _ = UpdateSpritesheetPreview();
     }
 
     private void SetFps(int fps)
     {
         FramesOverTime = Math.Clamp(fps, 1, 64);
-        UpdateSpritesheetPreview();
+        _ = UpdateSpritesheetPreview();
     }
 
     private void OnSpritesheetFrameInput(ChangeEventArgs e)
@@ -686,29 +687,29 @@
         if (int.TryParse(e.Value?.ToString(), out int val))
         {
             FinalFrameCount = Math.Clamp(val, 2, 64);
-            UpdateSpritesheetPreview();
+            _ = UpdateSpritesheetPreview();
         }
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender && !IsAnimatedMode)
+        if (IsAnimatedMode)
         {
-            dotNetRef = DotNetObjectReference.Create(this);
-            await JSRuntime.InvokeVoidAsync("imageEditor.init", "emojiEditorCanvas", dotNetRef);
-            if (originalImage != null)
+            if (originalImage != null && !string.IsNullOrEmpty(AnimatedPreviewBase64))
             {
-                QueueUpdatePreview();
+                await JSRuntime.InvokeVoidAsync("spritesheetAnimator.initAll");
             }
         }
-        else if (firstRender && IsAnimatedMode)
+        else
         {
-            if (originalImage != null)
+            if (dotNetRef == null)
             {
-                if (IsGifSource)
-                    UpdateAnimatedPreview();
-                else
-                    UpdateSpritesheetPreview();
+                dotNetRef = DotNetObjectReference.Create(this);
+                await JSRuntime.InvokeVoidAsync("imageEditor.init", "emojiEditorCanvas", dotNetRef);
+            }
+            if (originalImage != null && string.IsNullOrEmpty(lastRenderHash))
+            {
+                QueueUpdatePreview();
             }
         }
     }
@@ -718,9 +719,9 @@
         if (IsAnimatedMode)
         {
             if (IsGifSource)
-                UpdateAnimatedPreview();
+                _ = UpdateAnimatedPreview();
             else
-                UpdateSpritesheetPreview();
+                _ = UpdateSpritesheetPreview();
         }
         else
         {
@@ -809,7 +810,7 @@
             FinalFrameCount = 16;
             FramesOverTime = 30;
             SelectedEmojiType = "Select Type...";
-            UpdateSpritesheetPreview();
+            _ = UpdateSpritesheetPreview();
             return;
         }
 
@@ -973,7 +974,7 @@
         }
     }
 
-    private async void UpdateAnimatedPreview()
+    private async Task UpdateAnimatedPreview()
     {
         if (StartFrame > EndFrame)
         {
@@ -991,12 +992,13 @@
 
         isRendering = true;
         await InvokeAsync(StateHasChanged);
-        await Task.Delay(50); // Yield to allow UI to show spinner
+        await Task.Delay(20);
 
         try
         {
             await Task.Run(() => 
             {
+                if (string.IsNullOrEmpty(TempGifPath) || !File.Exists(TempGifPath)) return;
                 using var converter = new GifToSpriteSheetConverter();
                 var result = converter.ConvertGifToSpriteSheet(TempGifPath, StartFrame, EndFrame);
                 
@@ -1035,17 +1037,18 @@
                     int count = Math.Min(TotalFrames, 256); // Extract up to 256 thumbnails for the timeline
                     for (int i = 0; i < count; i++)
                     {
+                        using Image<Rgba32> frame = originalImage.Frames.CloneFrame(i);
                         using Image<Rgba32> thumb = new Image<Rgba32>(64, 64);
-                        using Image<Rgba32> clone = originalImage.Clone(x => {
-                            int minDim = Math.Min(originalImage.Width, originalImage.Height);
-                            int srcX = (originalImage.Width - minDim) / 2;
-                            int srcY = (originalImage.Height - minDim) / 2;
+                        int minDim = Math.Min(frame.Width, frame.Height);
+                        int srcX = (frame.Width - minDim) / 2;
+                        int srcY = (frame.Height - minDim) / 2;
+                        frame.Mutate(x => {
                             x.Crop(new Rectangle(srcX, srcY, minDim, minDim));
                             x.Resize(64, 64, KnownResamplers.Bicubic);
                         });
-                        thumb.Mutate(x => x.DrawImage(clone, new Point(0, 0), 1f));
+                        thumb.Mutate(x => x.DrawImage(frame, new Point(0, 0), 1f));
                         using MemoryStream ms = new MemoryStream();
-                        thumb.SaveAsPng(ms, new SixLabors.ImageSharp.Formats.Png.PngEncoder { CompressionLevel = SixLabors.ImageSharp.Formats.Png.PngCompressionLevel.BestSpeed });;
+                        thumb.SaveAsPng(ms, new SixLabors.ImageSharp.Formats.Png.PngEncoder { CompressionLevel = SixLabors.ImageSharp.Formats.Png.PngCompressionLevel.BestSpeed });
                         thumbnails.Add("data:image/png;base64," + Convert.ToBase64String(ms.ToArray()));
                     }
                 }
@@ -1067,12 +1070,12 @@
                 StartFrame = index;
                 if (EndFrame < StartFrame) EndFrame = StartFrame;
             }
-            UpdateAnimatedPreview();
+            _ = UpdateAnimatedPreview();
         }
         else if (IsSpritesheetMode)
         {
             FinalFrameCount = Math.Clamp(index + 1, 2, MaxAllowedFrames);
-            UpdateSpritesheetPreview();
+            _ = UpdateSpritesheetPreview();
         }
     }
 
@@ -1090,6 +1093,7 @@
                 EndFrame = StartFrame + 63;
                 if (EndFrame >= TotalFrames) EndFrame = TotalFrames - 1;
             }
+            FinalFrameCount = EndFrame - StartFrame + 1;
         }
     }
 
@@ -1107,13 +1111,20 @@
                 StartFrame = EndFrame - 63;
                 if (StartFrame < 0) StartFrame = 0;
             }
+            FinalFrameCount = EndFrame - StartFrame + 1;
         }
     }
 
     private void OnFpsInput(ChangeEventArgs e)
     {
         if (int.TryParse(e.Value?.ToString(), out int val))
-            FramesOverTime = val;
+        {
+            FramesOverTime = Math.Clamp(val, 1, 64);
+            _ = Task.Run(async () => {
+                await Task.Delay(30);
+                await InvokeAsync(() => JSRuntime.InvokeVoidAsync("spritesheetAnimator.initAll"));
+            });
+        }
     }
 
 

@@ -83,18 +83,24 @@
             }
             else
             {
-                <div class="d-flex align-items-center gap-2">
-                    <button class="btn btn-outline-secondary btn-sm" @onclick="RefreshList" disabled="@isRefreshing" title="Refresh">
-                        <img src="/svg/rotate-right-svgrepo-com.svg" class="btn-icon @(isRefreshing ? "spin" : "")" style="margin: 0;" />
-                    </button>
+                <div class="media-page-top-actions d-flex align-items-center gap-2">
+                    <div class="media-page-action-buttons">
+                        <button class="btn btn-secondary btn-sm" @onclick="OpenImageSearch" disabled="@(imageCount >= 64)" title="Search Images">
+                            <img src="/svg/search-alt-2-svgrepo-com.svg" class="btn-icon" /> Image Search
+                        </button>
+                    </div>
 
                     <label class="btn btn-secondary btn-sm m-0 @(imageCount >= 64 ? "disabled" : "")">
                         <InputFile OnChange="OnInputFileChange" class="d-none" disabled="@(imageCount >= 64)" accept="image/png, image/jpeg, image/gif, image/webp" />
                         <img src="/svg/folder-open-svgrepo-com.svg" class="btn-icon" /> Upload
                     </label>
-                    
+
                     <button class="btn btn-secondary btn-sm" @onclick="PasteFromClipboard" disabled="@(imageCount >= 64)">
                         <img src="/svg/paste-svgrepo-com.svg" class="btn-icon" /> Paste
+                    </button>
+
+                    <button class="btn btn-outline-secondary btn-sm media-page-reload-btn" @onclick="RefreshList" disabled="@isRefreshing" title="Refresh">
+                        <img src="/svg/rotate-right-svgrepo-com.svg" class="btn-icon @(isRefreshing ? "spin" : "")" style="margin: 0;" />
                     </button>
                 </div>
             }
@@ -419,4 +425,6 @@
     {
         await HandleViewerDeleteAsync(index, photos, DeletePhoto);
     }
+
+    private void OpenImageSearch() => OpenMediaSearch(MediaSearchMode.Image, "Search Photos & Images");
 }

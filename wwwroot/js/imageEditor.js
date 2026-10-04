@@ -535,6 +535,7 @@ window.spritesheetAnimator = {
 
         const existing = this.animators.find(a => a.el === element);
         if (existing) {
+            element.style.backgroundSize = `${cols * 100}% ${cols * 100}%`;
             if (existing.frames === frames && existing.fps === fps && existing.cols === cols) {
                 return;
             }
@@ -542,7 +543,6 @@ window.spritesheetAnimator = {
             existing.fps = fps;
             existing.cols = cols;
             existing.currentFrame = -1;
-            element.style.backgroundSize = `${cols * 100}% ${cols * 100}%`;
             return;
         }
 
@@ -1043,8 +1043,12 @@ window.vrcColorPicker = {
 
 // Initialize on DOM ready
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => window.vrcColorPicker.init());
+    document.addEventListener('DOMContentLoaded', () => {
+        window.vrcColorPicker.init();
+        window.spritesheetAnimator.initObserver();
+    });
 } else {
     window.vrcColorPicker.init();
+    window.spritesheetAnimator.initObserver();
 }
 

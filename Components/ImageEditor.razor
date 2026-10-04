@@ -61,7 +61,7 @@
                 <label class="form-label small text-muted mb-1">Adaptation</label>
                 <div class="d-flex gap-2">
                     <div class="dropdown w-50">
-                        <button class="btn btn-sm btn-dark w-100 dropdown-toggle text-start d-flex justify-content-between align-items-center editor-dropdown-btn" type="button" @onclick="() => isAdaptationDropdownOpen = !isAdaptationDropdownOpen">
+                        <button class="btn btn-sm w-100 dropdown-toggle text-start d-flex justify-content-between align-items-center editor-dropdown-btn" type="button" @onclick="() => isAdaptationDropdownOpen = !isAdaptationDropdownOpen">
                             @CurrentAdaptationMode.ToString()
                         </button>
                         @if (isAdaptationDropdownOpen)
@@ -74,7 +74,7 @@
                             </ul>
                         }
                     </div>
-                    <button class="btn btn-sm btn-dark w-50 d-flex justify-content-center align-items-center editor-dropdown-btn" @onclick="Rotate" title="Rotate 90°">
+                    <button class="btn btn-sm w-50 d-flex justify-content-center align-items-center" @onclick="Rotate" title="Rotate 90°">
                         <img src="/svg/rotate-right-svgrepo-com.svg" class="btn-icon me-2" style="width: 16px; height: 16px;" /> Rotate
                     </button>
                 </div>
@@ -90,7 +90,7 @@
             <div class="mb-3">
                 <label class="form-label small text-muted mb-1">Background Color</label>
                 <div class="d-flex align-items-center gap-2">
-                    <button class="btn btn-sm flex-grow-1 @(IsTransparentBg ? "btn-info" : "btn-outline-secondary")" @onclick="SetTransparentBg">Transparent</button>
+                    <button class="btn btn-sm flex-grow-1 editor-toggle-btn @(IsTransparentBg ? "active" : "")" @onclick="SetTransparentBg">Transparent</button>
                     <input type="color" class="form-control form-control-color form-control-sm p-1 color-picker-sm" value="@HexBgColor" @oninput="OnBgColorInput" @onchange="OnBgColorInput">
                 </div>
             </div>

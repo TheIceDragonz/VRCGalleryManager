@@ -23,6 +23,7 @@ namespace VRCGalleryManager.Core.Components
         [Inject] protected MediaCacheService CacheService { get; set; }
         [Inject] protected NetworkStatusService NetworkStatus { get; set; }
         [Inject] protected ImageViewerService ViewerService { get; set; } = default!;
+        [Inject] protected MediaSearchService MediaSearchService { get; set; } = default!;
 
         protected bool isLoading = true;
         protected bool isRefreshing = false;
@@ -716,6 +717,21 @@ namespace VRCGalleryManager.Core.Components
                     StateHasChanged();
                 }
             }
+        }
+
+        protected void OpenMediaSearch(MediaSearchMode mode, string title)
+        {
+            if (imageCount >= MaxImageCount) return;
+            MediaSearchService.Open(new MediaSearchOptions
+            {
+                Title = title,
+                Mode = mode,
+                OnMediaSelected = async (filePath) =>
+                {
+                    await LoadLocalFileForEditing(filePath);
+                    await InvokeAsync(StateHasChanged);
+                }
+            });
         }
     }
 }

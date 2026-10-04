@@ -1,0 +1,822 @@
+@using VRCGalleryManager.Core
+@using VRCGalleryManager.Core.Data
+@using Microsoft.JSInterop
+@inject IMediaProviderService MediaService
+@inject MediaSearchService SearchService
+@inject NotificationService NotificationService
+@inject IJSRuntime JSRuntime
+@inject VRCAuth Auth
+@inject DialogService dialogService
+@implements IAsyncDisposable
+
+@if (IsOpen)
+{
+    <div class="position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center gif-wall-overlay @(isAndroid ? "is-android-overlay" : "")"
+         @onclick="Close"
+         @onkeydown="HandleKeyDown"
+         tabindex="0"
+         style="z-index: 10010;">
+        
+        <div class="gif-wall-modal d-flex flex-column shadow-lg position-relative @(isAndroid ? "is-android" : "")"
+             @onclick:stopPropagation="true">
+            
+            @if (!string.IsNullOrEmpty(downloadingItemId))
+            {
+                <div class="position-absolute top-0 start-0 w-100 h-100 d-flex flex-column align-items-center justify-content-center gif-download-overlay"
+                     style="z-index: 10050; border-radius: inherit;">
+                    <div class="gif-download-card d-flex flex-column align-items-center text-center">
+                        
+                        <!-- Animated Preview Container with Glowing Orbital Ring -->
+                        <div class="gif-download-preview-container mb-3">
+                            <div class="gif-download-orbital-ring"></div>
+                            
+                            @if (!string.IsNullOrEmpty(downloadingItem?.ThumbnailUrl))
+                            {
+                                <img src="@downloadingItem.ThumbnailUrl" class="gif-download-thumb-img" alt="Preview" />
+                                <div class="gif-download-badge">
+                                    <img src="/svg/download-svgrepo-com.svg" class="gif-download-badge-icon" alt="Download" />
+                                </div>
+                            }
+                            else if (!string.IsNullOrEmpty(downloadingItem?.MediaUrl) && !downloadingItem.MediaUrl.EndsWith(".mp4", StringComparison.OrdinalIgnoreCase))
+                            {
+                                <img src="@downloadingItem.MediaUrl" class="gif-download-thumb-img" alt="Preview" />
+                                <div class="gif-download-badge">
+                                    <img src="/svg/download-svgrepo-com.svg" class="gif-download-badge-icon" alt="Download" />
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="gif-download-fallback-icon d-flex align-items-center justify-content-center">
+                                    <img src="/svg/download-svgrepo-com.svg" class="gif-download-center-icon" alt="Download" />
+                                </div>
+                            }
+                        </div>
+
+                        <!-- Title & Subtitle -->
+                        <h6 class="gif-download-title mb-1">@(isStickerMode ? "Downloading Image..." : "Downloading GIF...")</h6>
+                        <span class="gif-download-subtitle">Opening editor...</span>
+
+                        <!-- Sleek Neon Indeterminate Progress Track -->
+                        <div class="gif-download-progress-track mt-3">
+                            <div class="gif-download-progress-bar"></div>
+                        </div>
+                    </div>
+                </div>
+            }
+            
+            <!-- Minimalist Top Bar -->
+            <div class="gif-wall-topbar d-flex align-items-center justify-content-between p-3 gap-3">
+                
+                <!-- Search Input Container -->
+                <div class="position-relative gif-wall-search-wrap">
+                    <img src="/svg/search-alt-2-svgrepo-com.svg" class="position-absolute top-50 translate-middle-y gif-wall-search-icon" alt="Search" />
+                    <input type="text"
+                           class="form-control gif-wall-search-input pe-5"
+                           placeholder="@(isStickerMode ? "Search Images..." : "Search GIFs...")"
+                           value="@searchQuery"
+                           @oninput="HandleSearchInput"
+                           @onkeydown="HandleSearchKeyDown"
+                           autofocus />
+                    
+                    @if (!string.IsNullOrEmpty(searchQuery))
+                    {
+                        <button type="button" 
+                                class="gif-wall-clear-btn"
+                                @onclick="ClearSearch" 
+                                title="Clear">
+                            <img src="/svg/close-bold-svgrepo-com.svg" class="gif-wall-clear-icon" alt="Clear" />
+                        </button>
+                    }
+                </div>
+
+                <!-- Quick Category Pills -->
+                <div class="gif-wall-pills d-flex gap-1 overflow-auto align-items-center flex-grow-1" style="white-space: nowrap;">
+                    @foreach (var tag in CurrentQuickTags)
+                    {
+                        <button type="button"
+                                class="btn btn-sm gif-wall-pill @(searchQuery.Equals(tag, StringComparison.OrdinalIgnoreCase) ? "active" : "")"
+                                @onclick="() => SearchTag(tag)">
+                            @tag
+                        </button>
+                    }
+                </div>
+
+                <!-- Right Actions: NSFW Toggle, Count & Close -->
+                <div class="d-flex align-items-center gap-2 flex-shrink-0 gif-wall-actions-wrap">
+                    <!-- NSFW Toggle Container (Only visible for 18+ Age Verified accounts) -->
+                    @if (isAgeVerified)
+                    {
+                        <div class="gif-wall-nsfw-wrapper @(includeNsfw ? "is-active" : "")"
+                             title="@NsfwTooltipText"
+                             @onclick="HandleNsfwToggleClick">
+                            <label class="gif-wall-nsfw-switch mb-0" @onclick:preventDefault="true">
+                                <input type="checkbox"
+                                       checked="@includeNsfw" />
+                                <span class="gif-wall-nsfw-slider"></span>
+                            </label>
+                            <span class="gif-wall-nsfw-label user-select-none">
+                                NSFW
+                            </span>
+                        </div>
+                    }
+
+                    @if (mediaItems.Count > 0)
+                    {
+                        <span class="badge gif-wall-count-badge">@mediaItems.Count @(isStickerMode ? "Images" : "GIFs")</span>
+                    }
+
+                    <button class="btn btn-sm p-1 rounded-circle d-flex align-items-center justify-content-center gif-wall-close-btn"
+                            @onclick="Close"
+                            title="Close (Esc)">
+                        <img src="/svg/close-bold-svgrepo-com.svg" class="btn-icon" style="width: 14px; height: 14px; margin: 0;" />
+                    </button>
+                </div>
+            </div>
+
+            <!-- Scrollable Infinite Masonry Wall -->
+            <div class="gif-wall-scroll-container flex-grow-1 overflow-auto p-3 position-relative"
+                 @ref="scrollContainerRef">
+
+                @if (isLoading && !isLoadingMore && mediaItems.Count == 0)
+                {
+                    <!-- Initial Loading Masonry Skeletons -->
+                    <div class="gif-masonry-wall @(isStickerMode ? "is-sticker-mode" : "")">
+                        @for (int c = 0; c < columnCount; c++)
+                        {
+                            <div class="gif-masonry-col">
+                                @for (int i = 0; i < 3; i++)
+                                {
+                                    var h = SkeletonsHeights[(c * 3 + i) % SkeletonsHeights.Length];
+                                    <div class="gif-wall-item-skeleton" style="height: @(h)px;"></div>
+                                }
+                            </div>
+                        }
+                    </div>
+                }
+                else if (hasError && mediaItems.Count == 0)
+                {
+                    <div class="h-100 d-flex flex-column align-items-center justify-content-center text-center p-4">
+                        <div class="p-3 mb-3 rounded-circle bg-danger bg-opacity-25" style="width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;">
+                            <img src="/svg/error-svgrepo-com.svg" class="icon-danger" style="width: 32px; height: 32px;" alt="Error" />
+                        </div>
+                        <h6 class="text-white fw-bold mb-1">Failed to load @(isStickerMode ? "images" : "GIFs")</h6>
+                        <p class="text-muted mb-3" style="max-width: 400px; font-size: 0.85rem;">@errorMessage</p>
+                        <button class="btn btn-outline-secondary btn-sm px-3" @onclick="PerformSearchAsync">
+                            <img src="/svg/rotate-right-svgrepo-com.svg" class="btn-icon" /> Try Again
+                        </button>
+                    </div>
+                }
+                else if (mediaItems.Count == 0 && hasSearched)
+                {
+                    <div class="h-100 d-flex flex-column align-items-center justify-content-center text-center p-4">
+                        <div class="mb-3" style="font-size: 3rem;">🔍</div>
+                        <h6 class="text-white fw-bold mb-1">No @(isStickerMode ? "images" : "GIFs") found</h6>
+                        <p class="text-muted" style="max-width: 360px; font-size: 0.85rem;">
+                            No @(isStickerMode ? "images" : "GIFs") found for "<strong>@searchQuery</strong>". Try another keyword or tap one of the category pills above.
+                        </p>
+                    </div>
+                }
+                else
+                {
+                    <!-- Pure Media Masonry Wall -->
+                    <div class="gif-masonry-wall @(isStickerMode ? "is-sticker-mode" : "")">
+                        @for (int c = 0; c < columnCount; c++)
+                        {
+                            var colIndex = c;
+                            if (colIndex < columns.Length && columns[colIndex] != null)
+                            {
+                                <div class="gif-masonry-col">
+                                    @foreach (var item in columns[colIndex])
+                                    {
+                                        var isDownloading = downloadingItemId == item.Id;
+                                        var ratioStyle = (item.Width > 0 && item.Height > 0)
+                                            ? $"aspect-ratio: {item.Width} / {item.Height};"
+                                            : "";
+
+                                        <div class="gif-wall-item @(isDownloading ? "downloading" : "")"
+                                             style="@ratioStyle"
+                                             @onclick="() => SelectMediaAsync(item)"
+                                             title="@item.Title"
+                                             @key="item.Id">
+                                            
+                                            @if (!string.IsNullOrEmpty(item.Mp4PreviewUrl) && !isStickerMode)
+                                            {
+                                                <video data-src="@item.Mp4PreviewUrl"
+                                                       class="gif-wall-media"
+                                                       loop
+                                                       muted
+                                                       playsinline
+                                                       preload="none"
+                                                       poster="@item.ThumbnailUrl"></video>
+                                            }
+                                            else
+                                            {
+                                                <img src="@(isStickerMode ? (!string.IsNullOrEmpty(item.ThumbnailUrl) ? item.ThumbnailUrl : item.MediaUrl) : item.MediaUrl)"
+                                                     class="gif-wall-media"
+                                                     loading="lazy"
+                                                     decoding="async"
+                                                     onerror="this.onerror=null; this.closest('.gif-wall-item').style.display='none';"
+                                                     alt="@(isStickerMode ? "Image" : "GIF")" />
+                                            }
+
+                                            @if (item.IsOver18)
+                                            {
+                                                <span class="gif-wall-card-nsfw-badge">18+</span>
+                                            }
+
+                                            <!-- Hover Overlay / Direct Select Visual -->
+                                            <div class="gif-wall-item-overlay d-flex align-items-center justify-content-center">
+                                                @if (isDownloading)
+                                                {
+                                                    <div class="gif-wall-tile-loader d-flex flex-column align-items-center justify-content-center">
+                                                        <div class="gif-wall-tile-spinner-wrap">
+                                                            <div class="gif-wall-tile-spinner-ring"></div>
+                                                            <img src="/svg/download-svgrepo-com.svg" class="gif-wall-tile-spinner-icon" alt="Downloading" />
+                                                        </div>
+                                                        <span class="gif-wall-tile-loader-text">Downloading...</span>
+                                                    </div>
+                                                }
+                                                else
+                                                {
+                                                    <div class="gif-wall-select-icon-circle shadow">
+                                                        <img src="/svg/download-svgrepo-com.svg" style="width: 18px; height: 18px; filter: brightness(0) invert(1);" />
+                                                    </div>
+                                                }
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                        }
+                    </div>
+
+                    <!-- Sentinel element for Infinite Scroll IntersectionObserver -->
+                    <div id="gifWallSentinel" @ref="sentinelRef" class="gif-wall-sentinel py-3 d-flex justify-content-center align-items-center">
+                        @if (isLoadingMore)
+                        {
+                            <div class="d-flex align-items-center gap-2 py-2 text-accent">
+                                <div class="spinner-border spinner-border-sm text-accent" role="status"></div>
+                                <span class="small fw-semibold">Loading more @(isStickerMode ? "images" : "GIFs")...</span>
+                            </div>
+                        }
+                        else if (!string.IsNullOrEmpty(afterCursor))
+                        {
+                            <button class="btn btn-sm btn-outline-secondary px-3 py-1 opacity-75" @onclick="LoadMoreAsync">
+                                Load more...
+                            </button>
+                        }
+                        else if (mediaItems.Count > 0)
+                        {
+                            <span class="text-muted small opacity-50 py-2">Reached the end</span>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private readonly bool isAndroid = OperatingSystem.IsAndroid() || 
+        Microsoft.Maui.Devices.DeviceInfo.Current.Platform == Microsoft.Maui.Devices.DevicePlatform.Android;
+
+    private bool IsOpen = false;
+    private MediaSearchMode currentMode = MediaSearchMode.Gif;
+    private bool isStickerMode => currentMode == MediaSearchMode.Sticker || currentMode == MediaSearchMode.Image;
+    private string searchQuery = "";
+    private bool isLoading = false;
+    private bool isLoadingMore = false;
+    private bool hasSearched = false;
+    private bool hasError = false;
+    private string errorMessage = "";
+    private string? afterCursor = null;
+    private string? downloadingItemId = null;
+    private MediaItem? downloadingItem = null;
+    private Func<string, Task>? onMediaSelectedCallback;
+    private Action? onClosedCallback;
+
+    private bool isAgeVerified = false;
+    private bool includeNsfw = false;
+    private CancellationTokenSource? _searchCts;
+
+    private string NsfwTooltipText => includeNsfw
+        ? "NSFW content enabled (18+). Click to disable."
+        : "Click to enable NSFW content (18+). Requires accepting disclaimer.";
+
+    private readonly List<MediaItem> mediaItems = new();
+    private readonly HashSet<string> seenItemIds = new(StringComparer.OrdinalIgnoreCase);
+    private static readonly int[] SkeletonsHeights = new[] { 180, 260, 220, 310, 190, 240, 280, 210, 340, 230 };
+
+    private int columnCount = 4;
+    private List<MediaItem>[] columns = Array.Empty<List<MediaItem>>();
+    private double[] columnHeights = Array.Empty<double>();
+
+    private void EnsureColumnsInitialized()
+    {
+        if (columns == null || columns.Length != columnCount)
+        {
+            columns = new List<MediaItem>[columnCount];
+            columnHeights = new double[columnCount];
+            for (int i = 0; i < columnCount; i++)
+            {
+                columns[i] = new List<MediaItem>();
+                columnHeights[i] = 0;
+            }
+        }
+    }
+
+    private void ClearColumns()
+    {
+        EnsureColumnsInitialized();
+        for (int i = 0; i < columnCount; i++)
+        {
+            columns[i].Clear();
+            columnHeights[i] = 0;
+        }
+    }
+
+    private void RebuildColumns()
+    {
+        columns = new List<MediaItem>[columnCount];
+        columnHeights = new double[columnCount];
+        for (int i = 0; i < columnCount; i++)
+        {
+            columns[i] = new List<MediaItem>();
+            columnHeights[i] = 0;
+        }
+
+        if (mediaItems.Count > 0)
+        {
+            DistributeItemsToColumns(mediaItems);
+        }
+    }
+
+    private void DistributeItemsToColumns(IEnumerable<MediaItem> newItems)
+    {
+        EnsureColumnsInitialized();
+        foreach (var item in newItems)
+        {
+            int shortestCol = 0;
+            double minH = columnHeights[0];
+            for (int c = 1; c < columnCount; c++)
+            {
+                if (columnHeights[c] < minH)
+                {
+                    minH = columnHeights[c];
+                    shortestCol = c;
+                }
+            }
+
+            columns[shortestCol].Add(item);
+            double ratio = (item.Width > 0 && item.Height > 0)
+                ? ((double)item.Height / item.Width)
+                : 0.75;
+            columnHeights[shortestCol] += ratio;
+        }
+    }
+
+    [JSInvokable]
+    public void OnColumnCountChanged(int newCount)
+    {
+        if (isAndroid) return;
+        if (newCount > 0 && newCount != columnCount)
+        {
+            columnCount = newCount;
+            RebuildColumns();
+            InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private ElementReference scrollContainerRef;
+    private ElementReference sentinelRef;
+    private DotNetObjectReference<MediaSearchModal>? dotNetRef;
+    private bool isObserverInitialized = false;
+    private int _lastRenderedItemCount = 0;
+    private System.Threading.Timer? _debounceTimer;
+
+    private readonly List<string> GifQuickTags = new()
+    {
+        "Cats",
+        "Dogs",
+        "Dance",
+        "Funny",
+        "Anime",
+        "Reaction",
+        "VRChat",
+        "Memes"
+    };
+
+    private readonly List<string> StickerQuickTags = new()
+    {
+        "Anime",
+        "Art",
+        "Wallpapers",
+        "Memes",
+        "Animals",
+        "Cute",
+        "Pixel Art",
+        "VRChat",
+        "PFP"
+    };
+
+    private List<string> CurrentQuickTags => isStickerMode ? StickerQuickTags : GifQuickTags;
+
+    protected override void OnInitialized()
+    {
+        columnCount = isAndroid ? 2 : 4;
+        EnsureColumnsInitialized();
+        SearchService.OnOpen += HandleOpen;
+        SearchService.OnClose += Close;
+        Auth.OnAuthStateChanged += HandleAuthStateChanged;
+        _ = CheckAgeVerificationAsync();
+    }
+
+    private async void HandleAuthStateChanged()
+    {
+        await CheckAgeVerificationAsync();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async void HandleOpen(MediaSearchOptions options)
+    {
+        currentMode = options.Mode;
+        onMediaSelectedCallback = options.OnMediaSelected;
+        onClosedCallback = options.OnClosed;
+        
+        searchQuery = options.InitialQuery ?? "";
+
+        IsOpen = true;
+        hasError = false;
+        errorMessage = "";
+        isObserverInitialized = false;
+
+        await CheckAgeVerificationAsync();
+
+        if (mediaItems.Count == 0 || string.IsNullOrEmpty(searchQuery))
+        {
+            _ = PerformSearchAsync();
+        }
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task CheckAgeVerificationAsync()
+    {
+        try
+        {
+            var user = Auth.CurrentUser;
+            if (user == null && Auth.LoggedIn)
+            {
+                user = await Auth.GetCurrentUserAsync();
+            }
+
+            isAgeVerified = user != null && (user.AgeVerified || user.AgeVerificationStatus == "18+");
+            if (!isAgeVerified)
+            {
+                includeNsfw = false;
+            }
+        }
+        catch
+        {
+            isAgeVerified = false;
+            includeNsfw = false;
+        }
+    }
+
+    private async Task HandleNsfwToggleClick()
+    {
+        if (!isAgeVerified) return;
+
+        if (includeNsfw)
+        {
+            // Turning OFF: direct without confirmation
+            includeNsfw = false;
+            await PerformSearchAsync();
+            await InvokeAsync(StateHasChanged);
+            return;
+        }
+
+        // Turning ON: safety confirmation dialog with full disclaimer in English
+        bool accepted = await dialogService.ShowConfirmAsync(
+            title: "NSFW Content Warning",
+            message: "CONTENT WARNING & DISCLAIMER:\n\nYou are about to enable 18+ content.\n\nUploading, displaying, or sharing NSFW content in VRChat may violate VRChat's Terms of Service (ToS) and Community Guidelines.\n\nDo you understand and accept this risk?",
+            confirmText: "I Accept & Enable",
+            cancelText: "Cancel");
+
+        if (accepted)
+        {
+            includeNsfw = true;
+            await PerformSearchAsync();
+        }
+        else
+        {
+            includeNsfw = false;
+        }
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (IsOpen && mediaItems.Count > 0)
+        {
+            try
+            {
+                dotNetRef ??= DotNetObjectReference.Create(this);
+                if (!isObserverInitialized)
+                {
+                    int detectedCols = await JSRuntime.InvokeAsync<int>("gifWall.init", scrollContainerRef, sentinelRef, dotNetRef);
+                    if (!isAndroid && detectedCols > 0 && detectedCols != columnCount)
+                    {
+                        columnCount = detectedCols;
+                        RebuildColumns();
+                        await InvokeAsync(StateHasChanged);
+                    }
+                    isObserverInitialized = true;
+                    _lastRenderedItemCount = mediaItems.Count;
+                }
+                else if (_lastRenderedItemCount != mediaItems.Count)
+                {
+                    _lastRenderedItemCount = mediaItems.Count;
+                    await JSRuntime.InvokeVoidAsync("gifWall.refreshItems", scrollContainerRef);
+                }
+            }
+            catch
+            {
+                // Silently catch if DOM is not ready
+            }
+        }
+    }
+
+    private void ForceClose()
+    {
+        if (!IsOpen) return;
+        _debounceTimer?.Dispose();
+        _lastRenderedItemCount = 0;
+        downloadingItemId = null;
+        downloadingItem = null;
+        seenItemIds.Clear();
+        mediaItems.Clear();
+        ClearColumns();
+        IsOpen = false;
+        _searchCts?.Cancel();
+        _searchCts?.Dispose();
+        _searchCts = null;
+        SearchService.NotifyClosed();
+        onClosedCallback?.Invoke();
+        _ = DisconnectObserverAsync();
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void Close()
+    {
+        if (!IsOpen || downloadingItemId != null) return;
+        ForceClose();
+    }
+
+    private void HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Escape")
+        {
+            Close();
+        }
+    }
+
+    private void HandleSearchInput(ChangeEventArgs e)
+    {
+        searchQuery = e.Value?.ToString() ?? "";
+        _debounceTimer?.Dispose();
+        _debounceTimer = new System.Threading.Timer(async _ =>
+        {
+            await InvokeAsync(async () =>
+            {
+                if (!string.IsNullOrWhiteSpace(searchQuery) && searchQuery.Trim().Length >= 2)
+                {
+                    await PerformSearchAsync();
+                }
+            });
+        }, null, 500, Timeout.Infinite);
+    }
+
+    private async Task HandleSearchKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            _debounceTimer?.Dispose();
+            await PerformSearchAsync();
+        }
+    }
+
+    private async Task ClearSearch()
+    {
+        _debounceTimer?.Dispose();
+        searchQuery = "";
+        await PerformSearchAsync();
+    }
+
+    private async Task SearchTag(string tag)
+    {
+        _debounceTimer?.Dispose();
+        searchQuery = tag;
+        await PerformSearchAsync();
+    }
+
+    private async Task PerformSearchAsync()
+    {
+        _debounceTimer?.Dispose();
+        _searchCts?.Cancel();
+        _searchCts?.Dispose();
+        _searchCts = new CancellationTokenSource();
+        var ct = _searchCts.Token;
+
+        isLoading = true;
+        hasError = false;
+        errorMessage = "";
+        afterCursor = null;
+        seenItemIds.Clear();
+        mediaItems.Clear();
+        ClearColumns();
+        _lastRenderedItemCount = 0;
+        hasSearched = true;
+        isObserverInitialized = false;
+        await DisconnectObserverAsync();
+        await InvokeAsync(StateHasChanged);
+
+        try
+        {
+            var result = isStickerMode
+                ? await MediaService.SearchStickersAsync(
+                    query: searchQuery,
+                    sort: "relevance",
+                    timeRange: "all",
+                    after: null,
+                    limit: 40,
+                    includeNsfw: includeNsfw,
+                    cancellationToken: ct)
+                : await MediaService.SearchGifsAsync(
+                    query: searchQuery,
+                    sort: "relevance",
+                    timeRange: "all",
+                    after: null,
+                    limit: 40,
+                    includeNsfw: includeNsfw,
+                    cancellationToken: ct);
+
+            if (ct.IsCancellationRequested) return;
+
+            var newBatch = new List<MediaItem>();
+            foreach (var item in result.Items)
+            {
+                if (seenItemIds.Add(item.Id))
+                {
+                    mediaItems.Add(item);
+                    newBatch.Add(item);
+                }
+            }
+            DistributeItemsToColumns(newBatch);
+            afterCursor = result.After;
+        }
+        catch (OperationCanceledException)
+        {
+            return;
+        }
+        catch (Exception ex)
+        {
+            if (ct.IsCancellationRequested) return;
+            hasError = true;
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            if (!ct.IsCancellationRequested)
+            {
+                isLoading = false;
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+    }
+
+    [JSInvokable]
+    public async Task OnScrollNearBottom()
+    {
+        if (!isLoading && !isLoadingMore && !string.IsNullOrEmpty(afterCursor))
+        {
+            await LoadMoreAsync();
+        }
+    }
+
+    private async Task LoadMoreAsync()
+    {
+        if (string.IsNullOrEmpty(afterCursor) || isLoadingMore) return;
+
+        var ct = _searchCts?.Token ?? CancellationToken.None;
+        isLoadingMore = true;
+        await InvokeAsync(StateHasChanged);
+
+        try
+        {
+            var result = isStickerMode
+                ? await MediaService.SearchStickersAsync(
+                    query: searchQuery,
+                    sort: "relevance",
+                    timeRange: "all",
+                    after: afterCursor,
+                    limit: 40,
+                    includeNsfw: includeNsfw,
+                    cancellationToken: ct)
+                : await MediaService.SearchGifsAsync(
+                    query: searchQuery,
+                    sort: "relevance",
+                    timeRange: "all",
+                    after: afterCursor,
+                    limit: 40,
+                    includeNsfw: includeNsfw,
+                    cancellationToken: ct);
+
+            if (ct.IsCancellationRequested) return;
+
+            var newBatch = new List<MediaItem>();
+            foreach (var item in result.Items)
+            {
+                if (seenItemIds.Add(item.Id))
+                {
+                    mediaItems.Add(item);
+                    newBatch.Add(item);
+                }
+            }
+            DistributeItemsToColumns(newBatch);
+            afterCursor = result.After;
+        }
+        catch (OperationCanceledException)
+        {
+            return;
+        }
+        catch (Exception ex)
+        {
+            if (ct.IsCancellationRequested) return;
+            NotificationService.Show($"Could not load more {(isStickerMode ? "images" : "GIFs")}: {ex.Message}", "Search Error", NotificationType.Error);
+        }
+        finally
+        {
+            if (!ct.IsCancellationRequested)
+            {
+                isLoadingMore = false;
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+    }
+
+    private async Task SelectMediaAsync(MediaItem item)
+    {
+        if (downloadingItemId != null) return;
+
+        downloadingItemId = item.Id;
+        downloadingItem = item;
+        await InvokeAsync(StateHasChanged);
+
+        try
+        {
+            string tempFilePath = await MediaService.DownloadMediaToTempFileAsync(item);
+            
+            if (onMediaSelectedCallback != null)
+            {
+                await onMediaSelectedCallback(tempFilePath);
+            }
+
+            ForceClose();
+        }
+        catch (Exception ex)
+        {
+            NotificationService.Show($"Failed to download {(isStickerMode ? "image" : "GIF")}: {ex.Message}", "Download Error", NotificationType.Error);
+        }
+        finally
+        {
+            downloadingItemId = null;
+            downloadingItem = null;
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private async Task DisconnectObserverAsync()
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("gifWall.disconnect");
+            isObserverInitialized = false;
+        }
+        catch { }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        SearchService.OnOpen -= HandleOpen;
+        SearchService.OnClose -= Close;
+        Auth.OnAuthStateChanged -= HandleAuthStateChanged;
+        _searchCts?.Cancel();
+        _searchCts?.Dispose();
+        _searchCts = null;
+        _debounceTimer?.Dispose();
+        await DisconnectObserverAsync();
+        dotNetRef?.Dispose();
+    }
+}

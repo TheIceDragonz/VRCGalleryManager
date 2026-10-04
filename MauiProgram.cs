@@ -54,6 +54,9 @@ public static class MauiProgram
         builder.Services.AddSingleton<VRCLogWatcherService>();
         builder.Services.AddSingleton<QrCodeService>();
         builder.Services.AddSingleton<ImageViewerService>();
+        builder.Services.AddSingleton<IMediaProviderService, MediaProviderService>();
+        builder.Services.AddSingleton<MediaProviderService>();
+        builder.Services.AddSingleton<MediaSearchService>();
 
 #if DEBUG
 		builder.Services.AddBlazorWebViewDeveloperTools();
