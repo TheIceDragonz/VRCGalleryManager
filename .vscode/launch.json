@@ -1,0 +1,23 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            // Richiede l'estensione ".NET MAUI" (ms-dotnettools.dotnet-maui)
+            "name": ".NET MAUI",
+            "type": "maui",
+            "request": "launch",
+            "preLaunchTask": "maui: Build"
+        },
+        {
+            // Fallback: funziona con la sola estensione C# (debug Windows)
+            "name": "Windows (coreclr)",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build-windows",
+            "program": "${workspaceFolder}/bin/Debug/net9.0-windows10.0.19041.0/win-x64/VRCGalleryManager.exe",
+            "cwd": "${workspaceFolder}",
+            "console": "internalConsole",
+            "justMyCode": true
+        }
+    ]
+}

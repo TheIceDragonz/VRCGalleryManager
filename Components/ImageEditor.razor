@@ -81,13 +81,6 @@
             </div>
 
             <div class="mb-3">
-                <label class="form-label small text-muted mb-1 d-flex justify-content-between">
-                    <span>Zoom</span> <span>@Math.Round(ZoomFactor * 100)%</span>
-                </label>
-                <input type="range" class="form-range" min="100" max="500" value="@(Math.Round(ZoomFactor * 100))" @oninput="OnZoomInput">
-            </div>
-
-            <div class="mb-3">
                 <label class="form-label small text-muted mb-1">Background Color</label>
                 <div class="d-flex align-items-center gap-2">
                     <button class="btn btn-sm flex-grow-1 editor-toggle-btn @(IsTransparentBg ? "active" : "")" @onclick="SetTransparentBg">Transparent</button>
@@ -349,15 +342,6 @@
         {
             CompressionQuality = val;
             QueueUpdatePreview();
-        }
-    }
-
-    private void OnZoomInput(ChangeEventArgs e)
-    {
-        if (int.TryParse(e.Value?.ToString(), out int val))
-        {
-            ZoomFactor = val / 100f;
-            QueueTransformUpdate();
         }
     }
 

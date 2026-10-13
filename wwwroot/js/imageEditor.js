@@ -622,6 +622,176 @@ window.spritesheetAnimator = {
     }
 };
 
+window.gifPan = {
+    viewportEl: null,
+    contentEl: null,
+    dotNetRef: null,
+    isFit: true,
+    panProgress: 0.5,
+    origW: 1,
+    origH: 1,
+    isDragging: false,
+    startX: 0,
+    startY: 0,
+    startPan: 0.5,
+    dragExtra: 0,
+
+    init: function (viewportEl, contentEl, dotNetRef, isFit, panProgress, origW, origH) {
+        this.dispose();
+        if (!viewportEl || !contentEl) return;
+
+        this.viewportEl = viewportEl;
+        this.contentEl = contentEl;
+        this.dotNetRef = dotNetRef;
+        this.isFit = isFit;
+        this.panProgress = typeof panProgress === 'number' ? panProgress : 0.5;
+        this.origW = origW || 1;
+        this.origH = origH || 1;
+
+        this._onPointerDown = this.onPointerDown.bind(this);
+        this._onPointerMove = this.onPointerMove.bind(this);
+        this._onPointerUp = this.onPointerUp.bind(this);
+        this._onResize = () => {
+            if (!this.isDragging) this.applyPanTransform();
+        };
+
+        this.viewportEl.addEventListener('pointerdown', this._onPointerDown);
+        window.addEventListener('pointermove', this._onPointerMove);
+        window.addEventListener('pointerup', this._onPointerUp);
+        window.addEventListener('pointercancel', this._onPointerUp);
+        window.addEventListener('resize', this._onResize);
+
+        // Apply initial layout after DOM updates
+        requestAnimationFrame(() => {
+            this.updateLayout();
+        });
+    },
+
+    updateLayout: function () {
+        if (!this.viewportEl || !this.contentEl) return;
+
+        if (this.isFit || this.origW === this.origH) {
+            this.viewportEl.classList.remove('can-drag', 'dragging');
+            this.contentEl.style.transform = '';
+            return;
+        }
+
+        this.viewportEl.classList.add('can-drag');
+        this.applyPanTransform();
+    },
+
+    setFit: function (isFit) {
+        this.isFit = isFit;
+        requestAnimationFrame(() => {
+            this.updateLayout();
+        });
+    },
+
+    setPan: function (pan) {
+        this.panProgress = Math.max(0, Math.min(1, pan));
+        this.applyPanTransform();
+    },
+
+    applyPanTransform: function () {
+        if (!this.viewportEl || !this.contentEl || this.isFit) return;
+
+        const vpW = this.viewportEl.clientWidth;
+        const vpH = this.viewportEl.clientHeight;
+        const cntW = this.contentEl.clientWidth;
+        const cntH = this.contentEl.clientHeight;
+
+        if (this.origW > this.origH) {
+            const extra = cntW - vpW;
+            if (extra > 1) {
+                const tx = extra * (0.5 - this.panProgress);
+                this.contentEl.style.transform = `translate3d(${tx}px, 0, 0)`;
+            } else {
+                this.contentEl.style.transform = '';
+            }
+        } else if (this.origH > this.origW) {
+            const extra = cntH - vpH;
+            if (extra > 1) {
+                const ty = extra * (0.5 - this.panProgress);
+                this.contentEl.style.transform = `translate3d(0, ${ty}px, 0)`;
+            } else {
+                this.contentEl.style.transform = '';
+            }
+        } else {
+            this.contentEl.style.transform = '';
+        }
+    },
+
+    onPointerDown: function (e) {
+        if (this.isFit || e.button !== 0 || !this.viewportEl || !this.contentEl) return;
+        if (this.origW === this.origH) return;
+
+        const vpW = this.viewportEl.clientWidth;
+        const vpH = this.viewportEl.clientHeight;
+        const cntW = this.contentEl.clientWidth;
+        const cntH = this.contentEl.clientHeight;
+
+        this.dragExtra = (this.origW > this.origH) ? (cntW - vpW) : (cntH - vpH);
+        if (this.dragExtra <= 1) return;
+
+        this.isDragging = true;
+        this.startX = e.clientX;
+        this.startY = e.clientY;
+        this.startPan = this.panProgress;
+
+        try { this.viewportEl.setPointerCapture(e.pointerId); } catch (_) {}
+        this.viewportEl.classList.add('dragging');
+    },
+
+    onPointerMove: function (e) {
+        if (!this.isDragging || !this.viewportEl || !this.contentEl || this.dragExtra <= 1) return;
+
+        if (this.origW > this.origH) {
+            const dx = e.clientX - this.startX;
+            const newPan = this.startPan - (dx / this.dragExtra);
+            this.panProgress = Math.max(0, Math.min(1, newPan));
+            const tx = this.dragExtra * (0.5 - this.panProgress);
+            this.contentEl.style.transform = `translate3d(${tx}px, 0, 0)`;
+        } else if (this.origH > this.origW) {
+            const dy = e.clientY - this.startY;
+            const newPan = this.startPan - (dy / this.dragExtra);
+            this.panProgress = Math.max(0, Math.min(1, newPan));
+            const ty = this.dragExtra * (0.5 - this.panProgress);
+            this.contentEl.style.transform = `translate3d(0, ${ty}px, 0)`;
+        }
+    },
+
+    onPointerUp: function (e) {
+        if (!this.isDragging) return;
+        this.isDragging = false;
+
+        if (this.viewportEl) {
+            this.viewportEl.classList.remove('dragging');
+            try { this.viewportEl.releasePointerCapture(e.pointerId); } catch (_) {}
+        }
+
+        if (this.dotNetRef) {
+            this.dotNetRef.invokeMethodAsync('OnGifPanChanged', this.panProgress);
+        }
+    },
+
+    dispose: function () {
+        this.isDragging = false;
+        if (this.viewportEl) {
+            this.viewportEl.classList.remove('can-drag', 'dragging');
+            if (this._onPointerDown) this.viewportEl.removeEventListener('pointerdown', this._onPointerDown);
+        }
+        if (this._onPointerMove) window.removeEventListener('pointermove', this._onPointerMove);
+        if (this._onPointerUp) {
+            window.removeEventListener('pointerup', this._onPointerUp);
+            window.removeEventListener('pointercancel', this._onPointerUp);
+        }
+        if (this._onResize) window.removeEventListener('resize', this._onResize);
+        this.viewportEl = null;
+        this.contentEl = null;
+        this.dotNetRef = null;
+    }
+};
+
 document.addEventListener('wheel', function(e) {
     let timeline = e.target.closest('.timeline-scroll');
     if (timeline) {

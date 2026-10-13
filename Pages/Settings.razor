@@ -19,7 +19,7 @@
     <div class="d-flex flex-column gap-4 max-w-600 mx-auto w-100">
         <h3 class="mb-1 text-center">Settings</h3>
 
-        @if (IsLoggedIn && Auth.CurrentUser != null && !string.IsNullOrEmpty(Auth.CurrentUser.Id) && !HasVRCPlus)
+        @if (ShowVRCPlusAlert)
         {
             <div class="alert mb-0 p-3 d-flex align-items-center justify-content-between gap-3 flex-wrap alert-vrcplus">
                 <div class="d-flex align-items-center gap-2">
@@ -970,7 +970,13 @@
     private string VrcLogsTotalSize = "0 B";
     private bool VrcLogsExists = false;
     private bool IsLoggingIn = false;
-    private bool HasVRCPlus = false;
+    private bool _hasVrcPlus = false;
+    private bool HasVRCPlus
+    {
+        get => (Auth.CurrentUser != null && VRCAuth.CheckHasVRCPlus(Auth.CurrentUser)) || _hasVrcPlus;
+        set => _hasVrcPlus = value;
+    }
+    private bool ShowVRCPlusAlert = false;
     private bool HasUpdate = false;
     private string LatestUpdateVersion = "";
     private string LocalVersion = "";
@@ -1230,12 +1236,25 @@
 
         // Check VRChat Plus badge or tag
         HasVRCPlus = VRCAuth.CheckHasVRCPlus(user);
+        if (HasVRCPlus)
+        {
+            ShowVRCPlusAlert = false;
+        }
 
         try
         {
             var pubProfile = await BackgroundService.GetPublicProfileAsync(user.Id);
             if (pubProfile != null)
             {
+                if (pubProfile.HasVrcPlus.HasValue)
+                {
+                    user.IsVRCPlus = pubProfile.HasVrcPlus.Value;
+                    if (Auth.CurrentUser != null) Auth.CurrentUser.IsVRCPlus = pubProfile.HasVrcPlus.Value;
+                }
+
+                HasVRCPlus = VRCAuth.CheckHasVRCPlus(user) || (pubProfile.HasVrcPlus == true);
+                ShowVRCPlusAlert = IsLoggedIn && !HasVRCPlus;
+
                 user.IsEconomyCreator = pubProfile.IsEconomyCreator;
                 if (Auth.CurrentUser != null) Auth.CurrentUser.IsEconomyCreator = pubProfile.IsEconomyCreator;
 
@@ -1290,20 +1309,28 @@
 
                 await InvokeAsync(StateHasChanged);
             }
-            else if (BackgroundService.DisplayVRCCosmetics)
+            else
             {
-                if (!string.IsNullOrEmpty(user.NameplateEffect))
+                ShowVRCPlusAlert = IsLoggedIn && !HasVRCPlus;
+                if (BackgroundService.DisplayVRCCosmetics)
                 {
-                    NameplateEffectUrl = await BackgroundService.GetNameplateEffectUrlAsync(user.NameplateEffect);
-                }
-                if (!string.IsNullOrEmpty(user.IconFrame))
-                {
-                    IconFrameUrl = await BackgroundService.GetIconFrameUrlAsync(user.IconFrame);
+                    if (!string.IsNullOrEmpty(user.NameplateEffect))
+                    {
+                        NameplateEffectUrl = await BackgroundService.GetNameplateEffectUrlAsync(user.NameplateEffect);
+                    }
+                    if (!string.IsNullOrEmpty(user.IconFrame))
+                    {
+                        IconFrameUrl = await BackgroundService.GetIconFrameUrlAsync(user.IconFrame);
+                    }
                 }
                 await InvokeAsync(StateHasChanged);
             }
         }
-        catch { }
+        catch
+        {
+            ShowVRCPlusAlert = IsLoggedIn && !HasVRCPlus;
+            await InvokeAsync(StateHasChanged);
+        }
     }
 
     private async Task LoadCurrentUser()
@@ -1319,6 +1346,7 @@
             else
             {
                 Auth.CurrentUser = null;
+                ShowVRCPlusAlert = false;
                 throw new VRChatApiException(401, "User is not authenticated or 2FA is required.");
             }
         }
@@ -1401,6 +1429,7 @@
                 Username = "";
                 Password = "";
                 HasVRCPlus = false;
+                ShowVRCPlusAlert = false;
                 ShowPassword = false;
                 Show2FA = false;
                 Code2FA = "";

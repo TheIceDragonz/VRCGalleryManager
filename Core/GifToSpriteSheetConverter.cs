@@ -91,10 +91,64 @@ namespace VRCGalleryManager.Core
             }
             int count = gifImage.Frames.Count;
             int maxFrames = Math.Min(count, 64);
-            return ConvertGifToSpriteSheet(gifPath, 0, maxFrames - 1);
+            return ConvertGifToFinalSpriteSheet(gifPath, 0, maxFrames - 1, true, 0.5f);
         }
 
-        public (Image<Rgba32> spriteSheet, int frameCount) ConvertGifToSpriteSheet(string gifPath, int startFrame, int endFrame)
+        public (Image<Rgba32> spriteSheet, int frameCount) ConvertGifToPreviewSpriteSheet(string gifPath, int startFrame, int endFrame)
+        {
+            if (loadedGifPath != gifPath || gifImage == null)
+            {
+                gifImage?.Dispose();
+                gifImage = Image.Load<Rgba32>(gifPath);
+                loadedGifPath = gifPath;
+            }
+
+            int framesToUse = endFrame - startFrame + 1;
+            if (framesToUse <= 0 || framesToUse > 64)
+            {
+                throw new ArgumentException("Selected frame range is invalid or exceeds 64 frames.");
+            }
+
+            int cols = framesToUse <= 4 ? 2 : (framesToUse <= 16 ? 4 : 8);
+            int rows = cols;
+            int maxCellDim = 1024 / cols;
+
+            int origW = gifImage.Width;
+            int origH = gifImage.Height;
+            int cellW, cellH;
+
+            if (origW >= origH)
+            {
+                cellW = maxCellDim;
+                cellH = Math.Max(1, (int)Math.Round((float)maxCellDim * origH / origW));
+            }
+            else
+            {
+                cellH = maxCellDim;
+                cellW = Math.Max(1, (int)Math.Round((float)maxCellDim * origW / origH));
+            }
+
+            SpriteSheet?.Dispose();
+            SpriteSheet = new Image<Rgba32>(cols * cellW, rows * cellH);
+
+            for (int i = 0; i < framesToUse; i++)
+            {
+                using var frame = gifImage.Frames.CloneFrame(startFrame + i);
+                if (frame.Width != cellW || frame.Height != cellH)
+                {
+                    frame.Mutate(x => x.Resize(cellW, cellH, KnownResamplers.Lanczos3));
+                }
+
+                int col = i % cols;
+                int row = i / cols;
+                SpriteSheet.Mutate(x => x.DrawImage(frame, new Point(col * cellW, row * cellH), 1f));
+            }
+
+            frameCount = framesToUse;
+            return (SpriteSheet, framesToUse);
+        }
+
+        public (Image<Rgba32> spriteSheet, int frameCount) ConvertGifToFinalSpriteSheet(string gifPath, int startFrame, int endFrame, bool isFit, float panOffset = 0.5f)
         {
             int textureSize = 1024;
             if (loadedGifPath != gifPath || gifImage == null)
@@ -103,7 +157,6 @@ namespace VRCGalleryManager.Core
                 gifImage = Image.Load<Rgba32>(gifPath);
                 loadedGifPath = gifPath;
             }
-            int count = gifImage.Frames.Count;
 
             int framesToUse = endFrame - startFrame + 1;
             if (framesToUse <= 0 || framesToUse > 64)
@@ -112,7 +165,6 @@ namespace VRCGalleryManager.Core
             }
 
             int squareSize, cols, rows;
-
             if (framesToUse <= 4)
             {
                 squareSize = textureSize / 2;
@@ -130,17 +182,52 @@ namespace VRCGalleryManager.Core
             }
 
             SpriteSheet?.Dispose();
-            SpriteSheet = new Image<Rgba32>(textureSize, 1024);
+            SpriteSheet = new Image<Rgba32>(textureSize, textureSize);
+
+            float p = Math.Clamp(panOffset, 0f, 1f);
 
             for (int i = 0; i < framesToUse; i++)
             {
-                var frame = gifImage.Frames.CloneFrame(startFrame + i);
-                using (var squareFrame = CropToSquare(frame, squareSize))
+                using var frame = gifImage.Frames.CloneFrame(startFrame + i);
+                int col = i % cols;
+                int row = i / cols;
+                int originX = col * squareSize;
+                int originY = row * squareSize;
+
+                if (isFit)
                 {
-                    int col = i % cols;
-                    int row = i / cols;
-                    
-                    SpriteSheet.Mutate(x => x.DrawImage(squareFrame, new Point(col * squareSize, row * squareSize), 1f));
+                    float scale = Math.Min((float)squareSize / frame.Width, (float)squareSize / frame.Height);
+                    int targetW = Math.Max(1, (int)Math.Round(frame.Width * scale));
+                    int targetH = Math.Max(1, (int)Math.Round(frame.Height * scale));
+
+                    using var resized = frame.Clone(x => x.Resize(targetW, targetH, KnownResamplers.Lanczos3));
+                    int destX = (squareSize - targetW) / 2;
+                    int destY = (squareSize - targetH) / 2;
+                    SpriteSheet.Mutate(x => x.DrawImage(resized, new Point(originX + destX, originY + destY), 1f));
+                }
+                else
+                {
+                    int minDim = Math.Min(frame.Width, frame.Height);
+                    int cropX = 0;
+                    int cropY = 0;
+
+                    if (frame.Width > frame.Height)
+                    {
+                        int extra = frame.Width - frame.Height;
+                        cropX = Math.Clamp((int)Math.Round(extra * p), 0, extra);
+                    }
+                    else if (frame.Height > frame.Width)
+                    {
+                        int extra = frame.Height - frame.Width;
+                        cropY = Math.Clamp((int)Math.Round(extra * p), 0, extra);
+                    }
+
+                    using var cropped = frame.Clone(x =>
+                    {
+                        x.Crop(new Rectangle(cropX, cropY, minDim, minDim));
+                        x.Resize(squareSize, squareSize, KnownResamplers.Lanczos3);
+                    });
+                    SpriteSheet.Mutate(x => x.DrawImage(cropped, new Point(originX, originY), 1f));
                 }
             }
 
@@ -171,35 +258,6 @@ namespace VRCGalleryManager.Core
             SpriteSheet.SaveAsPng(outputPath);
 
             return outputPath;
-        }
-
-        private Image<Rgba32> CropToSquare(Image<Rgba32> img, int size)
-        {
-            int maxSize = Math.Max(img.Width, img.Height);
-            var squareImage = new Image<Rgba32>(size, size);
-            
-            Rectangle srcRect;
-
-            if (img.Width > img.Height)
-            {
-                int offset = (img.Width - img.Height) / 2;
-                srcRect = new Rectangle(offset, 0, img.Height, img.Height);
-            }
-            else
-            {
-                int offset = (img.Height - img.Width) / 2;
-                srcRect = new Rectangle(0, offset, img.Width, img.Width);
-            }
-
-            // Crop
-            var cropped = img.Clone(x => x.Crop(srcRect));
-            // Resize to target size
-            cropped.Mutate(x => x.Resize(size, size, KnownResamplers.Bicubic));
-            
-            squareImage.Mutate(x => x.DrawImage(cropped, new Point(0, 0), 1f));
-            cropped.Dispose();
-            
-            return squareImage;
         }
     }
 }

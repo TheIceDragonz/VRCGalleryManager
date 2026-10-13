@@ -38,13 +38,30 @@
         {
             <div class="d-flex flex-column align-items-center w-100 h-100" style="min-width: 0; min-height: 0;">
                 <div class="spritesheet-preview-container d-flex align-items-center justify-content-center w-100 flex-grow-1" style="min-height: 0; min-width: 0;">
+                    @if (IsGifSource)
+                    {
+                        <div @ref="gifViewportRef" class="gif-preview-viewport">
+                            <div @ref="gifContentRef" class="gif-preview-content" style="@GifContentStyle">
+                                <div class="spritesheet-animator emoji-preview-pixelated"
+                                     style="background-image: url('@AnimatedPreviewBase64'); background-repeat: no-repeat; width: 100%; height: 100%;"
+                                     data-animated="true"
+                                     data-frames="@FinalFrameCount"
+                                     data-fps="@FramesOverTime"
+                                     data-cols="@SelectedCols">
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
                     <img src="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='800'%3E%3C/svg%3E"
                          class="spritesheet-animator editor-canvas-img emoji-preview-pixelated"
                          style="background-image: url('@AnimatedPreviewBase64'); background-repeat: no-repeat; width: auto; height: auto;" 
                          data-animated="true" 
                          data-frames="@FinalFrameCount" 
                          data-fps="@FramesOverTime"
-                         data-cols="@SelectedCols" />
+                          data-cols="@SelectedCols" />
+                     }
                 </div>
                 
                 @if (GifFrameThumbnails.Count > 0)
@@ -150,13 +167,6 @@
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label small text-muted mb-1 d-flex justify-content-between">
-                        <span>Zoom</span> <span>@Math.Round(ZoomFactor * 100)%</span>
-                    </label>
-                    <input type="range" class="form-range" min="100" max="500" value="@(Math.Round(ZoomFactor * 100))" @oninput="OnZoomInput">
-                </div>
-
-                <div class="mb-3">
                     <label class="form-label small text-muted mb-1">Background Color</label>
                     <div class="d-flex align-items-center gap-2">
                         <button class="btn btn-sm flex-grow-1 editor-toggle-btn @(IsTransparentBg ? "active" : "")" @onclick="SetTransparentBg">Transparent</button>
@@ -233,6 +243,20 @@
                         </label>
                         <input type="range" class="form-range" min="1" max="64" value="@FramesOverTime" @oninput="OnFpsInput" @onchange="UpdateAnimatedPreview">
                     </div>
+                    <div class="mb-3">
+                        <label class="form-label small text-muted mb-1">Adaptation</label>
+                        <div class="btn-group w-100" role="group">
+                            <button type="button" class="btn btn-sm editor-toggle-btn @(GifFit ? "active" : "")" @onclick="() => SetGifFit(true)">Fit</button>
+                            <button type="button" class="btn btn-sm editor-toggle-btn @(!GifFit ? "active" : "")" @onclick="() => SetGifFit(false)">Fill</button>
+                        </div>
+                    </div>
+                    @if (!GifFit && HasExtraDim)
+                    {
+                        <div class="mb-2 d-flex justify-content-between align-items-center">
+                            <span class="small text-muted">Drag preview to position</span>
+                            <button type="button" class="btn btn-xs btn-outline-secondary py-0 px-2" style="font-size: 0.75rem;" @onclick="ResetGifPan">Center</button>
+                        </div>
+                    }
                 }
                 else if (IsSpritesheetMode)
                 {
@@ -390,6 +414,46 @@
     [Parameter] public string AnimationStyle { get; set; } = "Loop";
     [Parameter] public int FramesOverTime { get; set; } = 30;
     private bool IsGifSource = false;
+    private bool GifFit = true;          // Fit (whole frame) or Fill (cover the square)
+    private float GifPanProgress = 0.5f; // 0.0 to 1.0 (0.5 = center)
+    private bool gifPanReady = false;
+    private ElementReference gifViewportRef;
+    private ElementReference gifContentRef;
+    private bool HasExtraDim => originalImage != null && originalImage.Width != originalImage.Height;
+
+    private string GifContentStyle
+    {
+        get
+        {
+            if (originalImage == null) return "width: 100%; height: 100%;";
+            int w = originalImage.Width;
+            int h = originalImage.Height;
+            string aspectStr = $"{w} / {h}";
+
+            if (GifFit)
+            {
+                if (w >= h)
+                {
+                    return $"width: 100%; height: auto; aspect-ratio: {aspectStr};";
+                }
+                else
+                {
+                    return $"height: 100%; width: auto; aspect-ratio: {aspectStr};";
+                }
+            }
+            else
+            {
+                if (w >= h)
+                {
+                    return $"height: 100%; width: auto; aspect-ratio: {aspectStr}; max-width: none;";
+                }
+                else
+                {
+                    return $"width: 100%; height: auto; aspect-ratio: {aspectStr}; max-height: none;";
+                }
+            }
+        }
+    }
     private bool IsSpritesheetMode = false;
     private int SelectedCols => FinalFrameCount <= 4 ? 2 : (FinalFrameCount <= 16 ? 4 : 8);
     private const int MaxAllowedFrames = 64;
@@ -406,6 +470,7 @@
     private CancellationTokenSource cts = new();
     private int _previewVersion = 0;
     private string lastRenderHash = "";
+    private bool initialPreviewQueued = false;
     private bool isLoading = true;
     private bool isUploading = false;
     private bool isRendering = false;
@@ -438,6 +503,8 @@
             {
                 IsGifSource = true;
                 IsAnimatedMode = true;
+                GifFit = true;
+                GifPanProgress = 0.5f;
                 EndFrame = Math.Min(TotalFrames - 1, 63);
                 FinalFrameCount = EndFrame - StartFrame + 1;
                 _ = ExtractGifThumbnailsAsync();
@@ -698,6 +765,12 @@
             if (originalImage != null && !string.IsNullOrEmpty(AnimatedPreviewBase64))
             {
                 await JSRuntime.InvokeVoidAsync("spritesheetAnimator.initAll");
+                if (IsGifSource && !gifPanReady)
+                {
+                    gifPanReady = true;
+                    dotNetRef ??= DotNetObjectReference.Create(this);
+                    await JSRuntime.InvokeVoidAsync("gifPan.init", gifViewportRef, gifContentRef, dotNetRef, GifFit, GifPanProgress, originalImage.Width, originalImage.Height);
+                }
             }
         }
         else
@@ -707,8 +780,9 @@
                 dotNetRef = DotNetObjectReference.Create(this);
                 await JSRuntime.InvokeVoidAsync("imageEditor.init", "emojiEditorCanvas", dotNetRef);
             }
-            if (originalImage != null && string.IsNullOrEmpty(lastRenderHash))
+            if (originalImage != null && string.IsNullOrEmpty(lastRenderHash) && !initialPreviewQueued)
             {
+                initialPreviewQueued = true;
                 QueueUpdatePreview();
             }
         }
@@ -846,15 +920,6 @@
     {
         HexRemoveBgColor = e.Value?.ToString() ?? "#ffffff";
         QueueUpdatePreview();
-    }
-
-    private void OnZoomInput(ChangeEventArgs e)
-    {
-        if (int.TryParse(e.Value?.ToString(), out int val))
-        {
-            ZoomFactor = val / 100f;
-            QueueTransformUpdate();
-        }
     }
 
     private void QueueTransformUpdate()
@@ -1000,7 +1065,7 @@
             {
                 if (string.IsNullOrEmpty(TempGifPath) || !File.Exists(TempGifPath)) return;
                 using var converter = new GifToSpriteSheetConverter();
-                var result = converter.ConvertGifToSpriteSheet(TempGifPath, StartFrame, EndFrame);
+                var result = converter.ConvertGifToPreviewSpriteSheet(TempGifPath, StartFrame, EndFrame);
                 
                 using var safeBitmap = result.spriteSheet.Clone();
 
@@ -1020,7 +1085,12 @@
         // Wait for Blazor to update the DOM with new data-frames and data-fps before calling initAll
         _ = Task.Run(async () => {
             await Task.Delay(50);
-            await InvokeAsync(() => JSRuntime.InvokeVoidAsync("spritesheetAnimator.initAll"));
+            await InvokeAsync(async () =>
+            {
+                await JSRuntime.InvokeVoidAsync("spritesheetAnimator.initAll");
+                if (IsGifSource && originalImage != null)
+                    await JSRuntime.InvokeVoidAsync("gifPan.init", gifViewportRef, gifContentRef, dotNetRef, GifFit, GifPanProgress, originalImage.Width, originalImage.Height);
+            });
         });
     }
 
@@ -1126,6 +1196,32 @@
             });
         }
     }
+    [JSInvokable]
+    public void OnGifPanChanged(float pan)
+    {
+        GifPanProgress = Math.Clamp(pan, 0f, 1f);
+    }
+
+    private async Task SetGifFit(bool fit)
+    {
+        if (GifFit == fit) return;
+        GifFit = fit;
+        StateHasChanged();
+        await Task.Yield();
+        if (originalImage != null)
+        {
+            await JSRuntime.InvokeVoidAsync("gifPan.setFit", GifFit);
+        }
+    }
+
+    private async Task ResetGifPan()
+    {
+        GifPanProgress = 0.5f;
+        if (originalImage != null)
+        {
+            await JSRuntime.InvokeVoidAsync("gifPan.setPan", 0.5f);
+        }
+    }
 
 
 
@@ -1183,6 +1279,21 @@
                             });
                             return "data:image/png;base64," + Convert.ToBase64String(ms.ToArray());
                         }
+                    });
+                }
+                else if (IsGifSource && !string.IsNullOrEmpty(TempGifPath) && File.Exists(TempGifPath))
+                {
+                    b64ToSave = await Task.Run(() =>
+                    {
+                        using var converter = new GifToSpriteSheetConverter();
+                        var result = converter.ConvertGifToFinalSpriteSheet(TempGifPath, StartFrame, EndFrame, GifFit, GifPanProgress);
+                        using var safeSheet = result.spriteSheet.Clone();
+                        using MemoryStream ms = new MemoryStream();
+                        safeSheet.SaveAsPng(ms, new SixLabors.ImageSharp.Formats.Png.PngEncoder
+                        {
+                            CompressionLevel = SixLabors.ImageSharp.Formats.Png.PngCompressionLevel.BestSpeed
+                        });
+                        return "data:image/png;base64," + Convert.ToBase64String(ms.ToArray());
                     });
                 }
 
@@ -1264,6 +1375,7 @@
     public void Dispose()
     {
         _ = JSRuntime.InvokeVoidAsync("imageEditor.destroy");
+        _ = JSRuntime.InvokeVoidAsync("gifPan.dispose");
         dotNetRef?.Dispose();
         originalImage?.Dispose();
         _imageStream?.Dispose();
